@@ -35,6 +35,13 @@ pnpm install
 pnpm dev
 ```
 
+### Mock 调试
+
+- 当前项目默认启用全量 Mock 数据，开发和当前生产配置都使用 `VITE_ENABLE_MOCK=true`
+- Mock 已按领域拆分在 `mock/*.mock.ts`，共用逻辑在 `mock/shared.ts`，测试数据在 `mock/test-data.json`
+- 默认测试账号：`admin / admin123`、`editor / editor123`、`tester / tester123`
+- 如需联调真实后端，设置 `VITE_ENABLE_MOCK=false`，并把 `VITE_DEV_PROXY_TARGET` 指向后端地址
+
 ### Type-Check, Compile and Minify for Production
 
 ```sh
@@ -46,3 +53,9 @@ pnpm build
 ```sh
 pnpm lint
 ```
+
+## Project Docs
+
+- [前端项目结构与编写规范](./docs/project-structure-convention.md)
+- [前端代码编写规范](./docs/code-writing-convention.md)
+- [后端菜单驱动路由规范](./docs/backend-menu-routing-convention.md)

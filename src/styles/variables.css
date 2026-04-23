@@ -1,0 +1,23 @@
+/**
+ * 布局相关 CSS 变量
+ */
+
+:root {
+  /* 布局尺寸 */
+  --sidebar-width: 240px;
+  --sidebar-collapsed-width: 64px;
+  --header-height: 56px;
+  --tags-view-height: 40px;
+
+  /* 侧边栏颜色 */
+  --sidebar-bg: #001529;
+  --sidebar-bg-dark: #002140;
+  --sidebar-text: rgba(255, 255, 255, 0.65);
+  --sidebar-text-active: #fff;
+  --sidebar-bg-hover: rgba(255, 255, 255, 0.08);
+  --sidebar-bg-active: #1890ff;
+
+  /* 面包屑 */
+  --breadcrumb-text: var(--color-text-secondary);
+  --breadcrumb-link: var(--color-primary);
+}

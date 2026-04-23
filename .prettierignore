@@ -1,0 +1,40 @@
+# 依赖
+node_modules
+pnpm-lock.yaml
+package-lock.json
+yarn.lock
+
+# 构建产物
+dist
+dist-ssr
+build
+out
+.output
+
+# 缓存
+.cache
+.temp
+.tsbuildinfo
+*.tsbuildinfo
+
+# 自动生成
+auto-imports.d.ts
+components.d.ts
+types/auto-imports.d.ts
+uno.css
+
+# 配置文件
+.pnpm.cjs
+
+# 日志
+*.log
+logs
+
+# 环境变量
+.env
+.env.*
+!.env.example
+
+# 其他
+.DS_Store
+*.md

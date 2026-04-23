@@ -1,0 +1,287 @@
+/**
+ * CSS Reset - 清除默认样式
+ * 基于现代 CSS Reset 最佳实践
+ */
+
+/* ==================== 盒模型 ==================== */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+/* ==================== 字体与文本 ==================== */
+html {
+  /* 平滑滚动 */
+  scroll-behavior: smooth;
+  /* 防止 iOS 横竖屏切换时字体大小调整 */
+  -webkit-text-size-adjust: 100%;
+  /* 防止移动端点击高亮 */
+  -webkit-tap-highlight-color: transparent;
+}
+
+body {
+  /* 重置默认外边距 */
+  margin: 0;
+  /* 设置最小高度为视口高度 */
+  min-height: 100vh;
+  /* 继承字体设置 */
+  font-family: inherit;
+  line-height: 1.5;
+  /* 优化文本渲染 */
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ==================== 标题重置 ==================== */
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  margin: 0;
+  font-weight: 600;
+  line-height: 1.25;
+}
+
+p {
+  margin: 0;
+}
+
+/* ==================== 列表重置 ==================== */
+ul,
+ol {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+dl {
+  margin: 0;
+}
+
+dt {
+  font-weight: 600;
+}
+
+dd {
+  margin-left: 0;
+}
+
+/* ==================== 表单元素重置 ==================== */
+button,
+input,
+optgroup,
+select,
+textarea {
+  /* 继承字体设置 */
+  font-family: inherit;
+  font-size: 100%;
+  line-height: 1.15;
+  margin: 0;
+  /* 移除默认样式 */
+  appearance: none;
+  -webkit-appearance: none;
+  /* 移除 iOS 圆角 */
+  border-radius: 0;
+}
+
+/* 移除搜索输入框的默认样式 */
+input[type='search']::-webkit-search-decoration,
+input[type='search']::-webkit-search-cancel-button,
+input[type='search']::-webkit-search-results-button,
+input[type='search']::-webkit-search-results-decoration {
+  display: none;
+}
+
+/* 重置文本域 */
+textarea {
+  /* 移除默认 resize 和垂直滚动条 */
+  resize: vertical;
+  overflow: auto;
+}
+
+/* 重置选择框 */
+select {
+  /* 移除默认箭头 */
+  -webkit-appearance: none;
+  appearance: none;
+  background-image: none;
+}
+
+/* 重置单选和多选框 */
+input[type='checkbox'],
+input[type='radio'] {
+  /* 恢复默认外观（某些情况下需要） */
+  -webkit-appearance: auto;
+  appearance: auto;
+}
+
+/* ==================== 按钮重置 ==================== */
+button {
+  /* 移除默认样式 */
+  background: none;
+  border: none;
+  cursor: pointer;
+  text-align: inherit;
+}
+
+/* 移除 focus 可见性的默认轮廓（根据需要保留） */
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 2px;
+}
+
+/* ==================== 链接重置 ==================== */
+a {
+  /* 继承颜色 */
+  color: inherit;
+  text-decoration: none;
+}
+
+/* ==================== 图片与媒体 ==================== */
+img,
+picture,
+video,
+canvas,
+svg {
+  /* 最大宽度为父元素 */
+  max-width: 100%;
+  /* 保持高度比例 */
+  height: auto;
+  /* 显示为块级元素 */
+  display: block;
+  /* 移除底部间隙 */
+  vertical-align: middle;
+}
+
+/* ==================== 表格重置 ==================== */
+table {
+  /* 移除边框间距 */
+  border-collapse: collapse;
+  border-spacing: 0;
+  /* 宽度自适应 */
+  width: 100%;
+  /* 文本对齐 */
+  text-align: left;
+}
+
+th,
+td {
+  padding: 0;
+}
+
+/* ==================== 代码块重置 ==================== */
+pre,
+code,
+kbd,
+samp {
+  /* 使用等宽字体 */
+  font-family:
+    ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, 'Liberation Mono', monospace;
+  font-size: 1em;
+}
+
+pre {
+  /* 保留空白字符 */
+  white-space: pre-wrap;
+  /* 自动换行 */
+  word-wrap: break-word;
+  /* 溢出处理 */
+  overflow: auto;
+}
+
+/* ==================== 引用重置 ==================== */
+blockquote {
+  margin: 0;
+  padding: 0;
+}
+
+/* ==================== 分隔线重置 ==================== */
+hr {
+  margin: 0;
+  border: 0;
+  border-top: 1px solid currentColor;
+  opacity: 0.25;
+}
+
+/* ==================== 隐藏属性 ==================== */
+[hidden] {
+  display: none !important;
+}
+
+/* ==================== 重点标记重置 ==================== */
+mark {
+  /* 移除默认背景色和文字颜色 */
+  background-color: transparent;
+  color: inherit;
+}
+
+/* ==================== abbreviation 重置 ==================== */
+abbr[title] {
+  /* 移除默认虚线下划线 */
+  text-decoration: none;
+}
+
+/* ==================== bdi 重置（双向隔离）==================== */
+bdi {
+  /* 继承 Unicode 双向文本设置 */
+  unicode-bidi: isolate;
+}
+
+/* ==================== 移除移动端默认高亮 ==================== */
+* {
+  /* 移除点击高亮 */
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* ==================== 移除焦点轮廓（可按需保留）==================== */
+:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 2px;
+}
+
+/* ==================== 打印样式 ==================== */
+@media print {
+  /* 避免打印时在页面中间断行 */
+  h1,
+  h2,
+  h3 {
+    break-after: avoid;
+  }
+
+  /* 避免图片被截断 */
+  img,
+  picture,
+  svg {
+    break-inside: avoid;
+  }
+
+  /* 避免代码块被截断 */
+  pre {
+    white-space: pre-wrap;
+    break-inside: avoid;
+  }
+
+  /* 避免表格被截断 */
+  table,
+  figure,
+  blockquote {
+    break-inside: avoid;
+  }
+
+  /* 打印链接的 URL */
+  a[href]::after {
+    content: ' (' attr(href) ')';
+  }
+
+  /* 不打印简写链接的 URL */
+  a[href^='#']::after,
+  a[href^='javascript:']::after {
+    content: '';
+  }
+}

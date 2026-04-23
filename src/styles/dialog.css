@@ -1,0 +1,31 @@
+/**
+ * 对话框居中样式覆盖
+ */
+
+/* 让遮罩层负责真正的垂直居中，避免对话框明明放得下却仍出现外层滚动条 */
+.el-overlay-dialog {
+  display: flex !important;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden !important;
+  padding: 16px;
+}
+
+.el-dialog {
+  display: flex !important;
+  flex-direction: column !important;
+  margin: 0 !important;
+  max-height: calc(100vh - 32px);
+}
+
+.el-dialog.el-dialog--center .el-dialog__header {
+  text-align: center !important;
+}
+
+.el-dialog .el-dialog__body {
+  overflow-y: auto;
+}
+
+.el-dialog.el-dialog--center .el-dialog__footer {
+  text-align: center !important;
+}
