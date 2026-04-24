@@ -24,19 +24,19 @@
 </template>
 
 <script lang="ts" setup>
-import { computed, markRaw, ref, watch, nextTick } from 'vue'
+import { computed, ref, watch, nextTick } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import type { MenuInstance } from 'element-plus'
 import { useAuthStore } from '@/stores'
 import { filterVisibleMenus, getAdminMenus, type AppMenuInfo } from '@/router/menu'
-import * as ElementPlusIcons from '@element-plus/icons-vue'
+import { IconUtils } from '@/utils/iconUtils'
 import SidebarMenuItem from './SidebarMenuItem.vue'
 
 interface Props {
   collapse?: boolean
 }
 
-const props = withDefaults(defineProps<Props>(), {
+withDefaults(defineProps<Props>(), {
   collapse: false
 })
 
@@ -44,31 +44,23 @@ const router = useRouter()
 const route = useRoute()
 const authStore = useAuthStore()
 
-// el-menu 组件引用
 const menuRef = ref<MenuInstance>()
 
-// 当前激活的菜单
 const activeMenu = computed(() => route.path)
 
-// 菜单列表
 const menuList = computed(() => filterVisibleMenus(getAdminMenus(authStore.userMenus)))
 
-// 菜单展开状态 - 使用 localStorage 持久化
 const MENU_OPENED_KEY = 'sidebar_menu_opened'
 const defaultOpeneds = ref<string[]>([])
 const openedMenus = ref<Set<string>>(new Set())
 
 function collectSubMenuIndexes(menus: AppMenuInfo[]): string[] {
   return menus.flatMap(menu => {
-    if (!menu.children?.length) {
-      return []
-    }
-
+    if (!menu.children?.length) return []
     return [String(menu.id), ...collectSubMenuIndexes(menu.children)]
   })
 }
 
-// 从 localStorage 恢复展开状态
 function restoreOpenState(): void {
   try {
     const saved = localStorage.getItem(MENU_OPENED_KEY)
@@ -83,7 +75,6 @@ function restoreOpenState(): void {
   }
 }
 
-// 保存展开状态到 localStorage
 function saveOpenState(openeds: string[]): void {
   try {
     localStorage.setItem(MENU_OPENED_KEY, JSON.stringify(openeds))
@@ -92,42 +83,33 @@ function saveOpenState(openeds: string[]): void {
   }
 }
 
-// 菜单展开事件
 function handleMenuOpen(index: string): void {
   openedMenus.value.add(index)
   defaultOpeneds.value = Array.from(openedMenus.value)
   saveOpenState(defaultOpeneds.value)
 }
 
-// 菜单收起事件
 function handleMenuClose(index: string): void {
   openedMenus.value.delete(index)
   defaultOpeneds.value = Array.from(openedMenus.value)
   saveOpenState(defaultOpeneds.value)
 }
 
-// 监听菜单列表变化，在重新渲染后恢复展开状态
 watch(menuList, async (newVal, oldVal) => {
   const availableIndexes = new Set(collectSubMenuIndexes(newVal))
   openedMenus.value = new Set([...openedMenus.value].filter(index => availableIndexes.has(index)))
   defaultOpeneds.value = Array.from(openedMenus.value)
 
-  // 如果是第一次加载或内容没有实际变化，不处理
   if (!oldVal || newVal === oldVal) {
     saveOpenState(defaultOpeneds.value)
     return
   }
 
-  // 使用 nextTick 等待 DOM 更新
   await nextTick()
-  // 再等待一帧确保 el-menu 组件完全渲染
   await nextTick()
-  // 恢复展开状态
   if (menuRef.value && openedMenus.value.size > 0) {
-    // 使用 setTimeout 确保在下一帧执行
     setTimeout(() => {
       openedMenus.value.forEach(index => {
-        // 检查菜单项是否存在再展开
         if (menuRef.value?.open) {
           menuRef.value.open(index)
         }
@@ -136,34 +118,17 @@ watch(menuList, async (newVal, oldVal) => {
   }
 }, { flush: 'post' })
 
-// 初始化时恢复展开状态
 restoreOpenState()
 
-// 图标名称到组件的映射
-const iconMap: Record<string, any> = {
-  Home: markRaw(ElementPlusIcons.House),
-  User: markRaw(ElementPlusIcons.User),
-  Lock: markRaw(ElementPlusIcons.Lock),
-  Menu: markRaw(ElementPlusIcons.Menu),
-  Setting: markRaw(ElementPlusIcons.Setting),
-  Bell: markRaw(ElementPlusIcons.Bell),
-  Document: markRaw(ElementPlusIcons.Document),
-  Files: markRaw(ElementPlusIcons.Folder),
-  DataAnalysis: markRaw(ElementPlusIcons.DataAnalysis),
-}
-
-// 获取图标组件
 function getIconComponent(iconName: string) {
-  return iconMap[iconName] || iconMap.Menu
+  return IconUtils.getIcon(iconName)
 }
 
-// 菜单选择事件
 function handleSelect(index: string) {
   if (/^(https?:)?\/\//i.test(index)) {
     window.open(index, '_blank', 'noopener,noreferrer')
     return
   }
-
   router.push(index)
 }
 </script>
@@ -172,17 +137,18 @@ function handleSelect(index: string) {
 .sidebar-menu-inner {
   border-right: none;
   height: 100%;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
 }
 
 .sidebar-menu-inner:not(.el-menu--collapse) {
-  width: 240px;
+  width: var(--sidebar-width);
 }
 
 .sidebar-menu-inner.el-menu--collapse {
-  width: 64px;
+  width: var(--sidebar-collapsed-width);
 }
 
-/* 菜单项样式覆盖 */
 .sidebar-menu-inner :deep(.el-menu-item),
 .sidebar-menu-inner :deep(.el-sub-menu__title) {
   height: 48px;
@@ -191,19 +157,37 @@ function handleSelect(index: string) {
 
 .sidebar-menu-inner :deep(.el-menu-item:hover),
 .sidebar-menu-inner :deep(.el-sub-menu__title:hover) {
-  background-color: rgba(255, 255, 255, 0.08) !important;
+  background-color: var(--sidebar-bg-hover) !important;
 }
 
 .sidebar-menu-inner :deep(.el-menu-item.is-active) {
-  background-color: #1890ff !important;
+  background-color: var(--sidebar-bg-active) !important;
 }
 
 .sidebar-menu-inner.el-menu--collapse :deep(.el-menu-item),
 .sidebar-menu-inner.el-menu--collapse :deep(.el-sub-menu__title) {
-  padding: 0 20px;
+  padding: 0 var(--content-padding);
 }
 
 .sidebar-menu-inner.el-menu--collapse :deep(.el-sub-menu__icon-arrow) {
   display: none;
+}
+
+/* 暗色主题滚动条 */
+.sidebar-menu-inner::-webkit-scrollbar {
+  width: 6px;
+}
+
+.sidebar-menu-inner::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.sidebar-menu-inner::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 3px;
+}
+
+.sidebar-menu-inner::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.35);
 }
 </style>

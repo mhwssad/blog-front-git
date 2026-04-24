@@ -34,11 +34,6 @@ const isCollapsed = ref(false)
 function toggleCollapse() {
   isCollapsed.value = !isCollapsed.value
 }
-
-defineExpose({
-  isCollapsed,
-  toggleCollapse
-})
 </script>
 
 <style scoped>
@@ -46,7 +41,7 @@ defineExpose({
   position: sticky;
   top: 0;
   left: 0;
-  z-index: 1001;
+  z-index: var(--z-index-sticky);
   display: flex;
   flex-direction: column;
   width: var(--sidebar-width);
@@ -65,11 +60,13 @@ defineExpose({
   flex: 1;
   overflow-y: auto;
   overflow-x: hidden;
-  padding: 8px 0;
+  padding: var(--spacing-sm) 0;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
 }
 
 .sidebar-footer {
-  padding: 12px;
+  padding: var(--spacing-md);
   border-top: 1px solid rgba(255, 255, 255, 0.1);
 }
 
@@ -81,17 +78,16 @@ defineExpose({
   justify-content: center;
   color: var(--sidebar-text);
   background-color: transparent;
-  border-radius: 4px;
-  transition: all 0.3s;
+  border-radius: var(--border-radius-base);
+  transition: var(--transition-base);
   cursor: pointer;
 }
 
 .collapse-btn:hover {
-  color: #fff;
-  background-color: rgba(255, 255, 255, 0.1);
+  color: var(--sidebar-text-active);
+  background-color: var(--sidebar-bg-hover);
 }
 
-/* 滚动条样式 */
 .sidebar-menu::-webkit-scrollbar {
   width: 6px;
 }
@@ -107,5 +103,22 @@ defineExpose({
 
 .sidebar-menu::-webkit-scrollbar-thumb:hover {
   background: rgba(255, 255, 255, 0.3);
+}
+
+@media (max-width: 768px) {
+  .layout-sidebar {
+    position: fixed;
+    transform: translateX(-100%);
+    transition: transform 0.3s ease;
+  }
+
+  .layout-sidebar:not(.is-collapsed) {
+    transform: translateX(0);
+    box-shadow: var(--shadow-xlarge);
+  }
+
+  .sidebar-footer {
+    display: none;
+  }
 }
 </style>

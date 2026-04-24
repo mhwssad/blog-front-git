@@ -16,9 +16,9 @@
 </template>
 
 <script lang="ts" setup>
-import { computed, markRaw } from 'vue'
+import { computed } from 'vue'
 import { useRoute } from 'vue-router'
-import * as ElementPlusIcons from '@element-plus/icons-vue'
+import { IconUtils } from '@/utils/iconUtils'
 
 interface BreadcrumbItem {
   path: string
@@ -28,30 +28,15 @@ interface BreadcrumbItem {
 
 const route = useRoute()
 
-// 图标名称到组件的映射
-const iconMap: Record<string, any> = {
-  Home: markRaw(ElementPlusIcons.House),
-  User: markRaw(ElementPlusIcons.User),
-  Lock: markRaw(ElementPlusIcons.Lock),
-  Menu: markRaw(ElementPlusIcons.Menu),
-  Setting: markRaw(ElementPlusIcons.Setting),
-  Bell: markRaw(ElementPlusIcons.Bell),
-  Document: markRaw(ElementPlusIcons.Document),
-  Files: markRaw(ElementPlusIcons.Folder),
-}
-
-// 获取图标组件
 function getIconComponent(iconName: string) {
-  return iconMap[iconName] || iconMap.Menu
+  return IconUtils.getIcon(iconName)
 }
 
-// 面包屑列表
 const breadcrumbList = computed<BreadcrumbItem[]>(() => {
   const matched = route.matched.filter(item => item.meta?.title)
   const list: BreadcrumbItem[] = []
 
   matched.forEach((item, index) => {
-    // 如果是最后一个且是重定向路由，跳过
     if (index === matched.length - 1 && item.redirect) {
       return
     }
@@ -63,7 +48,6 @@ const breadcrumbList = computed<BreadcrumbItem[]>(() => {
     })
   })
 
-  // 如果为空，添加首页
   if (list.length === 0) {
     list.push({
       path: '/admin',
@@ -83,12 +67,18 @@ const breadcrumbList = computed<BreadcrumbItem[]>(() => {
 }
 
 .breadcrumb-icon {
-  margin-right: 4px;
-  font-size: 14px;
+  margin-right: var(--spacing-xs);
+  font-size: var(--font-size-sm);
   vertical-align: middle;
 }
 
 .breadcrumb-title {
   font-weight: 500;
+}
+
+@media (max-width: 640px) {
+  .header-breadcrumb {
+    display: none;
+  }
 }
 </style>

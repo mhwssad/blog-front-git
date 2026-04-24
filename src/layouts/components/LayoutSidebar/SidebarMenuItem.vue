@@ -31,7 +31,7 @@ defineOptions({
 
 interface Props {
   item: AppMenuInfo
-  getIconComponent: (iconName: string) => unknown
+  getIconComponent: (iconName: string) => ReturnType<typeof import('@/utils/iconUtils').IconUtils.getIcon>
 }
 
 const props = defineProps<Props>()

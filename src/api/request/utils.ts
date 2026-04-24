@@ -18,7 +18,7 @@ const ERROR_CODE_MAP: Record<number, string> = {
   500: '服务器内部错误',
   502: '网关错误',
   503: '服务不可用',
-  504: '网关超时'
+  504: '网关超时',
 }
 
 /**
@@ -58,7 +58,7 @@ export const logger = {
   },
   error: (error: unknown) => {
     requestLogger.error('Request error', error)
-  }
+  },
 }
 
 /**
@@ -69,7 +69,10 @@ export function getErrorMessage(error: ApiError | Error | unknown): string {
   const errorWithCode = normalizedError as { code?: unknown }
 
   // 从响应中获取错误信息
-  if ('response' in (normalizedError as object) && (normalizedError as ApiError).response?.data?.message) {
+  if (
+    'response' in (normalizedError as object) &&
+    (normalizedError as ApiError).response?.data?.message
+  ) {
     return (normalizedError as ApiError).response!.data.message
   }
 
@@ -116,7 +119,7 @@ export function handleApiError(error: ApiError | Error | unknown): void {
 const STORAGE_KEYS = {
   ACCESS_TOKEN: 'access_token',
   REFRESH_TOKEN: 'refresh_token',
-  EXPIRES_AT: 'expires_at'
+  EXPIRES_AT: 'expires_at',
 }
 
 /**

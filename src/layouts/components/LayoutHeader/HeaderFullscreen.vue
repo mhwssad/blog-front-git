@@ -10,29 +10,9 @@
 </template>
 
 <script lang="ts" setup>
-import { ref, onMounted, onUnmounted } from 'vue'
+import { useFullscreen } from '@vueuse/core'
 
-const isFullscreen = ref(false)
-
-function toggleFullscreen() {
-  if (!document.fullscreenElement) {
-    document.documentElement.requestFullscreen()
-  } else {
-    document.exitFullscreen()
-  }
-}
-
-function handleFullscreenChange() {
-  isFullscreen.value = !!document.fullscreenElement
-}
-
-onMounted(() => {
-  document.addEventListener('fullscreenchange', handleFullscreenChange)
-})
-
-onUnmounted(() => {
-  document.removeEventListener('fullscreenchange', handleFullscreenChange)
-})
+const { isFullscreen, toggle: toggleFullscreen } = useFullscreen()
 </script>
 
 <style scoped>
@@ -44,8 +24,8 @@ onUnmounted(() => {
   justify-content: center;
   color: var(--color-text-regular);
   background-color: transparent;
-  border-radius: 4px;
-  transition: all 0.3s;
+  border-radius: var(--border-radius-base);
+  transition: var(--transition-base);
 }
 
 .action-btn:hover {

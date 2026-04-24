@@ -4,11 +4,17 @@ import * as ElementPlusIconsVue from '@element-plus/icons-vue'
  * 图标工具类
  */
 export class IconUtils {
+  private static readonly ALIASES: Record<string, string> = {
+    Home: 'House',
+    Files: 'Folder',
+  }
+
   /**
    * 获取图标组件
    */
   static getIcon(name: string) {
-    return (ElementPlusIconsVue as Record<string, unknown>)[name] || null
+    const resolved = this.ALIASES[name] ?? name
+    return (ElementPlusIconsVue as Record<string, unknown>)[resolved] || null
   }
 
   /**

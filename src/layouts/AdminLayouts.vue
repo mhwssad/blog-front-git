@@ -44,11 +44,11 @@ import LayoutTabs from './components/LayoutTabs/index.vue'
 .admin-content {
   flex: 1;
   min-height: 0;
-  padding: 20px;
+  padding: var(--content-padding);
   overflow-y: auto;
   overscroll-behavior: contain;
   scrollbar-gutter: stable both-edges;
   scroll-behavior: smooth;
-  background-color: #f5f7fa;
+  background-color: var(--color-bg-page);
 }
 </style>

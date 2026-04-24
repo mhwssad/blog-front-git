@@ -359,4 +359,4 @@ async function fetchRoles() {}
 
 ## 推荐阅读
 
-- [后端菜单驱动路由规范](/e:/project/blog/blog-front/docs/backend-menu-routing-convention.md)
+- [后端菜单驱动路由规范](e:/project/blog/blog-front/docs/backend-menu-routing-convention.md)

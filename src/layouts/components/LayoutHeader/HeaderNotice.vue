@@ -1,5 +1,5 @@
 <template>
-  <el-dropdown trigger="click" @command="handleCommand">
+  <el-dropdown trigger="click">
     <div class="notice-wrapper">
       <el-badge :value="unreadCount" :hidden="unreadCount === 0" :max="99">
         <button class="action-btn">
@@ -28,7 +28,7 @@
               <div class="notice-item">
                 <div class="notice-item-title">{{ item.title }}</div>
                 <div class="notice-item-content">{{ item.content }}</div>
-                <div class="notice-item-time">{{ formatTime(item.createTime) }}</div>
+                <div class="notice-item-time">{{ formatRelativeTime(item.createTime) }}</div>
               </div>
             </el-dropdown-item>
           </template>
@@ -49,6 +49,7 @@ import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useUserNoticeStore } from '@/stores'
 import { ElMessage } from 'element-plus'
+import { DateUtils } from '@/utils/dateUtils'
 import type { UserNoticeVO } from '@/api/types'
 
 const router = useRouter()
@@ -59,7 +60,6 @@ const noticeList = ref<UserNoticeVO[]>([])
 
 const unreadCount = computed(() => userNoticeStore.unreadCount)
 
-// 获取通知列表
 async function fetchNoticeList() {
   loading.value = true
   try {
@@ -70,39 +70,18 @@ async function fetchNoticeList() {
   }
 }
 
-// 格式化时间
-function formatTime(time: string): string {
-  const date = new Date(time)
-  const now = new Date()
-  const diff = now.getTime() - date.getTime()
-
-  // 小于1分钟
-  if (diff < 60 * 1000) {
-    return '刚刚'
-  }
-  // 小于1小时
-  if (diff < 60 * 60 * 1000) {
-    return `${Math.floor(diff / (60 * 1000))}分钟前`
-  }
-  // 小于1天
-  if (diff < 24 * 60 * 60 * 1000) {
-    return `${Math.floor(diff / (60 * 60 * 1000))}小时前`
-  }
-  // 大于1天
-  return date.toLocaleDateString()
+function formatRelativeTime(time: string): string {
+  return DateUtils.formatRelativeTime(time)
 }
 
-// 点击通知
 async function handleNoticeClick(item: UserNoticeVO) {
   if (item.isRead === 0) {
     await userNoticeStore.markAsRead(item.id)
     item.isRead = 1
   }
-  // 这里可以跳转到相关页面
   ElMessage.success(item.title)
 }
 
-// 全部标记已读
 async function handleMarkAll() {
   const success = await userNoticeStore.markAllAsRead()
   if (success) {
@@ -111,14 +90,8 @@ async function handleMarkAll() {
   }
 }
 
-// 查看全部
 function handleViewAll() {
   router.push('/admin/notices')
-}
-
-// 处理下拉菜单命令
-function handleCommand(command: string) {
-  // 可以在这里处理其他命令
 }
 
 onMounted(() => {
@@ -141,8 +114,8 @@ onMounted(() => {
   justify-content: center;
   color: var(--color-text-regular);
   background-color: transparent;
-  border-radius: 4px;
-  transition: all 0.3s;
+  border-radius: var(--border-radius-base);
+  transition: var(--transition-base);
 }
 
 .action-btn:hover {
@@ -158,12 +131,12 @@ onMounted(() => {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 12px 16px;
+  padding: var(--spacing-md);
   border-bottom: 1px solid var(--color-border-base);
 }
 
 .notice-title {
-  font-size: 14px;
+  font-size: var(--font-size-sm);
   font-weight: 500;
   color: var(--color-text-primary);
 }
@@ -171,7 +144,7 @@ onMounted(() => {
 .notice-list {
   max-height: 300px;
   overflow-y: auto;
-  padding: 8px 0;
+  padding: var(--spacing-sm) 0;
 }
 
 .notice-list :deep(.el-dropdown-item) {
@@ -180,7 +153,7 @@ onMounted(() => {
 }
 
 .notice-item {
-  padding: 12px 16px;
+  padding: var(--spacing-md);
   cursor: pointer;
   transition: background-color 0.3s;
 }
@@ -194,29 +167,36 @@ onMounted(() => {
 }
 
 .notice-item-title {
-  font-size: 14px;
+  font-size: var(--font-size-sm);
   font-weight: 500;
   color: var(--color-text-primary);
-  margin-bottom: 4px;
+  margin-bottom: var(--spacing-xs);
 }
 
 .notice-item-content {
-  font-size: 12px;
+  font-size: var(--font-size-xs);
   color: var(--color-text-secondary);
-  margin-bottom: 6px;
+  margin-bottom: var(--spacing-xs);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
 .notice-item-time {
-  font-size: 12px;
+  font-size: var(--font-size-xs);
   color: var(--color-text-placeholder);
 }
 
 .notice-footer {
-  padding: 12px 16px;
+  padding: var(--spacing-md);
   border-top: 1px solid var(--color-border-base);
   text-align: center;
+}
+
+@media (max-width: 640px) {
+  .notice-dropdown {
+    width: calc(100vw - 32px);
+    max-width: 360px;
+  }
 }
 </style>

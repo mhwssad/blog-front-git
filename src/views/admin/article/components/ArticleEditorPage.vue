@@ -1,43 +1,42 @@
 <template>
-  <div class="article-editor-page">
-    <ArticleEditorHeader
-      :page-title="pageTitle"
-      :is-edit="isEdit"
-      :submit-permission="submitPermission"
-      :submitting="submitting"
-      @back="emit('back')"
-      @import-markdown="markdownDialogVisible = true"
-      @submit="handleSubmit"
-    />
+  <div class="editor-page">
+    <div class="editor-header">
+      <el-button text @click="handleBack"><el-icon><ArrowLeft /></el-icon> 返回列表</el-button>
+      <h3 class="editor-title">{{ articleId ? '编辑文章' : '新建文章' }}</h3>
+      <div class="header-actions">
+        <el-button @click="handleSubmit(0)">存为草稿</el-button>
+        <el-button type="primary" :loading="submitting" @click="handleSubmit(1)">发布</el-button>
+      </div>
+    </div>
 
-    <el-form
-      ref="formRef"
-      v-loading="pageLoading"
-      :model="formData"
-      :rules="formRules"
-      label-position="top"
-      class="article-editor-form"
-    >
-      <el-row :gutter="16" class="article-editor-layout">
-        <el-col :xs="24" :xl="17">
-          <ArticleContentEditor
-            :form-data="formData"
-            :html-source="htmlSource"
-            :active-tab="activeTab"
-            @update:html-source="htmlSource = $event"
-            @update:active-tab="activeTab = $event"
-            @import-markdown="markdownDialogVisible = true"
-          />
-        </el-col>
-
-        <el-col :xs="24" :xl="7">
-          <div class="editor-side-column">
-            <ArticlePublishSettingsCard :form-data="formData" :current-author-name="currentAuthorName" />
-            <ArticleTaxonomyCard :form-data="formData" :category-options="categoryOptions" :tags="tagStore.tags" />
-          </div>
-        </el-col>
-      </el-row>
-    </el-form>
+    <div v-loading="pageLoading" class="editor-body">
+      <el-form
+        ref="formRef"
+        :model="formData"
+        :rules="formRules"
+        label-position="top"
+        class="editor-form"
+      >
+        <el-row :gutter="20">
+          <el-col :xs="24" :sm="24" :md="17">
+            <ArticleEditorContent
+              :form-data="formData"
+              :html-source="htmlSource"
+              @update:html-source="htmlSource = $event"
+              @import-markdown="markdownDialogVisible = true"
+            />
+          </el-col>
+          <el-col :xs="24" :sm="24" :md="7">
+            <ArticleEditorSettings
+              :form-data="formData"
+              :categories="categories"
+              :tags="tags"
+              :author-name="authorName"
+            />
+          </el-col>
+        </el-row>
+      </el-form>
+    </div>
 
     <MarkdownImportDialog
       :visible="markdownDialogVisible"
@@ -51,24 +50,19 @@
 </template>
 
 <script lang="ts" setup>
-import { computed, reactive, ref, watch } from 'vue'
-import { ElMessage, type FormInstance, type FormRules } from 'element-plus'
-import type { ArticleSaveRequest } from '@/api/types'
+import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
+import { onBeforeRouteLeave } from 'vue-router'
+import { ArrowLeft } from '@element-plus/icons-vue'
+import type { FormInstance, FormRules } from 'element-plus'
+import { ElMessage, ElMessageBox } from 'element-plus'
+import type { ArticleSaveRequest, ArticleDetailVO } from '@/api/types'
 import { articleApi } from '@/api/sys/article'
-import { useAuthStore, useCategoryStore, useTagStore } from '@/stores'
+import { useCategoryStore, useTagStore, useAuthStore } from '@/stores'
 import { markdownToHtml } from '@/utils/markdown'
-import ArticleContentEditor from './ArticleContentEditor.vue'
-import ArticleEditorHeader from './ArticleEditorHeader.vue'
-import ArticlePublishSettingsCard from './ArticlePublishSettingsCard.vue'
-import ArticleTaxonomyCard from './ArticleTaxonomyCard.vue'
+import ArticleEditorContent from './ArticleEditorContent.vue'
+import ArticleEditorSettings from './ArticleEditorSettings.vue'
 import MarkdownImportDialog from './MarkdownImportDialog.vue'
-import {
-  buildCategoryOptions,
-  createArticleFormData,
-  formatArticleHtml,
-  normalizeArticleHtml,
-  type EditorTab,
-} from './article-editor'
+import { createEmptyForm, normalizeHtml, formatHtml } from './article-editor'
 
 interface Props {
   articleId: number | null
@@ -82,252 +76,252 @@ interface Emits {
 const props = defineProps<Props>()
 const emit = defineEmits<Emits>()
 
-const authStore = useAuthStore()
 const categoryStore = useCategoryStore()
 const tagStore = useTagStore()
+const authStore = useAuthStore()
 
 const formRef = ref<FormInstance>()
+const formData = ref<ArticleSaveRequest>(createEmptyForm())
+const htmlSource = ref('')
 const pageLoading = ref(false)
 const submitting = ref(false)
-const activeTab = ref<EditorTab>('preview')
+const savedSnapshot = ref('')
+
 const markdownDialogVisible = ref(false)
 const markdownDraft = ref('')
-const htmlSource = ref('')
-const formData = reactive<ArticleSaveRequest>(createArticleFormData())
 
-const isEdit = computed(() => props.articleId !== null)
-const pageTitle = computed(() => (isEdit.value ? '编辑文章' : '新增文章'))
-const submitPermission = computed(() =>
-  isEdit.value ? 'content:article:update' : 'content:article:create'
-)
-const currentAuthorName = computed(
-  () =>
-    authStore.currentUser?.nickname ||
-    authStore.currentUser?.username ||
-    `用户 #${authStore.currentUser?.id ?? '-'}`
-)
-const categoryOptions = computed(() => buildCategoryOptions(categoryStore.categories))
-
-const formRules: FormRules<ArticleSaveRequest> = {
-  title: [{ required: true, message: '请输入文章标题', trigger: 'blur' }],
-  content: [
-    {
-      // 真正提交的是 htmlSource 清洗后的结果，校验时也要以同一份数据为准。
-      validator: (_, value, callback) => {
-        if (!normalizeArticleHtml(String(value ?? ''))) {
-          callback(new Error('请输入文章正文内容'))
-          return
-        }
-        callback()
-      },
-      trigger: 'change',
-    },
-  ],
-  sourceUrl: [
-    {
-      validator: (_, value, callback) => {
-        if (formData.isOriginal === 0 && !String(value ?? '').trim()) {
-          callback(new Error('转载文章必须填写转载地址'))
-          return
-        }
-        callback()
-      },
-      trigger: 'blur',
-    },
-  ],
-  categoryIds: [
-    {
-      validator: (_, value: number[] | undefined, callback) => {
-        const validIds = new Set(categoryOptions.value.map(item => item.id))
-        const invalid = (value ?? []).some(id => !validIds.has(id))
-        if (invalid) {
-          callback(new Error('存在无效分类，请重新选择'))
-          return
-        }
-        callback()
-      },
-      trigger: 'change',
-    },
-  ],
-  tagIds: [
-    {
-      validator: (_, value: number[] | undefined, callback) => {
-        const validIds = new Set(tagStore.tags.map(item => item.id))
-        const invalid = (value ?? []).some(id => !validIds.has(id))
-        if (invalid) {
-          callback(new Error('存在无效标签，请重新选择'))
-          return
-        }
-        callback()
-      },
-      trigger: 'change',
-    },
-  ],
-}
-
-function resetForm(): void {
-  Object.assign(formData, createArticleFormData())
-  activeTab.value = 'preview'
-  htmlSource.value = ''
-  markdownDraft.value = ''
-  formRef.value?.clearValidate()
-}
-
-function applyMarkdownDraft(): void {
-  const markdown = markdownDraft.value.trim()
-  if (!markdown) {
-    ElMessage.warning('请输入 Markdown 内容')
-    return
+const categories = computed(() => categoryStore.categories)
+const tags = computed(() => tagStore.tags)
+const authorName = computed(() => {
+  if (props.articleId && originalArticle.value) {
+    return originalArticle.value.authorName || '未知'
   }
+  return authStore.currentUser?.nickname || '未知'
+})
 
-  // Markdown 导入只负责生成初始 HTML，后续仍以 HTML 编辑区作为唯一可编辑源。
-  htmlSource.value = formatArticleHtml(markdownToHtml(markdown))
-  markdownDialogVisible.value = false
-  markdownDraft.value = ''
-  activeTab.value = 'preview'
+const originalArticle = ref<ArticleDetailVO | null>(null)
+
+const formRules: FormRules = {
+  title: [{ required: true, message: '请输入文章标题', trigger: 'blur' }],
 }
 
-async function loadDependencies(): Promise<void> {
-  // 分类和标签都会参与表单校验，进入页面时并行拉取，避免出现“详情回填了无效选项”的误判。
-  await Promise.all([categoryStore.fetchCategoryTree(), tagStore.fetchTags()])
+const isDirty = computed(() => {
+  const current = JSON.stringify({
+    ...formData.value,
+    content: normalizeHtml(htmlSource.value),
+  })
+  return current !== savedSnapshot.value
+})
+
+function takeSnapshot(): void {
+  savedSnapshot.value = JSON.stringify({
+    ...formData.value,
+    content: normalizeHtml(htmlSource.value),
+  })
 }
 
-async function loadArticleDetail(articleId: number): Promise<void> {
+async function loadArticle(): Promise<void> {
+  if (!props.articleId) return
+
   pageLoading.value = true
   try {
-    const response = await articleApi.getArticleById(articleId)
+    const response = await articleApi.getArticleById(props.articleId)
     const detail = response.data.data
-    const normalizedHtml = normalizeArticleHtml(detail.content ?? '')
+    if (!detail) {
+      ElMessage.error('文章不存在')
+      emit('back')
+      return
+    }
 
-    Object.assign(formData, {
-      title: detail.title,
-      summary: detail.summary ?? '',
-      content: normalizedHtml,
-      coverImage: detail.coverImage ?? '',
+    originalArticle.value = detail
+    formData.value = {
+      title: detail.title || '',
+      summary: detail.summary || '',
+      content: detail.content || '',
+      coverImage: detail.coverImage || '',
+      authorId: detail.authorId,
       isTop: detail.isTop ?? 0,
       isOriginal: detail.isOriginal ?? 1,
-      sourceUrl: detail.sourceUrl ?? '',
+      sourceUrl: detail.sourceUrl || '',
       status: detail.status ?? 0,
-      publishTime: detail.publishTime ?? '',
+      publishTime: detail.publishTime || '',
       accessLevel: detail.accessLevel ?? 0,
-      remark: detail.remark ?? '',
-      categoryIds: detail.categoryIds ?? [],
-      tagIds: detail.tagIds ?? [],
-      accessList: detail.accessList ?? [],
-    })
-
-    // 详情接口返回的 content 直接作为最终保存值，同时同步生成源码编辑区内容。
-    htmlSource.value = formatArticleHtml(normalizedHtml)
+      remark: detail.remark || '',
+      categoryIds: detail.categoryIds || [],
+      tagIds: detail.tagIds || [],
+      accessList: detail.accessList || [],
+    }
+    htmlSource.value = detail.content || ''
+    takeSnapshot()
   } catch {
-    ElMessage.error('获取文章详情失败')
+    ElMessage.error('加载文章失败')
+    emit('back')
   } finally {
     pageLoading.value = false
   }
 }
 
-async function handleSubmit(): Promise<void> {
-  const normalizedHtml = normalizeArticleHtml(htmlSource.value)
-  // 先把编辑器当前值写回表单模型，保证校验、提交、脏数据判断都基于同一份正文。
-  formData.content = normalizedHtml
+async function loadDependencies(): Promise<void> {
+  pageLoading.value = true
+  try {
+    await Promise.all([
+      categoryStore.fetchCategoryTree(),
+      tagStore.fetchTags(),
+      loadArticle(),
+    ])
+  } finally {
+    pageLoading.value = false
+  }
+}
+
+function handleBack(): void {
+  if (isDirty.value) {
+    ElMessageBox.confirm('当前内容未保存，确认返回？', '提示', {
+      confirmButtonText: '确认离开',
+      cancelButtonText: '继续编辑',
+      type: 'warning',
+    }).then(() => emit('back')).catch(() => {})
+    return
+  }
+  emit('back')
+}
+
+async function handleSubmit(targetStatus: number): Promise<void> {
+  if (!formRef.value) return
 
   try {
-    await formRef.value?.validate()
-    submitting.value = true
+    await formRef.value.validate()
+  } catch {
+    ElMessage.warning('请填写必填项')
+    return
+  }
 
-    const payload: ArticleSaveRequest = {
-      title: formData.title.trim(),
-      summary: formData.summary?.trim() || undefined,
-      content: normalizedHtml || undefined,
-      coverImage: formData.coverImage?.trim() || undefined,
-      isTop: formData.isTop ?? 0,
-      isOriginal: formData.isOriginal ?? 1,
-      sourceUrl: formData.isOriginal === 0 ? formData.sourceUrl?.trim() || undefined : undefined,
-      status: formData.status ?? 0,
-      publishTime: formData.publishTime || undefined,
-      accessLevel: formData.accessLevel ?? 0,
-      remark: formData.remark?.trim() || undefined,
-      categoryIds: [...(formData.categoryIds ?? [])],
-      tagIds: [...(formData.tagIds ?? [])],
-      accessList: formData.accessList ?? [],
-    }
+  submitting.value = true
+  formData.value.status = targetStatus
+  formData.value.content = normalizeHtml(htmlSource.value)
 
-    if (isEdit.value && props.articleId) {
-      await articleApi.updateArticle(props.articleId, payload)
-      ElMessage.success('文章更新成功')
+  try {
+    if (props.articleId) {
+      await articleApi.updateArticle(props.articleId, formData.value)
+      ElMessage.success('文章已更新')
     } else {
-      await articleApi.createArticle(payload)
-      ElMessage.success('文章创建成功')
+      await articleApi.createArticle(formData.value)
+      ElMessage.success(targetStatus === 1 ? '文章已发布' : '草稿已保存')
     }
-
+    takeSnapshot()
     emit('success')
   } catch {
-    // 表单校验失败或请求失败
+    ElMessage.error('保存失败，请重试')
   } finally {
     submitting.value = false
   }
 }
 
-watch(
-  () => props.articleId,
-  async articleId => {
-    await loadDependencies()
-    resetForm()
-
-    // 组件本身同时承载“新建”和“编辑”，切换文章 ID 时需要完整重建编辑上下文。
-    if (articleId) {
-      await loadArticleDetail(articleId)
-    }
-  },
-  { immediate: true }
-)
-
-watch(
-  htmlSource,
-  value => {
-    // 让 el-form 的 content 校验跟随源码编辑区变化实时生效。
-    formData.content = normalizeArticleHtml(value)
-  },
-  { immediate: true }
-)
-</script>
-
-<style scoped>
-.article-editor-page {
-  --article-editor-pane-height: 640px;
-  min-height: 100%;
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
+function applyMarkdownDraft(): void {
+  const html = markdownToHtml(markdownDraft.value)
+  const formatted = formatHtml(html)
+  htmlSource.value = formatted
+  markdownDraft.value = ''
+  markdownDialogVisible.value = false
+  ElMessage.success('Markdown 已转换为 HTML')
 }
 
-.article-editor-layout {
-  align-items: stretch;
-}
-
-.editor-side-column {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
-
-.article-editor-form :deep(.el-form-item) {
-  margin-bottom: 20px;
-}
-
-.article-editor-form :deep(.el-select),
-.article-editor-form :deep(.el-date-editor) {
-  width: 100%;
-}
-
-@media (max-width: 1200px) {
-  .article-editor-page {
-    --article-editor-pane-height: 520px;
+function onKeyDown(e: KeyboardEvent): void {
+  if ((e.ctrlKey || e.metaKey) && e.key === 's') {
+    e.preventDefault()
+    handleSubmit(formData.value.status ?? 0)
   }
 }
 
+function onBeforeUnload(e: BeforeUnloadEvent): void {
+  if (isDirty.value) {
+    e.preventDefault()
+  }
+}
+
+onMounted(() => {
+  if (!props.articleId) {
+    takeSnapshot()
+  }
+  loadDependencies()
+  document.addEventListener('keydown', onKeyDown)
+  window.addEventListener('beforeunload', onBeforeUnload)
+})
+
+onBeforeUnmount(() => {
+  document.removeEventListener('keydown', onKeyDown)
+  window.removeEventListener('beforeunload', onBeforeUnload)
+})
+
+onBeforeRouteLeave((_to, _from, next) => {
+  if (isDirty.value) {
+    ElMessageBox.confirm('当前内容未保存，确认离开？', '提示', {
+      confirmButtonText: '确认离开',
+      cancelButtonText: '继续编辑',
+      type: 'warning',
+    }).then(() => next()).catch(() => next(false))
+  } else {
+    next()
+  }
+})
+</script>
+
+<style scoped>
+.editor-page {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+}
+
+.editor-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 20px;
+  border-bottom: 1px solid var(--color-border-light);
+  background: var(--color-white);
+  flex-shrink: 0;
+}
+
+.editor-title {
+  flex: 1;
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--color-text-primary);
+}
+
+.header-actions {
+  display: flex;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.editor-body {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 20px;
+  background: var(--color-gray-50);
+}
+
+.editor-form :deep(.el-form-item__label) {
+  font-weight: 600;
+}
+
 @media (max-width: 768px) {
-  .article-editor-page {
-    --article-editor-pane-height: 420px;
+  .editor-header {
+    padding: 10px 12px;
+    gap: 8px;
+  }
+
+  .editor-title {
+    font-size: 14px;
+  }
+
+  .editor-body {
+    padding: 12px;
   }
 }
 </style>

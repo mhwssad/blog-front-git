@@ -8,6 +8,7 @@
   --sidebar-collapsed-width: 64px;
   --header-height: 56px;
   --tags-view-height: 40px;
+  --content-padding: 20px;
 
   /* 侧边栏颜色 */
   --sidebar-bg: #001529;
@@ -20,4 +21,14 @@
   /* 面包屑 */
   --breadcrumb-text: var(--color-text-secondary);
   --breadcrumb-link: var(--color-primary);
+}
+
+/* 响应式断点下的布局调整 */
+@media (max-width: 768px) {
+  :root {
+    --sidebar-width: 0px;
+    --header-height: 48px;
+    --tags-view-height: 36px;
+    --content-padding: 12px;
+  }
 }

@@ -76,11 +76,11 @@ async function handleLogout() {
 .user-wrapper {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 4px 12px;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-xs) var(--spacing-md);
   cursor: pointer;
-  border-radius: 4px;
-  transition: all 0.3s;
+  border-radius: var(--border-radius-base);
+  transition: var(--transition-base);
 }
 
 .user-wrapper:hover {
@@ -89,7 +89,7 @@ async function handleLogout() {
 
 .user-name {
   max-width: 120px;
-  font-size: 14px;
+  font-size: var(--font-size-sm);
   color: var(--color-text-primary);
   overflow: hidden;
   text-overflow: ellipsis;
@@ -97,7 +97,7 @@ async function handleLogout() {
 }
 
 .dropdown-icon {
-  font-size: 12px;
+  font-size: var(--font-size-xs);
   color: var(--color-text-secondary);
   transition: transform 0.3s;
 }
@@ -109,11 +109,21 @@ async function handleLogout() {
 .el-dropdown-menu :deep(.el-dropdown-menu__item) {
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 8px 16px;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-sm) var(--spacing-md);
 }
 
 .el-dropdown-menu :deep(.el-icon) {
-  font-size: 16px;
+  font-size: var(--font-size-base);
+}
+
+@media (max-width: 768px) {
+  .user-name {
+    display: none;
+  }
+
+  .dropdown-icon {
+    display: none;
+  }
 }
 </style>

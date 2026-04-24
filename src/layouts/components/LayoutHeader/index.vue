@@ -21,15 +21,15 @@ import HeaderActions from './HeaderActions.vue'
 .layout-header {
   position: sticky;
   top: 0;
-  z-index: 1002;
+  z-index: var(--z-index-sticky);
   display: flex;
   align-items: center;
   justify-content: space-between;
-  height: 56px;
-  padding: 0 20px;
-  background-color: #fff;
+  height: var(--header-height);
+  padding: 0 var(--content-padding);
+  background-color: var(--color-white);
   border-bottom: 1px solid var(--color-border-base);
-  box-shadow: 0 1px 4px rgba(0, 21, 41, 0.08);
+  box-shadow: var(--shadow-small);
   flex-shrink: 0;
 }
 
@@ -42,26 +42,6 @@ import HeaderActions from './HeaderActions.vue'
 
 .header-right {
   flex-shrink: 0;
-  margin-left: 20px;
-}
-
-/* 覆盖 el-page-header 默认样式 */
-.header-left :deep(.el-page-header) {
-  height: 56px;
-  padding: 0;
-  line-height: 56px;
-}
-
-.header-left :deep(.el-page-header__content) {
-  height: 56px;
-  line-height: 56px;
-}
-
-.header-left :deep(.el-page-header__back) {
-  margin: 0;
-}
-
-.header-left :deep(.el-page-header__left) {
-  margin: 0;
+  margin-left: var(--spacing-lg);
 }
 </style>
