@@ -1,3 +1,8 @@
+/**
+ * 评论管理模块 API
+ * 基于 content-api.md 文档
+ */
+
 import { http } from '../request'
 import type {
   CommentQueryRequest,
@@ -6,18 +11,42 @@ import type {
   StatusUpdateRequest,
 } from '../types'
 
-export const commentApi = {
-  getComments: (params?: CommentQueryRequest) =>
-    http.get<PageResult<CommentVO>>('/sys/comments', params),
+/**
+ * 评论管理 API
+ * 提供评论的查询、状态修改和删除操作
+ */
+export class CommentApi {
+  /**
+   * 分页查询评论列表
+   * GET /api/sys/comments
+   */
+  static getComments(params?: CommentQueryRequest) {
+    return http.get<PageResult<CommentVO>>('/sys/comments', params)
+  }
 
-  getCommentById: (id: number) =>
-    http.get<CommentVO>(`/sys/comments/${id}`),
+  /**
+   * 查询评论详情
+   * GET /api/sys/comments/{id}
+   */
+  static getCommentById(id: number) {
+    return http.get<CommentVO>(`/sys/comments/${id}`)
+  }
 
-  updateCommentStatus: (id: number, data: StatusUpdateRequest) =>
-    http.put<void>(`/sys/comments/${id}/status`, data),
+  /**
+   * 修改评论状态
+   * PUT /api/sys/comments/{id}/status
+   */
+  static updateCommentStatus(id: number, data: StatusUpdateRequest) {
+    return http.put<void>(`/sys/comments/${id}/status`, data)
+  }
 
-  deleteComment: (id: number) =>
-    http.delete<void>(`/sys/comments/${id}`),
+  /**
+   * 删除评论
+   * DELETE /api/sys/comments/{id}
+   */
+  static deleteComment(id: number) {
+    return http.delete<void>(`/sys/comments/${id}`)
+  }
 }
 
-export default commentApi
+export default CommentApi

@@ -5,7 +5,7 @@
 
 import { ref } from 'vue'
 import { defineStore } from 'pinia'
-import { userApi } from '@/api/sys/user'
+import { UserApi } from '@/api/sys/user'
 import type {
   UserQueryRequest,
   SysUserAdminVO,
@@ -57,7 +57,7 @@ export const useUserStore = defineStore('user', () => {
   async function fetchUsers(params?: UserQueryRequest): Promise<void> {
     loading.value = true
     try {
-      const response = await userApi.getUsers(params)
+      const response = await UserApi.getUsers(params)
       const data = response.data.data as PageResult<SysUserAdminVO>
 
       users.value = data.records
@@ -74,7 +74,7 @@ export const useUserStore = defineStore('user', () => {
    */
   async function fetchUserById(id: number): Promise<SysUserAdminVO | null> {
     try {
-      const response = await userApi.getUserById(id)
+      const response = await UserApi.getUserById(id)
       currentUser.value = response.data.data
       return currentUser.value
     } catch {
@@ -87,7 +87,7 @@ export const useUserStore = defineStore('user', () => {
    */
   async function createUser(data: SysUserSaveRequest): Promise<boolean> {
     try {
-      await userApi.createUser(data)
+      await UserApi.createUser(data)
       return true
     } catch {
       return false
@@ -99,7 +99,7 @@ export const useUserStore = defineStore('user', () => {
    */
   async function updateUser(id: number, data: SysUserSaveRequest): Promise<boolean> {
     try {
-      await userApi.updateUser(id, data)
+      await UserApi.updateUser(id, data)
       return true
     } catch {
       return false
@@ -111,7 +111,7 @@ export const useUserStore = defineStore('user', () => {
    */
   async function updateUserStatus(id: number, data: StatusUpdateRequest): Promise<boolean> {
     try {
-      await userApi.updateUserStatus(id, data)
+      await UserApi.updateUserStatus(id, data)
       return true
     } catch {
       return false
@@ -123,7 +123,7 @@ export const useUserStore = defineStore('user', () => {
    */
   async function resetUserPassword(id: number, data: PasswordResetRequest): Promise<boolean> {
     try {
-      await userApi.resetUserPassword(id, data)
+      await UserApi.resetUserPassword(id, data)
       return true
     } catch {
       return false
@@ -135,7 +135,7 @@ export const useUserStore = defineStore('user', () => {
    */
   async function deleteUser(id: number): Promise<boolean> {
     try {
-      await userApi.deleteUser(id)
+      await UserApi.deleteUser(id)
       return true
     } catch {
       return false
@@ -147,7 +147,7 @@ export const useUserStore = defineStore('user', () => {
    */
   async function fetchUserRoles(id: number): Promise<number[]> {
     try {
-      const response = await userApi.getUserRoles(id)
+      const response = await UserApi.getUserRoles(id)
       return response.data.data
     } catch {
       return []
@@ -159,7 +159,7 @@ export const useUserStore = defineStore('user', () => {
    */
   async function assignUserRoles(id: number, data: UserRoleAssignRequest): Promise<boolean> {
     try {
-      await userApi.assignUserRoles(id, data)
+      await UserApi.assignUserRoles(id, data)
       return true
     } catch {
       return false

@@ -171,7 +171,7 @@
 <script lang="ts" setup>
 import { computed, reactive, ref, watch } from 'vue'
 import { ElMessage, type FormInstance, type FormRules } from 'element-plus'
-import { menuApi } from '@/api/sys/menu'
+import { MenuApi } from '@/api/sys/menu'
 import type { SysMenuAdminVO, SysMenuSaveRequest } from '@/api/types'
 import { MENU_TYPE_OPTIONS } from '@/utils'
 
@@ -392,7 +392,7 @@ function buildParentMenuOptions(
 async function loadMenuDetail(menuId: number): Promise<void> {
   detailLoading.value = true
   try {
-    const response = await menuApi.getMenuById(menuId)
+    const response = await MenuApi.getMenuById(menuId)
     const detail = response.data.data
     Object.assign(formData, {
       parentId: detail.parentId,
@@ -468,10 +468,10 @@ async function handleSubmit(): Promise<void> {
     }
 
     if (isEdit.value && props.menuId) {
-      await menuApi.updateMenu(props.menuId, payload)
+      await MenuApi.updateMenu(props.menuId, payload)
       ElMessage.success('菜单更新成功')
     } else {
-      await menuApi.createMenu(payload)
+      await MenuApi.createMenu(payload)
       ElMessage.success('菜单创建成功')
     }
 

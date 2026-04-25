@@ -1,6 +1,6 @@
 import { ref } from 'vue'
 import { defineStore } from 'pinia'
-import { footprintApi } from '@/api/sys/footprint'
+import { FootprintApi } from '@/api/sys/footprint'
 import type { FootprintQueryRequest, FootprintVO, PageResult } from '@/api/types'
 
 export const useFootprintStore = defineStore('footprint', () => {
@@ -14,7 +14,7 @@ export const useFootprintStore = defineStore('footprint', () => {
   async function fetchFootprints(params?: FootprintQueryRequest): Promise<void> {
     loading.value = true
     try {
-      const response = await footprintApi.getFootprints(params)
+      const response = await FootprintApi.getFootprints(params)
       const data = response.data.data as PageResult<FootprintVO>
 
       footprints.value = data.records
@@ -28,7 +28,7 @@ export const useFootprintStore = defineStore('footprint', () => {
 
   async function deleteFootprint(id: number): Promise<boolean> {
     try {
-      await footprintApi.deleteFootprint(id)
+      await FootprintApi.deleteFootprint(id)
       return true
     } catch {
       return false
@@ -38,7 +38,7 @@ export const useFootprintStore = defineStore('footprint', () => {
   async function clearFootprints(params?: FootprintQueryRequest): Promise<boolean> {
     clearing.value = true
     try {
-      await footprintApi.clearFootprints(params)
+      await FootprintApi.clearFootprints(params)
       return true
     } catch {
       return false

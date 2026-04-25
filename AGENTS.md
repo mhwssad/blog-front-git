@@ -47,4 +47,4 @@ Vue 组件优先使用 `script setup` + TypeScript。组件文件使用 PascalCa
 PR 应包含变更说明、关联任务或问题、UI 改动截图/录屏，以及接口或配置影响说明。
 
 ## 配置与文档说明
-新增环境变量时以 `.env.example` 为模板，不要提交敏感信息。`docs/` 目前包含 `auth-api.md`、`content-api.md`、`backend-menu-routing-convention.md`、`code-writing-convention.md`、`init.sql`；`docs/task/` 目前为空。
+新增环境变量时以 `.env.example` 为模板，不要提交敏感信息。`docs/` 目前包含 `auth-api.md`、`content-api.md`、`code-writing-convention.md`（含 Router 规范）、`init.sql`；`docs/task/` 目前为空。

@@ -5,7 +5,7 @@
 
 import { ref } from 'vue'
 import { defineStore } from 'pinia'
-import { roleApi } from '@/api/sys/role'
+import { RoleApi } from '@/api/sys/role'
 import type {
   RoleQueryRequest,
   SysRoleAdminVO,
@@ -56,7 +56,7 @@ export const useRoleStore = defineStore('role', () => {
   async function fetchRoles(params?: RoleQueryRequest): Promise<void> {
     loading.value = true
     try {
-      const response = await roleApi.getRoles(params)
+      const response = await RoleApi.getRoles(params)
       const data = response.data.data as PageResult<SysRoleAdminVO>
 
       roles.value = data.records
@@ -73,7 +73,7 @@ export const useRoleStore = defineStore('role', () => {
    */
   async function fetchRoleById(id: number): Promise<SysRoleAdminVO | null> {
     try {
-      const response = await roleApi.getRoleById(id)
+      const response = await RoleApi.getRoleById(id)
       currentRole.value = response.data.data
       return currentRole.value
     } catch {
@@ -86,7 +86,7 @@ export const useRoleStore = defineStore('role', () => {
    */
   async function createRole(data: SysRoleSaveRequest): Promise<boolean> {
     try {
-      await roleApi.createRole(data)
+      await RoleApi.createRole(data)
       return true
     } catch {
       return false
@@ -98,7 +98,7 @@ export const useRoleStore = defineStore('role', () => {
    */
   async function updateRole(id: number, data: SysRoleSaveRequest): Promise<boolean> {
     try {
-      await roleApi.updateRole(id, data)
+      await RoleApi.updateRole(id, data)
       return true
     } catch {
       return false
@@ -110,7 +110,7 @@ export const useRoleStore = defineStore('role', () => {
    */
   async function updateRoleStatus(id: number, data: StatusUpdateRequest): Promise<boolean> {
     try {
-      await roleApi.updateRoleStatus(id, data)
+      await RoleApi.updateRoleStatus(id, data)
       return true
     } catch {
       return false
@@ -122,7 +122,7 @@ export const useRoleStore = defineStore('role', () => {
    */
   async function deleteRole(id: number): Promise<boolean> {
     try {
-      await roleApi.deleteRole(id)
+      await RoleApi.deleteRole(id)
       return true
     } catch {
       return false
@@ -134,7 +134,7 @@ export const useRoleStore = defineStore('role', () => {
    */
   async function fetchRoleMenus(id: number): Promise<number[]> {
     try {
-      const response = await roleApi.getRoleMenus(id)
+      const response = await RoleApi.getRoleMenus(id)
       return response.data.data
     } catch {
       return []
@@ -146,7 +146,7 @@ export const useRoleStore = defineStore('role', () => {
    */
   async function assignRoleMenus(id: number, data: RoleMenuAssignRequest): Promise<boolean> {
     try {
-      await roleApi.assignRoleMenus(id, data)
+      await RoleApi.assignRoleMenus(id, data)
       return true
     } catch {
       return false

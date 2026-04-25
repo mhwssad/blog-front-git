@@ -1,3 +1,8 @@
+/**
+ * 文章管理模块 API
+ * 基于 content-api.md 文档
+ */
+
 import { http } from '../request'
 import type {
   ArticleAccessSaveRequest,
@@ -9,27 +14,66 @@ import type {
   StatusUpdateRequest,
 } from '../types'
 
-export const articleApi = {
-  getArticles: (params?: ArticleQueryRequest) =>
-    http.get<PageResult<ArticleAdminVO>>('/sys/articles', params),
+/**
+ * 文章管理 API
+ * 提供文章的增删改查和状态管理操作
+ */
+export class ArticleApi {
+  /**
+   * 分页查询文章列表
+   * GET /api/sys/articles
+   */
+  static getArticles(params?: ArticleQueryRequest) {
+    return http.get<PageResult<ArticleAdminVO>>('/sys/articles', params)
+  }
 
-  getArticleById: (id: number) =>
-    http.get<ArticleDetailVO>(`/sys/articles/${id}`),
+  /**
+   * 查询文章详情
+   * GET /api/sys/articles/{id}
+   */
+  static getArticleById(id: number) {
+    return http.get<ArticleDetailVO>(`/sys/articles/${id}`)
+  }
 
-  createArticle: (data: ArticleSaveRequest) =>
-    http.post<void>('/sys/articles', data),
+  /**
+   * 新增文章
+   * POST /api/sys/articles
+   */
+  static createArticle(data: ArticleSaveRequest) {
+    return http.post<void>('/sys/articles', data)
+  }
 
-  updateArticle: (id: number, data: ArticleSaveRequest) =>
-    http.put<void>(`/sys/articles/${id}`, data),
+  /**
+   * 修改文章
+   * PUT /api/sys/articles/{id}
+   */
+  static updateArticle(id: number, data: ArticleSaveRequest) {
+    return http.put<void>(`/sys/articles/${id}`, data)
+  }
 
-  updateArticleStatus: (id: number, data: StatusUpdateRequest) =>
-    http.put<void>(`/sys/articles/${id}/status`, data),
+  /**
+   * 修改文章状态
+   * PUT /api/sys/articles/{id}/status
+   */
+  static updateArticleStatus(id: number, data: StatusUpdateRequest) {
+    return http.put<void>(`/sys/articles/${id}/status`, data)
+  }
 
-  updateArticleAccess: (id: number, data: ArticleAccessSaveRequest) =>
-    http.put<void>(`/sys/articles/${id}/access`, data),
+  /**
+   * 修改文章访问权限
+   * PUT /api/sys/articles/{id}/access
+   */
+  static updateArticleAccess(id: number, data: ArticleAccessSaveRequest) {
+    return http.put<void>(`/sys/articles/${id}/access`, data)
+  }
 
-  deleteArticle: (id: number) =>
-    http.delete<void>(`/sys/articles/${id}`),
+  /**
+   * 删除文章
+   * DELETE /api/sys/articles/{id}
+   */
+  static deleteArticle(id: number) {
+    return http.delete<void>(`/sys/articles/${id}`)
+  }
 }
 
-export default articleApi
+export default ArticleApi

@@ -1,61 +1,67 @@
 # blog-front
 
-This template should help get you started developing with Vue 3 in Vite.
+博客前端项目，基于 Vue 3 + TypeScript + Vite + Element Plus 构建。前后端分离，前台展示博客内容，后台管理系统。
 
-## Recommended IDE Setup
+## 技术栈
 
-[VS Code](https://code.visualstudio.com/) + [Vue (Official)](https://marketplace.visualstudio.com/items?itemName=Vue.volar) (and disable Vetur).
+| 类别 | 技术 |
+| --- | --- |
+| 框架 | Vue 3.5 + TypeScript 6 |
+| 构建 | Vite 8 + UnoCSS |
+| UI | Element Plus 2 + @element-plus/icons-vue |
+| 状态管理 | Pinia 3 |
+| 路由 | Vue Router 5 |
+| 请求 | Axios（三层拦截器：请求/响应/Token 刷新） |
 
-## Recommended Browser Setup
+## 开发命令
 
-- Chromium-based browsers (Chrome, Edge, Brave, etc.):
-  - [Vue.js devtools](https://chromewebstore.google.com/detail/vuejs-devtools/nhdogjmejiglipccpnnnanhbledajbpd)
-  - [Turn on Custom Object Formatter in Chrome DevTools](http://bit.ly/object-formatters)
-- Firefox:
-  - [Vue.js devtools](https://addons.mozilla.org/en-US/firefox/addon/vue-js-devtools/)
-  - [Turn on Custom Object Formatter in Firefox DevTools](https://fxdx.dev/firefox-devtools-custom-object-formatters/)
-
-## Type Support for `.vue` Imports in TS
-
-TypeScript cannot handle type information for `.vue` imports by default, so we replace the `tsc` CLI with `vue-tsc` for type checking. In editors, we need [Volar](https://marketplace.visualstudio.com/items?itemName=Vue.volar) to make the TypeScript language service aware of `.vue` types.
-
-## Customize configuration
-
-See [Vite Configuration Reference](https://vite.dev/config/).
-
-## Project Setup
-
-```sh
-pnpm install
+```text
+pnpm dev          # 启动本地开发服务
+pnpm build        # 类型检查 + 生产构建
+pnpm build-only   # 仅构建
+pnpm type-check   # vue-tsc 类型检查
+pnpm lint         # Oxlint + ESLint 自动修复
+pnpm format       # Prettier 格式化 src/
 ```
 
-### Compile and Hot-Reload for Development
+## Mock 调试
 
-```sh
-pnpm dev
-```
-
-### Mock 调试
-
-- 当前项目默认启用全量 Mock 数据，开发和当前生产配置都使用 `VITE_ENABLE_MOCK=true`
-- Mock 已按领域拆分在 `mock/*.mock.ts`，共用逻辑在 `mock/shared.ts`，测试数据在 `mock/test-data.json`
+- 默认启用全量 Mock 数据（`VITE_ENABLE_MOCK=true`）
+- Mock 按领域拆分：`mock/*.mock.ts`，共用逻辑在 `mock/shared.ts`，测试数据在 `mock/test-data.json`
 - 默认测试账号：`admin / admin123`、`editor / editor123`、`tester / tester123`
-- 如需联调真实后端，设置 `VITE_ENABLE_MOCK=false`，并把 `VITE_DEV_PROXY_TARGET` 指向后端地址
+- 联调真实后端：`VITE_ENABLE_MOCK=false`，设置 `VITE_DEV_PROXY_TARGET` 指向后端地址
 
-### Type-Check, Compile and Minify for Production
+## 项目结构
 
-```sh
-pnpm build
+```text
+src/
+├── views/           # 页面视图
+│   ├── admin/       # 后台管理页面
+│   ├── front/       # 前台用户页面
+│   └── common/      # 登录、注册、错误页
+├── components/      # 全局通用组件
+├── layouts/         # 布局组件（AdminLayouts 等）
+├── api/             # 接口层
+│   ├── auth.ts      # 认证接口
+│   ├── request/     # Axios 实例 + 拦截器
+│   ├── sys/         # 后台管理接口
+│   └── user/        # 用户侧接口
+├── stores/          # Pinia Store
+│   ├── auth.ts      # 认证态
+│   └── modules/     # 业务域 store
+├── router/          # 路由（固定 + 动态）
+├── plugins/         # v-permission 指令、Element Plus 图标
+├── composables/     # 组合式函数
+├── utils/           # 工具函数
+└── styles/          # 全局样式
 ```
 
-### Lint with [ESLint](https://eslint.org/)
+后台动态路由由后端菜单驱动，前端根据 `GET /api/auth/current-user-menus` 动态注册。
 
-```sh
-pnpm lint
-```
-
-## Project Docs
+## 项目文档
 
 - [前端项目结构与编写规范](./docs/project-structure-convention.md)
-- [前端代码编写规范](./docs/code-writing-convention.md)
-- [后端菜单驱动路由规范](./docs/backend-menu-routing-convention.md)
+- [前端代码编写规范（含 Router 规范）](./docs/code-writing-convention.md)
+- [前端开发文档集](./docs/前端/README.md) — 页面设计、API 端点、数据模型、错误码
+- [API 接口文档](./docs/api文档/README.md)
+- [开发协作规范](./AGENTS.md)

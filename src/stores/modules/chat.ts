@@ -1,6 +1,6 @@
 import { ref } from 'vue'
 import { defineStore } from 'pinia'
-import { sysChatApi } from '@/api/sys/chat'
+import { SysChatApi } from '@/api/sys/chat'
 import type {
   ChatConversationVO,
   ChatGroupMemberVO,
@@ -35,7 +35,7 @@ export const useChatStore = defineStore('admin-chat', () => {
   async function fetchConversations(params?: SysChatConversationQueryRequest): Promise<void> {
     conversationLoading.value = true
     try {
-      const response = await sysChatApi.getConversations(params)
+      const response = await SysChatApi.getConversations(params)
       const data = response.data.data as PageResult<ChatConversationVO>
 
       conversations.value = data.records
@@ -48,7 +48,7 @@ export const useChatStore = defineStore('admin-chat', () => {
   async function fetchConversationDetail(conversationId: number): Promise<ChatConversationVO | null> {
     detailLoading.value = true
     try {
-      const response = await sysChatApi.getConversationById(conversationId)
+      const response = await SysChatApi.getConversationById(conversationId)
       conversationDetail.value = response.data.data
       return conversationDetail.value
     } finally {
@@ -59,7 +59,7 @@ export const useChatStore = defineStore('admin-chat', () => {
   async function fetchConversationMembers(conversationId: number): Promise<void> {
     memberLoading.value = true
     try {
-      const response = await sysChatApi.getConversationMembers(conversationId)
+      const response = await SysChatApi.getConversationMembers(conversationId)
       members.value = response.data.data ?? []
     } finally {
       memberLoading.value = false
@@ -72,7 +72,7 @@ export const useChatStore = defineStore('admin-chat', () => {
   ): Promise<void> {
     messageLoading.value = true
     try {
-      const response = await sysChatApi.getMessages(conversationId, params)
+      const response = await SysChatApi.getMessages(conversationId, params)
       const data = response.data.data as PageResult<ChatMessageVO>
 
       messages.value = data.records
@@ -88,7 +88,7 @@ export const useChatStore = defineStore('admin-chat', () => {
   ): Promise<ChatMessageVO | null> {
     detailLoading.value = true
     try {
-      const response = await sysChatApi.getMessageById(conversationId, messageId)
+      const response = await SysChatApi.getMessageById(conversationId, messageId)
       messageDetail.value = response.data.data
       return messageDetail.value
     } finally {
@@ -103,7 +103,7 @@ export const useChatStore = defineStore('admin-chat', () => {
   ): Promise<void> {
     receiptLoading.value = true
     try {
-      const response = await sysChatApi.getMessageReceipts(conversationId, messageId, params)
+      const response = await SysChatApi.getMessageReceipts(conversationId, messageId, params)
       const data = response.data.data as PageResult<SysChatReceiptVO>
 
       receipts.value = data.records
@@ -119,7 +119,7 @@ export const useChatStore = defineStore('admin-chat', () => {
     payload: SysChatMemberRoleUpdateRequest
   ): Promise<boolean> {
     try {
-      await sysChatApi.updateMemberRole(conversationId, memberUserId, payload)
+      await SysChatApi.updateMemberRole(conversationId, memberUserId, payload)
       return true
     } catch {
       return false
@@ -132,7 +132,7 @@ export const useChatStore = defineStore('admin-chat', () => {
     payload: SysChatMemberStatusUpdateRequest
   ): Promise<boolean> {
     try {
-      await sysChatApi.updateMemberStatus(conversationId, memberUserId, payload)
+      await SysChatApi.updateMemberStatus(conversationId, memberUserId, payload)
       return true
     } catch {
       return false
@@ -145,7 +145,7 @@ export const useChatStore = defineStore('admin-chat', () => {
     payload: ChatGroupMuteRequest
   ): Promise<boolean> {
     try {
-      await sysChatApi.updateMemberMute(conversationId, memberUserId, payload)
+      await SysChatApi.updateMemberMute(conversationId, memberUserId, payload)
       return true
     } catch {
       return false
@@ -154,7 +154,7 @@ export const useChatStore = defineStore('admin-chat', () => {
 
   async function revokeMessage(conversationId: number, messageId: number): Promise<boolean> {
     try {
-      await sysChatApi.revokeMessage(conversationId, messageId)
+      await SysChatApi.revokeMessage(conversationId, messageId)
       return true
     } catch {
       return false
@@ -166,7 +166,7 @@ export const useChatStore = defineStore('admin-chat', () => {
     payload: SysChatConversationStatusUpdateRequest
   ): Promise<boolean> {
     try {
-      await sysChatApi.updateConversationStatus(conversationId, payload)
+      await SysChatApi.updateConversationStatus(conversationId, payload)
       return true
     } catch {
       return false

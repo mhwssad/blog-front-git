@@ -1,6 +1,6 @@
 import { ref } from 'vue'
 import { defineStore } from 'pinia'
-import { categoryApi } from '@/api/sys/category'
+import { CategoryApi } from '@/api/sys/category'
 import type {
   CategoryAdminVO,
   CategorySaveRequest,
@@ -15,7 +15,7 @@ export const useCategoryStore = defineStore('category', () => {
   async function fetchCategoryTree(): Promise<void> {
     loading.value = true
     try {
-      const response = await categoryApi.getCategoryTree()
+      const response = await CategoryApi.getCategoryTree()
       categories.value = response.data.data
     } finally {
       loading.value = false
@@ -24,7 +24,7 @@ export const useCategoryStore = defineStore('category', () => {
 
   async function fetchCategoryById(id: number): Promise<CategoryAdminVO | null> {
     try {
-      const response = await categoryApi.getCategoryById(id)
+      const response = await CategoryApi.getCategoryById(id)
       currentCategory.value = response.data.data
       return currentCategory.value
     } catch {
@@ -34,7 +34,7 @@ export const useCategoryStore = defineStore('category', () => {
 
   async function createCategory(data: CategorySaveRequest): Promise<boolean> {
     try {
-      await categoryApi.createCategory(data)
+      await CategoryApi.createCategory(data)
       return true
     } catch {
       return false
@@ -43,7 +43,7 @@ export const useCategoryStore = defineStore('category', () => {
 
   async function updateCategory(id: number, data: CategorySaveRequest): Promise<boolean> {
     try {
-      await categoryApi.updateCategory(id, data)
+      await CategoryApi.updateCategory(id, data)
       return true
     } catch {
       return false
@@ -52,7 +52,7 @@ export const useCategoryStore = defineStore('category', () => {
 
   async function updateCategoryStatus(id: number, data: StatusUpdateRequest): Promise<boolean> {
     try {
-      await categoryApi.updateCategoryStatus(id, data)
+      await CategoryApi.updateCategoryStatus(id, data)
       return true
     } catch {
       return false
@@ -61,7 +61,7 @@ export const useCategoryStore = defineStore('category', () => {
 
   async function deleteCategory(id: number): Promise<boolean> {
     try {
-      await categoryApi.deleteCategory(id)
+      await CategoryApi.deleteCategory(id)
       return true
     } catch {
       return false

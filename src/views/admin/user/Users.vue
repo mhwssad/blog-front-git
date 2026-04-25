@@ -210,7 +210,7 @@
 import { computed, onBeforeUnmount, onMounted, reactive, ref } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { Plus } from '@element-plus/icons-vue'
-import { userApi } from '@/api/sys/user'
+import { UserApi } from '@/api/sys/user'
 import type { SysUserAdminVO, UserQueryRequest } from '@/api/types'
 import { useTableHeight } from '@/composables/useTableHeight'
 import UserFormDialog from './components/UserFormDialog.vue'
@@ -271,7 +271,7 @@ function updateViewportState() {
 async function fetchUsers() {
   loading.value = true
   try {
-    const response = await userApi.getUsers({
+    const response = await UserApi.getUsers({
       ...searchForm,
       current: pagination.current,
       size: pagination.size
@@ -332,7 +332,7 @@ function handleEdit(row: SysUserAdminVO) {
 // 状态变更
 async function handleStatusChange(row: SysUserAdminVO) {
   try {
-    await userApi.updateUserStatus(row.id, { status: row.status })
+    await UserApi.updateUserStatus(row.id, { status: row.status })
     ElMessage.success('状态更新成功')
   } catch {
     row.status = row.status === 1 ? 0 : 1 // 回滚
@@ -363,7 +363,7 @@ async function handleDelete(row: SysUserAdminVO) {
       type: 'warning'
     })
 
-    await userApi.deleteUser(row.id)
+    await UserApi.deleteUser(row.id)
     ElMessage.success('删除成功')
     fetchUsers()
   } catch {

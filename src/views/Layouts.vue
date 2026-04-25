@@ -119,12 +119,12 @@ import {
   Monitor,
   User,
 } from '@element-plus/icons-vue'
-import { articleApi } from '@/api/sys/article'
-import { sysChatApi } from '@/api/sys/chat'
-import { sysFileApi } from '@/api/sys/file'
-import { sysFollowApi } from '@/api/sys/follow'
-import { noticeApi } from '@/api/sys/notice'
-import { userApi } from '@/api/sys/user'
+import { ArticleApi } from '@/api/sys/article'
+import { SysChatApi } from '@/api/sys/chat'
+import { SysFileApi } from '@/api/sys/file'
+import { SysFollowApi } from '@/api/sys/follow'
+import { NoticeApi } from '@/api/sys/notice'
+import { UserApi } from '@/api/sys/user'
 import { flattenMenus } from '@/router/menu'
 import { useAuthStore } from '@/stores'
 
@@ -290,14 +290,14 @@ function goFirstShortcut(): void {
 
 async function refreshDashboard(): Promise<void> {
   const results = await Promise.allSettled([
-    userApi.getUsers({ current: 1, size: 1 }),
-    articleApi.getArticles({ current: 1, size: 1 }),
-    sysFileApi.getFiles({ current: 1, size: 1 }),
-    sysChatApi.getConversations({ current: 1, size: 1 }),
-    sysFollowApi.getFollows({ current: 1, size: 1, followStatus: 2 }),
-    sysFileApi.getUploadTasks({ current: 1, size: 1, taskStatus: 3 }),
-    sysChatApi.getConversations({ current: 1, size: 1, status: 0 }),
-    noticeApi.getNotices({ current: 1, size: 3 }),
+    UserApi.getUsers({ current: 1, size: 1 }),
+    ArticleApi.getArticles({ current: 1, size: 1 }),
+    SysFileApi.getFiles({ current: 1, size: 1 }),
+    SysChatApi.getConversations({ current: 1, size: 1 }),
+    SysFollowApi.getFollows({ current: 1, size: 1, followStatus: 2 }),
+    SysFileApi.getUploadTasks({ current: 1, size: 1, taskStatus: 3 }),
+    SysChatApi.getConversations({ current: 1, size: 1, status: 0 }),
+    NoticeApi.getNotices({ current: 1, size: 3 }),
   ])
 
   const getTotal = (index: number) => {

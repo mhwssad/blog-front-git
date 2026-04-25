@@ -4,58 +4,60 @@
  */
 
 import { http } from '../request'
-import type {
-  ConfigQueryRequest,
-  SysConfigAdminVO,
-  SysConfigSaveRequest,
-  PageResult
-} from '../types'
+import type { ConfigQueryRequest, SysConfigAdminVO, SysConfigSaveRequest, PageResult } from '../types'
 
 /**
  * 配置管理 API
+ * 提供系统配置的增删改查操作
  */
-export const configApi = {
+export class ConfigApi {
   /**
-   * 5.1 分页查询配置
+   * 5.1 分页查询配置列表
    * GET /api/sys/configs
    */
-  getConfigs: (params?: ConfigQueryRequest) =>
-    http.get<PageResult<SysConfigAdminVO>>('/sys/configs', params),
+  static getConfigs(params?: ConfigQueryRequest) {
+    return http.get<PageResult<SysConfigAdminVO>>('/sys/configs', params)
+  }
 
   /**
    * 5.2 查询配置详情
    * GET /api/sys/configs/{id}
    */
-  getConfigById: (id: number) =>
-    http.get<SysConfigAdminVO>(`/sys/configs/${id}`),
+  static getConfigById(id: number) {
+    return http.get<SysConfigAdminVO>(`/sys/configs/${id}`)
+  }
 
   /**
    * 5.3 新增配置
    * POST /api/sys/configs
    */
-  createConfig: (data: SysConfigSaveRequest) =>
-    http.post<void>('/sys/configs', data),
+  static createConfig(data: SysConfigSaveRequest) {
+    return http.post<void>('/sys/configs', data)
+  }
 
   /**
    * 5.4 修改配置
    * PUT /api/sys/configs/{id}
    */
-  updateConfig: (id: number, data: SysConfigSaveRequest) =>
-    http.put<void>(`/sys/configs/${id}`, data),
+  static updateConfig(id: number, data: SysConfigSaveRequest) {
+    return http.put<void>(`/sys/configs/${id}`, data)
+  }
 
   /**
    * 5.5 删除配置
    * DELETE /api/sys/configs/{id}
    */
-  deleteConfig: (id: number) =>
-    http.delete<void>(`/sys/configs/${id}`),
+  static deleteConfig(id: number) {
+    return http.delete<void>(`/sys/configs/${id}`)
+  }
 
   /**
    * 5.6 按配置键查询配置值
    * GET /api/sys/configs/key/{configKey}
    */
-  getConfigByKey: (configKey: string) =>
-    http.get<string>(`/sys/configs/key/${configKey}`)
+  static getConfigByKey(configKey: string) {
+    return http.get<string>(`/sys/configs/key/${configKey}`)
+  }
 }
 
-export default configApi
+export default ConfigApi

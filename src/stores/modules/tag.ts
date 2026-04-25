@@ -1,6 +1,6 @@
 import { ref } from 'vue'
 import { defineStore } from 'pinia'
-import { tagApi } from '@/api/sys/tag'
+import { TagApi } from '@/api/sys/tag'
 import type { TagSaveRequest, TagVO } from '@/api/types'
 
 export const useTagStore = defineStore('tag', () => {
@@ -11,7 +11,7 @@ export const useTagStore = defineStore('tag', () => {
   async function fetchTags(): Promise<void> {
     loading.value = true
     try {
-      const response = await tagApi.getTags()
+      const response = await TagApi.getTags()
       tags.value = response.data.data
     } finally {
       loading.value = false
@@ -20,7 +20,7 @@ export const useTagStore = defineStore('tag', () => {
 
   async function fetchTagById(id: number): Promise<TagVO | null> {
     try {
-      const response = await tagApi.getTagById(id)
+      const response = await TagApi.getTagById(id)
       currentTag.value = response.data.data
       return currentTag.value
     } catch {
@@ -30,7 +30,7 @@ export const useTagStore = defineStore('tag', () => {
 
   async function createTag(data: TagSaveRequest): Promise<boolean> {
     try {
-      await tagApi.createTag(data)
+      await TagApi.createTag(data)
       return true
     } catch {
       return false
@@ -39,7 +39,7 @@ export const useTagStore = defineStore('tag', () => {
 
   async function updateTag(id: number, data: TagSaveRequest): Promise<boolean> {
     try {
-      await tagApi.updateTag(id, data)
+      await TagApi.updateTag(id, data)
       return true
     } catch {
       return false
@@ -48,7 +48,7 @@ export const useTagStore = defineStore('tag', () => {
 
   async function deleteTag(id: number): Promise<boolean> {
     try {
-      await tagApi.deleteTag(id)
+      await TagApi.deleteTag(id)
       return true
     } catch {
       return false

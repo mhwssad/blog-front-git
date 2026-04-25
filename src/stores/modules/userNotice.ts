@@ -5,7 +5,7 @@
 
 import { ref, computed } from 'vue'
 import { defineStore } from 'pinia'
-import { userNoticeApi, type UserNoticeQueryRequest } from '@/api/user/notice'
+import { UserNoticeApi, type UserNoticeQueryRequest } from '@/api/user/notice'
 import type { UserNoticeVO, PageResult } from '@/api/types'
 
 export const useUserNoticeStore = defineStore('userNotice', () => {
@@ -59,7 +59,7 @@ export const useUserNoticeStore = defineStore('userNotice', () => {
   async function fetchMyNotices(params?: UserNoticeQueryRequest): Promise<void> {
     loading.value = true
     try {
-      const response = await userNoticeApi.getMyNotices(params)
+      const response = await UserNoticeApi.getMyNotices(params)
       const data = response.data.data as PageResult<UserNoticeVO>
 
       myNotices.value = data.records
@@ -76,7 +76,7 @@ export const useUserNoticeStore = defineStore('userNotice', () => {
    */
   async function fetchMyNoticeById(id: number): Promise<UserNoticeVO | null> {
     try {
-      const response = await userNoticeApi.getMyNoticeById(id)
+      const response = await UserNoticeApi.getMyNoticeById(id)
       currentNotice.value = response.data.data
       // 获取详情后刷新未读数
       await fetchUnreadCount()
@@ -91,7 +91,7 @@ export const useUserNoticeStore = defineStore('userNotice', () => {
    */
   async function fetchUnreadCount(): Promise<void> {
     try {
-      const response = await userNoticeApi.getUnreadCount()
+      const response = await UserNoticeApi.getUnreadCount()
       unreadCount.value = response.data.data
     } catch {
       unreadCount.value = 0
@@ -103,7 +103,7 @@ export const useUserNoticeStore = defineStore('userNotice', () => {
    */
   async function markAsRead(id: number): Promise<boolean> {
     try {
-      await userNoticeApi.markAsRead(id)
+      await UserNoticeApi.markAsRead(id)
       // 更新本地状态
       const notice = myNotices.value.find(n => n.id === id)
       if (notice) {
@@ -122,7 +122,7 @@ export const useUserNoticeStore = defineStore('userNotice', () => {
    */
   async function markAllAsRead(): Promise<boolean> {
     try {
-      await userNoticeApi.markAllAsRead()
+      await UserNoticeApi.markAllAsRead()
       // 更新本地状态
       myNotices.value.forEach(notice => {
         notice.isRead = 1

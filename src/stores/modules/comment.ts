@@ -1,6 +1,6 @@
 import { ref } from 'vue'
 import { defineStore } from 'pinia'
-import { commentApi } from '@/api/sys/comment'
+import { CommentApi } from '@/api/sys/comment'
 import type {
   CommentQueryRequest,
   CommentVO,
@@ -19,7 +19,7 @@ export const useCommentStore = defineStore('comment', () => {
   async function fetchComments(params?: CommentQueryRequest): Promise<void> {
     loading.value = true
     try {
-      const response = await commentApi.getComments(params)
+      const response = await CommentApi.getComments(params)
       const data = response.data.data as PageResult<CommentVO>
 
       comments.value = data.records
@@ -33,7 +33,7 @@ export const useCommentStore = defineStore('comment', () => {
 
   async function fetchCommentById(id: number): Promise<CommentVO | null> {
     try {
-      const response = await commentApi.getCommentById(id)
+      const response = await CommentApi.getCommentById(id)
       currentComment.value = response.data.data
       return currentComment.value
     } catch {
@@ -43,7 +43,7 @@ export const useCommentStore = defineStore('comment', () => {
 
   async function updateCommentStatus(id: number, data: StatusUpdateRequest): Promise<boolean> {
     try {
-      await commentApi.updateCommentStatus(id, data)
+      await CommentApi.updateCommentStatus(id, data)
       return true
     } catch {
       return false
@@ -52,7 +52,7 @@ export const useCommentStore = defineStore('comment', () => {
 
   async function deleteComment(id: number): Promise<boolean> {
     try {
-      await commentApi.deleteComment(id)
+      await CommentApi.deleteComment(id)
       return true
     } catch {
       return false

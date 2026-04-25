@@ -49,7 +49,7 @@
 <script lang="ts" setup>
 import { computed, reactive, ref, watch } from 'vue'
 import { ElMessage, type FormInstance } from 'element-plus'
-import { roleApi } from '@/api/sys/role'
+import { RoleApi } from '@/api/sys/role'
 import type { SysRoleSaveRequest } from '@/api/types'
 
 interface Props {
@@ -112,7 +112,7 @@ function handleCodeInput(value: string | number): void {
 
 async function loadRoleDetail(roleId: number): Promise<void> {
   try {
-    const response = await roleApi.getRoleById(roleId)
+    const response = await RoleApi.getRoleById(roleId)
     const role = response.data.data
 
     Object.assign(formData, {
@@ -133,10 +133,10 @@ async function handleSubmit(): Promise<void> {
     submitting.value = true
 
     if (isEdit.value && props.roleId) {
-      await roleApi.updateRole(props.roleId, formData)
+      await RoleApi.updateRole(props.roleId, formData)
       ElMessage.success('更新成功')
     } else {
-      await roleApi.createRole(formData)
+      await RoleApi.createRole(formData)
       ElMessage.success('创建成功')
     }
 

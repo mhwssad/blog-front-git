@@ -108,7 +108,7 @@
 <script lang="ts" setup>
 import { ref, reactive, computed, watch } from 'vue'
 import { ElMessage } from 'element-plus'
-import { userApi } from '@/api/sys/user'
+import { UserApi } from '@/api/sys/user'
 import type { SysUserSaveRequest } from '@/api/types'
 
 interface Props {
@@ -173,7 +173,7 @@ watch(
   async (id) => {
     if (id) {
       try {
-        const response = await userApi.getUserById(id)
+        const response = await UserApi.getUserById(id)
         const user = response.data.data
         Object.assign(formData, {
           username: user.username,
@@ -232,10 +232,10 @@ async function handleSubmit() {
     submitting.value = true
 
     if (isEdit.value && props.userId) {
-      await userApi.updateUser(props.userId, formData)
+      await UserApi.updateUser(props.userId, formData)
       ElMessage.success('更新成功')
     } else {
-      await userApi.createUser(formData)
+      await UserApi.createUser(formData)
       ElMessage.success('创建成功')
     }
 

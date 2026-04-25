@@ -1,3 +1,8 @@
+/**
+ * 角色管理模块 API
+ * 基于 auth-api.md 文档 第3节
+ */
+
 import { http } from '../request'
 import type {
   RoleQueryRequest,
@@ -10,58 +15,72 @@ import type {
 
 /**
  * 角色管理 API
+ * 提供角色的增删改查和菜单分配操作
  */
-export const roleApi = {
+export class RoleApi {
   /**
-   * 3.1 分页查询角色
+   * 3.1 分页查询角色列表
    * GET /api/sys/roles
    */
-  getRoles: (params?: RoleQueryRequest) =>
-    http.get<PageResult<SysRoleAdminVO>>('/sys/roles', params),
+  static getRoles(params?: RoleQueryRequest) {
+    return http.get<PageResult<SysRoleAdminVO>>('/sys/roles', params)
+  }
 
   /**
    * 3.2 查询角色详情
    * GET /api/sys/roles/{id}
    */
-  getRoleById: (id: number) => http.get<SysRoleAdminVO>(`/sys/roles/${id}`),
+  static getRoleById(id: number) {
+    return http.get<SysRoleAdminVO>(`/sys/roles/${id}`)
+  }
 
   /**
    * 3.3 新增角色
    * POST /api/sys/roles
    */
-  createRole: (data: SysRoleSaveRequest) => http.post<void>('/sys/roles', data),
+  static createRole(data: SysRoleSaveRequest) {
+    return http.post<void>('/sys/roles', data)
+  }
 
   /**
    * 3.4 修改角色
    * PUT /api/sys/roles/{id}
    */
-  updateRole: (id: number, data: SysRoleSaveRequest) => http.put<void>(`/sys/roles/${id}`, data),
+  static updateRole(id: number, data: SysRoleSaveRequest) {
+    return http.put<void>(`/sys/roles/${id}`, data)
+  }
 
   /**
    * 3.5 修改角色状态
    * PUT /api/sys/roles/{id}/status
    */
-  updateRoleStatus: (id: number, data: StatusUpdateRequest) =>
-    http.put<void>(`/sys/roles/${id}/status`, data),
+  static updateRoleStatus(id: number, data: StatusUpdateRequest) {
+    return http.put<void>(`/sys/roles/${id}/status`, data)
+  }
 
   /**
    * 3.6 删除角色
    * DELETE /api/sys/roles/{id}
    */
-  deleteRole: (id: number) => http.delete<void>(`/sys/roles/${id}`),
+  static deleteRole(id: number) {
+    return http.delete<void>(`/sys/roles/${id}`)
+  }
 
   /**
-   * 3.7 查询角色菜单
+   * 3.7 查询角色菜单列表
    * GET /api/sys/roles/{id}/menus
    */
-  getRoleMenus: (id: number) => http.get<number[]>(`/sys/roles/${id}/menus`),
+  static getRoleMenus(id: number) {
+    return http.get<number[]>(`/sys/roles/${id}/menus`)
+  }
 
   /**
    * 3.8 分配角色菜单
    * PUT /api/sys/roles/{id}/menus
    */
-  assignRoleMenus: (id: number, data: RoleMenuAssignRequest) =>
-    http.put<void>(`/sys/roles/${id}/menus`, data),
+  static assignRoleMenus(id: number, data: RoleMenuAssignRequest) {
+    return http.put<void>(`/sys/roles/${id}/menus`, data)
+  }
 }
 
-export default roleApi
+export default RoleApi

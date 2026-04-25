@@ -1,6 +1,6 @@
 import { ref } from 'vue'
 import { defineStore } from 'pinia'
-import { sysFollowApi } from '@/api/sys/follow'
+import { SysFollowApi } from '@/api/sys/follow'
 import type {
   FollowAdminQueryRequest,
   FollowAdminRelationVO,
@@ -19,7 +19,7 @@ export const useFollowStore = defineStore('follow', () => {
   async function fetchFollows(params?: FollowAdminQueryRequest): Promise<void> {
     loading.value = true
     try {
-      const response = await sysFollowApi.getFollows(params)
+      const response = await SysFollowApi.getFollows(params)
       const data = response.data.data as PageResult<FollowAdminRelationVO>
 
       relations.value = data.records
@@ -34,7 +34,7 @@ export const useFollowStore = defineStore('follow', () => {
   async function cleanFollows(payload: FollowRelationCleanRequest): Promise<number> {
     cleaning.value = true
     try {
-      const response = await sysFollowApi.cleanFollows(payload)
+      const response = await SysFollowApi.cleanFollows(payload)
       return Number(response.data.data ?? 0)
     } finally {
       cleaning.value = false

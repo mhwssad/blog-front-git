@@ -50,8 +50,8 @@
 <script lang="ts" setup>
 import { ref, watch, computed } from 'vue'
 import { ElMessage } from 'element-plus'
-import { userApi } from '@/api/sys/user'
-import { roleApi } from '@/api/sys/role'
+import { UserApi } from '@/api/sys/user'
+import { RoleApi } from '@/api/sys/role'
 import type { SysRoleAdminVO } from '@/api/types'
 
 interface Props {
@@ -86,7 +86,7 @@ const selectedRoleIds = ref<number[]>([])
 async function fetchRoles() {
   loading.value = true
   try {
-    const response = await roleApi.getRoles({ size: 1000 })
+    const response = await RoleApi.getRoles({ size: 1000 })
     allRoles.value = response.data.data.records
   } catch {
     ElMessage.error('获取角色列表失败')
@@ -100,7 +100,7 @@ async function fetchUserRoles() {
   if (!props.userId) return
 
   try {
-    const response = await userApi.getUserRoles(props.userId)
+    const response = await UserApi.getUserRoles(props.userId)
     selectedRoleIds.value = response.data.data
   } catch {
     ElMessage.error('获取用户角色失败')
@@ -111,7 +111,7 @@ async function fetchUserRoles() {
 async function handleSubmit() {
   submitting.value = true
   try {
-    await userApi.assignUserRoles(props.userId, {
+    await UserApi.assignUserRoles(props.userId, {
       roleIds: selectedRoleIds.value
     })
     ElMessage.success('角色分配成功')

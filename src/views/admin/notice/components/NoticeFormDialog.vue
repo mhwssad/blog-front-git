@@ -48,7 +48,7 @@
 <script lang="ts" setup>
 import { computed, reactive, ref, watch } from 'vue'
 import { ElMessage, type FormInstance, type FormRules } from 'element-plus'
-import { noticeApi } from '@/api/sys/notice'
+import { NoticeApi } from '@/api/sys/notice'
 import type { SysNoticeSaveRequest } from '@/api/types'
 import { NOTICE_TYPE_OPTIONS } from '@/utils'
 
@@ -100,7 +100,7 @@ function resetForm(): void {
 async function loadNoticeDetail(noticeId: number): Promise<void> {
   detailLoading.value = true
   try {
-    const response = await noticeApi.getNoticeById(noticeId)
+    const response = await NoticeApi.getNoticeById(noticeId)
     const detail = response.data.data
     Object.assign(formData, {
       title: detail.title,
@@ -126,10 +126,10 @@ async function handleSubmit(): Promise<void> {
     }
 
     if (isEdit.value && props.noticeId) {
-      await noticeApi.updateNotice(props.noticeId, payload)
+      await NoticeApi.updateNotice(props.noticeId, payload)
       ElMessage.success('通知更新成功')
     } else {
-      await noticeApi.createNotice(payload)
+      await NoticeApi.createNotice(payload)
       ElMessage.success('通知创建成功')
     }
 

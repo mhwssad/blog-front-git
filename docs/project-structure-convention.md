@@ -16,7 +16,7 @@
 
 - `AGENTS.md`：仓库级开发摘要、命令、基础协作要求
 - `docs/code-writing-convention.md`：约束代码书写风格、组件写法和分层写法
-- `docs/backend-menu-routing-convention.md`：约束后端菜单与前端动态路由映射
+- `docs/code-writing-convention.md` 的 Router 规范章节：约束后端菜单与前端动态路由映射
 - `docs/api文档/*`：约束接口路由、字段和业务行为
 
 优先级说明：
@@ -60,7 +60,7 @@
 - `src/stores/`：Pinia Store
 - `src/router/`：固定路由、动态路由、菜单映射、守卫
 - `src/composables/`：可复用组合式逻辑
-- `src/plugins/`：应用级插件注册
+- `src/plugins/`：应用级插件注册（v-permission 指令、Element Plus 图标）
 - `src/config/`：应用配置聚合
 - `src/utils/`：基础工具、格式化、日志、存储等工具能力
 - `src/styles/`：全局样式、变量和主题相关样式
@@ -116,19 +116,18 @@
 
 `src/api/` 的结构和职责固定如下：
 
-- `auth.ts`：认证相关接口
-- `content.ts`：公开内容接口
-- `follow.ts`：公开关注关系接口
-- `user/*`：登录用户侧接口
-- `sys/*`：后台管理接口
-- `request/`：Axios 实例、拦截器、请求工具
-- `types.ts`：统一接口类型定义
+- `auth.ts`：认证相关接口（登录、注册、Token 刷新、退出）
+- `content.ts`：公开内容接口（文章/分类/标签/评论的公开查询）
+- `request/`：Axios 实例、三层拦截器（请求/响应/Token 刷新）、请求工具函数
+- `types.ts`：统一接口类型定义（ApiResponse、ApiError、AuthMenuInfo 等）
+- `user/*`：登录用户侧接口（article、category、chat、collection、comment、file、follow、footprint、interaction、content）
+- `sys/*`：后台管理接口（user、role、menu、config、notice、log、article、category、tag、comment、collection、interaction、footprint、chat、file、follow）
 
 约束如下：
 
 - API 模块只负责请求发起、响应类型和必要的兼容归一化
 - 禁止在 API 文件里写页面状态处理
-- 公开接口放顶层，用户接口放 `user/`，后台接口放 `sys/`
+- 公开接口放顶层（auth.ts、content.ts），用户接口放 `user/`，后台接口放 `sys/`
 - 统一复用 `src/api/types.ts` 中的公共类型
 - 非常局部、只在单一文件使用的类型才允许定义在当前文件
 - 新增接口域时必须同步新增对应 API 模块，不允许把多个无关领域堆在同一文件
@@ -185,14 +184,17 @@
 
 当前 `mock/` 已采用按领域拆分的方式组织：
 
-- `auth.mock.ts`
-- `public-content.mock.ts`
-- `user-content.mock.ts`
-- `user-notice.mock.ts`
-- `system-basic.mock.ts`
-- `system-content.mock.ts`
-- `shared.ts`
-- `test-data.json`
+- `auth.mock.ts`：认证相关 Mock
+- `public-content.mock.ts`：公开内容 Mock
+- `user-content.mock.ts`：用户内容 Mock
+- `user-notice.mock.ts`：用户通知 Mock
+- `system-basic.mock.ts`：系统基础模块 Mock
+- `system-content.mock.ts`：系统内容模块 Mock
+- `system-chat.mock.ts`：聊天模块 Mock
+- `system-file.mock.ts`：文件模块 Mock
+- `system-follow.mock.ts`：关注关系 Mock
+- `shared.ts`：共用方法、分页工具、通用响应方法
+- `test-data.json`：可复用测试数据
 
 ### 5.2 Mock 约束
 

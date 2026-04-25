@@ -5,7 +5,7 @@
 
 import { ref } from 'vue'
 import { defineStore } from 'pinia'
-import { noticeApi } from '@/api/sys/notice'
+import { NoticeApi } from '@/api/sys/notice'
 import type {
   NoticeQueryRequest,
   SysNoticeAdminVO,
@@ -54,7 +54,7 @@ export const useNoticeStore = defineStore('notice', () => {
   async function fetchNotices(params?: NoticeQueryRequest): Promise<void> {
     loading.value = true
     try {
-      const response = await noticeApi.getNotices(params)
+      const response = await NoticeApi.getNotices(params)
       const data = response.data.data as PageResult<SysNoticeAdminVO>
 
       notices.value = data.records
@@ -71,7 +71,7 @@ export const useNoticeStore = defineStore('notice', () => {
    */
   async function fetchNoticeById(id: number): Promise<SysNoticeAdminVO | null> {
     try {
-      const response = await noticeApi.getNoticeById(id)
+      const response = await NoticeApi.getNoticeById(id)
       currentNotice.value = response.data.data
       return currentNotice.value
     } catch {
@@ -84,7 +84,7 @@ export const useNoticeStore = defineStore('notice', () => {
    */
   async function createNotice(data: SysNoticeSaveRequest): Promise<boolean> {
     try {
-      await noticeApi.createNotice(data)
+      await NoticeApi.createNotice(data)
       return true
     } catch {
       return false
@@ -96,7 +96,7 @@ export const useNoticeStore = defineStore('notice', () => {
    */
   async function updateNotice(id: number, data: SysNoticeSaveRequest): Promise<boolean> {
     try {
-      await noticeApi.updateNotice(id, data)
+      await NoticeApi.updateNotice(id, data)
       return true
     } catch {
       return false
@@ -108,7 +108,7 @@ export const useNoticeStore = defineStore('notice', () => {
    */
   async function publishNotice(id: number): Promise<boolean> {
     try {
-      await noticeApi.publishNotice(id)
+      await NoticeApi.publishNotice(id)
       return true
     } catch {
       return false
@@ -120,7 +120,7 @@ export const useNoticeStore = defineStore('notice', () => {
    */
   async function revokeNotice(id: number): Promise<boolean> {
     try {
-      await noticeApi.revokeNotice(id)
+      await NoticeApi.revokeNotice(id)
       return true
     } catch {
       return false
@@ -132,7 +132,7 @@ export const useNoticeStore = defineStore('notice', () => {
    */
   async function deleteNotice(id: number): Promise<boolean> {
     try {
-      await noticeApi.deleteNotice(id)
+      await NoticeApi.deleteNotice(id)
       return true
     } catch {
       return false

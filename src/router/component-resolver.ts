@@ -3,7 +3,7 @@ import type { RouteRecordRaw } from 'vue-router'
 import { defineComponent, h } from 'vue'
 import { RouterView } from 'vue-router'
 
-// Conventions are documented in docs/backend-menu-routing-convention.md.
+// Conventions are documented in docs/code-writing-convention.md (Router 规范章节).
 type RouteComponent = NonNullable<RouteRecordRaw['component']>
 type ViewModuleLoader = () => Promise<unknown>
 

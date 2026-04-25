@@ -5,7 +5,7 @@
 
 import { ref } from 'vue'
 import { defineStore } from 'pinia'
-import { configApi } from '@/api/sys/config'
+import { ConfigApi } from '@/api/sys/config'
 import type {
   ConfigQueryRequest,
   SysConfigAdminVO,
@@ -59,7 +59,7 @@ export const useConfigStore = defineStore('config', () => {
   async function fetchConfigs(params?: ConfigQueryRequest): Promise<void> {
     loading.value = true
     try {
-      const response = await configApi.getConfigs(params)
+      const response = await ConfigApi.getConfigs(params)
       const data = response.data.data as PageResult<SysConfigAdminVO>
 
       configs.value = data.records
@@ -76,7 +76,7 @@ export const useConfigStore = defineStore('config', () => {
    */
   async function fetchConfigById(id: number): Promise<SysConfigAdminVO | null> {
     try {
-      const response = await configApi.getConfigById(id)
+      const response = await ConfigApi.getConfigById(id)
       currentConfig.value = response.data.data
       return currentConfig.value
     } catch {
@@ -89,7 +89,7 @@ export const useConfigStore = defineStore('config', () => {
    */
   async function createConfig(data: SysConfigSaveRequest): Promise<boolean> {
     try {
-      await configApi.createConfig(data)
+      await ConfigApi.createConfig(data)
       return true
     } catch {
       return false
@@ -101,7 +101,7 @@ export const useConfigStore = defineStore('config', () => {
    */
   async function updateConfig(id: number, data: SysConfigSaveRequest): Promise<boolean> {
     try {
-      await configApi.updateConfig(id, data)
+      await ConfigApi.updateConfig(id, data)
       return true
     } catch {
       return false
@@ -113,7 +113,7 @@ export const useConfigStore = defineStore('config', () => {
    */
   async function deleteConfig(id: number): Promise<boolean> {
     try {
-      await configApi.deleteConfig(id)
+      await ConfigApi.deleteConfig(id)
       return true
     } catch {
       return false
@@ -130,7 +130,7 @@ export const useConfigStore = defineStore('config', () => {
     }
 
     try {
-      const response = await configApi.getConfigByKey(configKey)
+      const response = await ConfigApi.getConfigByKey(configKey)
       const value = response.data.data
       // 更新缓存
       configCache.value.set(configKey, value)

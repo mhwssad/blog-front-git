@@ -75,7 +75,7 @@
 import { computed, reactive, ref, watch } from 'vue'
 import { ElMessage } from 'element-plus'
 import type { ArticleAccessItem, ArticleAccessSaveRequest } from '@/api/types'
-import { articleApi } from '@/api/sys/article'
+import { ArticleApi } from '@/api/sys/article'
 import { ACCESS_TYPE_OPTIONS } from '@/utils'
 
 interface Props {
@@ -124,7 +124,7 @@ async function loadAccessList(): Promise<void> {
 
   loading.value = true
   try {
-    const response = await articleApi.getArticleById(props.articleId)
+    const response = await ArticleApi.getArticleById(props.articleId)
     const detail = response.data.data
     formData.accessList = (detail.accessList ?? []).map(item => ({
       userId: item.userId,
@@ -156,7 +156,7 @@ async function handleSubmit(): Promise<void> {
 
   submitting.value = true
   try {
-    await articleApi.updateArticleAccess(props.articleId, {
+    await ArticleApi.updateArticleAccess(props.articleId, {
       accessList: formData.accessList.map(item => ({
         userId: Number(item.userId),
         accessType: Number(item.accessType),

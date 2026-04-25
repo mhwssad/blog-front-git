@@ -54,7 +54,7 @@
 <script lang="ts" setup>
 import { computed, reactive, ref, watch } from 'vue'
 import { ElMessage, type FormInstance, type FormRules } from 'element-plus'
-import { configApi } from '@/api/sys/config'
+import { ConfigApi } from '@/api/sys/config'
 import type { SysConfigSaveRequest } from '@/api/types'
 
 interface Props {
@@ -108,7 +108,7 @@ function resetForm(): void {
 async function loadConfigDetail(configId: number): Promise<void> {
   detailLoading.value = true
   try {
-    const response = await configApi.getConfigById(configId)
+    const response = await ConfigApi.getConfigById(configId)
     const detail = response.data.data
     Object.assign(formData, {
       configName: detail.configName,
@@ -136,10 +136,10 @@ async function handleSubmit(): Promise<void> {
     }
 
     if (isEdit.value && props.configId) {
-      await configApi.updateConfig(props.configId, payload)
+      await ConfigApi.updateConfig(props.configId, payload)
       ElMessage.success('配置更新成功')
     } else {
-      await configApi.createConfig(payload)
+      await ConfigApi.createConfig(payload)
       ElMessage.success('配置创建成功')
     }
 

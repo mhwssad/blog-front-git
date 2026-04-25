@@ -148,7 +148,7 @@
 import { onMounted, reactive, ref } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { Plus } from '@element-plus/icons-vue'
-import { roleApi } from '@/api/sys/role'
+import { RoleApi } from '@/api/sys/role'
 import type { RoleQueryRequest, SysRoleAdminVO } from '@/api/types'
 import { useTableHeight } from '@/composables/useTableHeight'
 import { useAuthStore } from '@/stores'
@@ -188,7 +188,7 @@ const { tableHeight } = useTableHeight(tableWrapperRef, paginationRef, {
 async function fetchRoles(): Promise<void> {
   loading.value = true
   try {
-    const response = await roleApi.getRoles({
+    const response = await RoleApi.getRoles({
       ...searchForm,
       current: pagination.current,
       size: pagination.size,
@@ -245,7 +245,7 @@ async function handleStatusChange(row: SysRoleAdminVO): Promise<void> {
   const previousStatus = row.status === 1 ? 0 : 1
 
   try {
-    await roleApi.updateRoleStatus(row.id, { status: row.status })
+    await RoleApi.updateRoleStatus(row.id, { status: row.status })
     ElMessage.success('状态更新成功')
   } catch {
     row.status = previousStatus
@@ -267,7 +267,7 @@ async function handleDelete(row: SysRoleAdminVO): Promise<void> {
       type: 'warning',
     })
 
-    await roleApi.deleteRole(row.id)
+    await RoleApi.deleteRole(row.id)
     ElMessage.success('删除成功')
     void fetchRoles()
   } catch {

@@ -1,3 +1,8 @@
+/**
+ * 聊天管理模块 API
+ * 基于 auth-api.md 文档
+ */
+
 import { http } from '../request'
 import type {
   ChatConversationVO,
@@ -14,52 +19,138 @@ import type {
   SysChatReceiptVO,
 } from '../types'
 
-export const sysChatApi = {
-  getConversations: (params?: SysChatConversationQueryRequest) =>
-    http.get<PageResult<ChatConversationVO>>('/sys/chats/conversations', params),
+/**
+ * 系统聊天管理 API
+ * 提供会话、消息、成员的查询和管理操作
+ */
+export class SysChatApi {
+  /**
+   * 分页查询会话列表
+   * GET /api/sys/chats/conversations
+   */
+  static getConversations(params?: SysChatConversationQueryRequest) {
+    return http.get<PageResult<ChatConversationVO>>('/sys/chats/conversations', params)
+  }
 
-  getConversationById: (conversationId: number) =>
-    http.get<ChatConversationVO>(`/sys/chats/conversations/${conversationId}`),
+  /**
+   * 查询会话详情
+   * GET /api/sys/chats/conversations/{conversationId}
+   */
+  static getConversationById(conversationId: number) {
+    return http.get<ChatConversationVO>(`/sys/chats/conversations/${conversationId}`)
+  }
 
-  getConversationMembers: (conversationId: number) =>
-    http.get<ChatGroupMemberVO[]>(`/sys/chats/conversations/${conversationId}/members`),
+  /**
+   * 查询会话成员列表
+   * GET /api/sys/chats/conversations/{conversationId}/members
+   */
+  static getConversationMembers(conversationId: number) {
+    return http.get<ChatGroupMemberVO[]>(
+      `/sys/chats/conversations/${conversationId}/members`
+    )
+  }
 
-  getMessages: (conversationId: number, params?: SysChatMessageQueryRequest) =>
-    http.get<PageResult<ChatMessageVO>>(`/sys/chats/conversations/${conversationId}/messages`, params),
+  /**
+   * 分页查询会话消息列表
+   * GET /api/sys/chats/conversations/{conversationId}/messages
+   */
+  static getMessages(conversationId: number, params?: SysChatMessageQueryRequest) {
+    return http.get<PageResult<ChatMessageVO>>(
+      `/sys/chats/conversations/${conversationId}/messages`,
+      params
+    )
+  }
 
-  getMessageById: (conversationId: number, messageId: number) =>
-    http.get<ChatMessageVO>(`/sys/chats/conversations/${conversationId}/messages/${messageId}`),
+  /**
+   * 查询消息详情
+   * GET /api/sys/chats/conversations/{conversationId}/messages/{messageId}
+   */
+  static getMessageById(conversationId: number, messageId: number) {
+    return http.get<ChatMessageVO>(
+      `/sys/chats/conversations/${conversationId}/messages/${messageId}`
+    )
+  }
 
-  getMessageReceipts: (
+  /**
+   * 分页查询消息回执列表
+   * GET /api/sys/chats/conversations/{conversationId}/messages/{messageId}/receipts
+   */
+  static getMessageReceipts(
     conversationId: number,
     messageId: number,
     params?: SysChatReceiptQueryRequest
-  ) =>
-    http.get<PageResult<SysChatReceiptVO>>(
+  ) {
+    return http.get<PageResult<SysChatReceiptVO>>(
       `/sys/chats/conversations/${conversationId}/messages/${messageId}/receipts`,
       params
-    ),
+    )
+  }
 
-  updateMemberRole: (
+  /**
+   * 更新成员角色
+   * PUT /api/sys/chats/conversations/{conversationId}/members/{memberUserId}/role
+   */
+  static updateMemberRole(
     conversationId: number,
     memberUserId: number,
     data: SysChatMemberRoleUpdateRequest
-  ) => http.put<void>(`/sys/chats/conversations/${conversationId}/members/${memberUserId}/role`, data),
+  ) {
+    return http.put<void>(
+      `/sys/chats/conversations/${conversationId}/members/${memberUserId}/role`,
+      data
+    )
+  }
 
-  updateMemberStatus: (
+  /**
+   * 更新成员状态
+   * PUT /api/sys/chats/conversations/{conversationId}/members/{memberUserId}/status
+   */
+  static updateMemberStatus(
     conversationId: number,
     memberUserId: number,
     data: SysChatMemberStatusUpdateRequest
-  ) => http.put<void>(`/sys/chats/conversations/${conversationId}/members/${memberUserId}/status`, data),
+  ) {
+    return http.put<void>(
+      `/sys/chats/conversations/${conversationId}/members/${memberUserId}/status`,
+      data
+    )
+  }
 
-  updateMemberMute: (conversationId: number, memberUserId: number, data: ChatGroupMuteRequest) =>
-    http.put<void>(`/sys/chats/conversations/${conversationId}/members/${memberUserId}/mute`, data),
+  /**
+   * 更新成员禁言状态
+   * PUT /api/sys/chats/conversations/{conversationId}/members/{memberUserId}/mute
+   */
+  static updateMemberMute(
+    conversationId: number,
+    memberUserId: number,
+    data: ChatGroupMuteRequest
+  ) {
+    return http.put<void>(
+      `/sys/chats/conversations/${conversationId}/members/${memberUserId}/mute`,
+      data
+    )
+  }
 
-  revokeMessage: (conversationId: number, messageId: number) =>
-    http.post<void>(`/sys/chats/conversations/${conversationId}/messages/${messageId}/revoke`),
+  /**
+   * 撤回消息
+   * POST /api/sys/chats/conversations/{conversationId}/messages/{messageId}/revoke
+   */
+  static revokeMessage(conversationId: number, messageId: number) {
+    return http.post<void>(
+      `/sys/chats/conversations/${conversationId}/messages/${messageId}/revoke`
+    )
+  }
 
-  updateConversationStatus: (conversationId: number, data: SysChatConversationStatusUpdateRequest) =>
-    http.put<void>(`/sys/chats/conversations/${conversationId}/status`, data),
+  /**
+   * 更新会话状态
+   * PUT /api/sys/chats/conversations/{conversationId}/status
+   */
+  static updateConversationStatus(
+    conversationId: number,
+    data: SysChatConversationStatusUpdateRequest
+  ) {
+    return http.put<void>(`/sys/chats/conversations/${conversationId}/status`, data)
+  }
 }
 
-export default sysChatApi
+export default SysChatApi

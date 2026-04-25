@@ -67,7 +67,7 @@
 <script lang="ts" setup>
 import { ref, reactive, computed } from 'vue'
 import { ElMessage } from 'element-plus'
-import { userApi } from '@/api/sys/user'
+import { UserApi } from '@/api/sys/user'
 import type { PasswordResetRequest } from '@/api/types'
 
 interface Props {
@@ -129,7 +129,7 @@ async function handleSubmit() {
       password: formData.password
     }
 
-    await userApi.resetUserPassword(props.userId, data)
+    await UserApi.resetUserPassword(props.userId, data)
     ElMessage.success('密码重置成功')
     emit('success')
     handleClose()

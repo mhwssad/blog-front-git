@@ -78,8 +78,8 @@
 import { computed, nextTick, ref, watch } from 'vue'
 import { ElMessage } from 'element-plus'
 import { Search } from '@element-plus/icons-vue'
-import { menuApi } from '@/api/sys/menu'
-import { roleApi } from '@/api/sys/role'
+import { MenuApi } from '@/api/sys/menu'
+import { RoleApi } from '@/api/sys/role'
 import type { SysMenuAdminVO } from '@/api/types'
 
 interface Props {
@@ -179,8 +179,8 @@ async function loadDialogData(): Promise<void> {
   loading.value = true
   try {
     const [menuResponse, roleMenuResponse] = await Promise.all([
-      menuApi.getMenuTree(),
-      roleApi.getRoleMenus(props.roleId),
+      MenuApi.getMenuTree(),
+      RoleApi.getRoleMenus(props.roleId),
     ])
 
     menuTree.value = menuResponse.data.data ?? []
@@ -211,7 +211,7 @@ async function handleSubmit(): Promise<void> {
     const halfCheckedKeys = checkStrictly.value ? [] : treeRef.value?.getHalfCheckedKeys() ?? []
     const menuIds = [...new Set([...checkedKeys, ...halfCheckedKeys])]
 
-    await roleApi.assignRoleMenus(props.roleId, { menuIds })
+    await RoleApi.assignRoleMenus(props.roleId, { menuIds })
     ElMessage.success('菜单分配成功')
     emit('success')
     handleClose()

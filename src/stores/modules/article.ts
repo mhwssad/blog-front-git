@@ -1,6 +1,6 @@
 import { ref } from 'vue'
 import { defineStore } from 'pinia'
-import { articleApi } from '@/api/sys/article'
+import { ArticleApi } from '@/api/sys/article'
 import type {
   ArticleAccessSaveRequest,
   ArticleAdminVO,
@@ -22,7 +22,7 @@ export const useArticleStore = defineStore('article', () => {
   async function fetchArticles(params?: ArticleQueryRequest): Promise<void> {
     loading.value = true
     try {
-      const response = await articleApi.getArticles(params)
+      const response = await ArticleApi.getArticles(params)
       const data = response.data.data as PageResult<ArticleAdminVO>
 
       articles.value = data.records
@@ -36,7 +36,7 @@ export const useArticleStore = defineStore('article', () => {
 
   async function fetchArticleById(id: number): Promise<ArticleDetailVO | null> {
     try {
-      const response = await articleApi.getArticleById(id)
+      const response = await ArticleApi.getArticleById(id)
       currentArticle.value = response.data.data
       return currentArticle.value
     } catch {
@@ -46,7 +46,7 @@ export const useArticleStore = defineStore('article', () => {
 
   async function createArticle(data: ArticleSaveRequest): Promise<boolean> {
     try {
-      await articleApi.createArticle(data)
+      await ArticleApi.createArticle(data)
       return true
     } catch {
       return false
@@ -55,7 +55,7 @@ export const useArticleStore = defineStore('article', () => {
 
   async function updateArticle(id: number, data: ArticleSaveRequest): Promise<boolean> {
     try {
-      await articleApi.updateArticle(id, data)
+      await ArticleApi.updateArticle(id, data)
       return true
     } catch {
       return false
@@ -64,7 +64,7 @@ export const useArticleStore = defineStore('article', () => {
 
   async function updateArticleStatus(id: number, data: StatusUpdateRequest): Promise<boolean> {
     try {
-      await articleApi.updateArticleStatus(id, data)
+      await ArticleApi.updateArticleStatus(id, data)
       return true
     } catch {
       return false
@@ -73,7 +73,7 @@ export const useArticleStore = defineStore('article', () => {
 
   async function updateArticleAccess(id: number, data: ArticleAccessSaveRequest): Promise<boolean> {
     try {
-      await articleApi.updateArticleAccess(id, data)
+      await ArticleApi.updateArticleAccess(id, data)
       return true
     } catch {
       return false
@@ -82,7 +82,7 @@ export const useArticleStore = defineStore('article', () => {
 
   async function deleteArticle(id: number): Promise<boolean> {
     try {
-      await articleApi.deleteArticle(id)
+      await ArticleApi.deleteArticle(id)
       return true
     } catch {
       return false

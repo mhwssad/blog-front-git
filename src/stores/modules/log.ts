@@ -5,7 +5,7 @@
 
 import { ref } from 'vue'
 import { defineStore } from 'pinia'
-import { logApi } from '@/api/sys/log'
+import { LogApi } from '@/api/sys/log'
 import type {
   LogQueryRequest,
   SysLogAdminVO,
@@ -54,7 +54,7 @@ export const useLogStore = defineStore('log', () => {
   async function fetchLogs(params?: LogQueryRequest): Promise<void> {
     loading.value = true
     try {
-      const response = await logApi.getLogs(params)
+      const response = await LogApi.getLogs(params)
       const data = response.data.data as PageResult<SysLogAdminVO>
 
       logs.value = data.records
@@ -71,7 +71,7 @@ export const useLogStore = defineStore('log', () => {
    */
   async function fetchLogById(id: number): Promise<SysLogAdminVO | null> {
     try {
-      const response = await logApi.getLogById(id)
+      const response = await LogApi.getLogById(id)
       currentLog.value = response.data.data
       return currentLog.value
     } catch {
@@ -84,7 +84,7 @@ export const useLogStore = defineStore('log', () => {
    */
   async function deleteLog(id: number): Promise<boolean> {
     try {
-      await logApi.deleteLog(id)
+      await LogApi.deleteLog(id)
       return true
     } catch {
       return false
@@ -96,7 +96,7 @@ export const useLogStore = defineStore('log', () => {
    */
   async function cleanLogs(data: SysLogCleanRequest): Promise<number | null> {
     try {
-      const response = await logApi.cleanLogs(data)
+      const response = await LogApi.cleanLogs(data)
       return response.data.data
     } catch {
       return null

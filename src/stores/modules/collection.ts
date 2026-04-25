@@ -1,6 +1,6 @@
 import { ref } from 'vue'
 import { defineStore } from 'pinia'
-import { collectionApi } from '@/api/sys/collection'
+import { CollectionApi } from '@/api/sys/collection'
 import type {
   CollectionFolderQueryRequest,
   CollectionFolderVO,
@@ -20,7 +20,7 @@ export const useCollectionStore = defineStore('collection', () => {
   async function fetchFolders(params?: CollectionFolderQueryRequest): Promise<void> {
     loading.value = true
     try {
-      const response = await collectionApi.getCollectionFolders(params)
+      const response = await CollectionApi.getCollectionFolders(params)
       const data = response.data.data as PageResult<CollectionFolderVO>
 
       folders.value = data.records
@@ -35,7 +35,7 @@ export const useCollectionStore = defineStore('collection', () => {
   async function fetchCollections(params?: CollectionFolderQueryRequest): Promise<void> {
     loading.value = true
     try {
-      const response = await collectionApi.getCollections(params)
+      const response = await CollectionApi.getCollections(params)
       const data = response.data.data as PageResult<CollectionVO>
 
       collections.value = data.records
@@ -49,7 +49,7 @@ export const useCollectionStore = defineStore('collection', () => {
 
   async function deleteCollection(id: number): Promise<boolean> {
     try {
-      await collectionApi.deleteCollection(id)
+      await CollectionApi.deleteCollection(id)
       return true
     } catch {
       return false

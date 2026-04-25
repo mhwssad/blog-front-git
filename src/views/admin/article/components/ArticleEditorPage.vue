@@ -56,7 +56,7 @@ import { ArrowLeft } from '@element-plus/icons-vue'
 import type { FormInstance, FormRules } from 'element-plus'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import type { ArticleSaveRequest, ArticleDetailVO } from '@/api/types'
-import { articleApi } from '@/api/sys/article'
+import { ArticleApi } from '@/api/sys/article'
 import { useCategoryStore, useTagStore, useAuthStore } from '@/stores'
 import { markdownToHtml } from '@/utils/markdown'
 import ArticleEditorContent from './ArticleEditorContent.vue'
@@ -125,7 +125,7 @@ async function loadArticle(): Promise<void> {
 
   pageLoading.value = true
   try {
-    const response = await articleApi.getArticleById(props.articleId)
+    const response = await ArticleApi.getArticleById(props.articleId)
     const detail = response.data.data
     if (!detail) {
       ElMessage.error('文章不存在')
@@ -202,10 +202,10 @@ async function handleSubmit(targetStatus: number): Promise<void> {
 
   try {
     if (props.articleId) {
-      await articleApi.updateArticle(props.articleId, formData.value)
+      await ArticleApi.updateArticle(props.articleId, formData.value)
       ElMessage.success('文章已更新')
     } else {
-      await articleApi.createArticle(formData.value)
+      await ArticleApi.createArticle(formData.value)
       ElMessage.success(targetStatus === 1 ? '文章已发布' : '草稿已保存')
     }
     takeSnapshot()

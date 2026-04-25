@@ -1,6 +1,6 @@
 import { ref } from 'vue'
 import { defineStore } from 'pinia'
-import { interactionApi } from '@/api/sys/interaction'
+import { InteractionApi } from '@/api/sys/interaction'
 import type { InteractionQueryRequest, InteractionVO, PageResult } from '@/api/types'
 
 export const useInteractionStore = defineStore('interaction', () => {
@@ -13,7 +13,7 @@ export const useInteractionStore = defineStore('interaction', () => {
   async function fetchInteractions(params?: InteractionQueryRequest): Promise<void> {
     loading.value = true
     try {
-      const response = await interactionApi.getInteractions(params)
+      const response = await InteractionApi.getInteractions(params)
       const data = response.data.data as PageResult<InteractionVO>
 
       interactions.value = data.records
@@ -27,7 +27,7 @@ export const useInteractionStore = defineStore('interaction', () => {
 
   async function deleteInteraction(id: number): Promise<boolean> {
     try {
-      await interactionApi.deleteInteraction(id)
+      await InteractionApi.deleteInteraction(id)
       return true
     } catch {
       return false

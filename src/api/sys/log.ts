@@ -4,44 +4,44 @@
  */
 
 import { http } from '../request'
-import type {
-  LogQueryRequest,
-  SysLogAdminVO,
-  SysLogCleanRequest,
-  PageResult
-} from '../types'
+import type { LogQueryRequest, SysLogAdminVO, SysLogCleanRequest, PageResult } from '../types'
 
 /**
  * 日志管理 API
+ * 提供系统日志的查询和清理操作
  */
-export const logApi = {
+export class LogApi {
   /**
-   * 8.1 分页查询日志
+   * 8.1 分页查询日志列表
    * GET /api/sys/logs
    */
-  getLogs: (params?: LogQueryRequest) =>
-    http.get<PageResult<SysLogAdminVO>>('/sys/logs', params),
+  static getLogs(params?: LogQueryRequest) {
+    return http.get<PageResult<SysLogAdminVO>>('/sys/logs', params)
+  }
 
   /**
    * 8.2 查询日志详情
    * GET /api/sys/logs/{id}
    */
-  getLogById: (id: number) =>
-    http.get<SysLogAdminVO>(`/sys/logs/${id}`),
+  static getLogById(id: number) {
+    return http.get<SysLogAdminVO>(`/sys/logs/${id}`)
+  }
 
   /**
    * 8.3 删除日志
    * DELETE /api/sys/logs/{id}
    */
-  deleteLog: (id: number) =>
-    http.delete<void>(`/sys/logs/${id}`),
+  static deleteLog(id: number) {
+    return http.delete<void>(`/sys/logs/${id}`)
+  }
 
   /**
    * 8.4 按条件清理日志
    * POST /api/sys/logs/clean
    */
-  cleanLogs: (data: SysLogCleanRequest) =>
-    http.post<number>('/sys/logs/clean', data)
+  static cleanLogs(data: SysLogCleanRequest) {
+    return http.post<number>('/sys/logs/clean', data)
+  }
 }
 
-export default logApi
+export default LogApi

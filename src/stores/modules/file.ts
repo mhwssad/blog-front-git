@@ -1,6 +1,6 @@
 import { ref } from 'vue'
 import { defineStore } from 'pinia'
-import { sysFileApi } from '@/api/sys/file'
+import { SysFileApi } from '@/api/sys/file'
 import type {
   FileAdminPageQueryRequest,
   FileAdminVO,
@@ -23,7 +23,7 @@ export const useFileStore = defineStore('admin-file', () => {
   async function fetchFiles(params?: FileAdminPageQueryRequest): Promise<void> {
     loading.value = true
     try {
-      const response = await sysFileApi.getFiles(params)
+      const response = await SysFileApi.getFiles(params)
       const data = response.data.data as PageResult<FileAdminVO>
 
       files.value = data.records
@@ -36,7 +36,7 @@ export const useFileStore = defineStore('admin-file', () => {
   async function fetchUploadTasks(params?: FileTaskPageQueryRequest): Promise<void> {
     loading.value = true
     try {
-      const response = await sysFileApi.getUploadTasks(params)
+      const response = await SysFileApi.getUploadTasks(params)
       const data = response.data.data as PageResult<FileTaskAdminVO>
 
       uploadTasks.value = data.records
@@ -49,7 +49,7 @@ export const useFileStore = defineStore('admin-file', () => {
   async function fetchFileDetail(id: number): Promise<FileDetailVO | null> {
     detailLoading.value = true
     try {
-      const response = await sysFileApi.getFileById(id)
+      const response = await SysFileApi.getFileById(id)
       fileDetail.value = response.data.data
       return fileDetail.value
     } finally {
@@ -59,7 +59,7 @@ export const useFileStore = defineStore('admin-file', () => {
 
   async function updateFileStatus(id: number, payload: FileStatusUpdateRequest): Promise<boolean> {
     try {
-      await sysFileApi.updateFileStatus(id, payload)
+      await SysFileApi.updateFileStatus(id, payload)
       return true
     } catch {
       return false
@@ -68,7 +68,7 @@ export const useFileStore = defineStore('admin-file', () => {
 
   async function deleteFile(id: number): Promise<boolean> {
     try {
-      await sysFileApi.deleteFile(id)
+      await SysFileApi.deleteFile(id)
       return true
     } catch {
       return false

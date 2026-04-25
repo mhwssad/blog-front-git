@@ -1,6 +1,6 @@
 import { ref } from 'vue'
 import { defineStore } from 'pinia'
-import { userContentApi } from '@/api/user/content'
+import { UserContentApi } from '@/api/user/content'
 import type {
   CollectionFolderSaveRequest,
   CollectionFolderVO,
@@ -57,32 +57,32 @@ export const useUserContentStore = defineStore('userContent', () => {
 
   async function likeArticle(id: number): Promise<boolean> {
     return runAction(async () => {
-      await userContentApi.likeArticle(id)
+      await UserContentApi.likeArticle(id)
     })
   }
 
   async function unlikeArticle(id: number): Promise<boolean> {
     return runAction(async () => {
-      await userContentApi.unlikeArticle(id)
+      await UserContentApi.unlikeArticle(id)
     })
   }
 
   async function likeComment(id: number): Promise<boolean> {
     return runAction(async () => {
-      await userContentApi.likeComment(id)
+      await UserContentApi.likeComment(id)
     })
   }
 
   async function unlikeComment(id: number): Promise<boolean> {
     return runAction(async () => {
-      await userContentApi.unlikeComment(id)
+      await UserContentApi.unlikeComment(id)
     })
   }
 
   async function createComment(data: CommentSaveRequest): Promise<CommentVO | null> {
     actionLoading.value = true
     try {
-      const response = await userContentApi.createComment(data)
+      const response = await UserContentApi.createComment(data)
       return response.data.data
     } catch {
       return null
@@ -93,14 +93,14 @@ export const useUserContentStore = defineStore('userContent', () => {
 
   async function deleteComment(id: number): Promise<boolean> {
     return runAction(async () => {
-      await userContentApi.deleteComment(id)
+      await UserContentApi.deleteComment(id)
     })
   }
 
   async function fetchCollectionFolders(): Promise<CollectionFolderVO[]> {
     collectionFolderLoading.value = true
     try {
-      const response = await userContentApi.getCollectionFolders()
+      const response = await UserContentApi.getCollectionFolders()
       collectionFolders.value = response.data.data
       return collectionFolders.value
     } catch {
@@ -113,7 +113,7 @@ export const useUserContentStore = defineStore('userContent', () => {
 
   async function createCollectionFolder(data: CollectionFolderSaveRequest): Promise<boolean> {
     return runAction(async () => {
-      await userContentApi.createCollectionFolder(data)
+      await UserContentApi.createCollectionFolder(data)
     })
   }
 
@@ -122,20 +122,20 @@ export const useUserContentStore = defineStore('userContent', () => {
     data: CollectionFolderSaveRequest
   ): Promise<boolean> {
     return runAction(async () => {
-      await userContentApi.updateCollectionFolder(id, data)
+      await UserContentApi.updateCollectionFolder(id, data)
     })
   }
 
   async function deleteCollectionFolder(id: number): Promise<boolean> {
     return runAction(async () => {
-      await userContentApi.deleteCollectionFolder(id)
+      await UserContentApi.deleteCollectionFolder(id)
     })
   }
 
   async function fetchCollections(params?: UserCollectionQueryRequest): Promise<void> {
     collectionLoading.value = true
     try {
-      const response = await userContentApi.getCollections(params)
+      const response = await UserContentApi.getCollections(params)
       assignCollectionPage(response.data.data)
     } finally {
       collectionLoading.value = false
@@ -144,20 +144,20 @@ export const useUserContentStore = defineStore('userContent', () => {
 
   async function createCollection(data: CollectionSaveRequest): Promise<boolean> {
     return runAction(async () => {
-      await userContentApi.createCollection(data)
+      await UserContentApi.createCollection(data)
     })
   }
 
   async function deleteCollection(id: number): Promise<boolean> {
     return runAction(async () => {
-      await userContentApi.deleteCollection(id)
+      await UserContentApi.deleteCollection(id)
     })
   }
 
   async function fetchFootprints(params?: UserFootprintQueryRequest): Promise<void> {
     footprintLoading.value = true
     try {
-      const response = await userContentApi.getFootprints(params)
+      const response = await UserContentApi.getFootprints(params)
       assignFootprintPage(response.data.data)
     } finally {
       footprintLoading.value = false
@@ -166,13 +166,13 @@ export const useUserContentStore = defineStore('userContent', () => {
 
   async function deleteFootprint(id: number): Promise<boolean> {
     return runAction(async () => {
-      await userContentApi.deleteFootprint(id)
+      await UserContentApi.deleteFootprint(id)
     })
   }
 
   async function clearFootprints(): Promise<boolean> {
     const success = await runAction(async () => {
-      await userContentApi.clearFootprints()
+      await UserContentApi.clearFootprints()
     })
 
     if (success) {

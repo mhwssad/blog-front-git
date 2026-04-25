@@ -1,6 +1,6 @@
 import { ref } from 'vue'
 import { defineStore } from 'pinia'
-import { contentApi } from '@/api/content'
+import { ContentApi } from '@/api/content'
 import type {
   PageResult,
   PublicArticleCardVO,
@@ -33,7 +33,7 @@ export const useFrontContentStore = defineStore('frontContent', () => {
   async function fetchArticles(params?: PublicArticleQueryRequest): Promise<void> {
     loading.value = true
     try {
-      const response = await contentApi.getArticles(params)
+      const response = await ContentApi.getArticles(params)
       const data = response.data.data as PageResult<PublicArticleCardVO>
 
       articles.value = data.records
@@ -46,7 +46,7 @@ export const useFrontContentStore = defineStore('frontContent', () => {
   }
 
   async function fetchFeaturedArticles(): Promise<void> {
-    const response = await contentApi.getArticles({
+    const response = await ContentApi.getArticles({
       current: 1,
       size: 3,
       sort: 'top',
@@ -56,7 +56,7 @@ export const useFrontContentStore = defineStore('frontContent', () => {
   }
 
   async function fetchHotArticles(): Promise<void> {
-    const response = await contentApi.getArticles({
+    const response = await ContentApi.getArticles({
       current: 1,
       size: 5,
       sort: 'hot',
@@ -66,19 +66,19 @@ export const useFrontContentStore = defineStore('frontContent', () => {
   }
 
   async function fetchCategoryTree(): Promise<void> {
-    const response = await contentApi.getCategoryTree()
+    const response = await ContentApi.getCategoryTree()
     categories.value = response.data.data
   }
 
   async function fetchTags(params?: PublicTagQueryRequest): Promise<void> {
-    const response = await contentApi.getTags(params)
+    const response = await ContentApi.getTags(params)
     tags.value = response.data.data
   }
 
   async function fetchComments(params?: PublicCommentQueryRequest): Promise<void> {
     commentLoading.value = true
     try {
-      const response = await contentApi.getComments(params)
+      const response = await ContentApi.getComments(params)
       comments.value = response.data.data.records
     } finally {
       commentLoading.value = false
@@ -88,7 +88,7 @@ export const useFrontContentStore = defineStore('frontContent', () => {
   async function fetchArticleById(id: number): Promise<PublicArticleDetailVO | null> {
     articleLoading.value = true
     try {
-      const response = await contentApi.getArticleById(id)
+      const response = await ContentApi.getArticleById(id)
       currentArticle.value = response.data.data
       return currentArticle.value
     } catch {
@@ -105,7 +105,7 @@ export const useFrontContentStore = defineStore('frontContent', () => {
   ): Promise<void> {
     commentLoading.value = true
     try {
-      const response = await contentApi.getComments({
+      const response = await ContentApi.getComments({
         ...params,
         targetType: 'article',
         targetId: articleId,

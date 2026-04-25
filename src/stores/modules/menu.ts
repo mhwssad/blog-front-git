@@ -5,7 +5,7 @@
 
 import { ref } from 'vue'
 import { defineStore } from 'pinia'
-import { menuApi } from '@/api/sys/menu'
+import { MenuApi } from '@/api/sys/menu'
 import type { SysMenuAdminVO, SysMenuSaveRequest } from '@/api/types'
 
 export const useMenuStore = defineStore('menu', () => {
@@ -34,7 +34,7 @@ export const useMenuStore = defineStore('menu', () => {
   async function fetchMenuTree(): Promise<void> {
     loading.value = true
     try {
-      const response = await menuApi.getMenuTree()
+      const response = await MenuApi.getMenuTree()
       menuTree.value = response.data.data
     } finally {
       loading.value = false
@@ -46,7 +46,7 @@ export const useMenuStore = defineStore('menu', () => {
    */
   async function fetchMenuById(id: number): Promise<SysMenuAdminVO | null> {
     try {
-      const response = await menuApi.getMenuById(id)
+      const response = await MenuApi.getMenuById(id)
       currentMenu.value = response.data.data
       return currentMenu.value
     } catch {
@@ -59,7 +59,7 @@ export const useMenuStore = defineStore('menu', () => {
    */
   async function createMenu(data: SysMenuSaveRequest): Promise<boolean> {
     try {
-      await menuApi.createMenu(data)
+      await MenuApi.createMenu(data)
       return true
     } catch {
       return false
@@ -71,7 +71,7 @@ export const useMenuStore = defineStore('menu', () => {
    */
   async function updateMenu(id: number, data: SysMenuSaveRequest): Promise<boolean> {
     try {
-      await menuApi.updateMenu(id, data)
+      await MenuApi.updateMenu(id, data)
       return true
     } catch {
       return false
@@ -83,7 +83,7 @@ export const useMenuStore = defineStore('menu', () => {
    */
   async function deleteMenu(id: number): Promise<boolean> {
     try {
-      await menuApi.deleteMenu(id)
+      await MenuApi.deleteMenu(id)
       return true
     } catch {
       return false

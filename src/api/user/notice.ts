@@ -14,42 +14,48 @@ export type { UserNoticeQueryRequest } from '../types'
 
 /**
  * 用户通知中心 API
+ * 用于前台页面展示当前登录用户的通知
  */
-export const userNoticeApi = {
+export class UserNoticeApi {
   /**
-   * 7.1 我的通知列表
+   * 7.1 分页查询我的通知列表
    * GET /api/user/notices
    */
-  getMyNotices: (params?: UserNoticeQueryRequest) =>
-    http.get<PageResult<UserNoticeVO>>('/user/notices', params),
+  static getMyNotices(params?: UserNoticeQueryRequest) {
+    return http.get<PageResult<UserNoticeVO>>('/user/notices', params)
+  }
 
   /**
-   * 7.2 我的通知详情
+   * 7.2 获取通知详情
    * GET /api/user/notices/{id}
    */
-  getMyNoticeById: (id: number) =>
-    http.get<UserNoticeVO>(`/user/notices/${id}`),
+  static getMyNoticeById(id: number) {
+    return http.get<UserNoticeVO>(`/user/notices/${id}`)
+  }
 
   /**
-   * 7.3 我的未读数
+   * 7.3 获取未读通知数量
    * GET /api/user/notices/unread-count
    */
-  getUnreadCount: () =>
-    http.get<number>('/user/notices/unread-count'),
+  static getUnreadCount() {
+    return http.get<number>('/user/notices/unread-count')
+  }
 
   /**
-   * 7.4 单条已读
+   * 7.4 标记单条通知为已读
    * POST /api/user/notices/{id}/read
    */
-  markAsRead: (id: number) =>
-    http.post<void>(`/user/notices/${id}/read`),
+  static markAsRead(id: number) {
+    return http.post<void>(`/user/notices/${id}/read`)
+  }
 
   /**
-   * 7.5 全部已读
+   * 7.5 标记全部通知为已读
    * POST /api/user/notices/read-all
    */
-  markAllAsRead: () =>
-    http.post<void>('/user/notices/read-all')
+  static markAllAsRead() {
+    return http.post<void>('/user/notices/read-all')
+  }
 }
 
-export default userNoticeApi
+export default UserNoticeApi

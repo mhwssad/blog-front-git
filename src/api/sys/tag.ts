@@ -1,21 +1,55 @@
+/**
+ * 标签管理模块 API
+ * 基于 content-api.md 文档
+ */
+
 import { http } from '../request'
 import type { TagSaveRequest, TagVO } from '../types'
 
-export const tagApi = {
-  getTags: () =>
-    http.get<TagVO[]>('/sys/tags'),
+/**
+ * 标签管理 API
+ * 提供标签的增删改查操作
+ */
+export class TagApi {
+  /**
+   * 查询所有标签
+   * GET /api/sys/tags
+   */
+  static getTags() {
+    return http.get<TagVO[]>('/sys/tags')
+  }
 
-  getTagById: (id: number) =>
-    http.get<TagVO>(`/sys/tags/${id}`),
+  /**
+   * 查询标签详情
+   * GET /api/sys/tags/{id}
+   */
+  static getTagById(id: number) {
+    return http.get<TagVO>(`/sys/tags/${id}`)
+  }
 
-  createTag: (data: TagSaveRequest) =>
-    http.post<void>('/sys/tags', data),
+  /**
+   * 新增标签
+   * POST /api/sys/tags
+   */
+  static createTag(data: TagSaveRequest) {
+    return http.post<void>('/sys/tags', data)
+  }
 
-  updateTag: (id: number, data: TagSaveRequest) =>
-    http.put<void>(`/sys/tags/${id}`, data),
+  /**
+   * 修改标签
+   * PUT /api/sys/tags/{id}
+   */
+  static updateTag(id: number, data: TagSaveRequest) {
+    return http.put<void>(`/sys/tags/${id}`, data)
+  }
 
-  deleteTag: (id: number) =>
-    http.delete<void>(`/sys/tags/${id}`),
+  /**
+   * 删除标签
+   * DELETE /api/sys/tags/{id}
+   */
+  static deleteTag(id: number) {
+    return http.delete<void>(`/sys/tags/${id}`)
+  }
 }
 
-export default tagApi
+export default TagApi
