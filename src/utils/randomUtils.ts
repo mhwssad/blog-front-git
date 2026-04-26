@@ -82,7 +82,7 @@ export class RandomUtils {
     const result = [...array]
     for (let i = result.length - 1; i > 0; i--) {
       const j = this.integer(0, i)
-      ;[result[i]!, result[j]!] = [result[j]!, result[i]!]
+      ;[result[i], result[j]] = [result[j]!, result[i]!]
     }
     return result
   }

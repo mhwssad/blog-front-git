@@ -1,5 +1,5 @@
 <template>
-  <div class="footprint-page">
+  <div class="footprint-management-page">
     <el-card class="search-card" shadow="never">
       <div class="card-header">
         <span>足迹管理</span>
@@ -262,7 +262,7 @@ function handleSizeChange(size: number): void {
 
 async function handleDelete(id: number): Promise<void> {
   try {
-    await ElMessageBox.confirm('确认要删除该足迹记录吗？', '提示', {
+    await ElMessageBox.confirm('确定要删除该足迹记录吗？', '提示', {
       confirmButtonText: '确定',
       cancelButtonText: '取消',
       type: 'warning',
@@ -309,10 +309,12 @@ onMounted(() => {
 </script>
 
 <style scoped>
-.footprint-page {
+.footprint-management-page {
   display: flex;
   flex-direction: column;
   gap: 16px;
+  max-width: 1440px;
+  margin: 0 auto;
 }
 
 .search-card,
@@ -352,7 +354,7 @@ onMounted(() => {
 
 .pagination {
   display: flex;
-  justify-content: flex-end;
+  justify-content: center;
   margin-top: 16px;
 }
 </style>

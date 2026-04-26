@@ -7,7 +7,7 @@
     :close-on-click-modal="false"
     center
   >
-    <el-form ref="formRef" class="tag-form" :model="formState" :rules="formRules" label-width="120px">
+    <ElForm ref="formRef" class="tag-form" :model="formState" :rules="formRules" label-width="120px">
       <el-form-item label="标签名称" prop="name">
         <el-input v-model="formState.name" placeholder="请输入标签名称" maxlength="64" show-word-limit />
       </el-form-item>
@@ -17,7 +17,7 @@
           <span class="color-preview" :style="{ backgroundColor: previewColor }" />
         </div>
       </el-form-item>
-    </el-form>
+    </ElForm>
 
     <template #footer>
       <el-button @click="handleCancel">取消</el-button>

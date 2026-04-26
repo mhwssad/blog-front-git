@@ -118,10 +118,13 @@ import {
   FolderOpened,
   Monitor,
   User,
+  View,
 } from '@element-plus/icons-vue'
 import { ArticleApi } from '@/api/sys/article'
 import { SysChatApi } from '@/api/sys/chat'
+import { CommentApi } from '@/api/sys/comment'
 import { SysFileApi } from '@/api/sys/file'
+import { FootprintApi } from '@/api/sys/footprint'
 import { SysFollowApi } from '@/api/sys/follow'
 import { NoticeApi } from '@/api/sys/notice'
 import { UserApi } from '@/api/sys/user'
@@ -164,15 +167,7 @@ const authStore = useAuthStore()
 
 const stats = ref<DashboardStat[]>([
   {
-    title: '用户规模',
-    value: 0,
-    description: '后台可查询用户总量',
-    icon: User,
-    color: '#1d4ed8',
-    background: 'linear-gradient(135deg, #dbeafe, #bfdbfe)',
-  },
-  {
-    title: '内容文章',
+    title: '文章总数',
     value: 0,
     description: '内容管理域文章总量',
     icon: Document,
@@ -180,20 +175,28 @@ const stats = ref<DashboardStat[]>([
     background: 'linear-gradient(135deg, #dcfce7, #bbf7d0)',
   },
   {
-    title: '文件库',
+    title: '用户总数',
     value: 0,
-    description: '文件与附件总量',
-    icon: Files,
-    color: '#b45309',
-    background: 'linear-gradient(135deg, #fef3c7, #fde68a)',
+    description: '后台可查询用户总量',
+    icon: User,
+    color: '#1d4ed8',
+    background: 'linear-gradient(135deg, #dbeafe, #bfdbfe)',
   },
   {
-    title: '聊天会话',
+    title: '评论总数',
     value: 0,
-    description: '当前治理中的会话总量',
+    description: '全站评论总量',
     icon: ChatDotRound,
     color: '#be123c',
     background: 'linear-gradient(135deg, #ffe4e6, #fecdd3)',
+  },
+  {
+    title: '今日访问量',
+    value: 0,
+    description: '今日页面浏览量 (PV)',
+    icon: View,
+    color: '#b45309',
+    background: 'linear-gradient(135deg, #fef3c7, #fde68a)',
   },
 ])
 
@@ -289,11 +292,13 @@ function goFirstShortcut(): void {
 }
 
 async function refreshDashboard(): Promise<void> {
+  const today = new Date().toISOString().slice(0, 10)
+
   const results = await Promise.allSettled([
-    UserApi.getUsers({ current: 1, size: 1 }),
     ArticleApi.getArticles({ current: 1, size: 1 }),
-    SysFileApi.getFiles({ current: 1, size: 1 }),
-    SysChatApi.getConversations({ current: 1, size: 1 }),
+    UserApi.getUsers({ current: 1, size: 1 }),
+    CommentApi.getComments({ current: 1, size: 1 }),
+    FootprintApi.getFootprints({ current: 1, size: 1, visitedAtStart: today, visitedAtEnd: `${today} 23:59:59` }),
     SysFollowApi.getFollows({ current: 1, size: 1, followStatus: 2 }),
     SysFileApi.getUploadTasks({ current: 1, size: 1, taskStatus: 3 }),
     SysChatApi.getConversations({ current: 1, size: 1, status: 0 }),

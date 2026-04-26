@@ -10,7 +10,6 @@ import type {
   LogQueryRequest,
   SysLogAdminVO,
   SysLogCleanRequest,
-  PageResult
 } from '@/api/types'
 
 export const useLogStore = defineStore('log', () => {
@@ -55,7 +54,7 @@ export const useLogStore = defineStore('log', () => {
     loading.value = true
     try {
       const response = await LogApi.getLogs(params)
-      const data = response.data.data as PageResult<SysLogAdminVO>
+      const data = response.data.data
 
       logs.value = data.records
       total.value = data.total

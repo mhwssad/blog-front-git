@@ -134,7 +134,7 @@ function findOptionLabel<T extends string | number>(
 ): string {
   const targetValue =
     typeof options[0]?.value === 'number'
-      ? normalizeNumericValue(value as NumericLike)
+      ? normalizeNumericValue(value)
       : String(value ?? '').trim()
 
   const matched = options.find(option => {

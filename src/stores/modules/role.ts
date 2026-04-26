@@ -12,7 +12,6 @@ import type {
   SysRoleSaveRequest,
   StatusUpdateRequest,
   RoleMenuAssignRequest,
-  PageResult
 } from '@/api/types'
 
 export const useRoleStore = defineStore('role', () => {
@@ -57,7 +56,7 @@ export const useRoleStore = defineStore('role', () => {
     loading.value = true
     try {
       const response = await RoleApi.getRoles(params)
-      const data = response.data.data as PageResult<SysRoleAdminVO>
+      const data = response.data.data
 
       roles.value = data.records
       total.value = data.total

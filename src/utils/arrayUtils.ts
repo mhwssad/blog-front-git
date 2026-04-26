@@ -77,7 +77,7 @@ export class ArrayUtils {
   ): T[] {
     const seen = new Set<K | T[keyof T]>()
     return array.filter((item) => {
-      const value = typeof key === 'function' ? key(item) : item[key as keyof T]
+      const value = typeof key === 'function' ? key(item) : item[key]
       if (seen.has(value)) {
         return false
       }
@@ -139,7 +139,7 @@ export class ArrayUtils {
           if (Array.isArray(val)) {
             return acc.concat(this.flatten<T>(val as Array<T | unknown[]>, depth - 1))
           }
-          return acc.concat(val as T)
+          return acc.concat(val)
         }, [])
       : (array.slice() as T[])
   }
@@ -211,7 +211,7 @@ export class ArrayUtils {
     const result = [...array]
     for (let i = result.length - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * (i + 1))
-      ;[result[i]!, result[j]!] = [result[j]!, result[i]!]
+      ;[result[i], result[j]] = [result[j]!, result[i]!]
     }
     return result
   }
@@ -420,7 +420,7 @@ export class ArrayUtils {
     }
 
     const result = [...array]
-    ;[result[index1]!, result[index2]!] = [result[index2]!, result[index1]!]
+    ;[result[index1], result[index2]] = [result[index2]!, result[index1]!]
     return result
   }
 
@@ -602,7 +602,7 @@ export class ArrayUtils {
       if (typeof key === 'function') {
         groupKey = key(item)
       } else {
-        groupKey = item[key as keyof T] as unknown as K
+        groupKey = item[key] as unknown as K
       }
       result[groupKey] = (result[groupKey] || 0) + 1
     })

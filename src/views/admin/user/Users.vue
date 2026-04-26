@@ -207,12 +207,12 @@
 </template>
 
 <script lang="ts" setup>
-import { computed, onBeforeUnmount, onMounted, reactive, ref } from 'vue'
+import { onMounted, reactive, ref } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { Plus } from '@element-plus/icons-vue'
 import { UserApi } from '@/api/sys/user'
 import type { SysUserAdminVO, UserQueryRequest } from '@/api/types'
-import { useTableHeight } from '@/composables/useTableHeight'
+import { useContentAdmin } from '@/composables/useContentAdmin'
 import UserFormDialog from './components/UserFormDialog.vue'
 import AssignRolesDialog from './components/AssignRolesDialog.vue'
 import ResetPasswordDialog from './components/ResetPasswordDialog.vue'
@@ -247,25 +247,17 @@ const passwordDialogVisible = ref(false)
 const editingUserId = ref<number | null>(null)
 const currentUserId = ref<number>(0)
 const currentUsername = ref('')
-const isCompactTable = ref(false)
-const tableWrapperRef = ref<HTMLElement | null>(null)
-const paginationRef = ref<HTMLElement | null>(null)
 
-const paginationLayout = computed(() =>
-  isCompactTable.value ? 'prev, pager, next' : 'total, sizes, prev, pager, next, jumper'
-)
-const { tableHeight, updateTableHeight } = useTableHeight(tableWrapperRef, paginationRef, {
+const {
+  tableWrapperRef,
+  paginationRef,
+  tableHeight,
+  paginationLayout,
+  isCompactTable,
+} = useContentAdmin({
   minHeight: 360,
   bottomOffset: 16,
 })
-
-function updateViewportState() {
-  if (typeof window === 'undefined') {
-    return
-  }
-  isCompactTable.value = window.innerWidth <= 992
-  updateTableHeight()
-}
 
 // 获取用户列表
 async function fetchUsers() {
@@ -309,6 +301,7 @@ function handleReset() {
 // 分页变化
 function handleSizeChange(size: number) {
   pagination.size = size
+  pagination.current = 1
   fetchUsers()
 }
 
@@ -388,16 +381,7 @@ function handlePasswordSuccess() {
 
 // 初始化
 onMounted(() => {
-  updateViewportState()
-  window.addEventListener('resize', updateViewportState)
   fetchUsers()
-})
-
-onBeforeUnmount(() => {
-  if (typeof window === 'undefined') {
-    return
-  }
-  window.removeEventListener('resize', updateViewportState)
 })
 </script>
 

@@ -10,7 +10,6 @@ import type {
   ConfigQueryRequest,
   SysConfigAdminVO,
   SysConfigSaveRequest,
-  PageResult
 } from '@/api/types'
 
 export const useConfigStore = defineStore('config', () => {
@@ -60,7 +59,7 @@ export const useConfigStore = defineStore('config', () => {
     loading.value = true
     try {
       const response = await ConfigApi.getConfigs(params)
-      const data = response.data.data as PageResult<SysConfigAdminVO>
+      const data = response.data.data
 
       configs.value = data.records
       total.value = data.total

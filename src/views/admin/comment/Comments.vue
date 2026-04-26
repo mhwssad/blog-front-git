@@ -223,7 +223,7 @@
     </el-card>
 
     <CommentDetailDialog
-      v-model="detailDialogVisible"
+      v-model:visible="detailDialogVisible"
       :comment="commentStore.currentComment"
     />
   </div>
@@ -442,8 +442,8 @@ async function handleStatusChange(row: CommentVO, value: number): Promise<void> 
 async function handleDelete(row: CommentVO): Promise<void> {
   try {
     await ElMessageBox.confirm(
-      `确认删除 ID 为 ${row.id} 的评论吗？`,
-      '删除评论',
+      `确定要删除评论 #${row.id} 吗？`,
+      '提示',
       {
         confirmButtonText: '确定',
         cancelButtonText: '取消',
@@ -647,7 +647,7 @@ onMounted(() => {
 
 .pagination {
   display: flex;
-  justify-content: flex-end;
+  justify-content: center;
   margin-top: 16px;
 }
 

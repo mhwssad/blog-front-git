@@ -44,6 +44,7 @@
           v-loading="loading"
           :data="tableData"
           :height="tableHeight"
+          :size="isCompactTable ? 'small' : 'default'"
           table-layout="auto"
           class="role-table"
           border
@@ -68,10 +69,10 @@
           <el-table-column label="状态" min-width="100" align="center">
             <template #default="{ row }">
               <el-switch
+                v-permission.disable="'sys:role:update'"
                 v-model="row.status"
                 :active-value="1"
                 :inactive-value="0"
-                :disabled="!authStore.hasPermission('sys:role:update')"
                 @change="handleStatusChange(row)"
               />
             </template>
@@ -122,7 +123,8 @@
           v-model:page-size="pagination.size"
           :total="pagination.total"
           :page-sizes="[10, 20, 50, 100]"
-          layout="total, sizes, prev, pager, next, jumper"
+          :layout="paginationLayout"
+          :small="isCompactTable"
           @size-change="handleSizeChange"
           @current-change="handleCurrentChange"
         />
@@ -150,12 +152,9 @@ import { ElMessage, ElMessageBox } from 'element-plus'
 import { Plus } from '@element-plus/icons-vue'
 import { RoleApi } from '@/api/sys/role'
 import type { RoleQueryRequest, SysRoleAdminVO } from '@/api/types'
-import { useTableHeight } from '@/composables/useTableHeight'
-import { useAuthStore } from '@/stores'
+import { useContentAdmin } from '@/composables/useContentAdmin'
 import RoleFormDialog from './components/RoleFormDialog.vue'
 import AssignMenusDialog from './components/AssignMenusDialog.vue'
-
-const authStore = useAuthStore()
 const searchForm = reactive<RoleQueryRequest>({
   current: 1,
   size: 10,
@@ -178,9 +177,14 @@ const menusDialogVisible = ref(false)
 const editingRoleId = ref<number | null>(null)
 const currentRoleId = ref<number>(0)
 const currentRoleName = ref('')
-const tableWrapperRef = ref<HTMLElement | null>(null)
-const paginationRef = ref<HTMLElement | null>(null)
-const { tableHeight } = useTableHeight(tableWrapperRef, paginationRef, {
+
+const {
+  tableWrapperRef,
+  paginationRef,
+  tableHeight,
+  paginationLayout,
+  isCompactTable,
+} = useContentAdmin({
   minHeight: 280,
   bottomOffset: 32,
 })
@@ -223,6 +227,7 @@ function handleReset(): void {
 
 function handleSizeChange(size: number): void {
   pagination.size = size
+  pagination.current = 1
   void fetchRoles()
 }
 
@@ -291,6 +296,8 @@ onMounted(() => {
 <style scoped>
 .role-management-page {
   padding: 0;
+  max-width: 1440px;
+  margin: 0 auto;
 }
 
 .search-card {
@@ -334,7 +341,7 @@ onMounted(() => {
 
 .pagination {
   display: flex;
-  justify-content: flex-end;
+  justify-content: center;
   margin-top: 16px;
 }
 

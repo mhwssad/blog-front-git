@@ -99,12 +99,12 @@
 </template>
 
 <script lang="ts" setup>
-import { computed, onMounted, reactive, ref, watch } from 'vue'
+import { computed, onMounted, reactive, ref } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { Plus, RefreshLeft } from '@element-plus/icons-vue'
 import { storeToRefs } from 'pinia'
 import { DateUtils } from '@/utils/dateUtils'
-import { useTableHeight } from '@/composables/useTableHeight'
+import { useContentAdmin } from '@/composables/useContentAdmin'
 import { useTagStore } from '@/stores'
 import TagFormDialog from './components/TagFormDialog.vue'
 import type { TagVO } from '@/api/types'
@@ -114,11 +114,16 @@ const { tags } = storeToRefs(tagStore)
 const searchForm = reactive({
   name: '',
 })
-const tableWrapperRef = ref<HTMLElement | null>(null)
-const { tableHeight, updateTableHeight } = useTableHeight(tableWrapperRef, undefined, {
+
+const {
+  tableWrapperRef,
+  tableHeight,
+  updateTableHeight,
+} = useContentAdmin({
   minHeight: 360,
   bottomOffset: 32,
 })
+
 const formDialogVisible = ref(false)
 const editingTag = ref<TagVO | null>(null)
 
@@ -133,7 +138,6 @@ const filteredTags = computed(() => {
 
 async function fetchTags(): Promise<void> {
   await tagStore.fetchTags()
-  updateTableHeight()
 }
 
 function handleSearch(): void {
@@ -157,9 +161,9 @@ function handleEditTag(tag: TagVO): void {
 
 async function handleDeleteTag(tag: TagVO): Promise<void> {
   try {
-    await ElMessageBox.confirm(`确认删除标签「${tag.name}」？`, '删除提示', {
+    await ElMessageBox.confirm(`确定要删除标签 "${tag.name}" 吗？`, '提示', {
       type: 'warning',
-      confirmButtonText: '删除',
+      confirmButtonText: '确定',
       cancelButtonText: '取消',
     })
 
@@ -183,10 +187,6 @@ function handleDialogSuccess(): void {
 function formatDate(value?: string | null): string {
   return value ? DateUtils.formatDate(value) : '—'
 }
-
-watch(filteredTags, () => {
-  updateTableHeight()
-})
 
 onMounted(() => {
   fetchTags()

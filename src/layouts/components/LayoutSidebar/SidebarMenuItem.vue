@@ -25,6 +25,8 @@
 import { computed } from 'vue'
 import type { AppMenuInfo } from '@/router/menu'
 
+const props = defineProps<Props>()
+
 defineOptions({
   name: 'SidebarMenuItem',
 })
@@ -33,8 +35,6 @@ interface Props {
   item: AppMenuInfo
   getIconComponent: (iconName: string) => ReturnType<typeof import('@/utils/iconUtils').IconUtils.getIcon>
 }
-
-const props = defineProps<Props>()
 
 const hasChildren = computed(() => (props.item.children?.length ?? 0) > 0)
 const menuIndex = computed(() => props.item.path || String(props.item.id))

@@ -125,6 +125,11 @@
               {{ formatCreatedAt(row.unfollowTime) }}
             </template>
           </el-table-column>
+          <el-table-column label="创建时间" min-width="168" align="center">
+            <template #default="{ row }">
+              {{ formatCreatedAt(row.createdAt) }}
+            </template>
+          </el-table-column>
         </el-table>
       </div>
 

@@ -54,7 +54,7 @@ export function svgStringToElement(svgString: string): SVGSVGElement | null {
   const parser = new DOMParser()
   const doc = parser.parseFromString(svgString, 'image/svg+xml')
   const svgElement = doc.querySelector('svg')
-  return svgElement as SVGSVGElement | null
+  return svgElement
 }
 
 /**

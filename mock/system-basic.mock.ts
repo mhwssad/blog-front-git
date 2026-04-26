@@ -88,7 +88,7 @@ function handle(req: any) {
   }
 
   if (m === 'POST' && path === '/api/sys/users') {
-    db.users.push({ id: ++db.seq.user, username: req.body.username, nickname: req.body.nickname || req.body.username, email: req.body.email || `${req.body.username}@example.com`, phone: req.body.phone || '', avatar: req.body.avatar || `https://api.dicebear.com/7.x/initials/svg?seed=${req.body.username}`, gender: req.body.gender ?? 1, birthday: req.body.birthday ?? '2000-01-01', status: req.body.status ?? 1, remark: req.body.remark ?? null, createTime: new Date().toISOString().slice(0, 19).replace('T', ' '), updateTime: new Date().toISOString().slice(0, 19).replace('T', ' '), password: req.body.password || '123456', roleIds: [] })
+    db.users.push({ id: ++db.seq.user, username: req.body.username, nickname: req.body.nickname || req.body.username, email: req.body.email || `${req.body.username}@example.com`, phone: req.body.phone || '', avatar: req.body.avatar || `https://api.dicebear.com/7.x/initials/svg?seed=${req.body.username}`, gender: req.body.gender ?? 1, birthday: req.body.birthday ?? '2000-01-01', status: req.body.status ?? 1, remark: req.body.remark ?? null, lastLoginTime: null, lastLoginIp: null, createTime: new Date().toISOString().slice(0, 19).replace('T', ' '), updateTime: new Date().toISOString().slice(0, 19).replace('T', ' '), password: req.body.password || '123456', roleIds: [] })
     return ok(null)
   }
 
@@ -118,7 +118,7 @@ function handle(req: any) {
   }
 
   if (m === 'POST' && path === '/api/sys/roles') {
-    db.roles.push({ id: ++db.seq.role, name: req.body.name, code: req.body.code, sort: req.body.sort ?? db.roles.length + 1, status: req.body.status ?? 1, remark: req.body.remark ?? null, createTime: new Date().toISOString().slice(0, 19).replace('T', ' '), menuIds: [] })
+    db.roles.push({ id: ++db.seq.role, name: req.body.name, code: req.body.code, sort: req.body.sort ?? db.roles.length + 1, status: req.body.status ?? 1, dataScope: req.body.dataScope ?? 1, remark: req.body.remark ?? null, createTime: new Date().toISOString().slice(0, 19).replace('T', ' '), menuIds: [] })
     return ok(null)
   }
 
@@ -193,7 +193,7 @@ function handle(req: any) {
   }
 
   if (m === 'POST' && path === '/api/sys/notices') {
-    db.notices.unshift({ id: ++db.seq.notice, title: req.body.title, content: req.body.content, type: req.body.type ?? 1, status: 0, publishTime: null, createTime: new Date().toISOString().slice(0, 19).replace('T', ' ') })
+    db.notices.unshift({ id: ++db.seq.notice, title: req.body.title, content: req.body.content, type: req.body.type ?? 1, level: req.body.level ?? 'info', targetType: req.body.targetType ?? 0, targetUserIds: req.body.targetUserIds ?? [], publisherId: 1, status: 0, publishStatus: 0, publishTime: null, revokeTime: null, createTime: new Date().toISOString().slice(0, 19).replace('T', ' '), updateTime: null })
     return ok(null)
   }
 

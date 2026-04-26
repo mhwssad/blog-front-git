@@ -63,11 +63,11 @@ export class TreeUtils {
     map.forEach((item) => {
       const parentId = item[parentIdKey]
       if (parentId === null || parentId === undefined || !map.has(parentId)) {
-        tree.push(item as T)
+        tree.push(item)
       } else {
         const parent = map.get(parentId)
         if (parent) {
-          ;(parent[childrenKey] as T[]).push(item as T)
+          ;(parent[childrenKey] as T[]).push(item)
         }
       }
     })
@@ -204,7 +204,7 @@ export class TreeUtils {
     childrenKey: string = 'children',
   ): R[] {
     return tree.map((node) => {
-      const newNode = mapper(node) as R
+      const newNode = mapper(node)
       if (node[childrenKey] && Array.isArray(node[childrenKey])) {
         const newNodeRecord = newNode as Record<string, unknown>
         newNodeRecord[childrenKey] = this.map(node[childrenKey] as T[], mapper, childrenKey)
@@ -674,7 +674,7 @@ export class TreeUtils {
       return undefined
     }
 
-    const newNode = ObjectUtils.deepClone(node) as T
+    const newNode = ObjectUtils.deepClone(node)
     const newNodeRecord = newNode as Record<string, unknown>
     const existingIds = new Set(this.getIds(tree, idKey, childrenKey).map((id) => String(id)))
 
@@ -780,7 +780,7 @@ export class TreeUtils {
       if (node[childrenKey] && Array.isArray(node[childrenKey])) {
         const result: T = {
           ...node,
-          [childrenKey]: this.sort(node[childrenKey], compareFn, childrenKey) as T[keyof T],
+          [childrenKey]: this.sort(node[childrenKey], compareFn, childrenKey),
         }
         return result
       }

@@ -41,9 +41,19 @@
                 {{ formatVisibility(row.isPublic) }}
               </template>
             </el-table-column>
+            <el-table-column prop="category" label="业务分类" min-width="100" align="center">
+              <template #default="{ row }">
+                {{ formatOptionalText(row.category) }}
+              </template>
+            </el-table-column>
             <el-table-column prop="remark" label="备注" min-width="160" align="center" show-overflow-tooltip>
               <template #default="{ row }">
                 {{ formatOptionalText(row.remark) }}
+              </template>
+            </el-table-column>
+            <el-table-column label="创建时间" min-width="160" align="center">
+              <template #default="{ row }">
+                {{ formatCreatedAt(row.createdAt) }}
               </template>
             </el-table-column>
           </el-table>
@@ -54,6 +64,22 @@
           <el-table :data="detail.tasks ?? []" border size="small" table-layout="auto">
             <el-table-column prop="id" label="任务 ID" min-width="90" align="center" />
             <el-table-column prop="uploadId" label="上传 ID" min-width="180" align="center" show-overflow-tooltip />
+            <el-table-column prop="originalName" label="原始文件名" min-width="140" align="center" show-overflow-tooltip />
+            <el-table-column label="文件大小" min-width="100" align="center">
+              <template #default="{ row }">
+                {{ row.fileSize ? formatFileSize(row.fileSize) : '-' }}
+              </template>
+            </el-table-column>
+            <el-table-column label="秒传" min-width="70" align="center">
+              <template #default="{ row }">
+                {{ row.isQuickUpload === 1 ? '是' : '否' }}
+              </template>
+            </el-table-column>
+            <el-table-column label="分片" min-width="70" align="center">
+              <template #default="{ row }">
+                {{ row.isChunked === 1 ? '是' : '否' }}
+              </template>
+            </el-table-column>
             <el-table-column label="任务状态" min-width="110" align="center">
               <template #default="{ row }">
                 {{ formatFileTaskStatus(row.taskStatus) }}

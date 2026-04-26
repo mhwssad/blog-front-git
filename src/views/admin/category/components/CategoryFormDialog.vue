@@ -7,7 +7,7 @@
     :close-on-click-modal="false"
     center
   >
-    <el-form ref="formRef" class="category-form" :model="formState" :rules="formRules" label-width="120px">
+    <ElForm ref="formRef" class="category-form" :model="formState" :rules="formRules" label-width="120px">
       <el-form-item label="上级分类">
         <el-tree-select
           v-model="formState.parentId"
@@ -55,7 +55,7 @@
           inactive-text="停用"
         />
       </el-form-item>
-    </el-form>
+    </ElForm>
 
     <template #footer>
       <el-button @click="handleCancel">取消</el-button>

@@ -13,7 +13,6 @@ import type {
   StatusUpdateRequest,
   PasswordResetRequest,
   UserRoleAssignRequest,
-  PageResult
 } from '@/api/types'
 
 export const useUserStore = defineStore('user', () => {
@@ -58,7 +57,7 @@ export const useUserStore = defineStore('user', () => {
     loading.value = true
     try {
       const response = await UserApi.getUsers(params)
-      const data = response.data.data as PageResult<SysUserAdminVO>
+      const data = response.data.data
 
       users.value = data.records
       total.value = data.total

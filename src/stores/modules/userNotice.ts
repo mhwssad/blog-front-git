@@ -6,7 +6,7 @@
 import { ref, computed } from 'vue'
 import { defineStore } from 'pinia'
 import { UserNoticeApi, type UserNoticeQueryRequest } from '@/api/user/notice'
-import type { UserNoticeVO, PageResult } from '@/api/types'
+import type { UserNoticeVO } from '@/api/types'
 
 export const useUserNoticeStore = defineStore('userNotice', () => {
   // ==================== 状态 ====================
@@ -60,7 +60,7 @@ export const useUserNoticeStore = defineStore('userNotice', () => {
     loading.value = true
     try {
       const response = await UserNoticeApi.getMyNotices(params)
-      const data = response.data.data as PageResult<UserNoticeVO>
+      const data = response.data.data
 
       myNotices.value = data.records
       total.value = data.total

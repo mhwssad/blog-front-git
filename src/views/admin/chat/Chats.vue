@@ -96,6 +96,16 @@
               {{ formatLastMessage(row.lastMessage) }}
             </template>
           </el-table-column>
+          <el-table-column label="全站" min-width="70" align="center">
+            <template #default="{ row }">
+              {{ formatBooleanText(row.isAllSite) }}
+            </template>
+          </el-table-column>
+          <el-table-column label="创建时间" min-width="168" align="center">
+            <template #default="{ row }">
+              {{ formatCreatedAt(row.createdAt) }}
+            </template>
+          </el-table-column>
           <el-table-column label="操作" :min-width="isCompactTable ? 180 : 220" align="center">
             <template #default="{ row }">
               <div class="table-actions">
@@ -200,6 +210,7 @@
               <el-table-column label="角色" min-width="140" align="center">
                 <template #default="{ row }">
                   <el-select
+                    v-permission.disable="'content:chat:update'"
                     :model-value="row.role"
                     class="inline-select"
                     @change="value => handleMemberRoleChange(row.userId, String(value))"
@@ -216,6 +227,7 @@
               <el-table-column label="状态" min-width="120" align="center">
                 <template #default="{ row }">
                   <el-switch
+                    v-permission.disable="'content:chat:update'"
                     :model-value="row.status"
                     :active-value="1"
                     :inactive-value="0"
@@ -230,7 +242,7 @@
               </el-table-column>
               <el-table-column label="操作" min-width="120" align="center">
                 <template #default="{ row }">
-                  <el-button link type="warning" @click="handleMemberMute(row.userId, row.muteUntil ? null : '24h')">
+                  <el-button v-permission="'content:chat:update'" link type="warning" @click="handleMemberMute(row.userId, row.muteUntil ? null : '24h')">
                     {{ row.muteUntil ? '解除禁言' : '禁言 24h' }}
                   </el-button>
                 </template>
@@ -300,13 +312,23 @@
                   </el-tag>
                 </template>
               </el-table-column>
+              <el-table-column label="已编辑" min-width="70" align="center">
+                <template #default="{ row }">
+                  {{ row.edited ? '是' : '否' }}
+                </template>
+              </el-table-column>
+              <el-table-column label="发送时间" min-width="168" align="center">
+                <template #default="{ row }">
+                  {{ formatCreatedAt(row.createdAt) }}
+                </template>
+              </el-table-column>
               <el-table-column label="操作" min-width="180" align="center">
                 <template #default="{ row }">
                   <div class="table-actions">
                     <el-button link type="primary" @click="handleViewMessageDetail(row.id)">详情</el-button>
                     <el-button link type="success" @click="handleViewReceipts(row.id)">回执</el-button>
                     <el-button
-                      v-permission="'content:chat:update'"
+                      v-permission="'content:chat:revoke'"
                       link
                       type="danger"
                       :disabled="row.revoked"

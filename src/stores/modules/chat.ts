@@ -1,3 +1,8 @@
+/**
+ * 聊天管理 Store（后台管理端）
+ * 基于 chat-api.md 文档
+ */
+
 import { ref } from 'vue'
 import { defineStore } from 'pinia'
 import { SysChatApi } from '@/api/sys/chat'
@@ -6,7 +11,6 @@ import type {
   ChatGroupMemberVO,
   ChatGroupMuteRequest,
   ChatMessageVO,
-  PageResult,
   SysChatConversationQueryRequest,
   SysChatConversationStatusUpdateRequest,
   SysChatMemberRoleUpdateRequest,
@@ -17,26 +21,88 @@ import type {
 } from '@/api/types'
 
 export const useChatStore = defineStore('admin-chat', () => {
+  // ==================== 状态 ====================
+
+  /**
+   * 会话列表
+   */
   const conversations = ref<ChatConversationVO[]>([])
+
+  /**
+   * 会话总数
+   */
   const conversationTotal = ref(0)
+
+  /**
+   * 当前查看的会话详情
+   */
   const conversationDetail = ref<ChatConversationVO | null>(null)
+
+  /**
+   * 群成员列表
+   */
   const members = ref<ChatGroupMemberVO[]>([])
+
+  /**
+   * 消息列表
+   */
   const messages = ref<ChatMessageVO[]>([])
+
+  /**
+   * 消息总数
+   */
   const messageTotal = ref(0)
+
+  /**
+   * 当前查看的消息详情
+   */
   const messageDetail = ref<ChatMessageVO | null>(null)
+
+  /**
+   * 消息回执列表
+   */
   const receipts = ref<SysChatReceiptVO[]>([])
+
+  /**
+   * 回执总数
+   */
   const receiptTotal = ref(0)
+
+  /**
+   * 会话列表加载状态
+   */
   const conversationLoading = ref(false)
+
+  /**
+   * 详情加载状态
+   */
   const detailLoading = ref(false)
+
+  /**
+   * 成员加载状态
+   */
   const memberLoading = ref(false)
+
+  /**
+   * 消息加载状态
+   */
   const messageLoading = ref(false)
+
+  /**
+   * 回执加载状态
+   */
   const receiptLoading = ref(false)
 
+  // ==================== 操作 ====================
+
+  /**
+   * 分页查询会话列表
+   */
   async function fetchConversations(params?: SysChatConversationQueryRequest): Promise<void> {
     conversationLoading.value = true
     try {
       const response = await SysChatApi.getConversations(params)
-      const data = response.data.data as PageResult<ChatConversationVO>
+      const data = response.data.data
 
       conversations.value = data.records
       conversationTotal.value = data.total
@@ -45,6 +111,9 @@ export const useChatStore = defineStore('admin-chat', () => {
     }
   }
 
+  /**
+   * 查询会话详情
+   */
   async function fetchConversationDetail(conversationId: number): Promise<ChatConversationVO | null> {
     detailLoading.value = true
     try {
@@ -56,6 +125,9 @@ export const useChatStore = defineStore('admin-chat', () => {
     }
   }
 
+  /**
+   * 查询群成员列表
+   */
   async function fetchConversationMembers(conversationId: number): Promise<void> {
     memberLoading.value = true
     try {
@@ -66,6 +138,9 @@ export const useChatStore = defineStore('admin-chat', () => {
     }
   }
 
+  /**
+   * 分页查询消息历史
+   */
   async function fetchMessages(
     conversationId: number,
     params?: SysChatMessageQueryRequest
@@ -73,7 +148,7 @@ export const useChatStore = defineStore('admin-chat', () => {
     messageLoading.value = true
     try {
       const response = await SysChatApi.getMessages(conversationId, params)
-      const data = response.data.data as PageResult<ChatMessageVO>
+      const data = response.data.data
 
       messages.value = data.records
       messageTotal.value = data.total
@@ -82,6 +157,9 @@ export const useChatStore = defineStore('admin-chat', () => {
     }
   }
 
+  /**
+   * 查询消息详情
+   */
   async function fetchMessageDetail(
     conversationId: number,
     messageId: number
@@ -96,6 +174,9 @@ export const useChatStore = defineStore('admin-chat', () => {
     }
   }
 
+  /**
+   * 查询消息回执
+   */
   async function fetchReceipts(
     conversationId: number,
     messageId: number,
@@ -104,7 +185,7 @@ export const useChatStore = defineStore('admin-chat', () => {
     receiptLoading.value = true
     try {
       const response = await SysChatApi.getMessageReceipts(conversationId, messageId, params)
-      const data = response.data.data as PageResult<SysChatReceiptVO>
+      const data = response.data.data
 
       receipts.value = data.records
       receiptTotal.value = data.total
@@ -113,6 +194,9 @@ export const useChatStore = defineStore('admin-chat', () => {
     }
   }
 
+  /**
+   * 更新成员角色（设为管理员/取消管理员）
+   */
   async function updateMemberRole(
     conversationId: number,
     memberUserId: number,
@@ -126,6 +210,9 @@ export const useChatStore = defineStore('admin-chat', () => {
     }
   }
 
+  /**
+   * 更新成员状态（禁言/取消禁言）
+   */
   async function updateMemberStatus(
     conversationId: number,
     memberUserId: number,
@@ -139,6 +226,9 @@ export const useChatStore = defineStore('admin-chat', () => {
     }
   }
 
+  /**
+   * 设置成员禁言时间
+   */
   async function updateMemberMute(
     conversationId: number,
     memberUserId: number,
@@ -152,6 +242,9 @@ export const useChatStore = defineStore('admin-chat', () => {
     }
   }
 
+  /**
+   * 撤回消息
+   */
   async function revokeMessage(conversationId: number, messageId: number): Promise<boolean> {
     try {
       await SysChatApi.revokeMessage(conversationId, messageId)
@@ -161,6 +254,9 @@ export const useChatStore = defineStore('admin-chat', () => {
     }
   }
 
+  /**
+   * 更新会话状态
+   */
   async function updateConversationStatus(
     conversationId: number,
     payload: SysChatConversationStatusUpdateRequest
@@ -173,6 +269,9 @@ export const useChatStore = defineStore('admin-chat', () => {
     }
   }
 
+  /**
+   * 清空会话上下文
+   */
   function clearConversationContext(): void {
     conversationDetail.value = null
     members.value = []
@@ -184,6 +283,7 @@ export const useChatStore = defineStore('admin-chat', () => {
   }
 
   return {
+    // 状态
     conversations,
     conversationTotal,
     conversationDetail,
@@ -198,6 +298,8 @@ export const useChatStore = defineStore('admin-chat', () => {
     memberLoading,
     messageLoading,
     receiptLoading,
+
+    // 操作
     fetchConversations,
     fetchConversationDetail,
     fetchConversationMembers,

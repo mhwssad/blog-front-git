@@ -337,7 +337,7 @@ function refreshActiveTab(): Promise<void> {
 
 async function handleDeleteCollection(id: number): Promise<void> {
   try {
-    await ElMessageBox.confirm('确认要删除该收藏记录吗？', '提示', {
+    await ElMessageBox.confirm('确定要删除该收藏记录吗？', '提示', {
       confirmButtonText: '确定',
       cancelButtonText: '取消',
       type: 'warning',

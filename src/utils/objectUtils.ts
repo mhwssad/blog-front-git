@@ -408,7 +408,7 @@ export class ObjectUtils {
    * @returns 对象
    */
   static fromEntries<V>(entries: [string, V][]): Record<string, V> {
-    return Object.fromEntries(entries) as Record<string, V>
+    return Object.fromEntries(entries)
   }
 
   /**
@@ -664,7 +664,7 @@ export class ObjectUtils {
     const result = {} as Partial<T>
 
     for (const [key, value] of this.entries(obj)) {
-      if (predicate(value, key as keyof T)) {
+      if (predicate(value, key)) {
         result[key as keyof T] = value
       }
     }
@@ -685,7 +685,7 @@ export class ObjectUtils {
     const result = {} as Record<keyof T, R>
 
     for (const [key, value] of this.entries(obj)) {
-      result[key as keyof T] = mapper(value, key as keyof T)
+      result[key as keyof T] = mapper(value, key)
     }
 
     return result
@@ -704,7 +704,7 @@ export class ObjectUtils {
     const result = {} as Record<string, T[keyof T]>
 
     for (const [key, value] of this.entries(obj)) {
-      result[mapper(key as keyof T, value)] = value
+      result[mapper(key, value)] = value
     }
 
     return result
@@ -721,7 +721,7 @@ export class ObjectUtils {
     predicate: (value: T[keyof T], key: keyof T) => boolean
   ): boolean {
     for (const [key, value] of this.entries(obj)) {
-      if (predicate(value, key as keyof T)) {
+      if (predicate(value, key)) {
         return true
       }
     }
@@ -739,7 +739,7 @@ export class ObjectUtils {
     predicate: (value: T[keyof T], key: keyof T) => boolean
   ): boolean {
     for (const [key, value] of this.entries(obj)) {
-      if (!predicate(value, key as keyof T)) {
+      if (!predicate(value, key)) {
         return false
       }
     }
@@ -755,7 +755,7 @@ export class ObjectUtils {
     const result = {} as Record<string, keyof T>
 
     for (const [key, value] of this.entries(obj)) {
-      result[String(value)] = key as keyof T
+      result[String(value)] = key
     }
 
     return result

@@ -1,3 +1,8 @@
+/**
+ * 文件管理 Store（后台管理端）
+ * 基于 file-api.md 文档
+ */
+
 import { ref } from 'vue'
 import { defineStore } from 'pinia'
 import { SysFileApi } from '@/api/sys/file'
@@ -8,23 +13,56 @@ import type {
   FileStatusUpdateRequest,
   FileTaskAdminVO,
   FileTaskPageQueryRequest,
-  PageResult,
 } from '@/api/types'
 
 export const useFileStore = defineStore('admin-file', () => {
+  // ==================== 状态 ====================
+
+  /**
+   * 文件列表
+   */
   const files = ref<FileAdminVO[]>([])
+
+  /**
+   * 文件总数
+   */
   const fileTotal = ref(0)
+
+  /**
+   * 上传任务列表
+   */
   const uploadTasks = ref<FileTaskAdminVO[]>([])
+
+  /**
+   * 上传任务总数
+   */
   const taskTotal = ref(0)
+
+  /**
+   * 当前查看的文件详情
+   */
   const fileDetail = ref<FileDetailVO | null>(null)
+
+  /**
+   * 列表加载状态
+   */
   const loading = ref(false)
+
+  /**
+   * 详情加载状态
+   */
   const detailLoading = ref(false)
 
+  // ==================== 操作 ====================
+
+  /**
+   * 分页查询文件列表
+   */
   async function fetchFiles(params?: FileAdminPageQueryRequest): Promise<void> {
     loading.value = true
     try {
       const response = await SysFileApi.getFiles(params)
-      const data = response.data.data as PageResult<FileAdminVO>
+      const data = response.data.data
 
       files.value = data.records
       fileTotal.value = data.total
@@ -33,11 +71,14 @@ export const useFileStore = defineStore('admin-file', () => {
     }
   }
 
+  /**
+   * 分页查询上传任务列表
+   */
   async function fetchUploadTasks(params?: FileTaskPageQueryRequest): Promise<void> {
     loading.value = true
     try {
       const response = await SysFileApi.getUploadTasks(params)
-      const data = response.data.data as PageResult<FileTaskAdminVO>
+      const data = response.data.data
 
       uploadTasks.value = data.records
       taskTotal.value = data.total
@@ -46,6 +87,9 @@ export const useFileStore = defineStore('admin-file', () => {
     }
   }
 
+  /**
+   * 查询文件详情
+   */
   async function fetchFileDetail(id: number): Promise<FileDetailVO | null> {
     detailLoading.value = true
     try {
@@ -57,6 +101,9 @@ export const useFileStore = defineStore('admin-file', () => {
     }
   }
 
+  /**
+   * 更新文件状态
+   */
   async function updateFileStatus(id: number, payload: FileStatusUpdateRequest): Promise<boolean> {
     try {
       await SysFileApi.updateFileStatus(id, payload)
@@ -66,6 +113,9 @@ export const useFileStore = defineStore('admin-file', () => {
     }
   }
 
+  /**
+   * 删除文件
+   */
   async function deleteFile(id: number): Promise<boolean> {
     try {
       await SysFileApi.deleteFile(id)
@@ -75,11 +125,15 @@ export const useFileStore = defineStore('admin-file', () => {
     }
   }
 
+  /**
+   * 清空文件详情
+   */
   function clearFileDetail(): void {
     fileDetail.value = null
   }
 
   return {
+    // 状态
     files,
     fileTotal,
     uploadTasks,
@@ -87,6 +141,8 @@ export const useFileStore = defineStore('admin-file', () => {
     fileDetail,
     loading,
     detailLoading,
+
+    // 操作
     fetchFiles,
     fetchUploadTasks,
     fetchFileDetail,

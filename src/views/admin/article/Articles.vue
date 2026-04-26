@@ -426,6 +426,7 @@ function handleReset(): void {
 
 function handleSizeChange(size: number): void {
   pagination.size = size
+  pagination.current = 1
   void fetchArticles()
 }
 

@@ -1,10 +1,25 @@
+/**
+ * 路由入口文件
+ * 创建并导出 Vue Router 实例
+ */
+
 import { createRouter, createWebHistory, type RouteRecordRaw } from 'vue-router'
-import { ADMIN_FIXED_CHILD_ROUTES, FRONT_FIXED_ROUTES } from './fixed-routes'
+import { ADMIN_FIXED_CHILD_ROUTES, FRONT_ROUTES, PUBLIC_ROUTES } from './fixed-routes'
 import { setupRouterGuards } from './guards'
 
-// 静态路由只保留公共页面和后台壳，后台业务页由接口菜单动态注入。
+// ==================== 路由配置 ====================
+
+/**
+ * 完整路由表
+ * - FRONT_ROUTES: 前台页面路由（嵌套在 FrontLayout 下）
+ * - PUBLIC_ROUTES: 公共路由（登录、注册等）
+ * - /admin: 后台管理入口（动态路由在守卫中注册）
+ * - /403: 无权限页面
+ * - /:pathMatch(.*)*: 404 页面
+ */
 const routes: RouteRecordRaw[] = [
-  ...FRONT_FIXED_ROUTES,
+  ...FRONT_ROUTES,
+  ...PUBLIC_ROUTES,
   {
     path: '/admin',
     name: 'AdminLayout',
@@ -33,11 +48,17 @@ const routes: RouteRecordRaw[] = [
   },
 ]
 
+// ==================== 创建路由实例 ====================
+
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes,
 })
 
+/**
+ * 安装路由守卫
+ * 在路由实例上注册 beforeEach 和 afterEach 守卫
+ */
 setupRouterGuards(router)
 
 export default router

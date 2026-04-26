@@ -502,7 +502,7 @@ async function handleToggleStatus(id: number, currentStatus: number): Promise<vo
 
 async function handleDelete(id: number): Promise<void> {
   try {
-    await ElMessageBox.confirm('确认删除该文件记录吗？删除后引用演示数据会同步移除。', '提示', {
+    await ElMessageBox.confirm('确定要删除该文件记录吗？', '提示', {
       confirmButtonText: '确定',
       cancelButtonText: '取消',
       type: 'warning',

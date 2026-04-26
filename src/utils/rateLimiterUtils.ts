@@ -14,7 +14,7 @@ function assertPositiveNumber(value: number, message: string): void {
 
 function getDecoratorKey(instance: unknown, fallback: object): object {
   if ((typeof instance === 'object' && instance !== null) || typeof instance === 'function') {
-    return instance as object
+    return instance
   }
   return fallback
 }

@@ -10,7 +10,6 @@ import type {
   NoticeQueryRequest,
   SysNoticeAdminVO,
   SysNoticeSaveRequest,
-  PageResult
 } from '@/api/types'
 
 export const useNoticeStore = defineStore('notice', () => {
@@ -55,7 +54,7 @@ export const useNoticeStore = defineStore('notice', () => {
     loading.value = true
     try {
       const response = await NoticeApi.getNotices(params)
-      const data = response.data.data as PageResult<SysNoticeAdminVO>
+      const data = response.data.data
 
       notices.value = data.records
       total.value = data.total

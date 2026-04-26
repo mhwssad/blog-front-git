@@ -218,7 +218,7 @@ class StorageUtil {
       }
 
       return {
-        value: parsed as T,
+        value: parsed,
         expired: false
       }
     } catch {

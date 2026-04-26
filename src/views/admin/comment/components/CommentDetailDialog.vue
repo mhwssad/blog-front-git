@@ -119,7 +119,7 @@ import {
 } from '@/utils/contentAdmin'
 
 const props = defineProps({
-  modelValue: {
+  visible: {
     type: Boolean,
     default: false,
   },
@@ -129,11 +129,11 @@ const props = defineProps({
   },
 })
 
-const emit = defineEmits(['update:modelValue'])
+const emit = defineEmits(['update:visible'])
 
 const dialogVisible = computed({
-  get: () => props.modelValue,
-  set: value => emit('update:modelValue', value),
+  get: () => props.visible,
+  set: value => emit('update:visible', value),
 })
 
 function buildReplyTree(items: CommentVO[]): CommentVO[] {

@@ -268,9 +268,9 @@ async function handleStatusChange(row: CategoryAdminVO, value: number): Promise<
 
 async function handleDelete(row: CategoryAdminVO): Promise<void> {
   try {
-    await ElMessageBox.confirm(`确认删除分类「${row.name}」吗？`, '删除提示', {
+    await ElMessageBox.confirm(`确定要删除分类 "${row.name}" 吗？`, '提示', {
       type: 'warning',
-      confirmButtonText: '删除',
+      confirmButtonText: '确定',
       cancelButtonText: '取消',
     })
 
