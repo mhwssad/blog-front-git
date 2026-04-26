@@ -1,77 +1,55 @@
 <template>
   <div class="home-view">
-    <HomeHeroSection
-      v-model:keyword="keyword"
-      :loading="frontContentStore.loading"
-      :is-logged-in="authStore.isLoggedIn"
-      :article-total="frontContentStore.total"
-      :category-total="flattenedCategories.length"
-      :tag-total="frontContentStore.tags.length"
-      :comment-total="frontContentStore.comments.length"
-      :featured-article="featuredArticle"
-      @search="handleSearch"
-      @browse="scrollToArticles"
-      @entry="goEntry"
-    />
+    <div class="home-container">
+      <HomeBanner
+        :keyword="keyword"
+        :loading="frontContentStore.loading"
+        :categories="flattenedCategories"
+        :selected-category-id="filters.categoryId"
+        @update:keyword="keyword = $event"
+        @search="handleSearch"
+      />
 
-    <main class="content-shell">
-      <HomeFeaturedSection :articles="frontContentStore.featuredArticles" />
-
-      <el-row :gutter="24" class="content-grid">
-        <el-col :xs="24" :xl="17">
-          <section ref="articlesSectionRef">
-            <HomeArticleSection
-              :loading="frontContentStore.loading"
-              :articles="frontContentStore.articles"
-              :total="frontContentStore.total"
-              :current="pagination.current"
-              :size="pagination.size"
-              :sort-options="sortOptions"
-              :selected-sort="filters.sort || 'latest'"
-              :selected-category-id="filters.categoryId"
-              :selected-tag-id="filters.tagId"
-              :categories="flattenedCategories"
-              :tags="frontContentStore.tags"
-              @sort-change="setSort"
-              @select-category="setCategory"
-              @select-tag="setTag"
-              @size-change="handleSizeChange"
-              @page-change="handleCurrentChange"
-            />
-          </section>
+      <el-row :gutter="24">
+        <el-col :xs="24" :lg="17">
+          <HomeArticleSection
+            :loading="frontContentStore.loading"
+            :articles="frontContentStore.articles"
+            :total="frontContentStore.total"
+            :current="pagination.current"
+            :size="pagination.size"
+            :sort-options="sortOptions"
+            :selected-sort="filters.sort || 'latest'"
+            @sort-change="setSort"
+            @page-change="handleCurrentChange"
+          />
         </el-col>
 
-        <el-col :xs="24" :xl="7">
+        <el-col :xs="24" :lg="7">
           <HomeSidebar
             :hot-articles="frontContentStore.hotArticles"
-            :categories="frontContentStore.categories"
             :tags="frontContentStore.tags"
             :comments="frontContentStore.comments"
             :format-date="formatDate"
-            @select-category="setCategory"
             @select-tag="setTag"
           />
         </el-col>
       </el-row>
-    </main>
+    </div>
   </div>
 </template>
 
 <script lang="ts" setup>
 import { computed, onMounted, reactive, ref } from 'vue'
-import { useRouter } from 'vue-router'
-import { useAuthStore, useFrontContentStore } from '@/stores'
+import { useFrontContentStore } from '@/stores'
 import type { PublicArticleQueryRequest, PublicCategoryTreeVO } from '@/api/types'
 import HomeArticleSection from './components/HomeArticleSection.vue'
-import HomeFeaturedSection from './components/HomeFeaturedSection.vue'
-import HomeHeroSection from './components/HomeHeroSection.vue'
+import HomeBanner from './components/HomeBanner.vue'
 import HomeSidebar from './components/HomeSidebar.vue'
 import type { CategoryOption, SortOption } from './types'
 
-const router = useRouter()
-const authStore = useAuthStore()
 const frontContentStore = useFrontContentStore()
-const articlesSectionRef = ref<HTMLElement | null>(null)
+
 const keyword = ref('')
 
 const filters = reactive<PublicArticleQueryRequest>({
@@ -94,8 +72,6 @@ const sortOptions: SortOption[] = [
   { label: '热门内容', value: 'hot' },
 ]
 
-const featuredArticle = computed(() => frontContentStore.featuredArticles[0] ?? null)
-
 const flattenedCategories = computed(() => {
   const result: CategoryOption[] = []
 
@@ -105,7 +81,6 @@ const flattenedCategories = computed(() => {
         id: node.id,
         label: `${depth > 0 ? `${'· '.repeat(depth)}` : ''}${node.name}`,
       })
-
       if (node.children?.length) {
         walk(node.children, depth + 1)
       }
@@ -128,7 +103,6 @@ function buildQuery(): PublicArticleQueryRequest {
 }
 
 async function refreshArticles(): Promise<void> {
-  filters.keyword = keyword.value
   await frontContentStore.fetchArticles(buildQuery())
 }
 
@@ -143,20 +117,8 @@ function setSort(sort: SortOption['value']): void {
   void refreshArticles()
 }
 
-function setCategory(categoryId?: number): void {
-  filters.categoryId = categoryId
-  pagination.current = 1
-  void refreshArticles()
-}
-
 function setTag(tagId?: number): void {
   filters.tagId = tagId
-  pagination.current = 1
-  void refreshArticles()
-}
-
-function handleSizeChange(size: number): void {
-  pagination.size = size
   pagination.current = 1
   void refreshArticles()
 }
@@ -166,27 +128,10 @@ function handleCurrentChange(current: number): void {
   void refreshArticles()
 }
 
-function goEntry(): void {
-  router.push(authStore.isLoggedIn ? '/admin' : '/login')
-}
-
-function scrollToArticles(): void {
-  articlesSectionRef.value?.scrollIntoView({
-    behavior: 'smooth',
-    block: 'start',
-  })
-}
-
 function formatDate(value?: string | null): string {
-  if (!value) {
-    return '刚刚'
-  }
-
+  if (!value) return '刚刚'
   const date = new Date(value)
-  if (Number.isNaN(date.getTime())) {
-    return value
-  }
-
+  if (Number.isNaN(date.getTime())) return value
   return new Intl.DateTimeFormat('zh-CN', {
     month: '2-digit',
     day: '2-digit',
@@ -205,25 +150,18 @@ onMounted(async () => {
 <style scoped>
 .home-view {
   min-height: 100vh;
-  background:
-    radial-gradient(circle at top, rgba(191, 219, 254, 0.42), transparent 24%),
-    linear-gradient(180deg, #f7fbff 0%, #f8fafc 42%, #fffaf4 100%);
+  background: #f5f5f5;
 }
 
-.content-shell {
-  width: min(1280px, 100%);
+.home-container {
+  width: min(1080px, 100%);
   margin: 0 auto;
-  padding: 16px 32px 48px;
+  padding: 0 24px 48px;
 }
 
-.content-grid {
-  margin-top: 24px;
-}
-
-@media (max-width: 900px) {
-  .content-shell {
-    padding-right: 20px;
-    padding-left: 20px;
+@media (max-width: 768px) {
+  .home-container {
+    padding: 0 16px 32px;
   }
 }
 </style>

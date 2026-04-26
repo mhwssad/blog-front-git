@@ -1,31 +1,25 @@
 <template>
-  <el-card shadow="never" class="sidebar-card">
-    <template #header>
-      <div class="sidebar-title-row">
-        <el-tag type="primary" effect="plain" round>最新评论</el-tag>
-        <el-icon class="title-icon"><ChatLineRound /></el-icon>
-      </div>
-    </template>
-
-    <div class="comment-list">
-      <article v-for="comment in comments" :key="comment.id" class="comment-item">
-        <el-avatar :size="40" :src="comment.userAvatar || undefined">
-          {{ comment.userNickname.slice(0, 1) }}
+  <div class="sidebar-comments">
+    <div class="sidebar-block-title">最新评论</div>
+    <div v-if="comments.length" class="comment-list">
+      <div v-for="comment in comments" :key="comment.id" class="comment-item">
+        <el-avatar :size="28" :src="comment.userAvatar ?? undefined">
+          {{ comment.userNickname?.charAt(0) }}
         </el-avatar>
-        <div class="comment-copy">
-          <div class="comment-topline">
-            <strong>{{ comment.userNickname }}</strong>
-            <span>{{ formatDate(comment.createdAt) }}</span>
+        <div class="comment-body">
+          <div class="comment-top">
+            <span class="comment-name">{{ comment.userNickname }}</span>
+            <span class="comment-time">{{ formatDate(comment.createdAt) }}</span>
           </div>
-          <p>{{ comment.content }}</p>
+          <p class="comment-text">{{ comment.content }}</p>
         </div>
-      </article>
+      </div>
     </div>
-  </el-card>
+    <div v-else class="sidebar-empty">暂无评论</div>
+  </div>
 </template>
 
 <script lang="ts" setup>
-import { ChatLineRound } from '@element-plus/icons-vue'
 import type { PublicCommentVO } from '@/api/types'
 
 defineProps<{
@@ -35,47 +29,58 @@ defineProps<{
 </script>
 
 <style scoped>
-.sidebar-card {
-  border: 1px solid rgba(148, 163, 184, 0.16);
-  border-radius: 24px;
-  background: rgba(255, 255, 255, 0.82);
+.sidebar-block-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--el-text-color-primary);
+  margin-bottom: 12px;
 }
 
-.sidebar-title-row,
-.comment-topline {
+.comment-list {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-
-.title-icon {
-  color: #94a3b8;
-}
-
-.comment-item {
-  display: grid;
-  grid-template-columns: 40px minmax(0, 1fr);
+  flex-direction: column;
   gap: 12px;
 }
 
-.comment-item + .comment-item {
-  margin-top: 18px;
+.comment-item {
+  display: flex;
+  gap: 10px;
 }
 
-.comment-topline strong {
-  font-size: 14px;
-  color: #0f172a;
+.comment-body {
+  flex: 1;
+  min-width: 0;
 }
 
-.comment-topline span {
-  color: #94a3b8;
+.comment-top {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.comment-name {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--el-text-color-primary);
+}
+
+.comment-time {
   font-size: 12px;
+  color: var(--el-text-color-placeholder);
 }
 
-.comment-copy p {
-  margin-top: 8px;
-  color: #475569;
-  font-size: 14px;
-  line-height: 1.75;
+.comment-text {
+  margin: 4px 0 0;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--el-text-color-secondary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sidebar-empty {
+  font-size: 13px;
+  color: var(--el-text-color-placeholder);
 }
 </style>

@@ -29,3 +29,6 @@ export { useChatStore } from './modules/chat'
 
 // ==================== 用户中心 Stores ====================
 export { useUserNoticeStore } from './modules/userNotice'
+export { useUserFollowStore } from './modules/userFollow'
+export { useUserFileStore } from './modules/userFile'
+export { useUserChatStore } from './modules/userChat'

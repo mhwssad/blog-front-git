@@ -1,30 +1,23 @@
 <template>
-  <el-card shadow="never" class="sidebar-card">
-    <template #header>
-      <div class="sidebar-title-row">
-        <el-tag type="primary" effect="plain" round>标签云</el-tag>
-        <el-icon class="title-icon"><CollectionTag /></el-icon>
-      </div>
-    </template>
-
-    <div class="tag-cloud">
+  <div class="sidebar-tags">
+    <div class="sidebar-block-title">标签</div>
+    <div v-if="tags.length" class="tag-list">
       <el-tag
         v-for="tag in tags"
         :key="tag.id"
-        round
+        size="small"
         effect="plain"
         class="tag-item"
-        :style="{ '--tag-color': tag.color || '#2563eb' }"
         @click="emit('select-tag', tag.id)"
       >
         {{ tag.name }}
       </el-tag>
     </div>
-  </el-card>
+    <div v-else class="sidebar-empty">暂无标签</div>
+  </div>
 </template>
 
 <script lang="ts" setup>
-import { CollectionTag } from '@element-plus/icons-vue'
 import type { PublicTagVO } from '@/api/types'
 
 defineProps<{
@@ -32,37 +25,30 @@ defineProps<{
 }>()
 
 const emit = defineEmits<{
-  (e: 'select-tag', value: number): void
+  'select-tag': [id: number]
 }>()
 </script>
 
 <style scoped>
-.sidebar-card {
-  border: 1px solid rgba(148, 163, 184, 0.16);
-  border-radius: 24px;
-  background: rgba(255, 255, 255, 0.82);
+.sidebar-block-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--el-text-color-primary);
+  margin-bottom: 12px;
 }
 
-.sidebar-title-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-
-.title-icon {
-  color: #94a3b8;
-}
-
-.tag-cloud {
+.tag-list {
   display: flex;
   flex-wrap: wrap;
-  gap: 10px;
+  gap: 6px;
 }
 
 .tag-item {
-  border-color: color-mix(in srgb, var(--tag-color) 22%, #ffffff);
-  color: var(--tag-color);
-  background: color-mix(in srgb, var(--tag-color) 8%, #ffffff);
   cursor: pointer;
+}
+
+.sidebar-empty {
+  font-size: 13px;
+  color: var(--el-text-color-placeholder);
 }
 </style>

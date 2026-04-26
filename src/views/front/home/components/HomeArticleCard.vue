@@ -1,26 +1,35 @@
 <template>
-  <el-card shadow="hover" class="article-card">
-    <div class="article-card-top">
-      <el-tag v-if="article.isTop === 1" type="danger" effect="light" round>TOP</el-tag>
-      <span class="article-time">{{ article.publishTime || '待发布' }}</span>
+  <router-link :to="`/articles/${article.id}`" class="article-card">
+    <div class="article-cover">
+      <img v-if="article.coverImage" :src="article.coverImage" :alt="article.title" />
+      <div v-else class="cover-placeholder" />
     </div>
 
-    <h3 class="article-title">{{ article.title }}</h3>
-    <p class="article-summary">
-      {{ article.summary || '该文章当前未提供摘要。' }}
-    </p>
+    <div class="article-body">
+      <div class="article-top">
+        <el-tag v-if="article.isTop === 1" size="small" type="danger" effect="plain">置顶</el-tag>
+        <span class="article-category">{{ article.authorName }}</span>
+        <span class="article-dot">·</span>
+        <span class="article-date">{{ article.publishTime ?? '待发布' }}</span>
+      </div>
 
-    <div class="article-meta">
-      <span><el-icon><User /></el-icon>{{ article.authorName }}</span>
-      <span><el-icon><View /></el-icon>{{ article.viewCount }}</span>
-      <span><el-icon><Star /></el-icon>{{ article.likeCount }}</span>
-      <span><el-icon><ChatDotRound /></el-icon>{{ article.commentCount }}</span>
+      <h3 class="article-title">{{ article.title }}</h3>
+
+      <p class="article-summary">
+        {{ article.summary || '暂无摘要' }}
+      </p>
+
+      <div class="article-meta">
+        <span><el-icon><View /></el-icon>{{ article.viewCount }}</span>
+        <span><el-icon><Star /></el-icon>{{ article.likeCount }}</span>
+        <span><el-icon><ChatDotRound /></el-icon>{{ article.commentCount }}</span>
+      </div>
     </div>
-  </el-card>
+  </router-link>
 </template>
 
 <script lang="ts" setup>
-import { ChatDotRound, Star, User, View } from '@element-plus/icons-vue'
+import { ChatDotRound, Star, View } from '@element-plus/icons-vue'
 import type { PublicArticleCardVO } from '@/api/types'
 
 defineProps<{
@@ -30,48 +39,108 @@ defineProps<{
 
 <style scoped>
 .article-card {
-  height: 100%;
-  border-radius: 24px;
+  display: flex;
+  gap: 20px;
+  padding: 20px 0;
+  text-decoration: none;
+  border-bottom: 1px solid var(--el-border-color-lighter);
+  transition: background 0.15s;
 }
 
-.article-card-top,
-.article-meta {
+.article-card:hover {
+  background: var(--el-fill-color-lighter);
+  border-radius: 6px;
+}
+
+.article-cover {
+  flex-shrink: 0;
+  width: 200px;
+  height: 140px;
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.article-cover img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.cover-placeholder {
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(135deg, var(--el-color-primary-light-7), var(--el-color-primary-light-9));
+}
+
+.article-body {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.article-top {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 12px;
+  gap: 6px;
+  margin-bottom: 8px;
+  font-size: 13px;
+  color: var(--el-text-color-placeholder);
 }
 
-.article-time {
-  color: #64748b;
-  font-size: 13px;
+.article-dot {
+  color: var(--el-text-color-placeholder);
 }
 
 .article-title {
-  margin-top: 18px;
-  font-size: 22px;
-  line-height: 1.35;
-  font-weight: 700;
-  color: #0f172a;
+  margin: 0 0 8px;
+  font-size: 18px;
+  font-weight: 600;
+  line-height: 1.4;
+  color: var(--el-text-color-primary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.article-card:hover .article-title {
+  color: var(--el-color-primary);
 }
 
 .article-summary {
-  min-height: 88px;
-  margin-top: 12px;
-  color: #475569;
-  line-height: 1.75;
+  margin: 0 0 12px;
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--el-text-color-secondary);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 
 .article-meta {
-  flex-wrap: wrap;
-  margin-top: 18px;
-  color: #475569;
+  display: flex;
+  gap: 16px;
+  color: var(--el-text-color-placeholder);
+  font-size: 13px;
 }
 
 .article-meta span {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  font-size: 14px;
+  gap: 4px;
+}
+
+@media (max-width: 768px) {
+  .article-card {
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .article-cover {
+    width: 100%;
+    height: 180px;
+  }
 }
 </style>

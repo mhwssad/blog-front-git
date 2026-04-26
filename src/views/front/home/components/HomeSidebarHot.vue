@@ -1,26 +1,25 @@
 <template>
-  <el-card shadow="never" class="sidebar-card">
-    <template #header>
-      <div class="sidebar-title-row">
-        <el-tag type="primary" effect="plain" round>热门榜</el-tag>
-        <el-icon class="title-icon"><TrendCharts /></el-icon>
-      </div>
-    </template>
-
-    <div class="hot-list">
-      <article v-for="(article, index) in articles" :key="article.id" class="hot-item">
-        <div class="hot-rank">{{ index + 1 }}</div>
-        <div class="hot-copy">
-          <h3>{{ article.title }}</h3>
-          <p>{{ article.viewCount }} 浏览 · {{ article.likeCount }} 点赞</p>
+  <div class="sidebar-hot">
+    <div class="sidebar-block-title">热门文章</div>
+    <div v-if="articles.length" class="hot-list">
+      <router-link
+        v-for="(article, index) in articles"
+        :key="article.id"
+        :to="`/articles/${article.id}`"
+        class="hot-item"
+      >
+        <span class="hot-rank">{{ index + 1 }}</span>
+        <div class="hot-info">
+          <span class="hot-title">{{ article.title }}</span>
+          <span class="hot-views">{{ article.viewCount }} 阅读</span>
         </div>
-      </article>
+      </router-link>
     </div>
-  </el-card>
+    <div v-else class="sidebar-empty">暂无数据</div>
+  </div>
 </template>
 
 <script lang="ts" setup>
-import { TrendCharts } from '@element-plus/icons-vue'
 import type { PublicArticleCardVO } from '@/api/types'
 
 defineProps<{
@@ -29,55 +28,87 @@ defineProps<{
 </script>
 
 <style scoped>
-.sidebar-card {
-  border: 1px solid rgba(148, 163, 184, 0.16);
-  border-radius: 24px;
-  background: rgba(255, 255, 255, 0.82);
+.sidebar-block-title {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--el-text-color-primary);
+  margin-bottom: 12px;
 }
 
-.sidebar-title-row {
+.hot-list {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-
-.title-icon {
-  color: #94a3b8;
+  flex-direction: column;
+  gap: 2px;
 }
 
 .hot-item {
-  display: grid;
-  grid-template-columns: 42px minmax(0, 1fr);
-  gap: 14px;
-  padding: 14px 0;
-  border-bottom: 1px solid rgba(226, 232, 240, 0.8);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 4px;
+  text-decoration: none;
+  border-radius: 4px;
+  transition: background 0.15s;
 }
 
-.hot-item:last-child {
-  border-bottom: none;
-  padding-bottom: 0;
+.hot-item:hover {
+  background: var(--el-fill-color-light);
 }
 
 .hot-rank {
-  display: grid;
-  place-items: center;
-  width: 42px;
-  height: 42px;
-  border-radius: 14px;
-  background: linear-gradient(135deg, #dbeafe, #fde68a);
-  font-weight: 800;
+  width: 22px;
+  height: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 600;
+  background: var(--el-fill-color);
+  color: var(--el-text-color-secondary);
+  flex-shrink: 0;
 }
 
-.hot-copy h3 {
-  font-size: 15px;
-  line-height: 1.55;
-  font-weight: 700;
-  color: #0f172a;
+.hot-item:nth-child(1) .hot-rank {
+  background: var(--el-color-primary);
+  color: #fff;
 }
 
-.hot-copy p {
-  margin-top: 6px;
-  color: #64748b;
+.hot-item:nth-child(2) .hot-rank {
+  background: var(--el-color-primary-light-3);
+  color: #fff;
+}
+
+.hot-item:nth-child(3) .hot-rank {
+  background: var(--el-color-primary-light-5);
+  color: #fff;
+}
+
+.hot-info {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.hot-title {
   font-size: 13px;
+  color: var(--el-text-color-primary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.hot-item:hover .hot-title {
+  color: var(--el-color-primary);
+}
+
+.hot-views {
+  font-size: 12px;
+  color: var(--el-text-color-placeholder);
+}
+
+.sidebar-empty {
+  font-size: 13px;
+  color: var(--el-text-color-placeholder);
 }
 </style>
