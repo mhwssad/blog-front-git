@@ -11,7 +11,7 @@ export {}
 /* prettier-ignore */
 declare module 'vue' {
   export interface GlobalComponents {
-    AdminResourceOverview: typeof import('./components/admin/AdminResourceOverview.vue')['default']
+    AuthorBadge: typeof import('./components/common/AuthorBadge.vue')['default']
     ElAlert: typeof import('element-plus/es')['ElAlert']
     ElAvatar: typeof import('element-plus/es')['ElAvatar']
     ElBadge: typeof import('element-plus/es')['ElBadge']
@@ -50,12 +50,9 @@ declare module 'vue' {
     ElRadio: typeof import('element-plus/es')['ElRadio']
     ElRadioButton: typeof import('element-plus/es')['ElRadioButton']
     ElRadioGroup: typeof import('element-plus/es')['ElRadioGroup']
-    ElResult: typeof import('element-plus/es')['ElResult']
     ElRow: typeof import('element-plus/es')['ElRow']
     ElSelect: typeof import('element-plus/es')['ElSelect']
     ElSkeleton: typeof import('element-plus/es')['ElSkeleton']
-    ElSpace: typeof import('element-plus/es')['ElSpace']
-    ElStatistic: typeof import('element-plus/es')['ElStatistic']
     ElSubMenu: typeof import('element-plus/es')['ElSubMenu']
     ElSwitch: typeof import('element-plus/es')['ElSwitch']
     ElTable: typeof import('element-plus/es')['ElTable']
@@ -68,9 +65,15 @@ declare module 'vue' {
     ElTree: typeof import('element-plus/es')['ElTree']
     ElTreeSelect: typeof import('element-plus/es')['ElTreeSelect']
     ElUpload: typeof import('element-plus/es')['ElUpload']
+    ExperienceBar: typeof import('./components/common/ExperienceBar.vue')['default']
     HtmlCodeEditor: typeof import('./components/editor/HtmlCodeEditor.vue')['default']
+    LevelRequirementTip: typeof import('./components/common/LevelRequirementTip.vue')['default']
+    ReportDialog: typeof import('./components/common/ReportDialog.vue')['default']
+    RiskConfirmDialog: typeof import('./components/common/RiskConfirmDialog.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
+    TwoFactorDialog: typeof import('./components/common/TwoFactorDialog.vue')['default']
+    UserLevelBadge: typeof import('./components/common/UserLevelBadge.vue')['default']
   }
   export interface GlobalDirectives {
     vLoading: typeof import('element-plus/es')['ElLoadingDirective']

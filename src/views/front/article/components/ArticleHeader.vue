@@ -15,6 +15,7 @@
         <span class="meta-item">
           <el-icon><User /></el-icon>
           {{ article.authorName }}
+          <AuthorBadge />
         </span>
         <span class="meta-item">
           <el-icon><Clock /></el-icon>
@@ -29,6 +30,15 @@
           {{ article.commentCount }}
         </span>
       </div>
+    </div>
+
+    <div class="article-actions">
+      <el-button size="small" text>
+        <el-icon><Share /></el-icon> 分享
+      </el-button>
+      <el-button size="small" text type="danger">
+        <el-icon><Warning /></el-icon> 举报
+      </el-button>
     </div>
 
     <div v-if="article.tags?.length" class="article-tags">
@@ -49,8 +59,9 @@
 
 <script lang="ts" setup>
 import { computed } from 'vue'
-import { ChatDotRound, Clock, User, View } from '@element-plus/icons-vue'
+import { ChatDotRound, Clock, User, View, Share, Warning } from '@element-plus/icons-vue'
 import type { PublicArticleDetailVO } from '@/api/types'
+import AuthorBadge from '@/components/common/AuthorBadge.vue'
 
 const props = defineProps<{
   article: PublicArticleDetailVO
@@ -92,6 +103,12 @@ const firstCategory = computed(() => props.article.categories?.[0])
   display: inline-flex;
   align-items: center;
   gap: 4px;
+}
+
+.article-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 8px;
 }
 
 .article-tags {

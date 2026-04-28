@@ -24,6 +24,14 @@
         <el-tag v-if="store.currentConversation.conversationType === 'group'" size="small" effect="plain">
           群聊
         </el-tag>
+        <router-link
+          v-if="store.currentConversation.conversationType === 'group'"
+          :to="`/chat/groups/${store.currentConversation.id}/settings`"
+        >
+          <el-button size="small" text>
+            <el-icon><Setting /></el-icon>
+          </el-button>
+        </router-link>
       </div>
 
       <MessageList
@@ -51,6 +59,7 @@
 <script lang="ts" setup>
 import { ref, computed, onMounted } from 'vue'
 import { ElMessage } from 'element-plus'
+import { Setting } from '@element-plus/icons-vue'
 import { useUserChatStore, useAuthStore } from '@/stores'
 import ConversationList from './components/ConversationList.vue'
 import MessageList from './components/MessageList.vue'

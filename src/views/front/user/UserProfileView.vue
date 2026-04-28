@@ -3,7 +3,14 @@
     <div class="profile-card">
       <el-avatar :size="64">{{ userId }}</el-avatar>
       <div class="profile-info">
-        <div class="profile-name">用户 {{ userId }}</div>
+        <div class="profile-name">
+          用户 {{ userId }}
+          <UserLevelBadge :level="3" size="small" />
+        </div>
+        <div class="profile-actions">
+          <el-button size="small" type="primary">关注</el-button>
+          <el-button size="small" plain>私信</el-button>
+        </div>
       </div>
     </div>
 
@@ -74,6 +81,7 @@ import { ref, computed, onMounted, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import { FollowApi } from '@/api/follow'
 import type { PublicFollowUserVO } from '@/api/types'
+import UserLevelBadge from '@/components/common/UserLevelBadge.vue'
 
 const route = useRoute()
 const userId = computed(() => Number(route.params.userId))
@@ -130,6 +138,15 @@ onMounted(loadData)
 .profile-name {
   font-size: 18px;
   font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.profile-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 8px;
 }
 
 .profile-tabs {

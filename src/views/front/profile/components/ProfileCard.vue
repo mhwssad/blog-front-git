@@ -5,6 +5,8 @@
     </el-avatar>
     <div class="profile-info">
       <div class="profile-name">{{ user.nickname ?? user.username }}</div>
+      <UserLevelBadge :level="5" size="small" />
+      <ExperienceBar :current="320" :total="600" :level="5" :show-text="false" />
       <div class="profile-stats">
         <span class="stat-item">
           <strong>{{ store.followCount.followingCount }}</strong> 关注
@@ -19,6 +21,8 @@
 
 <script lang="ts" setup>
 import { useUserFollowStore } from '@/stores'
+import UserLevelBadge from '@/components/common/UserLevelBadge.vue'
+import ExperienceBar from '@/components/common/ExperienceBar.vue'
 
 defineProps<{
   user: { username: string; nickname?: string; avatar?: string | null }
@@ -45,6 +49,10 @@ const store = useUserFollowStore()
   font-size: 18px;
   font-weight: 600;
   color: var(--el-text-color-primary);
+}
+
+.profile-card :deep(.experience-bar) {
+  margin-top: 8px;
 }
 
 .profile-stats {

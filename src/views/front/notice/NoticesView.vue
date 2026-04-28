@@ -18,6 +18,9 @@
         >
           全部已读
         </el-button>
+        <router-link to="/user/notification-settings">
+          <el-button size="small" plain>通知设置</el-button>
+        </router-link>
       </div>
     </div>
 

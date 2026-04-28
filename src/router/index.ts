@@ -39,6 +39,22 @@ const routes: RouteRecordRaw[] = [
     },
   },
   {
+    path: '/forgot-password',
+    name: 'ForgotPassword',
+    component: () => import('@/views/common/auth/ForgotPassword.vue'),
+    meta: {
+      title: '找回密码',
+    },
+  },
+  {
+    path: '/500',
+    name: 'ServerError',
+    component: () => import('@/views/common/err/ServerError.vue'),
+    meta: {
+      title: '服务器错误',
+    },
+  },
+  {
     path: '/:pathMatch(.*)*',
     name: 'NotFound',
     component: () => import('@/views/common/err/NotFound.vue'),
