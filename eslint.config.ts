@@ -93,6 +93,7 @@ export default [
       '**/components.d.ts',
       '**/types/auto-imports.d.ts',
       '**/uno.css',
+      'mock/**',
     ],
   },
 
