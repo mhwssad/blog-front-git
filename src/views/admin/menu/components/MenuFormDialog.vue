@@ -172,7 +172,7 @@
 import { computed, reactive, ref, watch } from 'vue'
 import { ElMessage, type FormInstance, type FormRules } from 'element-plus'
 import { MenuApi } from '@/api/sys/menu'
-import type { SysMenuAdminVO, SysMenuSaveRequest } from '@/api/types'
+import type { SysMenuAdminVO, SysMenuSaveRequest } from '@/types/api-types'
 import { MENU_TYPE_OPTIONS } from '@/utils'
 
 interface ParamEntry {

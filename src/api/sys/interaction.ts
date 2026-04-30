@@ -4,7 +4,7 @@
  */
 
 import { http } from '../request'
-import type { InteractionQueryRequest, InteractionVO, PageResult } from '../types'
+import type { InteractionQueryRequest, InteractionVO, PageResult } from '@/types/api-types'
 
 /**
  * 互动管理 API

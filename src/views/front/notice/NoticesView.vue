@@ -62,7 +62,7 @@
 import { ref, onMounted } from 'vue'
 import { ElMessage } from 'element-plus'
 import { useUserNoticeStore } from '@/stores'
-import type { UserNoticeVO } from '@/api/types'
+import type { UserNoticeVO } from '@/types/api-types'
 import NoticeItem from './components/NoticeItem.vue'
 import NoticeDetailDialog from './components/NoticeDetailDialog.vue'
 

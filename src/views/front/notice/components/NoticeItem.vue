@@ -12,7 +12,7 @@
 </template>
 
 <script lang="ts" setup>
-import type { UserNoticeVO } from '@/api/types'
+import type { UserNoticeVO } from '@/types/api-types'
 
 defineProps<{
   notice: UserNoticeVO

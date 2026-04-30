@@ -1,4 +1,4 @@
-import type { PublicArticleQueryRequest } from '@/api/types'
+import type { PublicArticleQueryRequest } from '@/types/api-types'
 
 export interface CategoryOption {
   id: number

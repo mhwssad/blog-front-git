@@ -44,7 +44,7 @@
 
 <script lang="ts" setup>
 import { Folder, MoreFilled } from '@element-plus/icons-vue'
-import type { CollectionFolderVO } from '@/api/types'
+import type { CollectionFolderVO } from '@/types/api-types'
 
 defineProps<{
   folders: CollectionFolderVO[]

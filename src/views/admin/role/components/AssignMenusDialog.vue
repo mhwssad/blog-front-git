@@ -80,7 +80,7 @@ import { ElMessage } from 'element-plus'
 import { Search } from '@element-plus/icons-vue'
 import { MenuApi } from '@/api/sys/menu'
 import { RoleApi } from '@/api/sys/role'
-import type { SysMenuAdminVO } from '@/api/types'
+import type { SysMenuAdminVO } from '@/types/api-types'
 
 interface Props {
   visible: boolean

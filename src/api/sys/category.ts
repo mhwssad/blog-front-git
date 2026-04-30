@@ -4,7 +4,7 @@
  */
 
 import { http } from '../request'
-import type { CategoryAdminVO, CategorySaveRequest, StatusUpdateRequest } from '../types'
+import type { CategoryAdminVO, CategorySaveRequest, StatusUpdateRequest } from '@/types/api-types'
 
 /**
  * 分类管理 API

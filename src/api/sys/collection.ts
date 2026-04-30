@@ -9,7 +9,7 @@ import type {
   CollectionFolderVO,
   CollectionVO,
   PageResult,
-} from '../types'
+} from '@/types/api-types'
 
 /**
  * 收藏管理 API

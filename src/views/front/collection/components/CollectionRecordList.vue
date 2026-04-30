@@ -58,7 +58,7 @@
 
 <script lang="ts" setup>
 import { ref } from 'vue'
-import type { CollectionVO } from '@/api/types'
+import type { CollectionVO } from '@/types/api-types'
 
 defineProps<{
   records: CollectionVO[]

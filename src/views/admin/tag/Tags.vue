@@ -107,7 +107,7 @@ import { DateUtils } from '@/utils/dateUtils'
 import { useContentAdmin } from '@/composables/useContentAdmin'
 import { useTagStore } from '@/stores'
 import TagFormDialog from './components/TagFormDialog.vue'
-import type { TagVO } from '@/api/types'
+import type { TagVO } from '@/types/api-types'
 
 const tagStore = useTagStore()
 const { tags } = storeToRefs(tagStore)

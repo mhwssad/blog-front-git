@@ -10,7 +10,7 @@ import type {
   CommentQueryRequest,
   CommentVO,
   StatusUpdateRequest,
-} from '@/api/types'
+} from '@/types/api-types'
 
 export const useCommentStore = defineStore('comment', () => {
   // ==================== 状态 ====================

@@ -4,7 +4,7 @@
  */
 
 import { http } from '../request'
-import type { SysMenuAdminVO, SysMenuSaveRequest } from '../types'
+import type { SysMenuAdminVO, SysMenuSaveRequest } from '@/types/api-types'
 
 /**
  * 菜单管理 API

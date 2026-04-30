@@ -9,7 +9,7 @@ import type {
   CommentVO,
   PageResult,
   StatusUpdateRequest,
-} from '../types'
+} from '@/types/api-types'
 
 /**
  * 评论管理 API

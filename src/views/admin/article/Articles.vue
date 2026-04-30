@@ -274,7 +274,7 @@ import { computed, onMounted, reactive, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { Plus } from '@element-plus/icons-vue'
-import type { ArticleAdminVO, ArticleQueryRequest, CategoryAdminVO } from '@/api/types'
+import type { ArticleAdminVO, ArticleQueryRequest, CategoryAdminVO } from '@/types/api-types'
 import { useContentAdmin } from '@/composables/useContentAdmin'
 import { useArticleStore, useCategoryStore, useTagStore } from '@/stores'
 import {

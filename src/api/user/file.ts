@@ -14,7 +14,7 @@ import type {
   UserFileTaskPageQueryRequest,
   UserFileTaskVO,
   UserFileVO,
-} from '../types'
+} from '@/types/api-types'
 
 const multipartHeaders = {
   headers: {

@@ -6,7 +6,7 @@
 import { ref } from 'vue'
 import { defineStore } from 'pinia'
 import { InteractionApi } from '@/api/sys/interaction'
-import type { InteractionQueryRequest, InteractionVO } from '@/api/types'
+import type { InteractionQueryRequest, InteractionVO } from '@/types/api-types'
 
 export const useInteractionStore = defineStore('interaction', () => {
   // ==================== 状态 ====================

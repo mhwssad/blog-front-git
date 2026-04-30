@@ -12,7 +12,7 @@ import type {
   PasswordResetRequest,
   UserRoleAssignRequest,
   PageResult,
-} from '../types'
+} from '@/types/api-types'
 
 /**
  * 用户管理 API

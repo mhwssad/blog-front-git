@@ -60,7 +60,7 @@
 <script lang="ts" setup>
 import { computed } from 'vue'
 import { ChatDotRound, Clock, User, View, Share, Warning } from '@element-plus/icons-vue'
-import type { PublicArticleDetailVO } from '@/api/types'
+import type { PublicArticleDetailVO } from '@/types/api-types'
 import AuthorBadge from '@/components/common/AuthorBadge.vue'
 
 const props = defineProps<{

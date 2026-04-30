@@ -10,7 +10,7 @@ import type {
   CollectionFolderQueryRequest,
   CollectionFolderVO,
   CollectionVO,
-} from '@/api/types'
+} from '@/types/api-types'
 
 export const useCollectionStore = defineStore('collection', () => {
   // ==================== 状态 ====================

@@ -109,7 +109,7 @@
 import { ref, reactive, computed, watch } from 'vue'
 import { ElMessage } from 'element-plus'
 import { UserApi } from '@/api/sys/user'
-import type { SysUserSaveRequest } from '@/api/types'
+import type { SysUserSaveRequest } from '@/types/api-types'
 
 interface Props {
   visible: boolean

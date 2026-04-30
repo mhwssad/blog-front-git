@@ -16,7 +16,7 @@
           </el-select>
         </el-form-item>
         <el-form-item label="通知状态" class="filter-item">
-          <el-select v-model="searchForm.status" class="filter-control" clearable placeholder="请选择通知状态">
+          <el-select v-model="searchForm.publishStatus" class="filter-control" clearable placeholder="请选择通知状态">
             <el-option
               v-for="option in NOTICE_STATUS_OPTIONS"
               :key="option.value"
@@ -156,7 +156,7 @@
 import { onMounted, reactive, ref } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { Plus } from '@element-plus/icons-vue'
-import type { NoticeQueryRequest, SysNoticeAdminVO } from '@/api/types'
+import type { NoticeQueryRequest, SysNoticeAdminVO } from '@/types/api-types'
 import { useContentAdmin } from '@/composables/useContentAdmin'
 import { useNoticeStore } from '@/stores'
 import {
@@ -177,7 +177,7 @@ const searchForm = reactive<NoticeQueryRequest>({
   size: 10,
   title: undefined,
   type: undefined,
-  status: undefined,
+  publishStatus: undefined,
 })
 
 const pagination = reactive({

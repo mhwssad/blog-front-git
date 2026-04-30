@@ -8,6 +8,12 @@ import { ref } from 'vue'
 import { defineStore } from 'pinia'
 import { UserContentApi } from '@/api/user/content'
 import type {
+  ArticleAccessAssignRequest,
+  ArticleReviewLogVO,
+  ArticleReviewSubmitRequest,
+  ArticleSeriesArticleRequest,
+  ArticleSeriesSaveRequest,
+  ArticleSeriesSortRequest,
   CollectionFolderSaveRequest,
   CollectionFolderVO,
   CollectionSaveRequest,
@@ -15,10 +21,15 @@ import type {
   CommentSaveRequest,
   CommentVO,
   PageResult,
+  PublicArticleSeriesDetailVO,
+  UserArticleDetailVO,
+  UserArticleQueryRequest,
+  UserArticleSeriesVO,
+  UserArticleVO,
   UserCollectionQueryRequest,
   UserFootprintQueryRequest,
   UserFootprintVO,
-} from '@/api/types'
+} from '@/types/api-types'
 
 export const useUserContentStore = defineStore('userContent', () => {
   // ==================== 状态 ====================
@@ -87,6 +98,17 @@ export const useUserContentStore = defineStore('userContent', () => {
    * 足迹每页数量
    */
   const footprintSize = ref(10)
+
+  const myArticles = ref<UserArticleVO[]>([])
+  const myArticleTotal = ref(0)
+  const myArticleCurrent = ref(1)
+  const myArticleSize = ref(10)
+  const myArticleLoading = ref(false)
+  const currentMyArticle = ref<UserArticleDetailVO | null>(null)
+
+  const seriesList = ref<UserArticleSeriesVO[]>([])
+  const currentSeries = ref<PublicArticleSeriesDetailVO | null>(null)
+  const seriesLoading = ref(false)
 
   // ==================== 操作 ====================
 
@@ -327,10 +349,142 @@ export const useUserContentStore = defineStore('userContent', () => {
   function clearState(): void {
     clearCollections()
     clearFootprintState()
+    myArticles.value = []
+    myArticleTotal.value = 0
+    myArticleCurrent.value = 1
+    currentMyArticle.value = null
+    myArticleLoading.value = false
+    seriesList.value = []
+    currentSeries.value = null
+    seriesLoading.value = false
+  }
+
+  // ==================== 我的文章 ====================
+
+  async function fetchMyArticles(params?: UserArticleQueryRequest): Promise<void> {
+    myArticleLoading.value = true
+    try {
+      const response = await UserContentApi.getMyArticles(params)
+      const data = response.data.data
+      myArticles.value = data.records
+      myArticleTotal.value = data.total
+      myArticleCurrent.value = data.current
+      myArticleSize.value = data.size
+    } finally {
+      myArticleLoading.value = false
+    }
+  }
+
+  async function fetchMyArticleById(id: number): Promise<UserArticleDetailVO | null> {
+    try {
+      const response = await UserContentApi.getMyArticleById(id)
+      currentMyArticle.value = response.data.data
+      return currentMyArticle.value
+    } catch {
+      return null
+    }
+  }
+
+  async function updateMyArticleAccess(
+    id: number,
+    data: ArticleAccessAssignRequest,
+  ): Promise<boolean> {
+    return runAction(async () => {
+      await UserContentApi.updateMyArticleAccess(id, data)
+    })
+  }
+
+  async function submitArticleReview(
+    id: number,
+    data?: ArticleReviewSubmitRequest,
+  ): Promise<boolean> {
+    return runAction(async () => {
+      await UserContentApi.submitArticleReview(id, data)
+    })
+  }
+
+  async function fetchArticleReviewLog(id: number): Promise<ArticleReviewLogVO[]> {
+    try {
+      const response = await UserContentApi.getArticleReviewLog(id)
+      return response.data.data
+    } catch {
+      return []
+    }
+  }
+
+  // ==================== 系列管理 ====================
+
+  async function fetchMySeriesList(): Promise<void> {
+    seriesLoading.value = true
+    try {
+      const response = await UserContentApi.getMySeriesList()
+      seriesList.value = response.data.data
+    } finally {
+      seriesLoading.value = false
+    }
+  }
+
+  async function fetchMySeriesDetail(
+    id: number,
+  ): Promise<PublicArticleSeriesDetailVO | null> {
+    seriesLoading.value = true
+    try {
+      const response = await UserContentApi.getMySeriesDetail(id)
+      currentSeries.value = response.data.data
+      return currentSeries.value
+    } catch {
+      return null
+    } finally {
+      seriesLoading.value = false
+    }
+  }
+
+  async function createSeries(data: ArticleSeriesSaveRequest): Promise<boolean> {
+    return runAction(async () => {
+      await UserContentApi.createSeries(data)
+    })
+  }
+
+  async function updateSeries(id: number, data: ArticleSeriesSaveRequest): Promise<boolean> {
+    return runAction(async () => {
+      await UserContentApi.updateSeries(id, data)
+    })
+  }
+
+  async function deleteSeries(id: number): Promise<boolean> {
+    return runAction(async () => {
+      await UserContentApi.deleteSeries(id)
+    })
+  }
+
+  async function addArticleToSeries(
+    id: number,
+    data: ArticleSeriesArticleRequest,
+  ): Promise<boolean> {
+    return runAction(async () => {
+      await UserContentApi.addArticleToSeries(id, data)
+    })
+  }
+
+  async function removeArticleFromSeries(
+    id: number,
+    articleId: number,
+  ): Promise<boolean> {
+    return runAction(async () => {
+      await UserContentApi.removeArticleFromSeries(id, articleId)
+    })
+  }
+
+  async function sortSeriesArticles(
+    id: number,
+    data: ArticleSeriesSortRequest,
+  ): Promise<boolean> {
+    return runAction(async () => {
+      await UserContentApi.sortSeriesArticles(id, data)
+    })
   }
 
   return {
-    // 状态
     actionLoading,
     collectionFolderLoading,
     collectionLoading,
@@ -344,8 +498,16 @@ export const useUserContentStore = defineStore('userContent', () => {
     footprintTotal,
     footprintCurrent,
     footprintSize,
+    myArticles,
+    myArticleTotal,
+    myArticleCurrent,
+    myArticleSize,
+    myArticleLoading,
+    currentMyArticle,
+    seriesList,
+    currentSeries,
+    seriesLoading,
 
-    // 操作
     likeArticle,
     unlikeArticle,
     likeComment,
@@ -365,5 +527,18 @@ export const useUserContentStore = defineStore('userContent', () => {
     clearCollections,
     clearFootprintState,
     clearState,
+    fetchMyArticles,
+    fetchMyArticleById,
+    updateMyArticleAccess,
+    submitArticleReview,
+    fetchArticleReviewLog,
+    fetchMySeriesList,
+    fetchMySeriesDetail,
+    createSeries,
+    updateSeries,
+    deleteSeries,
+    addArticleToSeries,
+    removeArticleFromSeries,
+    sortSeriesArticles,
   }
 })

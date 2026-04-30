@@ -4,7 +4,7 @@
  * 规范参考：docs/code-writing-convention.md（Router 规范章节）
  */
 
-import type { AuthMenuInfo } from '@/api/types'
+import type { AuthMenuInfo } from '@/types/api-types'
 import type { RouteRecordRaw } from 'vue-router'
 import { defineComponent, h } from 'vue'
 import { RouterView } from 'vue-router'

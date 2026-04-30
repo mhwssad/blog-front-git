@@ -9,7 +9,7 @@ import type {
   FollowAdminRelationVO,
   FollowRelationCleanRequest,
   PageResult,
-} from '../types'
+} from '@/types/api-types'
 
 /**
  * 系统关注关系管理 API

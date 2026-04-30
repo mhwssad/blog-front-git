@@ -8,7 +8,7 @@ import type {
   PageResult,
   PublicFollowPageQueryRequest,
   PublicFollowUserVO,
-} from './types'
+} from '@/types/api-types'
 
 /**
  * 公开关注 API

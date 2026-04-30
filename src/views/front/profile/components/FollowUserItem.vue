@@ -53,7 +53,7 @@
 
 <script lang="ts" setup>
 import { StarFilled } from '@element-plus/icons-vue'
-import type { UserFollowUserVO } from '@/api/types'
+import type { UserFollowUserVO } from '@/types/api-types'
 
 defineProps<{
   user: UserFollowUserVO

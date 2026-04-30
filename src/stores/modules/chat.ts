@@ -10,7 +10,12 @@ import type {
   ChatConversationVO,
   ChatGroupMemberVO,
   ChatGroupMuteRequest,
+  ChatLobbyPinnedMessageVO,
+  ChatLobbySettingsUpdateRequest,
   ChatMessageVO,
+  SysChannelApplicationQueryRequest,
+  SysChannelApplicationReviewRequest,
+  SysChannelApplicationVO,
   SysChatConversationQueryRequest,
   SysChatConversationStatusUpdateRequest,
   SysChatMemberRoleUpdateRequest,
@@ -18,7 +23,8 @@ import type {
   SysChatMessageQueryRequest,
   SysChatReceiptQueryRequest,
   SysChatReceiptVO,
-} from '@/api/types'
+  SysTopicChannelSaveRequest,
+} from '@/types/api-types'
 
 export const useChatStore = defineStore('admin-chat', () => {
   // ==================== 状态 ====================
@@ -92,6 +98,15 @@ export const useChatStore = defineStore('admin-chat', () => {
    * 回执加载状态
    */
   const receiptLoading = ref(false)
+
+  const pinnedMessages = ref<ChatLobbyPinnedMessageVO[]>([])
+  const pinnedTotal = ref(0)
+  const pinnedLoading = ref(false)
+
+  const channelApplications = ref<SysChannelApplicationVO[]>([])
+  const channelAppTotal = ref(0)
+  const channelAppDetail = ref<SysChannelApplicationVO | null>(null)
+  const channelAppLoading = ref(false)
 
   // ==================== 操作 ====================
 
@@ -280,10 +295,142 @@ export const useChatStore = defineStore('admin-chat', () => {
     receipts.value = []
     messageTotal.value = 0
     receiptTotal.value = 0
+    pinnedMessages.value = []
+    pinnedTotal.value = 0
+    channelApplications.value = []
+    channelAppTotal.value = 0
+    channelAppDetail.value = null
+  }
+
+  // ==================== 大厅频道管理 ====================
+
+  async function updateLobbySettings(data: ChatLobbySettingsUpdateRequest): Promise<boolean> {
+    try {
+      await SysChatApi.updateLobbySettings(data)
+      return true
+    } catch {
+      return false
+    }
+  }
+
+  async function pinLobbyMessage(messageId: number): Promise<boolean> {
+    try {
+      await SysChatApi.pinLobbyMessage(messageId)
+      return true
+    } catch {
+      return false
+    }
+  }
+
+  async function unpinLobbyMessage(messageId: number): Promise<boolean> {
+    try {
+      await SysChatApi.unpinLobbyMessage(messageId)
+      return true
+    } catch {
+      return false
+    }
+  }
+
+  async function fetchPinnedLobbyMessages(params?: {
+    current?: number
+    size?: number
+  }): Promise<void> {
+    pinnedLoading.value = true
+    try {
+      const response = await SysChatApi.getPinnedLobbyMessages(params)
+      const data = response.data.data
+      pinnedMessages.value = data.records
+      pinnedTotal.value = data.total
+    } finally {
+      pinnedLoading.value = false
+    }
+  }
+
+  async function muteLobbyMember(
+    memberUserId: number,
+    data: ChatGroupMuteRequest,
+  ): Promise<boolean> {
+    try {
+      await SysChatApi.muteLobbyMember(memberUserId, data)
+      return true
+    } catch {
+      return false
+    }
+  }
+
+  async function kickLobbyMember(memberUserId: number): Promise<boolean> {
+    try {
+      await SysChatApi.kickLobbyMember(memberUserId)
+      return true
+    } catch {
+      return false
+    }
+  }
+
+  // ==================== 主题频道管理 ====================
+
+  async function createTopicChannel(data: SysTopicChannelSaveRequest): Promise<boolean> {
+    try {
+      await SysChatApi.createTopicChannel(data)
+      return true
+    } catch {
+      return false
+    }
+  }
+
+  async function updateTopicChannel(
+    conversationId: number,
+    data: SysTopicChannelSaveRequest,
+  ): Promise<boolean> {
+    try {
+      await SysChatApi.updateTopicChannel(conversationId, data)
+      return true
+    } catch {
+      return false
+    }
+  }
+
+  // ==================== 频道创建申请 ====================
+
+  async function fetchChannelApplications(
+    params?: SysChannelApplicationQueryRequest,
+  ): Promise<void> {
+    channelAppLoading.value = true
+    try {
+      const response = await SysChatApi.getChannelApplications(params)
+      const data = response.data.data
+      channelApplications.value = data.records
+      channelAppTotal.value = data.total
+    } finally {
+      channelAppLoading.value = false
+    }
+  }
+
+  async function fetchChannelApplicationById(
+    id: number,
+  ): Promise<SysChannelApplicationVO | null> {
+    try {
+      const response = await SysChatApi.getChannelApplicationById(id)
+      channelAppDetail.value = response.data.data
+      return channelAppDetail.value
+    } catch {
+      return null
+    }
+  }
+
+  async function reviewChannelApplication(
+    id: number,
+    data: SysChannelApplicationReviewRequest,
+  ): Promise<boolean> {
+    try {
+      await SysChatApi.reviewChannelApplication(id, data)
+      return true
+    } catch {
+      return false
+    }
   }
 
   return {
-    // 状态
     conversations,
     conversationTotal,
     conversationDetail,
@@ -298,8 +445,14 @@ export const useChatStore = defineStore('admin-chat', () => {
     memberLoading,
     messageLoading,
     receiptLoading,
+    pinnedMessages,
+    pinnedTotal,
+    pinnedLoading,
+    channelApplications,
+    channelAppTotal,
+    channelAppDetail,
+    channelAppLoading,
 
-    // 操作
     fetchConversations,
     fetchConversationDetail,
     fetchConversationMembers,
@@ -312,5 +465,16 @@ export const useChatStore = defineStore('admin-chat', () => {
     revokeMessage,
     updateConversationStatus,
     clearConversationContext,
+    updateLobbySettings,
+    pinLobbyMessage,
+    unpinLobbyMessage,
+    fetchPinnedLobbyMessages,
+    muteLobbyMember,
+    kickLobbyMember,
+    createTopicChannel,
+    updateTopicChannel,
+    fetchChannelApplications,
+    fetchChannelApplicationById,
+    reviewChannelApplication,
   }
 })

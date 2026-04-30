@@ -3,7 +3,7 @@
  */
 
 import type { AxiosError, AxiosInstance, AxiosResponse } from 'axios'
-import type { ApiError, ApiResponse } from '../../types'
+import type { ApiError, ApiResponse } from '@/types/api-types'
 import { logger, handleApiError } from '../utils'
 
 function createApiError(response: AxiosResponse<ApiResponse>): ApiError {

@@ -63,7 +63,7 @@
 <script lang="ts" setup>
 import { computed, ref } from 'vue'
 import { Star } from '@element-plus/icons-vue'
-import type { CommentVO } from '@/api/types'
+import type { CommentVO } from '@/types/api-types'
 
 const props = withDefaults(
   defineProps<{

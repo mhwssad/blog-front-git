@@ -6,7 +6,7 @@
 import { ref } from 'vue'
 import { defineStore } from 'pinia'
 import { TagApi } from '@/api/sys/tag'
-import type { TagSaveRequest, TagVO } from '@/api/types'
+import type { TagSaveRequest, TagVO } from '@/types/api-types'
 
 export const useTagStore = defineStore('tag', () => {
   // ==================== 状态 ====================

@@ -20,7 +20,7 @@
 </template>
 
 <script lang="ts" setup>
-import type { PublicCommentVO } from '@/api/types'
+import type { PublicCommentVO } from '@/types/api-types'
 
 defineProps<{
   comments: PublicCommentVO[]

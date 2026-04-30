@@ -12,7 +12,7 @@ import type {
   FileTaskAdminVO,
   FileTaskPageQueryRequest,
   PageResult,
-} from '../types'
+} from '@/types/api-types'
 
 /**
  * 系统文件管理 API

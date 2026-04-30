@@ -3,7 +3,7 @@
  * 根据后端返回的菜单权限动态生成后台路由
  */
 
-import type { AuthMenuInfo } from '@/api/types'
+import type { AuthMenuInfo } from '@/types/api-types'
 import type { RouteRecordRaw, Router } from 'vue-router'
 import { createLogger } from '@/utils/logger'
 import { ADMIN_FIXED_ROUTE_PATHS } from './fixed-routes'

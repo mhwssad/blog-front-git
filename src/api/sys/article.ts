@@ -9,16 +9,21 @@ import type {
   ArticleAdminVO,
   ArticleDetailVO,
   ArticleQueryRequest,
+  ArticleReviewAdminDetailVO,
+  ArticleReviewDecisionRequest,
+  ArticleReviewRepairRequest,
   ArticleSaveRequest,
   PageResult,
   StatusUpdateRequest,
-} from '../types'
+} from '@/types/api-types'
 
 /**
  * 文章管理 API
- * 提供文章的增删改查和状态管理操作
+ * 提供文章的增删改查、状态管理、审核操作
  */
 export class ArticleApi {
+  // ==================== 文章管理 ====================
+
   /**
    * 分页查询文章列表
    * GET /api/sys/articles
@@ -60,6 +65,22 @@ export class ArticleApi {
   }
 
   /**
+   * 切换文章置顶
+   * PUT /api/sys/articles/{id}/top
+   */
+  static toggleArticleTop(id: number) {
+    return http.put<void>(`/sys/articles/${id}/top`)
+  }
+
+  /**
+   * 切换文章推荐
+   * PUT /api/sys/articles/{id}/recommend
+   */
+  static toggleArticleRecommend(id: number) {
+    return http.put<void>(`/sys/articles/${id}/recommend`)
+  }
+
+  /**
    * 修改文章访问权限
    * PUT /api/sys/articles/{id}/access
    */
@@ -73,6 +94,54 @@ export class ArticleApi {
    */
   static deleteArticle(id: number) {
     return http.delete<void>(`/sys/articles/${id}`)
+  }
+
+  // ==================== 文章审核 ====================
+
+  /**
+   * 分页查询审核文章
+   * GET /api/sys/article-reviews
+   */
+  static getArticleReviews(params?: {
+    current?: number
+    size?: number
+    keyword?: string
+    authorId?: number
+    reviewStatus?: number
+  }) {
+    return http.get<PageResult<ArticleAdminVO>>('/sys/article-reviews', params)
+  }
+
+  /**
+   * 查询审核详情
+   * GET /api/sys/article-reviews/{id}
+   */
+  static getArticleReviewDetail(id: number) {
+    return http.get<ArticleReviewAdminDetailVO>(`/sys/article-reviews/${id}`)
+  }
+
+  /**
+   * 审核通过
+   * PUT /api/sys/article-reviews/{id}/approve
+   */
+  static approveArticleReview(id: number, data?: ArticleReviewDecisionRequest) {
+    return http.put<void>(`/sys/article-reviews/${id}/approve`, data)
+  }
+
+  /**
+   * 审核拒绝
+   * PUT /api/sys/article-reviews/{id}/reject
+   */
+  static rejectArticleReview(id: number, data: ArticleReviewDecisionRequest) {
+    return http.put<void>(`/sys/article-reviews/${id}/reject`, data)
+  }
+
+  /**
+   * 修正审核状态
+   * PUT /api/sys/article-reviews/{id}/repair-status
+   */
+  static repairArticleReviewStatus(id: number, data: ArticleReviewRepairRequest) {
+    return http.put<void>(`/sys/article-reviews/${id}/repair-status`, data)
   }
 }
 

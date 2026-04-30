@@ -185,7 +185,7 @@
 <script lang="ts" setup>
 import { onMounted, reactive } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import type { FootprintQueryRequest } from '@/api/types'
+import type { FootprintQueryRequest } from '@/types/api-types'
 import { useContentAdmin } from '@/composables/useContentAdmin'
 import { useFootprintStore } from '@/stores'
 import { TARGET_TYPE_OPTIONS, formatOptionalText, formatTargetType, formatVisitedAt } from '@/utils'

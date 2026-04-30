@@ -4,7 +4,7 @@
  */
 
 import { http } from '../request'
-import type { TagSaveRequest, TagVO } from '../types'
+import type { TagSaveRequest, TagVO } from '@/types/api-types'
 
 /**
  * 标签管理 API

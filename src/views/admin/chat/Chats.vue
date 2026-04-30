@@ -454,7 +454,7 @@
 <script lang="ts" setup>
 import { computed, onMounted, reactive, ref } from 'vue'
 import { ElMessage } from 'element-plus'
-import type { ChatConversationVO, ChatMessageVO } from '@/api/types'
+import type { ChatConversationVO, ChatMessageVO } from '@/types/api-types'
 import { useContentAdmin } from '@/composables/useContentAdmin'
 import { useChatStore } from '@/stores'
 import {

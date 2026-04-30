@@ -125,7 +125,7 @@
 import { onMounted, reactive, ref } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { Plus } from '@element-plus/icons-vue'
-import type { ConfigQueryRequest, SysConfigAdminVO } from '@/api/types'
+import type { ConfigQueryRequest, SysConfigAdminVO } from '@/types/api-types'
 import { useContentAdmin } from '@/composables/useContentAdmin'
 import { useConfigStore } from '@/stores'
 import { formatCreateTime, formatOptionalText, formatSystemFlag } from '@/utils'

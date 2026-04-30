@@ -6,7 +6,7 @@
 import { ref, computed } from 'vue'
 import { defineStore } from 'pinia'
 import { UserNoticeApi, type UserNoticeQueryRequest } from '@/api/user/notice'
-import type { UserNoticeVO } from '@/api/types'
+import type { UserNoticeVO } from '@/types/api-types'
 
 export const useUserNoticeStore = defineStore('userNotice', () => {
   // ==================== 状态 ====================

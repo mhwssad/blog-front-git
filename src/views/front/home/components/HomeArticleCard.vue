@@ -30,7 +30,7 @@
 
 <script lang="ts" setup>
 import { ChatDotRound, Star, View } from '@element-plus/icons-vue'
-import type { PublicArticleCardVO } from '@/api/types'
+import type { PublicArticleCardVO } from '@/types/api-types'
 
 defineProps<{
   article: PublicArticleCardVO

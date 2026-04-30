@@ -13,7 +13,7 @@ import type {
   FileStatusUpdateRequest,
   FileTaskAdminVO,
   FileTaskPageQueryRequest,
-} from '@/api/types'
+} from '@/types/api-types'
 
 export const useFileStore = defineStore('admin-file', () => {
   // ==================== 状态 ====================

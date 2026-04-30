@@ -10,7 +10,7 @@ import type {
   NoticeQueryRequest,
   SysNoticeAdminVO,
   SysNoticeSaveRequest,
-} from '@/api/types'
+} from '@/types/api-types'
 
 export const useNoticeStore = defineStore('notice', () => {
   // ==================== 状态 ====================

@@ -141,7 +141,7 @@
 import { computed, onMounted, ref } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { Plus, Refresh } from '@element-plus/icons-vue'
-import type { SysMenuAdminVO } from '@/api/types'
+import type { SysMenuAdminVO } from '@/types/api-types'
 import { useContentAdmin } from '@/composables/useContentAdmin'
 import { useAuthStore, useMenuStore } from '@/stores'
 import {

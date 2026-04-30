@@ -31,7 +31,7 @@
 
 <script lang="ts" setup>
 import HomeArticleCard from './HomeArticleCard.vue'
-import type { PublicArticleCardVO } from '@/api/types'
+import type { PublicArticleCardVO } from '@/types/api-types'
 import type { SortOption } from '../types'
 
 defineProps<{

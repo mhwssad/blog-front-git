@@ -80,7 +80,7 @@
 import { ref, computed, onMounted, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import { FollowApi } from '@/api/follow'
-import type { PublicFollowUserVO } from '@/api/types'
+import type { PublicFollowUserVO } from '@/types/api-types'
 import UserLevelBadge from '@/components/common/UserLevelBadge.vue'
 
 const route = useRoute()

@@ -81,7 +81,7 @@
 import { ref, onMounted, watch } from 'vue'
 import { ElMessage } from 'element-plus'
 import { useAuthStore, useUserFollowStore } from '@/stores'
-import type { UserFollowUserVO } from '@/api/types'
+import type { UserFollowUserVO } from '@/types/api-types'
 import ProfileCard from './components/ProfileCard.vue'
 import FollowUserItem from './components/FollowUserItem.vue'
 import RemarkEditDialog from './components/RemarkEditDialog.vue'

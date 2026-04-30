@@ -33,7 +33,7 @@
 
 <script lang="ts" setup>
 import { computed } from 'vue'
-import type { SysNoticeAdminVO } from '@/api/types'
+import type { SysNoticeAdminVO } from '@/types/api-types'
 import { formatCreateTime, formatNoticeStatus, formatNoticeType, formatSystemDate } from '@/utils'
 
 interface Props {

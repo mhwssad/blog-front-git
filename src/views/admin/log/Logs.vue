@@ -120,7 +120,7 @@
 <script lang="ts" setup>
 import { onMounted, reactive, ref } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import type { LogQueryRequest, SysLogAdminVO } from '@/api/types'
+import type { LogQueryRequest, SysLogAdminVO } from '@/types/api-types'
 import { useContentAdmin } from '@/composables/useContentAdmin'
 import { useLogStore } from '@/stores'
 import { formatCreateTime, formatExecuteTime, formatLogStatus } from '@/utils'

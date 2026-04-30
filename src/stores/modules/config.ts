@@ -10,7 +10,7 @@ import type {
   ConfigQueryRequest,
   SysConfigAdminVO,
   SysConfigSaveRequest,
-} from '@/api/types'
+} from '@/types/api-types'
 
 export const useConfigStore = defineStore('config', () => {
   // ==================== 状态 ====================

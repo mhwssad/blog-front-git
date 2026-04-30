@@ -17,7 +17,7 @@ import type {
   PublicArticleCardVO,
   PublicCommentVO,
   PublicTagVO,
-} from '@/api/types'
+} from '@/types/api-types'
 import HomeSidebarComments from './HomeSidebarComments.vue'
 import HomeSidebarHot from './HomeSidebarHot.vue'
 import HomeSidebarTags from './HomeSidebarTags.vue'

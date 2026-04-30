@@ -20,7 +20,7 @@
 </template>
 
 <script lang="ts" setup>
-import type { PublicArticleCardVO } from '@/api/types'
+import type { PublicArticleCardVO } from '@/types/api-types'
 
 defineProps<{
   articles: PublicArticleCardVO[]

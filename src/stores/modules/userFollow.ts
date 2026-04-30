@@ -8,7 +8,7 @@ import type {
   UserFollowRemarkUpdateRequest,
   UserFollowSpecialUpdateRequest,
   UserFollowUserVO,
-} from '@/api/types'
+} from '@/types/api-types'
 
 export const useUserFollowStore = defineStore('userFollow', () => {
   const follows = ref<UserFollowUserVO[]>([])

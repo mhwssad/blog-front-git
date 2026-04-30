@@ -12,12 +12,17 @@ import type {
   PublicArticleCardVO,
   PublicArticleDetailVO,
   PublicArticleQueryRequest,
+  PublicArticleSeriesDetailVO,
+  PublicArticleSeriesVO,
   PublicCategoryTreeVO,
+  PublicChannelDetailVO,
+  PublicChannelVO,
   PublicCommentQueryRequest,
   PublicCommentVO,
   PublicTagQueryRequest,
   PublicTagVO,
-} from '@/api/types'
+  ChatLobbyMessageVO,
+} from '@/types/api-types'
 
 export const useFrontContentStore = defineStore('frontContent', () => {
   // ==================== 状态 ====================
@@ -96,6 +101,17 @@ export const useFrontContentStore = defineStore('frontContent', () => {
    * 每页数量
    */
   const size = ref(9)
+
+  const authorSeries = ref<PublicArticleSeriesVO[]>([])
+  const seriesDetail = ref<PublicArticleSeriesDetailVO | null>(null)
+  const lobbyMessages = ref<ChatLobbyMessageVO[]>([])
+  const lobbyMessageTotal = ref(0)
+  const publicChannels = ref<PublicChannelVO[]>([])
+  const publicChannelTotal = ref(0)
+  const publicChannelDetail = ref<PublicChannelDetailVO | null>(null)
+  const seriesLoading = ref(false)
+  const lobbyLoading = ref(false)
+  const channelLoading = ref(false)
 
   // ==================== 操作 ====================
 
@@ -240,8 +256,81 @@ export const useFrontContentStore = defineStore('frontContent', () => {
     }
   }
 
+  // ==================== 公开系列 ====================
+
+  async function fetchAuthorSeries(authorId: number): Promise<void> {
+    seriesLoading.value = true
+    try {
+      const response = await ContentApi.getAuthorSeries(authorId)
+      authorSeries.value = response.data.data
+    } finally {
+      seriesLoading.value = false
+    }
+  }
+
+  async function fetchArticleSeriesDetail(id: number): Promise<PublicArticleSeriesDetailVO | null> {
+    seriesLoading.value = true
+    try {
+      const response = await ContentApi.getArticleSeriesDetail(id)
+      seriesDetail.value = response.data.data
+      return seriesDetail.value
+    } catch {
+      return null
+    } finally {
+      seriesLoading.value = false
+    }
+  }
+
+  // ==================== 大厅与频道 ====================
+
+  async function fetchLobbyMessages(params?: {
+    current?: number
+    size?: number
+    beforeMessageId?: number
+  }): Promise<void> {
+    lobbyLoading.value = true
+    try {
+      const response = await ContentApi.getLobbyMessages(params)
+      const data = response.data.data
+      lobbyMessages.value = data.records
+      lobbyMessageTotal.value = data.total
+    } finally {
+      lobbyLoading.value = false
+    }
+  }
+
+  async function fetchPublicChannels(params?: {
+    current?: number
+    size?: number
+    categoryCode?: string
+  }): Promise<void> {
+    channelLoading.value = true
+    try {
+      const response = await ContentApi.getPublicChannels(params)
+      const data = response.data.data
+      publicChannels.value = data.records
+      publicChannelTotal.value = data.total
+    } finally {
+      channelLoading.value = false
+    }
+  }
+
+  async function fetchPublicChannelDetail(
+    conversationId: number,
+  ): Promise<PublicChannelDetailVO | null> {
+    channelLoading.value = true
+    try {
+      const response = await ContentApi.getPublicChannelDetail(conversationId)
+      publicChannelDetail.value = response.data.data
+      return publicChannelDetail.value
+    } catch {
+      return null
+    } finally {
+      channelLoading.value = false
+    }
+  }
+
   return {
-    // 状态
     loading,
     articleLoading,
     commentLoading,
@@ -257,8 +346,17 @@ export const useFrontContentStore = defineStore('frontContent', () => {
     total,
     current,
     size,
+    authorSeries,
+    seriesDetail,
+    lobbyMessages,
+    lobbyMessageTotal,
+    publicChannels,
+    publicChannelTotal,
+    publicChannelDetail,
+    seriesLoading,
+    lobbyLoading,
+    channelLoading,
 
-    // 操作
     fetchArticles,
     fetchArticleById,
     fetchArticleComments,
@@ -269,5 +367,10 @@ export const useFrontContentStore = defineStore('frontContent', () => {
     fetchComments,
     clearCurrentArticle,
     initHome,
+    fetchAuthorSeries,
+    fetchArticleSeriesDetail,
+    fetchLobbyMessages,
+    fetchPublicChannels,
+    fetchPublicChannelDetail,
   }
 })

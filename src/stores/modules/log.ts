@@ -10,7 +10,7 @@ import type {
   LogQueryRequest,
   SysLogAdminVO,
   SysLogCleanRequest,
-} from '@/api/types'
+} from '@/types/api-types'
 
 export const useLogStore = defineStore('log', () => {
   // ==================== 状态 ====================

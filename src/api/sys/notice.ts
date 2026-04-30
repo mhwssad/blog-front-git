@@ -4,7 +4,7 @@
  */
 
 import { http } from '../request'
-import type { NoticeQueryRequest, SysNoticeAdminVO, SysNoticeSaveRequest, PageResult } from '../types'
+import type { NoticeQueryRequest, SysNoticeAdminVO, SysNoticeSaveRequest, PageResult } from '@/types/api-types'
 
 /**
  * 通知管理 API

@@ -75,7 +75,7 @@
 import { computed, reactive, ref, watch, type PropType } from 'vue'
 import { ElMessage, ElForm } from 'element-plus'
 import { useCategoryStore } from '@/stores'
-import type { CategoryAdminVO, CategorySaveRequest } from '@/api/types'
+import type { CategoryAdminVO, CategorySaveRequest } from '@/types/api-types'
 
 const props = defineProps({
   visible: Boolean,

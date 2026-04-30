@@ -11,9 +11,12 @@ import type {
   ArticleAdminVO,
   ArticleDetailVO,
   ArticleQueryRequest,
+  ArticleReviewAdminDetailVO,
+  ArticleReviewDecisionRequest,
+  ArticleReviewRepairRequest,
   ArticleSaveRequest,
   StatusUpdateRequest,
-} from '@/api/types'
+} from '@/types/api-types'
 
 export const useArticleStore = defineStore('article', () => {
   // ==================== 状态 ====================
@@ -47,6 +50,10 @@ export const useArticleStore = defineStore('article', () => {
    * 当前查看的文章
    */
   const currentArticle = ref<ArticleDetailVO | null>(null)
+
+  const reviewArticles = ref<ArticleAdminVO[]>([])
+  const reviewTotal = ref(0)
+  const reviewLoading = ref(false)
 
   // ==================== 操作 ====================
 
@@ -141,26 +148,110 @@ export const useArticleStore = defineStore('article', () => {
     }
   }
 
-  /**
-   * 清空列表
-   */
+  async function toggleArticleTop(id: number): Promise<boolean> {
+    try {
+      await ArticleApi.toggleArticleTop(id)
+      return true
+    } catch {
+      return false
+    }
+  }
+
+  async function toggleArticleRecommend(id: number): Promise<boolean> {
+    try {
+      await ArticleApi.toggleArticleRecommend(id)
+      return true
+    } catch {
+      return false
+    }
+  }
+
+  async function fetchArticleReviews(params?: {
+    current?: number
+    size?: number
+    keyword?: string
+    authorId?: number
+    reviewStatus?: number
+  }): Promise<void> {
+    reviewLoading.value = true
+    try {
+      const response = await ArticleApi.getArticleReviews(params)
+      const data = response.data.data
+      reviewArticles.value = data.records
+      reviewTotal.value = data.total
+    } finally {
+      reviewLoading.value = false
+    }
+  }
+
+  async function fetchArticleReviewDetail(
+    id: number,
+  ): Promise<ArticleReviewAdminDetailVO | null> {
+    try {
+      const response = await ArticleApi.getArticleReviewDetail(id)
+      return response.data.data
+    } catch {
+      return null
+    }
+  }
+
+  async function approveArticleReview(
+    id: number,
+    data?: ArticleReviewDecisionRequest,
+  ): Promise<boolean> {
+    try {
+      await ArticleApi.approveArticleReview(id, data)
+      return true
+    } catch {
+      return false
+    }
+  }
+
+  async function rejectArticleReview(
+    id: number,
+    data: ArticleReviewDecisionRequest,
+  ): Promise<boolean> {
+    try {
+      await ArticleApi.rejectArticleReview(id, data)
+      return true
+    } catch {
+      return false
+    }
+  }
+
+  async function repairArticleReviewStatus(
+    id: number,
+    data: ArticleReviewRepairRequest,
+  ): Promise<boolean> {
+    try {
+      await ArticleApi.repairArticleReviewStatus(id, data)
+      return true
+    } catch {
+      return false
+    }
+  }
+
   function clearArticles(): void {
     articles.value = []
     total.value = 0
     current.value = 1
     currentArticle.value = null
+    reviewArticles.value = []
+    reviewTotal.value = 0
+    reviewLoading.value = false
   }
 
   return {
-    // 状态
     articles,
     total,
     current,
     size,
     loading,
     currentArticle,
+    reviewArticles,
+    reviewTotal,
+    reviewLoading,
 
-    // 操作
     fetchArticles,
     fetchArticleById,
     createArticle,
@@ -168,6 +259,13 @@ export const useArticleStore = defineStore('article', () => {
     updateArticleStatus,
     updateArticleAccess,
     deleteArticle,
+    toggleArticleTop,
+    toggleArticleRecommend,
+    fetchArticleReviews,
+    fetchArticleReviewDetail,
+    approveArticleReview,
+    rejectArticleReview,
+    repairArticleReviewStatus,
     clearArticles,
   }
 })

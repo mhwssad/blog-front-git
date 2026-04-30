@@ -45,7 +45,7 @@
 <script lang="ts" setup>
 import { ref, watch, nextTick } from 'vue'
 import { MoreFilled } from '@element-plus/icons-vue'
-import type { ChatMessageVO } from '@/api/types'
+import type { ChatMessageVO } from '@/types/api-types'
 
 const props = defineProps<{
   messages: ChatMessageVO[]

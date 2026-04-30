@@ -31,7 +31,7 @@
 
 <script lang="ts" setup>
 import { ref, computed, watch } from 'vue'
-import type { CollectionFolderVO } from '@/api/types'
+import type { CollectionFolderVO } from '@/types/api-types'
 
 const props = defineProps<{
   visible: boolean

@@ -55,7 +55,7 @@
 import { computed, reactive, ref, watch } from 'vue'
 import { ElMessage, type FormInstance, type FormRules } from 'element-plus'
 import { ConfigApi } from '@/api/sys/config'
-import type { SysConfigSaveRequest } from '@/api/types'
+import type { SysConfigSaveRequest } from '@/types/api-types'
 
 interface Props {
   visible: boolean

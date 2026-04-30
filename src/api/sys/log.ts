@@ -4,7 +4,7 @@
  */
 
 import { http } from '../request'
-import type { LogQueryRequest, SysLogAdminVO, SysLogCleanRequest, PageResult } from '../types'
+import type { LogQueryRequest, SysLogAdminVO, SysLogCleanRequest, PageResult } from '@/types/api-types'
 
 /**
  * 日志管理 API

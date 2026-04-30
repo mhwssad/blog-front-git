@@ -12,7 +12,7 @@ import type {
   SysRoleSaveRequest,
   StatusUpdateRequest,
   RoleMenuAssignRequest,
-} from '@/api/types'
+} from '@/types/api-types'
 
 export const useRoleStore = defineStore('role', () => {
   // ==================== 状态 ====================

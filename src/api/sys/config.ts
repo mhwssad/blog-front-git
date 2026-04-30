@@ -4,7 +4,7 @@
  */
 
 import { http } from '../request'
-import type { ConfigQueryRequest, SysConfigAdminVO, SysConfigSaveRequest, PageResult } from '../types'
+import type { ConfigQueryRequest, SysConfigAdminVO, SysConfigSaveRequest, PageResult } from '@/types/api-types'
 
 /**
  * 配置管理 API

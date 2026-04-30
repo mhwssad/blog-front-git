@@ -64,7 +64,7 @@
 </template>
 
 <script lang="ts" setup>
-import type { ChatMessageVO } from '@/api/types'
+import type { ChatMessageVO } from '@/types/api-types'
 import { FormatUtils } from '@/utils'
 import { formatChatMessageType, formatCreatedAt, formatOptionalText } from '@/utils'
 

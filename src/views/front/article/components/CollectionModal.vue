@@ -43,7 +43,7 @@ import { ref, computed } from 'vue'
 import { ElMessage } from 'element-plus'
 import { Folder } from '@element-plus/icons-vue'
 import { useUserContentStore } from '@/stores'
-import type { CollectionFolderVO } from '@/api/types'
+import type { CollectionFolderVO } from '@/types/api-types'
 
 const props = defineProps<{
   visible: boolean

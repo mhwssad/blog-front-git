@@ -50,7 +50,7 @@
 import { computed, reactive, ref, watch } from 'vue'
 import { ElMessage, type FormInstance } from 'element-plus'
 import { RoleApi } from '@/api/sys/role'
-import type { SysRoleSaveRequest } from '@/api/types'
+import type { SysRoleSaveRequest } from '@/types/api-types'
 
 interface Props {
   visible: boolean

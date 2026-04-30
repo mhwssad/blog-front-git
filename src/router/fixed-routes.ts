@@ -1,4 +1,4 @@
-import type { AuthMenuInfo } from '@/api/types'
+import type { AuthMenuInfo } from '@/types/api-types'
 import type { RouteRecordRaw } from 'vue-router'
 
 /**
@@ -191,7 +191,7 @@ export const ADMIN_FIXED_CHILD_ROUTES: RouteRecordRaw[] = [
   {
     path: 'dashboard',
     name: 'AdminDashboard',
-    component: () => import('@/views/Layouts.vue'),
+    component: () => import('@/views/admin/Dashboard.vue'),
     meta: {
       title: '首页',
       requiresAuth: true,

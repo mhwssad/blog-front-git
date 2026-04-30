@@ -115,7 +115,7 @@ import { useRouter } from 'vue-router'
 import { ElMessage, type FormInstance, type FormRules } from 'element-plus'
 import { User, Lock, Message, Iphone } from '@element-plus/icons-vue'
 import { useAuthStore } from '@/stores/auth'
-import type { RegisterRequest } from '@/api/types'
+import type { RegisterRequest } from '@/types/api-types'
 
 const router = useRouter()
 const authStore = useAuthStore()

@@ -6,7 +6,7 @@
 import { ref } from 'vue'
 import { defineStore } from 'pinia'
 import { MenuApi } from '@/api/sys/menu'
-import type { SysMenuAdminVO, SysMenuSaveRequest } from '@/api/types'
+import type { SysMenuAdminVO, SysMenuSaveRequest } from '@/types/api-types'
 
 export const useMenuStore = defineStore('menu', () => {
   // ==================== 状态 ====================

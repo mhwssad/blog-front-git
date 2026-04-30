@@ -68,7 +68,7 @@
 import { ref, reactive, computed } from 'vue'
 import { ElMessage } from 'element-plus'
 import { UserApi } from '@/api/sys/user'
-import type { PasswordResetRequest } from '@/api/types'
+import type { PasswordResetRequest } from '@/types/api-types'
 
 interface Props {
   visible: boolean

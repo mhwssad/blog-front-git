@@ -155,7 +155,7 @@ import { DateUtils } from '@/utils/dateUtils'
 import { formatOptionalText } from '@/utils'
 import { useCategoryStore } from '@/stores'
 import CategoryFormDialog from './components/CategoryFormDialog.vue'
-import type { CategoryAdminVO } from '@/api/types'
+import type { CategoryAdminVO } from '@/types/api-types'
 
 const categoryStore = useCategoryStore()
 const keyword = ref('')

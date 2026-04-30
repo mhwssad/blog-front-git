@@ -96,7 +96,7 @@
 </template>
 
 <script lang="ts" setup>
-import type { ArticleSaveRequest, CategoryAdminVO, TagVO } from '@/api/types'
+import type { ArticleSaveRequest, CategoryAdminVO, TagVO } from '@/types/api-types'
 import { ACCESS_LEVEL_OPTIONS, ARTICLE_STATUS_OPTIONS } from '@/utils'
 import { buildCategoryOptions } from './article-editor'
 import { computed } from 'vue'

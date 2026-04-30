@@ -111,7 +111,7 @@
 
 <script lang="ts" setup>
 import { computed, type PropType } from 'vue'
-import type { CommentVO } from '@/api/types'
+import type { CommentVO } from '@/types/api-types'
 import {
   formatCommentStatus,
   formatCreatedAt,

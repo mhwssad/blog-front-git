@@ -18,7 +18,7 @@
 </template>
 
 <script lang="ts" setup>
-import type { PublicTagVO } from '@/api/types'
+import type { PublicTagVO } from '@/types/api-types'
 
 defineProps<{
   tags: PublicTagVO[]

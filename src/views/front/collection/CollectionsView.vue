@@ -40,7 +40,7 @@
 import { ref, computed, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { useUserContentStore } from '@/stores'
-import type { CollectionFolderVO } from '@/api/types'
+import type { CollectionFolderVO } from '@/types/api-types'
 import FolderList from './components/FolderList.vue'
 import CollectionRecordList from './components/CollectionRecordList.vue'
 import FolderFormDialog from './components/FolderFormDialog.vue'

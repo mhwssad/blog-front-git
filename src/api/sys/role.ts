@@ -11,7 +11,7 @@ import type {
   StatusUpdateRequest,
   RoleMenuAssignRequest,
   PageResult,
-} from '../types'
+} from '@/types/api-types'
 
 /**
  * 角色管理 API

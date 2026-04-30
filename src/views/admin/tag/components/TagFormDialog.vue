@@ -37,7 +37,7 @@
 import { computed, reactive, ref, watch, type PropType } from 'vue'
 import { ElMessage, ElForm } from 'element-plus'
 import { useTagStore } from '@/stores'
-import type { TagSaveRequest, TagVO } from '@/api/types'
+import type { TagSaveRequest, TagVO } from '@/types/api-types'
 
 const props = defineProps({
   visible: Boolean,

@@ -10,7 +10,7 @@ import type {
   CategoryAdminVO,
   CategorySaveRequest,
   StatusUpdateRequest,
-} from '@/api/types'
+} from '@/types/api-types'
 
 export const useCategoryStore = defineStore('category', () => {
   // ==================== 状态 ====================

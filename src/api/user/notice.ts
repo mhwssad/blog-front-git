@@ -8,9 +8,9 @@ import type {
   UserNoticeQueryRequest,
   UserNoticeVO,
   PageResult
-} from '../types'
+} from '@/types/api-types'
 
-export type { UserNoticeQueryRequest } from '../types'
+export type { UserNoticeQueryRequest } from '@/types/api-types'
 
 /**
  * 用户通知中心 API

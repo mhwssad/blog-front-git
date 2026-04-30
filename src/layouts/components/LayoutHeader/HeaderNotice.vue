@@ -50,7 +50,7 @@ import { useRouter } from 'vue-router'
 import { useUserNoticeStore } from '@/stores'
 import { ElMessage } from 'element-plus'
 import { DateUtils } from '@/utils/dateUtils'
-import type { UserNoticeVO } from '@/api/types'
+import type { UserNoticeVO } from '@/types/api-types'
 
 const router = useRouter()
 const userNoticeStore = useUserNoticeStore()

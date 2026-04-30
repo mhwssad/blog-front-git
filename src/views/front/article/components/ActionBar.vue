@@ -40,7 +40,7 @@
 
 <script lang="ts" setup>
 import { Star, StarFilled, Top } from '@element-plus/icons-vue'
-import type { PublicArticleDetailVO } from '@/api/types'
+import type { PublicArticleDetailVO } from '@/types/api-types'
 
 defineProps<{
   article: PublicArticleDetailVO

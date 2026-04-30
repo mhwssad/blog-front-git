@@ -11,11 +11,12 @@ import type {
   SendEmailCodeRequest,
   RegisterRequest,
   RefreshTokenRequest,
+  TakeoverLoginRequest,
   // 响应类型
   AuthenticationToken,
   AuthUserInfo,
-  AuthMenuInfo
-} from './types'
+  AuthMenuInfo,
+} from '@/types/api-types'
 
 /**
  * 认证 API
@@ -83,7 +84,14 @@ export const authApi = {
    * GET /api/auth/current-user-menus
    */
   getCurrentUserMenus: () =>
-    http.get<AuthMenuInfo[]>('/auth/current-user-menus')
+    http.get<AuthMenuInfo[]>('/auth/current-user-menus'),
+
+  /**
+   * 11.1 使用接管令牌登录
+   * POST /api/auth/takeover/login
+   */
+  takeoverLogin: (data: TakeoverLoginRequest) =>
+    http.post<AuthenticationToken>('/auth/takeover/login', data),
 }
 
 export default authApi

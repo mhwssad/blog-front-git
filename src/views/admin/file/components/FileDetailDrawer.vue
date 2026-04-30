@@ -103,7 +103,7 @@
 </template>
 
 <script lang="ts" setup>
-import type { FileDetailVO } from '@/api/types'
+import type { FileDetailVO } from '@/types/api-types'
 import { FormatUtils } from '@/utils'
 import {
   formatCreatedAt,

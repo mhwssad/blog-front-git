@@ -51,7 +51,7 @@
 
 <script lang="ts" setup>
 import { computed } from 'vue'
-import type { SysLogAdminVO } from '@/api/types'
+import type { SysLogAdminVO } from '@/types/api-types'
 import { formatCreateTime, formatExecuteTime, formatLogStatus } from '@/utils'
 
 interface Props {

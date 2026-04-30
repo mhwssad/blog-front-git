@@ -10,7 +10,7 @@ import type {
   FollowAdminQueryRequest,
   FollowAdminRelationVO,
   FollowRelationCleanRequest,
-} from '@/api/types'
+} from '@/types/api-types'
 
 export const useFollowStore = defineStore('follow', () => {
   // ==================== 状态 ====================

@@ -10,7 +10,7 @@ import type {
   UserFileTaskPageQueryRequest,
   UserFileTaskVO,
   UserFileVO,
-} from '@/api/types'
+} from '@/types/api-types'
 
 export const useUserFileStore = defineStore('userFile', () => {
   const files = ref<UserFileVO[]>([])

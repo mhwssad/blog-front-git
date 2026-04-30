@@ -12,7 +12,7 @@ import type {
   UserFollowRemarkUpdateRequest,
   UserFollowSpecialUpdateRequest,
   UserFollowUserVO,
-} from '../types'
+} from '@/types/api-types'
 
 /**
  * 用户关注 API

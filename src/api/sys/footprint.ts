@@ -4,7 +4,7 @@
  */
 
 import { http } from '../request'
-import type { FootprintQueryRequest, FootprintVO, PageResult } from '../types'
+import type { FootprintQueryRequest, FootprintVO, PageResult } from '@/types/api-types'
 
 /**
  * 足迹管理 API

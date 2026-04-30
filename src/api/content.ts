@@ -9,12 +9,17 @@ import type {
   PublicArticleCardVO,
   PublicArticleDetailVO,
   PublicArticleQueryRequest,
+  PublicArticleSeriesVO,
+  PublicArticleSeriesDetailVO,
   PublicCategoryTreeVO,
+  PublicChannelVO,
+  PublicChannelDetailVO,
   PublicCommentQueryRequest,
   PublicCommentVO,
   PublicTagQueryRequest,
   PublicTagVO,
-} from './types'
+  ChatLobbyMessageVO,
+} from '@/types/api-types'
 
 /**
  * 公开内容 API
@@ -59,6 +64,46 @@ export class ContentApi {
    */
   static getComments(params?: PublicCommentQueryRequest) {
     return http.get<PageResult<PublicCommentVO>>('/comments', params)
+  }
+
+  /**
+   * 2.2.1 查询作者系列列表（公开）
+   * GET /api/public/authors/{authorId}/series
+   */
+  static getAuthorSeries(authorId: number) {
+    return http.get<PublicArticleSeriesVO[]>(`/public/authors/${authorId}/series`)
+  }
+
+  /**
+   * 2.2.1 查询公开系列详情
+   * GET /api/public/article-series/{id}
+   */
+  static getArticleSeriesDetail(id: number) {
+    return http.get<PublicArticleSeriesDetailVO>(`/public/article-series/${id}`)
+  }
+
+  /**
+   * 3.1 访客查看大厅消息
+   * GET /api/public/chat/lobby/messages
+   */
+  static getLobbyMessages(params?: { current?: number; size?: number; beforeMessageId?: number }) {
+    return http.get<PageResult<ChatLobbyMessageVO>>('/public/chat/lobby/messages', params)
+  }
+
+  /**
+   * 6.1 分页查询公开主题频道列表
+   * GET /api/public/chat/channels
+   */
+  static getPublicChannels(params?: { current?: number; size?: number; categoryCode?: string }) {
+    return http.get<PageResult<PublicChannelVO>>('/public/chat/channels', params)
+  }
+
+  /**
+   * 6.2 查询主题频道详情
+   * GET /api/public/chat/channels/{conversationId}
+   */
+  static getPublicChannelDetail(conversationId: number) {
+    return http.get<PublicChannelDetailVO>(`/public/chat/channels/${conversationId}`)
   }
 }
 

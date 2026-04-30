@@ -52,7 +52,7 @@ import { ref, watch, computed } from 'vue'
 import { ElMessage } from 'element-plus'
 import { UserApi } from '@/api/sys/user'
 import { RoleApi } from '@/api/sys/role'
-import type { SysRoleAdminVO } from '@/api/types'
+import type { SysRoleAdminVO } from '@/types/api-types'
 
 interface Props {
   visible: boolean

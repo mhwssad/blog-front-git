@@ -21,7 +21,7 @@ import type {
   AuthenticationToken,
   AuthUserInfo,
   AuthMenuInfo
-} from '@/api/types'
+} from '@/types/api-types'
 
 export const useAuthStore = defineStore('auth', () => {
   // ==================== 状态 ====================

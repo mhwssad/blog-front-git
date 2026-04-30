@@ -3,7 +3,7 @@
  */
 
 import axios, { type AxiosInstance, type AxiosRequestConfig, type InternalAxiosRequestConfig } from 'axios'
-import type { ApiResponse } from '../types'
+import type { ApiResponse } from '@/types/api-types'
 import { setupRequestInterceptor } from './interceptors/request'
 import { setupResponseInterceptor } from './interceptors/response'
 import { setupTokenRefreshInterceptor } from './interceptors/refresh'

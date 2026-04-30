@@ -69,7 +69,7 @@
 import { computed, ref } from 'vue'
 import { Link, Picture, Document, List, ChatLineSquare } from '@element-plus/icons-vue'
 import HtmlCodeEditor from '@/components/editor/HtmlCodeEditor.vue'
-import type { ArticleSaveRequest } from '@/api/types'
+import type { ArticleSaveRequest } from '@/types/api-types'
 import { formatHtml, normalizeHtml } from './article-editor'
 
 interface Props {

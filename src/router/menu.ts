@@ -3,7 +3,7 @@
  * 提供菜单规范化、过滤、扁平化等操作
  */
 
-import type { AuthMenuInfo } from '@/api/types'
+import type { AuthMenuInfo } from '@/types/api-types'
 import { ADMIN_FIXED_MENUS } from './fixed-routes'
 
 // ==================== 类型定义 ====================

@@ -79,6 +79,8 @@ export interface AuthUserInfo {
   email: string
   phone: string
   status: number
+  userLevel: number
+  experiencePoints: number
   roles: string[]
   permissions: string[]
 }
@@ -124,6 +126,9 @@ export interface SysUserAdminVO {
   gender?: number
   birthday?: string
   status: number
+  userLevel: number
+  experiencePoints: number
+  levelUpdatedAt?: string
   lastLoginTime?: string
   lastLoginIp?: string
   remark?: string
@@ -270,7 +275,6 @@ export interface NoticeQueryRequest {
   size?: number
   title?: string
   type?: number
-  status?: number
   publishStatus?: number
   targetType?: number
 }
@@ -387,7 +391,9 @@ export interface ArticleQueryRequest {
   keyword?: string
   authorId?: number
   status?: number
+  reviewStatus?: number
   accessLevel?: number
+  visibilityScope?: number
   categoryId?: number
   tagId?: number
   isTop?: number
@@ -412,13 +418,16 @@ export interface ArticleAdminVO {
   isTop: number
   isOriginal: number
   status: number
+  reviewStatus: number
   accessLevel: number
+  visibilityScope?: number
   viewCount: number
   likeCount: number
   commentCount: number
   collectCount: number
   shareCount: number
   publishTime?: string | null
+  scheduledPublishTime?: string | null
   createdAt: string
   updatedAt?: string | null
   remark?: string | null
@@ -442,8 +451,10 @@ export interface ArticleSaveRequest {
   isOriginal?: number
   sourceUrl?: string
   status?: number
+  scheduledPublishTime?: string
   publishTime?: string
   accessLevel?: number
+  visibilityScope?: number
   remark?: string
   categoryIds?: number[]
   tagIds?: number[]
@@ -661,6 +672,7 @@ export interface PublicArticleDetailVO {
   isOriginal: number
   sourceUrl?: string | null
   accessLevel: number
+  visibilityScope: number
   viewCount: number
   likeCount: number
   commentCount: number
@@ -672,6 +684,16 @@ export interface PublicArticleDetailVO {
   liked?: boolean
   collected?: boolean
   canComment?: boolean
+  seriesList?: ArticleSeriesSummaryVO[]
+}
+
+export interface ArticleSeriesSummaryVO {
+  id: number
+  title: string
+  coverImage: string | null
+  articleCount: number
+  sortOrder: number
+  visibilityScope: number
 }
 
 export interface PublicCommentQueryRequest {
@@ -1084,9 +1106,19 @@ export interface ChatMessageVO {
 export interface ChatConversationVO {
   id: number
   conversationType: 'single' | 'group' | 'global' | string
+  sceneType?: 'single_chat' | 'user_group' | 'hall_channel' | 'topic_channel' | 'global_channel' | string
   name?: string | null
   avatar?: string | null
   notice?: string | null
+  visibilityScope?: 'public' | 'member' | 'private' | string
+  allowGuestView?: number
+  requireJoinToSpeak?: number
+  joinRule?: 'free' | 'approval' | 'invite_only' | string
+  speakLevelLimit?: number
+  memberLimit?: number
+  slowModeSeconds?: number
+  displaySort?: number
+  channelCategoryCode?: string | null
   selfRole?: 'owner' | 'admin' | 'member' | string
   ownerId?: number | null
   memberCount?: number
@@ -1142,6 +1174,13 @@ export interface ChatConversationReadVO {
 export interface ChatGroupCreateRequest {
   name: string
   avatar?: string | null
+  description?: string | null
+  announcement?: string | null
+  categoryCode?: string | null
+  visibilityScope?: 'public' | 'private' | string
+  joinRule?: 'free' | 'approval' | 'invite_only' | string
+  speakLevelLimit?: number
+  memberLimit?: number
   memberUserIds: number[]
 }
 
@@ -1221,4 +1260,779 @@ export interface SysChatMemberStatusUpdateRequest {
 
 export interface SysChatConversationStatusUpdateRequest {
   status: number
+}
+
+// ==================== AI 模块类型 ====================
+
+export interface AiSessionCreateRequest {
+  channelId?: number
+}
+
+export interface AiSessionVO {
+  id: number
+  title: string
+  channelConfigId: number
+  sceneType: string
+  status: number
+  lastMessageAt?: string
+  createdAt: string
+  updatedAt?: string
+}
+
+export interface AiSessionDetailVO extends AiSessionVO {
+  channelName: string
+  modelName: string
+}
+
+export interface AiMessageVO {
+  id: number
+  roleType: 'user' | 'assistant' | 'system' | string
+  content: string
+  tokenCount?: number
+  responseStatus: number
+  errorMessage?: string | null
+  createdAt: string
+}
+
+export interface AiMessageSendRequest {
+  content: string
+}
+
+export interface AiQuotaVO {
+  dailyLimit: number
+  usedToday: number
+  remainingToday: number
+}
+
+export interface AiChannelConfigVO {
+  id: number
+  channelCode: string
+  channelName: string
+  status: number
+  priority: number
+  modelName: string
+  dailyLimit: number
+  createdAt: string
+}
+
+export interface AiChannelConfigSaveRequest {
+  channelCode: string
+  channelName: string
+  modelName: string
+  apiKey: string
+  baseUrl: string
+  status?: number
+  priority?: number
+  dailyLimit?: number
+}
+
+export interface AiChannelStatusRequest {
+  status: number
+}
+
+export interface AiSessionAdminVO {
+  id: number
+  userId: number
+  username: string
+  channelId: number
+  channelName: string
+  status: string
+  messageCount: number
+  createdAt: string
+  updatedAt?: string
+}
+
+export interface AiUsageLogVO {
+  id: number
+  userId: number
+  username: string
+  channelId: number
+  channelName: string
+  sessionId: number
+  modelName: string
+  inputTokens: number
+  outputTokens: number
+  cost: number
+  success: boolean
+  errorMessage?: string | null
+  createdAt: string
+}
+
+export interface AiUsageStatsVO {
+  totalCalls: number
+  successCalls: number
+  failedCalls: number
+  totalInputTokens: number
+  totalOutputTokens: number
+  totalCost: number
+}
+
+// ==================== 举报模块类型 ====================
+
+export interface ReportCreateRequest {
+  targetType: 'article' | 'comment' | 'user' | 'chat_message' | string
+  targetId: number
+  reasonCode: string
+  reasonDetail?: string
+}
+
+export interface ReportVO {
+  id: number
+  targetType: string
+  targetId: number
+  reasonCode: string
+  reasonDetail?: string | null
+  status: number
+  reportedAt: string
+}
+
+export interface ReportAdminVO {
+  id: number
+  reportTargetType: string
+  reportTargetId: number
+  reporterUserId: number
+  reporterUsername: string
+  reasonCode: string
+  reasonDetail?: string | null
+  status: number
+  handlerUserId?: number
+  handlerUsername?: string
+  resultType?: string
+  punishmentType?: string
+  reportedAt: string
+  handledAt?: string
+  createdAt: string
+}
+
+export interface ReportHandleRequest {
+  resultType: 'delete_content' | 'revoke_message' | 'mute_user' | 'ban_user' | 'record_only' | string
+  punishmentType?: string
+  remark?: string
+}
+
+export interface ReportRejectRequest {
+  remark?: string
+}
+
+export interface ReportHandleLogVO {
+  id: number
+  fromStatus: number
+  toStatus: number
+  actionType: string
+  actionResult?: string
+  operatorUserId: number
+  operatorUsername: string
+  actionRemark?: string
+  createdAt: string
+}
+
+// ==================== 公开作者主页类型 ====================
+
+export interface PublicAuthorProfileVO {
+  userId: number
+  username: string
+  nickname: string
+  avatar: string
+  userLevel: number
+  author: boolean
+  authorBadge: string | null
+  publicArticleCount: number
+  publicSeriesCount: number
+  showcaseArticleIds: number[]
+  representativeArticleIds: number[]
+  featuredSeriesIds: number[]
+  featuredColumnIds: number[]
+}
+
+// ==================== 用户等级与经验类型 ====================
+
+export interface UserLevelInfoVO {
+  level: number
+  currentExperience: number
+  nextLevelExperience: number
+  levelTitle: string
+  progress: number
+  dailyExperienceLimit: number
+  dailyExperienceUsed: number
+  dailyExperienceRemaining: number
+}
+
+export interface UserExperienceSummaryVO {
+  userId: number
+  username: string
+  nickname: string
+  level: number
+  currentExperience: number
+  nextLevelExperience: number
+  dailySummary: Record<string, unknown>
+}
+
+export interface ExperienceLogVO {
+  id: number
+  userId: number
+  sourceType: string
+  sourceTypeLabel: string
+  experienceChange: number
+  experienceBefore: number
+  experienceAfter: number
+  levelBefore: number
+  levelAfter: number
+  description: string
+  createdAt: string
+}
+
+export interface UserLevelAdjustRequest {
+  adjustType: 'level' | 'experience'
+  newValue: number
+  reason?: string
+}
+
+// ==================== 作者申请类型 ====================
+
+export interface UserAuthorApplicationSubmitRequest {
+  applyReason: string
+  contentDirection: string
+  introduction?: string
+  sampleLinks?: string[]
+}
+
+export interface UserAuthorApplicationVO {
+  id: number
+  applyStatus: number
+  applyStatusLabel: string
+  applyReason: string
+  contentDirection: string
+  introduction?: string | null
+  sampleLinks?: string[]
+  reviewerId?: number
+  reviewComment?: string | null
+  submittedAt: string
+  reviewedAt?: string
+}
+
+export interface SysAuthorApplicationAdminPageQuery {
+  current?: number
+  size?: number
+  userId?: number
+  applyStatus?: number
+  keyword?: string
+}
+
+export interface SysAuthorApplicationAdminVO {
+  id: number
+  userId: number
+  username: string
+  nickname: string
+  applyStatus: number
+  applyStatusLabel: string
+  applyReason: string
+  contentDirection: string
+  introduction?: string | null
+  sampleLinks?: string[]
+  reviewerId?: number
+  reviewerUsername?: string
+  reviewerNickname?: string
+  reviewComment?: string | null
+  submittedAt: string
+  reviewedAt?: string
+}
+
+export interface SysAuthorApplicationAdminReviewRequest {
+  reviewStatus: 1 | 2 | 3
+  reviewComment?: string
+}
+
+export interface SysAuthorApplicationRepairRequest {
+  targetStatus: 0 | 1 | 2 | 3
+  reviewComment: string
+}
+
+// ==================== 通知设置类型 ====================
+
+export interface UserNotificationSettingItemVO {
+  type: string
+  label: string
+  enabled: boolean
+}
+
+export interface UserNotificationSettingBatchUpdateRequest {
+  settings: Array<{
+    type: string
+    enabled: boolean
+  }>
+}
+
+export interface UserNotificationSettingStatusUpdateRequest {
+  enabled: boolean
+}
+
+// ==================== 2FA 相关类型 ====================
+
+export interface MfaVerifyRequest {
+  code: string
+}
+
+export interface MfaVerifyResponse {
+  ticket: string
+  expiresIn: number
+}
+
+export interface BanUserRequest {
+  mfaTicket: string
+  banReason?: string
+  unbanReason?: string
+}
+
+export interface AdjustLevelRequest {
+  level: number
+  mfaTicket: string
+}
+
+export interface AdjustExperienceRequest {
+  experience: number
+  mfaTicket: string
+}
+
+export interface AccountTakeoverRequest {
+  targetUserId: number
+  mfaTicket: string
+}
+
+export interface AccountTakeoverResponse {
+  takeoverToken: string
+  expiresIn: number
+}
+
+export interface TakeoverLoginRequest {
+  takeoverToken: string
+}
+
+export interface UserRoleAuditAssignRequest {
+  roleIds: number[]
+  mfaTicket: string
+}
+
+// ==================== 经验来源配置类型 ====================
+
+export interface ExperienceSourceConfigVO {
+  configKey: string
+  configValue: string
+}
+
+export interface ExperienceSourceConfigRequest {
+  configKey: string
+  configValue: string
+}
+
+// ==================== 文章审核相关类型 ====================
+
+export interface ArticleReviewLogVO {
+  id: number
+  articleId: number
+  actionType: string
+  actionTypeLabel: string
+  fromReviewStatus: number
+  fromReviewStatusLabel: string
+  toReviewStatus: number
+  toReviewStatusLabel: string
+  operatorUserId: number
+  operatorUsername: string
+  operatorNickname: string
+  reviewComment?: string | null
+  operatedAt: string
+}
+
+export interface ArticleReviewSubmitRequest {
+  reviewComment?: string
+}
+
+export interface ArticleReviewDecisionRequest {
+  reviewComment?: string
+}
+
+export interface ArticleReviewRepairRequest {
+  targetReviewStatus: number
+  reviewComment: string
+}
+
+export interface ArticleReviewAdminDetailVO {
+  article: ArticleDetailVO
+  reviewLogs: ArticleReviewLogVO[]
+}
+
+// ==================== 文章系列相关类型 ====================
+
+export interface ArticleSeriesSaveRequest {
+  title: string
+  description?: string
+  coverImage?: string
+  status?: number
+  visibilityScope?: number
+  sortOrder?: number
+}
+
+export interface ArticleSeriesArticleRequest {
+  articleId: number
+}
+
+export interface ArticleSeriesSortRequest {
+  articleIds: number[]
+}
+
+export interface PublicArticleSeriesVO {
+  id: number
+  title: string
+  description: string | null
+  coverImage: string | null
+  ownerUserId: number
+  ownerName: string
+  visibilityScope: number
+  articleCount: number
+  sortOrder: number
+  createdAt: string
+  updatedAt?: string
+}
+
+export interface PublicArticleSeriesDetailVO extends PublicArticleSeriesVO {
+  articles: ArticleSeriesArticleVO[]
+}
+
+export interface ArticleSeriesArticleVO {
+  id: number
+  title: string
+  summary: string | null
+  coverImage: string | null
+  status: number
+  reviewStatus: number
+  visibilityScope: number
+  publishTime: string | null
+  seqNo: number
+}
+
+export interface UserArticleSeriesVO extends PublicArticleSeriesVO {}
+
+export interface UserArticleSeriesDetailVO extends PublicArticleSeriesDetailVO {}
+
+export interface ArticleAccessAssignRequest {
+  accessList: ArticleAccessItem[]
+}
+
+// ==================== 补充后台通知类型 ====================
+
+export interface SysNoticePublishRequest {
+  // 发布通知接口可能需要
+}
+
+export interface SysNoticeRevokeRequest {
+  // 撤回通知接口可能需要
+}
+
+// ==================== 补充会话类型字段 (chat-api.md) ====================
+
+export interface ChatLobbyMessageVO {
+  id: number
+  senderId: number
+  senderUsername: string
+  senderNickname: string
+  senderAvatar: string
+  content: string
+  messageType: 'text' | 'file' | 'image' | 'voice' | string
+  createdAt: string
+}
+
+export interface ChatGroupSearchRequest {
+  current?: number
+  size?: number
+  keyword?: string
+  categoryCode?: string
+}
+
+export interface ChatGroupSearchVO {
+  id: number
+  name: string
+  description: string | null
+  notice: string | null
+  visibilityScope: 'public' | 'private' | string
+  joinRule: 'free' | 'approval' | 'invite_only' | string
+  memberLimit: number
+  memberCount: number
+  joined: boolean
+  selfRole: string | null
+}
+
+export interface ChannelApplicationRequest {
+  desiredName: string
+  desiredSceneType: 'topic_channel' | string
+  desiredCategoryCode: string
+  description?: string
+}
+
+export interface ChannelApplicationVO {
+  id: number
+  desiredName: string
+  desiredSceneType: string
+  desiredCategoryCode: string
+  description?: string | null
+  applyStatus: number
+  reviewComment?: string | null
+  createdAt: string
+  reviewedAt?: string
+}
+
+export interface ForumLinkRequest {
+  forumPostId: number
+  conversationId: number
+}
+
+export interface ForumLinkVO {
+  id: number
+  forumPostId: number
+  conversationId: number
+  conversationName: string
+  createdAt: string
+}
+
+export interface GroupJoinApplicationRequest {
+  applyMessage?: string
+}
+
+export interface GroupJoinApplicationVO {
+  id: number
+  conversationId: number
+  userId: number
+  username: string
+  nickname: string
+  applyMessage?: string | null
+  applyStatus: number
+  reviewComment?: string | null
+  createdAt: string
+  reviewedAt?: string
+}
+
+export interface GroupJoinApplicationReviewRequest {
+  reviewStatus: 1 | 2
+  reviewComment?: string
+}
+
+export interface GroupInviteLinkCreateRequest {
+  expireAt?: string
+  maxUseCount?: number
+}
+
+export interface GroupInviteLinkVO {
+  id: number
+  conversationId: number
+  inviteToken: string
+  expireAt?: string | null
+  maxUseCount: number
+  usedCount: number
+  status: number
+  createdAt: string
+}
+
+export interface SysChannelApplicationQueryRequest {
+  current?: number
+  size?: number
+  applyStatus?: number
+  keyword?: string
+}
+
+export interface SysChannelApplicationVO {
+  id: number
+  userId: number
+  username: string
+  nickname: string
+  desiredName: string
+  desiredSceneType: string
+  desiredCategoryCode: string
+  description?: string | null
+  applyStatus: number
+  reviewComment?: string | null
+  reviewerId?: number
+  reviewerUsername?: string
+  reviewerNickname?: string
+  createdAt: string
+  reviewedAt?: string
+}
+
+export interface SysChannelApplicationReviewRequest {
+  reviewStatus: 1 | 2 | 3
+  reviewComment?: string
+}
+
+export interface SysTopicChannelSaveRequest {
+  name: string
+  avatar?: string
+  description?: string
+  announcement?: string
+  categoryCode?: string
+  visibilityScope?: 'public' | 'member' | 'private' | string
+  joinRule?: 'free' | 'approval' | 'invite_only' | string
+  speakLevelLimit?: number
+  memberLimit?: number
+  slowModeSeconds?: number
+  displaySort?: number
+  ownerId?: number
+}
+
+// ==================== 公开频道类型 ====================
+
+export interface PublicChannelVO {
+  id: number
+  name: string
+  avatar: string | null
+  description: string | null
+  memberCount: number
+  messageCount: number
+  categoryCode: string | null
+  categoryName: string | null
+  visibilityScope: string
+  createdAt: string
+}
+
+export interface PublicChannelDetailVO {
+  id: number
+  name: string
+  avatar: string | null
+  description: string | null
+  announcement: string | null
+  memberCount: number
+  messageCount: number
+  categoryCode: string | null
+  categoryName: string | null
+  visibilityScope: string
+  joinRule: string
+  speakLevelLimit: number
+  createdAt: string
+}
+
+// ==================== 后台数据看板类型 ====================
+
+export interface DashboardRangeVO {
+  startTime: string | null
+  endTime: string | null
+  rangeType: string
+}
+
+export interface DashboardOverviewVO {
+  range: DashboardRangeVO
+  registeredUserCount: number
+  activeUserCount: number
+  authorCount: number
+  articleCount: number
+  pendingArticleReviewCount: number
+  commentCount: number
+  chatMessageCount: number
+  aiCallCount: number
+  reportCount: number
+  pendingReportCount: number
+}
+
+export interface DashboardContentVO {
+  range: DashboardRangeVO
+  articleCount: number
+  pendingArticleReviewCount: number
+  commentCount: number
+  likeCount: number
+  collectCount: number
+}
+
+export interface DashboardCommunityVO {
+  range: DashboardRangeVO
+  chatMessageCount: number
+  lobbyMessageCount: number
+  groupCount: number
+}
+
+export interface DashboardAiVO {
+  range: DashboardRangeVO
+  aiCallCount: number
+  aiSuccessCallCount: number
+  aiFailedCallCount: number
+}
+
+export interface DashboardGovernanceVO {
+  range: DashboardRangeVO
+  reportCount: number
+  pendingReportCount: number
+  processingReportCount: number
+  handledReportCount: number
+  rejectedReportCount: number
+}
+
+export interface DashboardQueryRequest {
+  rangeType?: 'today' | 'week' | 'month' | 'all' | 'custom'
+  startTime?: string
+  endTime?: string
+}
+
+// ==================== 用户文章类型 ====================
+
+export interface UserArticleQueryRequest {
+  current?: number
+  size?: number
+  keyword?: string
+  status?: number
+  reviewStatus?: number
+  visibilityScope?: number
+  categoryId?: number
+  tagId?: number
+}
+
+export interface UserArticleVO {
+  id: number
+  title: string
+  summary?: string | null
+  coverImage?: string | null
+  isTop: number
+  isOriginal: number
+  status: number
+  reviewStatus: number
+  accessLevel: number
+  visibilityScope?: number
+  viewCount: number
+  likeCount: number
+  commentCount: number
+  collectCount: number
+  shareCount: number
+  publishTime?: string | null
+  scheduledPublishTime?: string | null
+  createdAt: string
+  updatedAt?: string | null
+  remark?: string | null
+}
+
+export interface UserArticleDetailVO extends UserArticleVO {
+  content?: string | null
+  authorId: number
+  authorName: string
+  sourceUrl?: string | null
+  categoryIds?: number[]
+  tagIds?: number[]
+  accessList?: ArticleAccessItem[]
+  seriesList?: ArticleSeriesSummaryVO[]
+}
+
+// ==================== 大厅管理类型 ====================
+
+export interface ChatLobbySettingsUpdateRequest {
+  announcement?: string | null
+  speakLevelLimit?: number
+  slowModeSeconds?: number
+  memberLimit?: number
+}
+
+export interface ChatLobbyPinnedMessageVO {
+  id: number
+  messageId: number
+  conversationId: number
+  pinnedBy: number
+  pinnedAt: string
+  message?: ChatMessageVO
+}
+
+// ==================== 退出登录请求 ====================
+
+export interface LogoutRequest {
+  accessToken?: string
 }

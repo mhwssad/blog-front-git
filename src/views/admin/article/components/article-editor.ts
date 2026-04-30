@@ -1,4 +1,4 @@
-import type { ArticleSaveRequest, CategoryAdminVO } from '@/api/types'
+import type { ArticleSaveRequest, CategoryAdminVO } from '@/types/api-types'
 import { stripMarkdownMeta } from '@/utils/markdown'
 
 export function createEmptyForm(): ArticleSaveRequest {

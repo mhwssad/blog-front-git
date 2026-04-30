@@ -37,7 +37,7 @@
 
 <script lang="ts" setup>
 import { ref } from 'vue'
-import type { ChatConversationVO } from '@/api/types'
+import type { ChatConversationVO } from '@/types/api-types'
 
 defineProps<{
   conversations: ChatConversationVO[]

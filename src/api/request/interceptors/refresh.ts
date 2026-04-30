@@ -4,7 +4,7 @@
  */
 
 import { AxiosHeaders, type AxiosError, type AxiosInstance } from 'axios'
-import type { ApiResponse } from '../../types'
+import type { ApiResponse } from '@/types/api-types'
 import type { CustomAxiosRequestConfig, CustomInternalAxiosRequestConfig } from '../index'
 import { getRefreshToken, saveTokens, clearAuthData } from '../utils'
 

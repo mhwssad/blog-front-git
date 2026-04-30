@@ -13,7 +13,7 @@ import type {
   StatusUpdateRequest,
   PasswordResetRequest,
   UserRoleAssignRequest,
-} from '@/api/types'
+} from '@/types/api-types'
 
 export const useUserStore = defineStore('user', () => {
   // ==================== 状态 ====================

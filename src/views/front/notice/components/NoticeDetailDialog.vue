@@ -13,7 +13,7 @@
 
 <script lang="ts" setup>
 import { computed } from 'vue'
-import type { UserNoticeVO } from '@/api/types'
+import type { UserNoticeVO } from '@/types/api-types'
 
 const props = defineProps<{
   visible: boolean

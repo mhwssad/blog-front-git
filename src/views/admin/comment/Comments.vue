@@ -235,7 +235,7 @@ import { ElMessage, ElMessageBox } from 'element-plus'
 import { Refresh, Search } from '@element-plus/icons-vue'
 import { useCommentStore } from '@/stores'
 import { useContentAdmin } from '@/composables/useContentAdmin'
-import type { CommentQueryRequest, CommentVO } from '@/api/types'
+import type { CommentQueryRequest, CommentVO } from '@/types/api-types'
 import {
   COMMENT_STATUS_OPTIONS,
   TARGET_TYPE_OPTIONS,

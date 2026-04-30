@@ -46,23 +46,42 @@ src/views/
 
 ### `src/views/admin/` - 后台页面结构
 
-按业务域划分目录，每 个功能独立目录：
+按业务域划分目录，每个功能独立目录：
 
 ```
 src/views/admin/
+├── Dashboard.vue           # 后台首页 (固定路由 /admin/dashboard)
 ├── user/           # 用户管理
 │   ├── Users.vue           # 列表页
+│   ├── UserLevels.vue      # 用户等级管理
 │   └── components/         # 功能私有组件
 │       ├── UserFormDialog.vue
-│       └── AssignRolesDialog.vue
+│       ├── AssignRolesDialog.vue
+│       └── ResetPasswordDialog.vue
 ├── article/        # 文章管理
+│   ├── Articles.vue
+│   ├── ArticleReview.vue
+│   └── components/
 ├── role/           # 角色管理
 ├── category/       # 分类管理
 ├── tag/            # 标签管理
 ├── comment/        # 评论管理
 ├── notice/         # 通知管理
 ├── log/            # 日志管理
-└── config/         # 配置管理
+├── config/         # 配置管理
+├── menu/           # 菜单管理
+├── ai/             # AI 配置与统计
+├── audit/          # 审计日志
+├── author/         # 作者申请管理
+├── channel/        # 频道管理
+├── chat/           # 聊天管理
+├── collection/     # 收藏管理
+├── file/           # 文件管理
+├── follow/         # 关注关系管理
+├── footprint/      # 足迹管理
+├── interaction/    # 互动管理
+├── report/         # 举报管理
+└── series/         # 系列管理
 ```
 
 **页面文件**: PascalCase 命名，如 `Users.vue`、`Roles.vue`
@@ -72,9 +91,27 @@ src/views/admin/
 
 ```
 src/views/front/
-└── home/           # 首页模块
-    ├── HomeView.vue
-    └── components/  # 首页私有组件
+├── home/           # 首页
+├── article/        # 文章详情
+├── about/          # 关于页
+├── ai/             # AI 助手
+├── author/         # 作者申请
+├── category/       # 分类浏览
+├── channel/        # 频道
+├── chat/           # 聊天
+├── collection/     # 收藏
+├── file/           # 用户文件
+├── footprint/      # 足迹
+├── friends/        # 好友
+├── hall/           # 大厅
+├── notice/         # 通知
+├── notification/   # 通知设置
+├── profile/        # 用户主页
+├── search/         # 搜索
+├── series/         # 系列
+├── settings/       # 用户设置
+├── tag/            # 标签
+└── user/           # 用户资料
 ```
 
 ### `src/components/` - 全局通用组件
@@ -83,8 +120,16 @@ src/views/front/
 
 ```
 src/components/
-└── admin/
-    └── AdminResourceOverview.vue
+├── common/         # 通用业务组件
+│   ├── AuthorBadge.vue
+│   ├── ExperienceBar.vue
+│   ├── LevelRequirementTip.vue
+│   ├── ReportDialog.vue
+│   ├── RiskConfirmDialog.vue
+│   ├── TwoFactorDialog.vue
+│   └── UserLevelBadge.vue
+└── editor/         # 编辑器组件
+    └── HtmlCodeEditor.vue
 ```
 
 ### `src/layouts/` - 布局组件
@@ -92,31 +137,57 @@ src/components/
 ```
 src/layouts/
 ├── AdminLayouts.vue      # 后台壳布局
-├── components/
-│   ├── LayoutHeader/
-│   └── LayoutLogo.vue
+├── FrontLayout.vue       # 前台壳布局
+└── components/
+    ├── LayoutHeader/     # 后台头部 (含 actions, breadcrumb, fullscreen, notice, user)
+    ├── LayoutSidebar/    # 后台侧栏 (含菜单)
+    ├── LayoutTabs/       # 后台标签页
+    └── LayoutLogo.vue    # Logo 组件
 ```
 
 ### `src/api/` - 接口层
 
 ```
 src/api/
-├── auth.ts               # 认证接口
+├── auth.ts               # 认证接口 (登录、注册、Token 刷新、退出)
+├── content.ts            # 公开内容接口 (文章/分类/标签/评论的公开查询)
+├── follow.ts             # 公开关注接口 (关注列表、粉丝列表)
 ├── request/              # Axios 实例、拦截器
-├── types.ts              # 统一接口类型定义
-├── sys/                  # 后台管理接口 (menu, config, notice, log, article, category, tag, comment, collection, interaction, footprint)
-└── user/                 # 用户侧接口 (content)
+│   ├── index.ts
+│   ├── utils.ts
+│   └── interceptors/     # 三层拦截器 (request/response/refresh)
+├── sys/                  # 后台管理接口
+│   ├── article.ts, category.ts, tag.ts, comment.ts
+│   ├── user.ts, role.ts, menu.ts, config.ts
+│   ├── notice.ts, log.ts
+│   ├── chat.ts, file.ts, follow.ts, footprint.ts
+│   ├── collection.ts, interaction.ts
+│   ├── ai.ts, report.ts
+│   └── ...
+└── user/                 # 用户侧接口
+    ├── content.ts, chat.ts, file.ts
+    ├── follow.ts, notice.ts
+    ├── ai.ts, report.ts
+    └── ...
 ```
+
+**类型定义**: 所有接口类型统一在 `src/types/api-types.ts`，API 模块通过 `@/types/api-types` 引入。
 
 ### `src/stores/` - 状态管理
 
 ```
 src/stores/
 ├── auth.ts               # 认证状态 (登录态、Token、用户信息)
+├── tabs.ts               # 后台标签页管理
+├── index.ts              # Store 统一导出
 └── modules/              # 业务域 Store
     ├── user.ts, role.ts, article.ts, category.ts, tag.ts
     ├── comment.ts, collection.ts, interaction.ts
-    ├── menu.ts, config.ts, notice.ts, log.ts, userNotice.ts
+    ├── menu.ts, config.ts, notice.ts, log.ts
+    ├── chat.ts, file.ts, follow.ts, footprint.ts
+    ├── userChat.ts, userContent.ts, userFile.ts
+    ├── userFollow.ts, userNotice.ts
+    └── frontContent.ts
 ```
 
 ### `src/router/` - 路由
@@ -125,8 +196,9 @@ src/stores/
 src/router/
 ├── index.ts              # 路由创建和静态路由定义
 ├── guards.ts             # 路由守卫 (权限校验、动态路由注入)
-├── fixed-routes.ts       # 固定路由 (前台路由 + 后台首页)
+├── fixed-routes.ts       # 固定路由 (前台路由 + 后台首页 Dashboard)
 ├── dynamic-routes.ts     # 动态路由解析和注册
+├── component-resolver.ts # 动态路由组件解析
 └── menu.ts               # 菜单工具函数
 ```
 
@@ -146,6 +218,7 @@ src/router/
 src/styles/
 ├── index.css      # 全局样式引入
 ├── reset.css      # CSS 重置
+├── variables.css  # CSS 变量
 └── dialog.css     # 弹窗样式
 ```
 
@@ -161,6 +234,9 @@ mock/
 ├── user-notice.mock.ts
 ├── system-basic.mock.ts
 ├── system-content.mock.ts
+├── system-chat.mock.ts
+├── system-file.mock.ts
+├── system-follow.mock.ts
 ├── shared.ts
 └── test-data.json
 ```

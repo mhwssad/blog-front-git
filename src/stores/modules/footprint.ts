@@ -6,7 +6,7 @@
 import { ref } from 'vue'
 import { defineStore } from 'pinia'
 import { FootprintApi } from '@/api/sys/footprint'
-import type { FootprintQueryRequest, FootprintVO } from '@/api/types'
+import type { FootprintQueryRequest, FootprintVO } from '@/types/api-types'
 
 export const useFootprintStore = defineStore('footprint', () => {
   // ==================== 状态 ====================

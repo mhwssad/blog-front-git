@@ -49,7 +49,7 @@
 import { computed, reactive, ref, watch } from 'vue'
 import { ElMessage, type FormInstance, type FormRules } from 'element-plus'
 import { NoticeApi } from '@/api/sys/notice'
-import type { SysNoticeSaveRequest } from '@/api/types'
+import type { SysNoticeSaveRequest } from '@/types/api-types'
 import { NOTICE_TYPE_OPTIONS } from '@/utils'
 
 interface Props {

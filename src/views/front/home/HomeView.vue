@@ -42,7 +42,7 @@
 <script lang="ts" setup>
 import { computed, onMounted, reactive, ref } from 'vue'
 import { useFrontContentStore } from '@/stores'
-import type { PublicArticleQueryRequest, PublicCategoryTreeVO } from '@/api/types'
+import type { PublicArticleQueryRequest, PublicCategoryTreeVO } from '@/types/api-types'
 import HomeArticleSection from './components/HomeArticleSection.vue'
 import HomeBanner from './components/HomeBanner.vue'
 import HomeSidebar from './components/HomeSidebar.vue'

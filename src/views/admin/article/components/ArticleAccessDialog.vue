@@ -74,7 +74,7 @@
 <script lang="ts" setup>
 import { computed, reactive, ref, watch } from 'vue'
 import { ElMessage } from 'element-plus'
-import type { ArticleAccessItem, ArticleAccessSaveRequest } from '@/api/types'
+import type { ArticleAccessItem, ArticleAccessSaveRequest } from '@/types/api-types'
 import { ArticleApi } from '@/api/sys/article'
 import { ACCESS_TYPE_OPTIONS } from '@/utils'
 

@@ -46,7 +46,7 @@
 
 <script lang="ts" setup>
 import { ref } from 'vue'
-import type { PublicCommentVO } from '@/api/types'
+import type { PublicCommentVO } from '@/types/api-types'
 import CommentItem from './CommentItem.vue'
 
 const props = defineProps<{

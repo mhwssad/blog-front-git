@@ -1,10 +1,12 @@
 /**
  * 用户聊天 API
- * 基于 auth-api.md 文档 第8节
+ * 基于 chat-api.md 文档
  */
 
 import { http } from '../request'
 import type {
+  ChannelApplicationRequest,
+  ChannelApplicationVO,
   ChatConversationReadRequest,
   ChatConversationReadVO,
   ChatConversationVO,
@@ -14,23 +16,34 @@ import type {
   ChatGroupMuteRequest,
   ChatGroupNoticeUpdateRequest,
   ChatGroupOwnerTransferRequest,
+  ChatGroupSearchRequest,
+  ChatGroupSearchVO,
   ChatMessageEditRequest,
   ChatMessageVO,
   ChatSendFileRequest,
   ChatSendTextRequest,
   ChatSingleConversationCreateRequest,
+  ForumLinkRequest,
+  ForumLinkVO,
+  GroupInviteLinkCreateRequest,
+  GroupInviteLinkVO,
+  GroupJoinApplicationRequest,
+  GroupJoinApplicationReviewRequest,
+  GroupJoinApplicationVO,
   PageResult,
   UserChatConversationQueryRequest,
   UserChatMessageQueryRequest,
-} from '../types'
+} from '@/types/api-types'
 
 /**
  * 用户聊天 API
  * 提供会话管理、消息发送、群组管理等功能
  */
 export class UserChatApi {
+  // ==================== 会话管理 ====================
+
   /**
-   * 8.1 分页查询会话列表
+   * 分页查询会话列表
    * GET /api/user/chat/conversations
    */
   static getConversations(params?: UserChatConversationQueryRequest) {
@@ -38,7 +51,7 @@ export class UserChatApi {
   }
 
   /**
-   * 8.2 获取会话详情
+   * 获取会话详情
    * GET /api/user/chat/conversations/{conversationId}
    */
   static getConversationById(conversationId: number) {
@@ -46,7 +59,7 @@ export class UserChatApi {
   }
 
   /**
-   * 8.3 创建单人会话
+   * 创建单人会话
    * POST /api/user/chat/single-conversations
    */
   static createSingleConversation(data: ChatSingleConversationCreateRequest) {
@@ -54,18 +67,36 @@ export class UserChatApi {
   }
 
   /**
-   * 8.4 分页查询会话消息
+   * 加入公开频道或公开群
+   * POST /api/user/chat/conversations/{conversationId}/join
+   */
+  static joinConversation(conversationId: number) {
+    return http.post<void>(`/user/chat/conversations/${conversationId}/join`)
+  }
+
+  /**
+   * 离开频道或公开群
+   * POST /api/user/chat/conversations/{conversationId}/leave
+   */
+  static leaveConversation(conversationId: number) {
+    return http.post<void>(`/user/chat/conversations/${conversationId}/leave`)
+  }
+
+  // ==================== 消息 ====================
+
+  /**
+   * 分页查询会话消息
    * GET /api/user/chat/conversations/{conversationId}/messages
    */
   static getMessages(conversationId: number, params?: UserChatMessageQueryRequest) {
     return http.get<PageResult<ChatMessageVO>>(
       `/user/chat/conversations/${conversationId}/messages`,
-      params
+      params,
     )
   }
 
   /**
-   * 8.5 发送文本消息
+   * 发送文本消息
    * POST /api/user/chat/messages/text
    */
   static sendTextMessage(data: ChatSendTextRequest) {
@@ -73,7 +104,7 @@ export class UserChatApi {
   }
 
   /**
-   * 8.6 发送文件消息
+   * 发送文件消息
    * POST /api/user/chat/messages/file
    */
   static sendFileMessage(data: ChatSendFileRequest) {
@@ -81,7 +112,7 @@ export class UserChatApi {
   }
 
   /**
-   * 8.7 编辑消息
+   * 编辑消息
    * PUT /api/user/chat/messages/{messageId}
    */
   static updateMessage(messageId: number, data: ChatMessageEditRequest) {
@@ -89,7 +120,7 @@ export class UserChatApi {
   }
 
   /**
-   * 8.8 撤回消息
+   * 撤回消息
    * POST /api/user/chat/messages/{messageId}/revoke
    */
   static revokeMessage(messageId: number) {
@@ -97,7 +128,7 @@ export class UserChatApi {
   }
 
   /**
-   * 8.9 删除消息
+   * 删除消息
    * DELETE /api/user/chat/messages/{messageId}
    */
   static deleteMessage(messageId: number) {
@@ -105,18 +136,20 @@ export class UserChatApi {
   }
 
   /**
-   * 8.10 标记会话已读
+   * 标记会话已读
    * POST /api/user/chat/conversations/{conversationId}/read
    */
   static markConversationRead(conversationId: number, data: ChatConversationReadRequest) {
     return http.post<ChatConversationReadVO>(
       `/user/chat/conversations/${conversationId}/read`,
-      data
+      data,
     )
   }
 
+  // ==================== 群组管理 ====================
+
   /**
-   * 8.11 创建群组
+   * 创建群组
    * POST /api/user/chat/groups
    */
   static createGroup(data: ChatGroupCreateRequest) {
@@ -124,7 +157,15 @@ export class UserChatApi {
   }
 
   /**
-   * 8.12 获取群组详情
+   * 搜索公开群聊
+   * GET /api/user/chat/groups/search
+   */
+  static searchGroups(params?: ChatGroupSearchRequest) {
+    return http.get<PageResult<ChatGroupSearchVO>>('/user/chat/groups/search', params)
+  }
+
+  /**
+   * 获取群组详情
    * GET /api/user/chat/groups/{conversationId}
    */
   static getGroupById(conversationId: number) {
@@ -132,7 +173,7 @@ export class UserChatApi {
   }
 
   /**
-   * 8.13 获取群组成员列表
+   * 获取群组成员列表
    * GET /api/user/chat/groups/{conversationId}/members
    */
   static getGroupMembers(conversationId: number) {
@@ -140,7 +181,7 @@ export class UserChatApi {
   }
 
   /**
-   * 8.14 邀请群组成员
+   * 邀请群组成员
    * POST /api/user/chat/groups/{conversationId}/members
    */
   static inviteGroupMembers(conversationId: number, data: ChatGroupMemberInviteRequest) {
@@ -148,7 +189,7 @@ export class UserChatApi {
   }
 
   /**
-   * 8.15 设置群组管理员
+   * 设置群组管理员
    * PUT /api/user/chat/groups/{conversationId}/admins/{memberUserId}
    */
   static setGroupAdmin(conversationId: number, memberUserId: number) {
@@ -156,7 +197,7 @@ export class UserChatApi {
   }
 
   /**
-   * 8.16 移除群组管理员
+   * 移除群组管理员
    * DELETE /api/user/chat/groups/{conversationId}/admins/{memberUserId}
    */
   static removeGroupAdmin(conversationId: number, memberUserId: number) {
@@ -164,7 +205,7 @@ export class UserChatApi {
   }
 
   /**
-   * 8.17 转让群组所有权
+   * 转让群组所有权
    * PUT /api/user/chat/groups/{conversationId}/owner
    */
   static transferGroupOwner(conversationId: number, data: ChatGroupOwnerTransferRequest) {
@@ -172,22 +213,22 @@ export class UserChatApi {
   }
 
   /**
-   * 8.18 更新群组成员禁言状态
+   * 更新群组成员禁言状态
    * PUT /api/user/chat/groups/{conversationId}/members/{memberUserId}/mute
    */
   static updateGroupMemberMute(
     conversationId: number,
     memberUserId: number,
-    data: ChatGroupMuteRequest
+    data: ChatGroupMuteRequest,
   ) {
     return http.put<void>(
       `/user/chat/groups/${conversationId}/members/${memberUserId}/mute`,
-      data
+      data,
     )
   }
 
   /**
-   * 8.19 更新群组公告
+   * 更新群组公告
    * PUT /api/user/chat/groups/{conversationId}/notice
    */
   static updateGroupNotice(conversationId: number, data: ChatGroupNoticeUpdateRequest) {
@@ -195,7 +236,7 @@ export class UserChatApi {
   }
 
   /**
-   * 8.20 移出群组成员
+   * 移出群组成员
    * DELETE /api/user/chat/groups/{conversationId}/members/{memberUserId}
    */
   static removeGroupMember(conversationId: number, memberUserId: number) {
@@ -203,7 +244,7 @@ export class UserChatApi {
   }
 
   /**
-   * 8.21 退出群组
+   * 退出群组
    * POST /api/user/chat/groups/{conversationId}/leave
    */
   static leaveGroup(conversationId: number) {
@@ -211,11 +252,185 @@ export class UserChatApi {
   }
 
   /**
-   * 8.22 解散群组
+   * 解散群组
    * DELETE /api/user/chat/groups/{conversationId}
    */
   static dissolveGroup(conversationId: number) {
     return http.delete<void>(`/user/chat/groups/${conversationId}`)
+  }
+
+  // ==================== 频道创建申请 ====================
+
+  /**
+   * 提交频道申请
+   * POST /api/user/chat/channel-applications
+   */
+  static submitChannelApplication(data: ChannelApplicationRequest) {
+    return http.post<void>('/user/chat/channel-applications', data)
+  }
+
+  /**
+   * 查询最近一次频道申请
+   * GET /api/user/chat/channel-applications/latest
+   */
+  static getLatestChannelApplication() {
+    return http.get<ChannelApplicationVO | null>('/user/chat/channel-applications/latest')
+  }
+
+  /**
+   * 分页查询频道申请
+   * GET /api/user/chat/channel-applications
+   */
+  static getChannelApplications(params?: { current?: number; size?: number }) {
+    return http.get<PageResult<ChannelApplicationVO>>('/user/chat/channel-applications', params)
+  }
+
+  // ==================== 帖子频道挂接 ====================
+
+  /**
+   * 分享帖子到频道
+   * POST /api/user/chat/forum-links
+   */
+  static createForumLink(data: ForumLinkRequest) {
+    return http.post<void>('/user/chat/forum-links', data)
+  }
+
+  /**
+   * 查询帖子关联的频道
+   * GET /api/user/chat/forum-links/posts/{forumPostId}
+   */
+  static getForumLinksByPost(forumPostId: number) {
+    return http.get<ForumLinkVO[]>(`/user/chat/forum-links/posts/${forumPostId}`)
+  }
+
+  /**
+   * 分页查询频道关联的帖子
+   * GET /api/user/chat/forum-links/channels/{conversationId}
+   */
+  static getForumLinksByChannel(
+    conversationId: number,
+    params?: { current?: number; size?: number },
+  ) {
+    return http.get<PageResult<ForumLinkVO>>(
+      `/user/chat/forum-links/channels/${conversationId}`,
+      params,
+    )
+  }
+
+  /**
+   * 取消帖子与频道的关联
+   * DELETE /api/user/chat/forum-links/posts/{forumPostId}
+   */
+  static deleteForumLink(forumPostId: number) {
+    return http.delete<void>(`/user/chat/forum-links/posts/${forumPostId}`)
+  }
+
+  // ==================== 入群申请 ====================
+
+  /**
+   * 提交入群申请
+   * POST /api/user/chat/groups/{conversationId}/join-applications
+   */
+  static submitJoinApplication(
+    conversationId: number,
+    data?: GroupJoinApplicationRequest,
+  ) {
+    return http.post<void>(
+      `/user/chat/groups/${conversationId}/join-applications`,
+      data,
+    )
+  }
+
+  /**
+   * 分页查询我的入群申请
+   * GET /api/user/chat/group-join-applications
+   */
+  static getMyJoinApplications(params?: {
+    current?: number
+    size?: number
+    applyStatus?: number
+  }) {
+    return http.get<PageResult<GroupJoinApplicationVO>>(
+      '/user/chat/group-join-applications',
+      params,
+    )
+  }
+
+  /**
+   * 分页查询指定群的入群申请
+   * GET /api/user/chat/groups/{conversationId}/join-applications
+   */
+  static getGroupJoinApplications(
+    conversationId: number,
+    params?: { current?: number; size?: number; applyStatus?: number },
+  ) {
+    return http.get<PageResult<GroupJoinApplicationVO>>(
+      `/user/chat/groups/${conversationId}/join-applications`,
+      params,
+    )
+  }
+
+  /**
+   * 审核入群申请
+   * PUT /api/user/chat/groups/{conversationId}/join-applications/{applicationId}/review
+   */
+  static reviewJoinApplication(
+    conversationId: number,
+    applicationId: number,
+    data: GroupJoinApplicationReviewRequest,
+  ) {
+    return http.put<void>(
+      `/user/chat/groups/${conversationId}/join-applications/${applicationId}/review`,
+      data,
+    )
+  }
+
+  // ==================== 群邀请链接 ====================
+
+  /**
+   * 创建群邀请链接
+   * POST /api/user/chat/groups/{conversationId}/invite-links
+   */
+  static createInviteLink(
+    conversationId: number,
+    data?: GroupInviteLinkCreateRequest,
+  ) {
+    return http.post<GroupInviteLinkVO>(
+      `/user/chat/groups/${conversationId}/invite-links`,
+      data,
+    )
+  }
+
+  /**
+   * 分页查询群邀请链接
+   * GET /api/user/chat/groups/{conversationId}/invite-links
+   */
+  static getInviteLinks(
+    conversationId: number,
+    params?: { current?: number; size?: number; status?: number },
+  ) {
+    return http.get<PageResult<GroupInviteLinkVO>>(
+      `/user/chat/groups/${conversationId}/invite-links`,
+      params,
+    )
+  }
+
+  /**
+   * 停用群邀请链接
+   * PUT /api/user/chat/groups/{conversationId}/invite-links/{inviteLinkId}/disable
+   */
+  static disableInviteLink(conversationId: number, inviteLinkId: number) {
+    return http.put<void>(
+      `/user/chat/groups/${conversationId}/invite-links/${inviteLinkId}/disable`,
+    )
+  }
+
+  /**
+   * 通过邀请链接入群
+   * POST /api/user/chat/group-invite-links/{inviteToken}/join
+   */
+  static joinByInviteLink(inviteToken: string) {
+    return http.post<void>(`/user/chat/group-invite-links/${inviteToken}/join`)
   }
 }
 
