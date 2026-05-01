@@ -2,23 +2,17 @@
   <div class="article-review-page">
     <el-card class="search-card" shadow="never">
       <el-form :model="query" inline>
-        <el-form-item label="状态">
-          <el-select v-model="query.status" placeholder="全部" clearable style="width: 160px">
-            <el-option label="待审核" value="pending" />
-            <el-option label="审核中" value="reviewing" />
-            <el-option label="已通过" value="approved" />
-            <el-option label="已拒绝" value="rejected" />
+        <el-form-item label="审核状态">
+          <el-select
+            v-model="query.reviewStatus"
+            placeholder="全部"
+            clearable
+            style="width: 160px"
+          >
+            <el-option label="待审核" :value="1" />
+            <el-option label="已通过" :value="2" />
+            <el-option label="已拒绝" :value="3" />
           </el-select>
-        </el-form-item>
-        <el-form-item label="提交时间">
-          <el-date-picker
-            v-model="query.dateRange"
-            type="daterange"
-            range-separator="至"
-            start-placeholder="开始日期"
-            end-placeholder="结束日期"
-            value-format="YYYY-MM-DD"
-          />
         </el-form-item>
         <el-form-item>
           <el-button type="primary" @click="handleQuery">查询</el-button>
@@ -35,18 +29,24 @@
       </template>
       <el-table :data="tableData" v-loading="loading" border stripe>
         <el-table-column prop="id" label="ID" width="80" align="center" />
-        <el-table-column prop="title" label="标题" min-width="200" align="center" show-overflow-tooltip />
-        <el-table-column prop="author" label="作者" min-width="120" align="center" />
-        <el-table-column prop="category" label="分类" min-width="100" align="center" />
-        <el-table-column prop="submitTime" label="提交时间" min-width="180" align="center" />
-        <el-table-column prop="status" label="状态" min-width="100" align="center">
+        <el-table-column prop="title" label="标题" min-width="200" show-overflow-tooltip />
+        <el-table-column prop="authorName" label="作者" min-width="120" align="center" />
+        <el-table-column label="审核状态" min-width="100" align="center">
           <template #default="{ row }">
-            <el-tag :type="statusTagType(row.status)">{{ statusLabel(row.status) }}</el-tag>
+            <el-tag :type="reviewStatusTagType(row.reviewStatus)">
+              {{ reviewStatusLabel(row.reviewStatus) }}
+            </el-tag>
           </template>
         </el-table-column>
+        <el-table-column prop="createdAt" label="提交时间" min-width="180" align="center" />
         <el-table-column label="操作" min-width="120" align="center">
           <template #default="{ row }">
-            <el-button v-if="row.status === 'pending'" link type="primary" @click="handleReview(row)">
+            <el-button
+              v-if="row.reviewStatus === 1"
+              link
+              type="primary"
+              @click="handleReview(row)"
+            >
               审核
             </el-button>
             <el-button v-else link type="primary" @click="handleView(row)">查看</el-button>
@@ -67,23 +67,57 @@
     </el-card>
 
     <el-dialog v-model="detailVisible" :title="isReviewMode ? '文章审核' : '文章详情'" width="700px">
-      <el-descriptions :column="2" border>
-        <el-descriptions-item label="标题" :span="2">{{ currentRow.title }}</el-descriptions-item>
-        <el-descriptions-item label="作者">{{ currentRow.author }}</el-descriptions-item>
-        <el-descriptions-item label="分类">{{ currentRow.category }}</el-descriptions-item>
-        <el-descriptions-item label="标签" :span="2">
-          <el-tag v-for="tag in currentRow.tags" :key="tag" size="small" style="margin-right: 4px">{{ tag }}</el-tag>
-        </el-descriptions-item>
-        <el-descriptions-item label="提交时间" :span="2">{{ currentRow.submitTime }}</el-descriptions-item>
-      </el-descriptions>
-      <div style="margin-top: 16px">
-        <div style="font-weight: 500; margin-bottom: 8px">内容预览</div>
-        <div class="content-preview">{{ currentRow.content }}</div>
+      <div v-loading="detailLoading">
+        <el-descriptions v-if="detailData" :column="2" border>
+          <el-descriptions-item label="标题" :span="2">
+            {{ detailData.article.title }}
+          </el-descriptions-item>
+          <el-descriptions-item label="作者">
+            {{ detailData.article.authorName }}
+          </el-descriptions-item>
+          <el-descriptions-item label="状态">
+            <el-tag :type="reviewStatusTagType(detailData.article.reviewStatus)">
+              {{ reviewStatusLabel(detailData.article.reviewStatus) }}
+            </el-tag>
+          </el-descriptions-item>
+          <el-descriptions-item label="提交时间" :span="2">
+            {{ detailData.article.createdAt }}
+          </el-descriptions-item>
+        </el-descriptions>
+
+        <div v-if="detailData?.article.content" style="margin-top: 16px">
+          <div style="font-weight: 500; margin-bottom: 8px">内容预览</div>
+          <div class="content-preview">{{ detailData.article.content }}</div>
+        </div>
+
+        <div v-if="detailData?.reviewLogs?.length" style="margin-top: 16px">
+          <div style="font-weight: 500; margin-bottom: 8px">审核记录</div>
+          <el-timeline>
+            <el-timeline-item
+              v-for="log in detailData.reviewLogs"
+              :key="log.id"
+              :timestamp="log.operatedAt"
+              placement="top"
+            >
+              <div>
+                <span>{{ log.operatorNickname || log.operatorUsername }}</span>
+                <span style="margin: 0 8px">{{ log.actionTypeLabel }}</span>
+                <span style="color: var(--el-text-color-secondary)">
+                  {{ log.fromReviewStatusLabel }} -> {{ log.toReviewStatusLabel }}
+                </span>
+              </div>
+              <div v-if="log.reviewComment" style="color: var(--el-text-color-secondary); margin-top: 4px">
+                {{ log.reviewComment }}
+              </div>
+            </el-timeline-item>
+          </el-timeline>
+        </div>
       </div>
+
       <div v-if="isReviewMode" style="margin-top: 16px">
         <el-form-item label="审核意见">
           <el-input
-            v-model="reviewOpinion"
+            v-model="reviewComment"
             type="textarea"
             :rows="3"
             placeholder="请输入审核意见"
@@ -93,8 +127,12 @@
       <template #footer>
         <el-button @click="detailVisible = false">关闭</el-button>
         <template v-if="isReviewMode">
-          <el-button type="danger" @click="handleRejectArticle">拒绝</el-button>
-          <el-button type="success" @click="handleApproveArticle">通过</el-button>
+          <el-button type="danger" :loading="actionLoading" @click="handleRejectArticle">
+            拒绝
+          </el-button>
+          <el-button type="success" :loading="actionLoading" @click="handleApproveArticle">
+            通过
+          </el-button>
         </template>
       </template>
     </el-dialog>
@@ -104,21 +142,14 @@
 <script lang="ts" setup>
 import { onMounted, reactive, ref } from 'vue'
 import { ElMessage } from 'element-plus'
-
-interface ArticleReview {
-  id: number
-  title: string
-  author: string
-  category: string
-  tags: string[]
-  submitTime: string
-  status: 'pending' | 'reviewing' | 'approved' | 'rejected'
-  content: string
-}
+import { ArticleApi } from '@/api/sys/article'
+import type {
+  ArticleAdminVO,
+  ArticleReviewAdminDetailVO,
+} from '@/types/api-types'
 
 const query = reactive({
-  status: '' as string,
-  dateRange: null as [string, string] | null,
+  reviewStatus: undefined as number | undefined,
 })
 
 const pagination = reactive({
@@ -127,84 +158,119 @@ const pagination = reactive({
   total: 0,
 })
 
-const tableData = ref<ArticleReview[]>([])
+const tableData = ref<ArticleAdminVO[]>([])
 const loading = ref(false)
 const detailVisible = ref(false)
+const detailLoading = ref(false)
 const isReviewMode = ref(false)
-const currentRow = ref<ArticleReview>({} as ArticleReview)
-const reviewOpinion = ref('')
+const detailData = ref<ArticleReviewAdminDetailVO | null>(null)
+const reviewComment = ref('')
+const actionLoading = ref(false)
 
-function statusTagType(status: string): 'info' | 'warning' | 'success' | 'danger' | 'primary' {
-  const map: Record<string, 'info' | 'warning' | 'success' | 'danger' | 'primary'> = {
-    pending: 'warning',
-    reviewing: 'primary',
-    approved: 'success',
-    rejected: 'danger',
+function reviewStatusTagType(
+  status: number,
+): 'info' | 'warning' | 'success' | 'danger' {
+  const map: Record<number, 'info' | 'warning' | 'success' | 'danger'> = {
+    0: 'info',
+    1: 'warning',
+    2: 'success',
+    3: 'danger',
   }
-  return map[status] || 'info'
+  return map[status] ?? 'info'
 }
 
-function statusLabel(status: string) {
-  const map: Record<string, string> = {
-    pending: '待审核',
-    reviewing: '审核中',
-    approved: '已通过',
-    rejected: '已拒绝',
+function reviewStatusLabel(status: number): string {
+  const map: Record<number, string> = {
+    0: '草稿',
+    1: '待审核',
+    2: '已通过',
+    3: '已拒绝',
   }
-  return map[status] || status
+  return map[status] ?? '未知'
 }
 
-function handleQuery() {
+async function handleQuery(): Promise<void> {
   loading.value = true
-  setTimeout(() => {
-    tableData.value = [
-      { id: 1, title: 'Vue 3 Composition API 最佳实践', author: '张三', category: '前端', tags: ['Vue', 'TypeScript'], submitTime: '2026-04-20 10:00:00', status: 'pending', content: '本文将介绍 Vue 3 Composition API 的核心概念和最佳实践...' },
-      { id: 2, title: 'Spring Boot 微服务架构设计', author: '李四', category: '后端', tags: ['Java', 'Spring'], submitTime: '2026-04-19 15:30:00', status: 'reviewing', content: '微服务架构是一种将应用程序构建为一套小型服务的方法...' },
-      { id: 3, title: 'CSS Grid 布局完全指南', author: '王五', category: '前端', tags: ['CSS', '布局'], submitTime: '2026-04-18 09:20:00', status: 'approved', content: 'CSS Grid 是一种强大的二维布局系统...' },
-      { id: 4, title: 'Docker 容器化部署实战', author: '赵六', category: '运维', tags: ['Docker', 'DevOps'], submitTime: '2026-04-17 14:10:00', status: 'rejected', content: '本文将带你从零开始学习 Docker 容器化部署...' },
-      { id: 5, title: 'React 19 新特性解析', author: '孙七', category: '前端', tags: ['React'], submitTime: '2026-04-16 11:45:00', status: 'pending', content: 'React 19 带来了许多令人兴奋的新特性...' },
-    ]
-    pagination.total = 5
+  try {
+    const response = await ArticleApi.getArticleReviews({
+      current: pagination.current,
+      size: pagination.size,
+      reviewStatus: query.reviewStatus,
+    })
+    const page = response.data.data
+    tableData.value = page.records
+    pagination.total = page.total
+  } catch {
+    ElMessage.error('查询审核列表失败')
+  } finally {
     loading.value = false
-  }, 300)
+  }
 }
 
-function handleReset() {
-  query.status = ''
-  query.dateRange = null
+function handleReset(): void {
+  query.reviewStatus = undefined
   pagination.current = 1
   handleQuery()
 }
 
-function handleReview(row: ArticleReview) {
-  currentRow.value = { ...row }
-  isReviewMode.value = true
-  reviewOpinion.value = ''
-  detailVisible.value = true
+async function loadDetail(id: number): Promise<void> {
+  detailLoading.value = true
+  try {
+    const response = await ArticleApi.getArticleReviewDetail(id)
+    detailData.value = response.data.data
+  } catch {
+    ElMessage.error('加载审核详情失败')
+    detailData.value = null
+  } finally {
+    detailLoading.value = false
+  }
 }
 
-function handleView(row: ArticleReview) {
-  currentRow.value = { ...row }
+function handleReview(row: ArticleAdminVO): void {
+  isReviewMode.value = true
+  reviewComment.value = ''
+  detailVisible.value = true
+  loadDetail(row.id)
+}
+
+function handleView(row: ArticleAdminVO): void {
   isReviewMode.value = false
   detailVisible.value = true
+  loadDetail(row.id)
 }
 
-function handleApproveArticle() {
-  const target = tableData.value.find((item) => item.id === currentRow.value.id)
-  if (target) {
-    target.status = 'approved'
+async function handleApproveArticle(): Promise<void> {
+  if (!detailData.value) return
+  actionLoading.value = true
+  try {
+    await ArticleApi.approveArticleReview(detailData.value.article.id, {
+      reviewComment: reviewComment.value || undefined,
+    })
+    ElMessage.success('审核通过')
+    detailVisible.value = false
+    handleQuery()
+  } catch {
+    ElMessage.error('审核操作失败')
+  } finally {
+    actionLoading.value = false
   }
-  detailVisible.value = false
-  ElMessage.success('审核通过')
 }
 
-function handleRejectArticle() {
-  const target = tableData.value.find((item) => item.id === currentRow.value.id)
-  if (target) {
-    target.status = 'rejected'
+async function handleRejectArticle(): Promise<void> {
+  if (!detailData.value) return
+  actionLoading.value = true
+  try {
+    await ArticleApi.rejectArticleReview(detailData.value.article.id, {
+      reviewComment: reviewComment.value || undefined,
+    })
+    ElMessage.success('已拒绝')
+    detailVisible.value = false
+    handleQuery()
+  } catch {
+    ElMessage.error('审核操作失败')
+  } finally {
+    actionLoading.value = false
   }
-  detailVisible.value = false
-  ElMessage.success('已拒绝')
 }
 
 onMounted(() => {

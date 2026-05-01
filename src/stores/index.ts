@@ -30,6 +30,7 @@ export { useDashboardStore } from './modules/dashboard'
 export { useAdminOpsStore } from './modules/admin'
 export { useAuthorApplicationStore } from './modules/authorApplication'
 export { useExperienceStore } from './modules/experience'
+export { useReportStore } from './modules/report'
 
 // ==================== 用户中心 Stores ====================
 export { useUserNoticeStore } from './modules/userNotice'
@@ -39,3 +40,8 @@ export { useUserChatStore } from './modules/userChat'
 export { useUserAuthorApplicationStore } from './modules/userAuthorApplication'
 export { useNotificationSettingsStore } from './modules/notificationSettings'
 export { useUserExperienceStore } from './modules/userExperience'
+
+// ==================== AI 模块 Stores ====================
+export { useAiChannelStore } from './modules/aiChannel'
+export { useAiUsageStore } from './modules/aiUsage'
+export { useUserAiStore } from './modules/userAi'

@@ -62,7 +62,7 @@ import { computed, ref, onMounted, onUnmounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import type { TabPaneName, TabsPaneContext } from 'element-plus'
 import { useTabsStore } from '@/stores/tabs'
-import type { TabItem } from '@/stores/tabs'
+import type { TabItem } from '@/types/ui'
 import {
   Refresh,
   DCaret,

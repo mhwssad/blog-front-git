@@ -148,18 +148,18 @@ export const useArticleStore = defineStore('article', () => {
     }
   }
 
-  async function toggleArticleTop(id: number): Promise<boolean> {
+  async function toggleArticleTop(id: number, enabled: boolean): Promise<boolean> {
     try {
-      await ArticleApi.toggleArticleTop(id)
+      await ArticleApi.toggleArticleTop(id, enabled)
       return true
     } catch {
       return false
     }
   }
 
-  async function toggleArticleRecommend(id: number): Promise<boolean> {
+  async function toggleArticleRecommend(id: number, enabled: boolean): Promise<boolean> {
     try {
-      await ArticleApi.toggleArticleRecommend(id)
+      await ArticleApi.toggleArticleRecommend(id, enabled)
       return true
     } catch {
       return false

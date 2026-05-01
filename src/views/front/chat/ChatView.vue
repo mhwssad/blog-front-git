@@ -3,9 +3,14 @@
     <aside class="chat-sidebar">
       <div class="sidebar-header">
         <span class="sidebar-title">消息</span>
-        <el-button size="small" type="primary" link @click="createGroupVisible = true">
-          创建群聊
-        </el-button>
+        <div style="display: flex; gap: 8px">
+          <el-button size="small" type="primary" link @click="singleChatVisible = true">
+            私聊
+          </el-button>
+          <el-button size="small" type="primary" link @click="createGroupVisible = true">
+            创建群聊
+          </el-button>
+        </div>
       </div>
       <ConversationList
         :conversations="store.conversations"
@@ -32,6 +37,14 @@
             <el-icon><Setting /></el-icon>
           </el-button>
         </router-link>
+        <el-tag
+          v-if="connectionState !== 'connected'"
+          size="small"
+          :type="connectionState === 'connecting' ? 'warning' : 'danger'"
+          effect="dark"
+        >
+          {{ connectionState === 'connecting' ? '连接中...' : '已断开' }}
+        </el-tag>
       </div>
 
       <MessageList
@@ -40,9 +53,14 @@
         :loading="store.loading"
         @revoke="handleRevoke"
         @delete="handleDelete"
+        @edit="handleEdit"
       />
 
-      <MessageInput :sending="store.sending" @send="handleSend" />
+      <MessageInput
+        :sending="store.sending"
+        @send="handleSend"
+        @send-file="handleSendFile"
+      />
     </main>
 
     <div v-else class="chat-empty">
@@ -53,14 +71,36 @@
       v-model:visible="createGroupVisible"
       @submit="handleCreateGroup"
     />
+
+    <el-dialog v-model="singleChatVisible" title="发起私聊" width="400px">
+      <el-form :model="singleChatForm" @submit.prevent="handleCreateSingle">
+        <el-form-item label="用户ID">
+          <el-input
+            v-model="singleChatForm.targetUserId"
+            placeholder="输入对方用户ID"
+            clearable
+            @keyup.enter="handleCreateSingle"
+          />
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <el-button @click="singleChatVisible = false">取消</el-button>
+        <el-button type="primary" :disabled="!singleChatForm.targetUserId" @click="handleCreateSingle">
+          确定
+        </el-button>
+      </template>
+    </el-dialog>
   </div>
 </template>
 
 <script lang="ts" setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, reactive, computed, onMounted } from 'vue'
 import { ElMessage } from 'element-plus'
 import { Setting } from '@element-plus/icons-vue'
 import { useUserChatStore, useAuthStore } from '@/stores'
+import { useChatSocket } from '@/composables/useChatSocket'
+import { UserFileApi } from '@/api/user/file'
+import type { FileUploadInitRequest } from '@/types/api-types'
 import ConversationList from './components/ConversationList.vue'
 import MessageList from './components/MessageList.vue'
 import MessageInput from './components/MessageInput.vue'
@@ -68,9 +108,12 @@ import CreateGroupDialog from './components/CreateGroupDialog.vue'
 
 const store = useUserChatStore()
 const authStore = useAuthStore()
+const { connectionState, connect } = useChatSocket()
 
 const currentUserId = computed(() => authStore.currentUser?.id)
 const createGroupVisible = ref(false)
+const singleChatVisible = ref(false)
+const singleChatForm = reactive({ targetUserId: '' })
 
 async function handleSelectConv(id: number): Promise<void> {
   await store.selectConversation(id)
@@ -80,12 +123,71 @@ function handleSearch(keyword: string): void {
   store.fetchConversations({ keyword: keyword || undefined, current: 1, size: store.convSize })
 }
 
+async function handleCreateSingle(): Promise<void> {
+  const targetId = Number(singleChatForm.targetUserId)
+  if (!targetId || isNaN(targetId)) {
+    ElMessage.warning('请输入有效的用户ID')
+    return
+  }
+  const conv = await store.createSingleConversation({ targetUserId: targetId })
+  if (conv) {
+    ElMessage.success('创建成功')
+    singleChatVisible.value = false
+    singleChatForm.targetUserId = ''
+    await store.selectConversation(conv.id)
+  } else {
+    ElMessage.error('创建私聊失败')
+  }
+}
+
 async function handleSend(content: string): Promise<void> {
   if (!store.currentConversation) return
   await store.sendText({
     conversationId: store.currentConversation.id,
     content,
   })
+}
+
+async function handleSendFile(file: File): Promise<void> {
+  if (!store.currentConversation) return
+
+  try {
+    // Step 1: Initialize upload task
+    const initReq: FileUploadInitRequest = {
+      originalName: file.name,
+      fileSize: file.size,
+      mimeType: file.type || undefined,
+      category: 'chat',
+      isPublic: 0,
+    }
+    const initRes = await UserFileApi.initUploadTask(initReq)
+    const task = initRes.data.data
+
+    // Already completed (quick upload / dedup)
+    if (task.completed && task.businessId) {
+      await store.sendFileMessage({
+        conversationId: store.currentConversation.id,
+        businessId: task.businessId,
+      })
+      return
+    }
+
+    // Step 2: Upload file data
+    const formData = new FormData()
+    formData.append('file', file)
+    const uploadRes = await UserFileApi.uploadFile(task.uploadId, formData)
+    const result = uploadRes.data.data
+
+    // Step 3: Send file message
+    if (result.businessId) {
+      await store.sendFileMessage({
+        conversationId: store.currentConversation.id,
+        businessId: result.businessId,
+      })
+    }
+  } catch {
+    ElMessage.error('文件发送失败')
+  }
 }
 
 async function handleRevoke(messageId: number): Promise<void> {
@@ -98,6 +200,11 @@ async function handleDelete(messageId: number): Promise<void> {
   if (success) ElMessage.success('已删除')
 }
 
+async function handleEdit(messageId: number, content: string): Promise<void> {
+  const success = await store.updateMessage(messageId, { content })
+  if (success) ElMessage.success('已编辑')
+}
+
 async function handleCreateGroup(data: { name: string }): Promise<void> {
   const conv = await store.createGroup({ name: data.name, memberUserIds: [] })
   if (conv) {
@@ -108,6 +215,7 @@ async function handleCreateGroup(data: { name: string }): Promise<void> {
 
 onMounted(() => {
   store.fetchConversations()
+  connect()
 })
 </script>
 

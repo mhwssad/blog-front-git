@@ -1,26 +1,29 @@
 <template>
   <div class="channel-audit-page">
     <el-card class="search-card" shadow="never">
-      <el-form :model="query" inline>
+      <el-form :model="searchForm" inline>
         <el-form-item label="状态">
-          <el-select v-model="query.status" placeholder="全部" clearable style="width: 160px">
-            <el-option label="待审核" value="pending" />
-            <el-option label="已通过" value="approved" />
-            <el-option label="已拒绝" value="rejected" />
+          <el-select
+            v-model="searchForm.applyStatus"
+            placeholder="全部"
+            clearable
+            style="width: 160px"
+          >
+            <el-option label="待审核" :value="1" />
+            <el-option label="已通过" :value="2" />
+            <el-option label="已拒绝" :value="3" />
           </el-select>
         </el-form-item>
-        <el-form-item label="申请时间">
-          <el-date-picker
-            v-model="query.dateRange"
-            type="daterange"
-            range-separator="至"
-            start-placeholder="开始日期"
-            end-placeholder="结束日期"
-            value-format="YYYY-MM-DD"
+        <el-form-item label="关键词">
+          <el-input
+            v-model="searchForm.keyword"
+            placeholder="用户名 / 频道名"
+            clearable
+            style="width: 200px"
           />
         </el-form-item>
         <el-form-item>
-          <el-button type="primary" @click="handleQuery">查询</el-button>
+          <el-button type="primary" @click="handleSearch">查询</el-button>
           <el-button @click="handleReset">重置</el-button>
         </el-form-item>
       </el-form>
@@ -32,52 +35,86 @@
           <span>频道申请列表</span>
         </div>
       </template>
-      <el-table :data="tableData" v-loading="loading" border stripe>
-        <el-table-column prop="applicant" label="申请人" min-width="120" align="center" />
-        <el-table-column prop="channelName" label="频道名" min-width="140" align="center" />
-        <el-table-column prop="description" label="描述" min-width="200" align="center" show-overflow-tooltip />
-        <el-table-column prop="applyTime" label="申请时间" min-width="180" align="center" />
-        <el-table-column prop="status" label="状态" min-width="100" align="center">
-          <template #default="{ row }">
-            <el-tag :type="statusTagType(row.status)">{{ statusLabel(row.status) }}</el-tag>
-          </template>
-        </el-table-column>
-        <el-table-column label="操作" min-width="200" align="center">
-          <template #default="{ row }">
-            <template v-if="row.status === 'pending'">
-              <el-button link type="success" @click="handleApprove(row)">通过</el-button>
-              <el-button link type="danger" @click="handleReject(row)">拒绝</el-button>
+      <div ref="tableWrapperRef" class="table-wrapper">
+        <el-table
+          v-loading="chatStore.channelAppLoading"
+          :data="chatStore.channelApplications"
+          :height="tableHeight"
+          :size="isCompactTable ? 'small' : 'default'"
+          border
+          stripe
+          table-layout="auto"
+        >
+          <el-table-column prop="username" label="用户名" min-width="120" align="center" />
+          <el-table-column prop="nickname" label="昵称" min-width="120" align="center" />
+          <el-table-column prop="desiredName" label="频道名" min-width="140" align="center" />
+          <el-table-column prop="desiredSceneType" label="场景类型" min-width="120" align="center" />
+          <el-table-column label="状态" min-width="100" align="center">
+            <template #default="{ row }">
+              <el-tag :type="statusTagType(row.applyStatus)">
+                {{ statusLabel(row.applyStatus) }}
+              </el-tag>
             </template>
-            <el-button v-else link type="primary" @click="handleView(row)">查看</el-button>
-          </template>
-        </el-table-column>
-      </el-table>
-      <div class="pagination-area">
+          </el-table-column>
+          <el-table-column label="申请时间" min-width="180" align="center">
+            <template #default="{ row }">
+              {{ formatAiDate(row.createdAt) }}
+            </template>
+          </el-table-column>
+          <el-table-column label="操作" min-width="200" align="center">
+            <template #default="{ row }">
+              <template v-if="row.applyStatus === 1">
+                <el-button link type="success" @click="handleApprove(row)">通过</el-button>
+                <el-button link type="danger" @click="handleReject(row)">拒绝</el-button>
+              </template>
+              <el-button link type="primary" @click="handleView(row)">查看</el-button>
+            </template>
+          </el-table-column>
+        </el-table>
+      </div>
+      <div ref="paginationRef" class="pagination-area">
         <el-pagination
           v-model:current-page="pagination.current"
           v-model:page-size="pagination.size"
-          :total="pagination.total"
+          :total="chatStore.channelAppTotal"
           :page-sizes="[10, 20, 50]"
-          layout="total, sizes, prev, pager, next"
-          @size-change="handleQuery"
-          @current-change="handleQuery"
+          :layout="paginationLayout"
+          @size-change="handleSearch"
+          @current-change="handleSearch"
         />
       </div>
     </el-card>
 
     <el-dialog v-model="detailVisible" title="申请详情" width="560px">
-      <el-descriptions :column="1" border>
-        <el-descriptions-item label="申请人">{{ currentRow.applicant }}</el-descriptions-item>
-        <el-descriptions-item label="频道名">{{ currentRow.channelName }}</el-descriptions-item>
-        <el-descriptions-item label="描述">{{ currentRow.description }}</el-descriptions-item>
-        <el-descriptions-item label="申请时间">{{ currentRow.applyTime }}</el-descriptions-item>
-        <el-descriptions-item label="状态">
-          <el-tag :type="statusTagType(currentRow.status)">{{ statusLabel(currentRow.status) }}</el-tag>
-        </el-descriptions-item>
-        <el-descriptions-item v-if="currentRow.reviewRemark" label="审核备注">
-          {{ currentRow.reviewRemark }}
-        </el-descriptions-item>
-      </el-descriptions>
+      <div v-loading="detailLoading">
+        <el-descriptions v-if="detailData" :column="1" border>
+          <el-descriptions-item label="用户名">{{ detailData.username }}</el-descriptions-item>
+          <el-descriptions-item label="昵称">{{ detailData.nickname }}</el-descriptions-item>
+          <el-descriptions-item label="频道名">{{ detailData.desiredName }}</el-descriptions-item>
+          <el-descriptions-item label="场景类型">{{ detailData.desiredSceneType }}</el-descriptions-item>
+          <el-descriptions-item label="分类">{{ detailData.desiredCategoryCode }}</el-descriptions-item>
+          <el-descriptions-item v-if="detailData.description" label="描述">
+            {{ detailData.description }}
+          </el-descriptions-item>
+          <el-descriptions-item label="状态">
+            <el-tag :type="statusTagType(detailData.applyStatus)">
+              {{ statusLabel(detailData.applyStatus) }}
+            </el-tag>
+          </el-descriptions-item>
+          <el-descriptions-item label="申请时间">
+            {{ formatAiDate(detailData.createdAt) }}
+          </el-descriptions-item>
+          <el-descriptions-item v-if="detailData.reviewComment" label="审核备注">
+            {{ detailData.reviewComment }}
+          </el-descriptions-item>
+          <el-descriptions-item v-if="detailData.reviewerNickname" label="审核人">
+            {{ detailData.reviewerNickname }}
+          </el-descriptions-item>
+          <el-descriptions-item v-if="detailData.reviewedAt" label="审核时间">
+            {{ formatAiDate(detailData.reviewedAt) }}
+          </el-descriptions-item>
+        </el-descriptions>
+      </div>
       <template #footer>
         <el-button @click="detailVisible = false">关闭</el-button>
       </template>
@@ -88,93 +125,127 @@
 <script lang="ts" setup>
 import { onMounted, reactive, ref } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
+import { useChatStore } from '@/stores'
+import { useContentAdmin } from '@/composables/useContentAdmin'
+import { formatAiDate } from '@/utils'
+import type {
+  SysChannelApplicationVO,
+  SysChannelApplicationReviewRequest,
+} from '@/types/api-types'
 
-interface ChannelApplication {
-  id: number
-  applicant: string
-  channelName: string
-  description: string
-  applyTime: string
-  status: 'pending' | 'approved' | 'rejected'
-  reviewRemark?: string
-}
+const chatStore = useChatStore()
+const { tableWrapperRef, paginationRef, tableHeight, isCompactTable, paginationLayout } =
+  useContentAdmin()
 
-const query = reactive({
-  status: '' as string,
-  dateRange: null as [string, string] | null,
+const searchForm = reactive({
+  applyStatus: undefined as number | undefined,
+  keyword: '',
 })
 
 const pagination = reactive({
   current: 1,
   size: 10,
-  total: 0,
 })
 
-const tableData = ref<ChannelApplication[]>([])
-const loading = ref(false)
 const detailVisible = ref(false)
-const currentRow = ref<ChannelApplication>({} as ChannelApplication)
+const detailLoading = ref(false)
+const detailData = ref<SysChannelApplicationVO | null>(null)
 
-function statusTagType(status: string): 'info' | 'warning' | 'success' | 'danger' {
-  const map: Record<string, 'info' | 'warning' | 'success' | 'danger'> = { pending: 'warning', approved: 'success', rejected: 'danger' }
-  return map[status] || 'info'
+const STATUS_TAG_MAP: Record<number, 'info' | 'warning' | 'success' | 'danger'> = {
+  1: 'warning',
+  2: 'success',
+  3: 'danger',
+}
+const STATUS_LABEL_MAP: Record<number, string> = {
+  1: '待审核',
+  2: '已通过',
+  3: '已拒绝',
 }
 
-function statusLabel(status: string) {
-  const map: Record<string, string> = { pending: '待审核', approved: '已通过', rejected: '已拒绝' }
-  return map[status] || status
+function statusTagType(status: number) {
+  return STATUS_TAG_MAP[status] ?? 'info'
 }
 
-function handleQuery() {
-  loading.value = true
-  setTimeout(() => {
-    tableData.value = [
-      { id: 1, applicant: '张三', channelName: 'Rust 学习小组', description: 'Rust 语言学习与交流频道', applyTime: '2026-04-20 09:00:00', status: 'pending' },
-      { id: 2, applicant: '李四', channelName: 'Go 语言', description: 'Go 语言技术讨论频道', applyTime: '2026-04-19 11:30:00', status: 'approved', reviewRemark: '符合要求' },
-      { id: 3, applicant: '王五', channelName: '产品经理交流', description: '产品设计与需求讨论', applyTime: '2026-04-18 15:20:00', status: 'rejected', reviewRemark: '已有类似频道' },
-      { id: 4, applicant: '赵六', channelName: '面试经验', description: '面试技巧与经验分享', applyTime: '2026-04-17 10:45:00', status: 'pending' },
-    ]
-    pagination.total = 4
-    loading.value = false
-  }, 300)
+function statusLabel(status: number) {
+  return STATUS_LABEL_MAP[status] ?? '未知'
 }
 
-function handleReset() {
-  query.status = ''
-  query.dateRange = null
+async function fetchList(): Promise<void> {
+  await chatStore.fetchChannelApplications({
+    current: pagination.current,
+    size: pagination.size,
+    applyStatus: searchForm.applyStatus,
+    keyword: searchForm.keyword || undefined,
+  })
+}
+
+function handleSearch(): void {
+  void fetchList()
+}
+
+function handleReset(): void {
+  searchForm.applyStatus = undefined
+  searchForm.keyword = ''
   pagination.current = 1
-  handleQuery()
+  void fetchList()
 }
 
-function handleApprove(row: ChannelApplication) {
-  ElMessageBox.confirm(`确定通过 "${row.channelName}" 频道申请吗？`, '提示', {
-    confirmButtonText: '确定',
-    cancelButtonText: '取消',
-    type: 'warning',
-  }).then(() => {
-    row.status = 'approved'
-    ElMessage.success('已通过')
-  }).catch(() => {})
-}
-
-function handleReject(row: ChannelApplication) {
-  ElMessageBox.confirm(`确定拒绝 "${row.channelName}" 频道申请吗？`, '提示', {
-    confirmButtonText: '确定',
-    cancelButtonText: '取消',
-    type: 'warning',
-  }).then(() => {
-    row.status = 'rejected'
-    ElMessage.success('已拒绝')
-  }).catch(() => {})
-}
-
-function handleView(row: ChannelApplication) {
-  currentRow.value = { ...row }
+async function handleView(row: SysChannelApplicationVO): Promise<void> {
+  detailLoading.value = true
   detailVisible.value = true
+  const result = await chatStore.fetchChannelApplicationById(row.id)
+  detailData.value = result
+  detailLoading.value = false
+}
+
+function handleApprove(row: SysChannelApplicationVO): void {
+  ElMessageBox.prompt('请输入审核意见（可选）', `通过 "${row.desiredName}" 频道申请`, {
+    confirmButtonText: '确定通过',
+    cancelButtonText: '取消',
+    type: 'warning',
+    inputPlaceholder: '审核意见',
+  })
+    .then(async ({ value }) => {
+      const data: SysChannelApplicationReviewRequest = {
+        reviewStatus: 2,
+        reviewComment: value || undefined,
+      }
+      const ok = await chatStore.reviewChannelApplication(row.id, data)
+      if (ok) {
+        ElMessage.success('已通过')
+        void fetchList()
+      } else {
+        ElMessage.error('操作失败')
+      }
+    })
+    .catch(() => {})
+}
+
+function handleReject(row: SysChannelApplicationVO): void {
+  ElMessageBox.prompt('请输入拒绝原因', `拒绝 "${row.desiredName}" 频道申请`, {
+    confirmButtonText: '确定拒绝',
+    cancelButtonText: '取消',
+    type: 'warning',
+    inputPlaceholder: '拒绝原因',
+  })
+    .then(async ({ value }) => {
+      const data: SysChannelApplicationReviewRequest = {
+        reviewStatus: 3,
+        reviewComment: value || undefined,
+      }
+      const ok = await chatStore.reviewChannelApplication(row.id, data)
+      if (ok) {
+        ElMessage.success('已拒绝')
+        void fetchList()
+      } else {
+        ElMessage.error('操作失败')
+      }
+    })
+    .catch(() => {})
 }
 
 onMounted(() => {
-  handleQuery()
+  void fetchList()
 })
 </script>
 
@@ -189,6 +260,10 @@ onMounted(() => {
 
 .table-card {
   margin-bottom: 16px;
+}
+
+.table-wrapper {
+  width: 100%;
 }
 
 .pagination-area {

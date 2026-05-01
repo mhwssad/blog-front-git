@@ -5,30 +5,40 @@
       <el-button type="primary" @click="openCreateDialog">创建系列</el-button>
     </div>
 
-    <template v-if="seriesList.length">
-      <el-row :gutter="20">
-        <el-col v-for="item in seriesList" :key="item.id" :span="8">
-          <div class="series-card" @click="goDetail(item.id)">
-            <div class="series-cover">
-              <el-icon :size="40" color="#ccc"><Picture /></el-icon>
-            </div>
-            <div class="series-info">
-              <div class="series-name">{{ item.name }}</div>
-              <div class="series-meta">
-                <span>{{ item.articleCount }} 篇文章</span>
-                <span>{{ item.totalRead }} 阅读</span>
+    <div v-loading="store.seriesLoading">
+      <template v-if="store.seriesList.length">
+        <el-row :gutter="20">
+          <el-col v-for="item in store.seriesList" :key="item.id" :span="8">
+            <div class="series-card" @click="goDetail(item.id)">
+              <div class="series-cover">
+                <el-image
+                  v-if="item.coverImage"
+                  :src="item.coverImage"
+                  fit="cover"
+                  class="cover-img"
+                />
+                <el-icon v-else :size="40" color="#ccc"><Picture /></el-icon>
+              </div>
+              <div class="series-info">
+                <div class="series-name">{{ item.title }}</div>
+                <div class="series-desc" v-if="item.description">
+                  {{ item.description }}
+                </div>
+                <div class="series-meta">
+                  <span>{{ item.articleCount }} 篇文章</span>
+                </div>
               </div>
             </div>
-          </div>
-        </el-col>
-      </el-row>
-    </template>
-    <el-empty v-else description="暂无系列" />
+          </el-col>
+        </el-row>
+      </template>
+      <el-empty v-else description="暂无系列" />
+    </div>
 
     <el-dialog v-model="dialogVisible" title="创建系列" width="480" destroy-on-close>
       <el-form ref="dialogFormRef" :model="dialogForm" :rules="dialogRules" label-width="80px">
-        <el-form-item label="系列名称" prop="name">
-          <el-input v-model="dialogForm.name" placeholder="请输入系列名称" />
+        <el-form-item label="系列名称" prop="title">
+          <el-input v-model="dialogForm.title" placeholder="请输入系列名称" />
         </el-form-item>
         <el-form-item label="描述" prop="description">
           <el-input
@@ -38,10 +48,22 @@
             placeholder="请输入系列描述（选填）"
           />
         </el-form-item>
+        <el-form-item label="封面" prop="coverImage">
+          <el-input v-model="dialogForm.coverImage" placeholder="请输入封面图片 URL（选填）" />
+        </el-form-item>
+        <el-form-item label="可见性" prop="visibilityScope">
+          <el-select v-model="dialogForm.visibilityScope" placeholder="请选择可见范围">
+            <el-option label="公开" :value="0" />
+            <el-option label="仅自己" :value="1" />
+            <el-option label="登录可见" :value="3" />
+          </el-select>
+        </el-form-item>
       </el-form>
       <template #footer>
         <el-button @click="dialogVisible = false">取消</el-button>
-        <el-button type="primary" @click="handleCreate">确认</el-button>
+        <el-button type="primary" :loading="store.actionLoading" @click="handleCreate">
+          确认
+        </el-button>
       </template>
     </el-dialog>
   </div>
@@ -53,37 +75,31 @@ import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import { Picture } from '@element-plus/icons-vue'
 import type { FormInstance, FormRules } from 'element-plus'
-
-interface SeriesItem {
-  id: number
-  name: string
-  description: string
-  articleCount: number
-  totalRead: number
-}
+import { useUserContentStore } from '@/stores'
+import type { ArticleSeriesSaveRequest } from '@/types/api-types'
 
 const router = useRouter()
+const store = useUserContentStore()
 
-const seriesList = ref<SeriesItem[]>([])
 const dialogVisible = ref(false)
 const dialogFormRef = ref<FormInstance>()
 
-const dialogForm = reactive({
-  name: '',
+const dialogForm = reactive<ArticleSeriesSaveRequest>({
+  title: '',
   description: '',
+  coverImage: '',
+  visibilityScope: 0,
 })
 
 const dialogRules = reactive<FormRules>({
-  name: [{ required: true, message: '请输入系列名称', trigger: 'blur' }],
+  title: [{ required: true, message: '请输入系列名称', trigger: 'blur' }],
 })
 
-function loadSeries(): void {
-  seriesList.value = []
-}
-
 function openCreateDialog(): void {
-  dialogForm.name = ''
+  dialogForm.title = ''
   dialogForm.description = ''
+  dialogForm.coverImage = ''
+  dialogForm.visibilityScope = 0
   dialogVisible.value = true
 }
 
@@ -91,15 +107,23 @@ async function handleCreate(): Promise<void> {
   const valid = await dialogFormRef.value?.validate().catch(() => false)
   if (!valid) return
 
-  ElMessage.success('系列创建成功')
-  dialogVisible.value = false
+  const success = await store.createSeries(dialogForm)
+  if (success) {
+    ElMessage.success('系列创建成功')
+    dialogVisible.value = false
+    await store.fetchMySeriesList()
+  } else {
+    ElMessage.error('创建失败，请重试')
+  }
 }
 
 function goDetail(id: number): void {
   router.push(`/series/${id}`)
 }
 
-onMounted(loadSeries)
+onMounted(() => {
+  store.fetchMySeriesList()
+})
 </script>
 
 <style scoped>
@@ -142,6 +166,12 @@ onMounted(loadSeries)
   align-items: center;
   justify-content: center;
   background: var(--el-fill-color-light);
+  overflow: hidden;
+}
+
+.cover-img {
+  width: 100%;
+  height: 100%;
 }
 
 .series-info {
@@ -151,6 +181,15 @@ onMounted(loadSeries)
 .series-name {
   font-size: 15px;
   font-weight: 600;
+  margin-bottom: 8px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.series-desc {
+  font-size: 13px;
+  color: var(--el-text-color-secondary);
   margin-bottom: 8px;
   overflow: hidden;
   text-overflow: ellipsis;

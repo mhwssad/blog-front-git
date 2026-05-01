@@ -48,7 +48,7 @@ export const authApi = {
    * POST /api/auth/register
    */
   register: (data: RegisterRequest) =>
-    http.post<AuthenticationToken | null>('/auth/register', data, { skipAuth: true }),
+    http.post<AuthenticationToken>('/auth/register', data, { skipAuth: true }),
 
   /**
    * 1.5 刷新令牌

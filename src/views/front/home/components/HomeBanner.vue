@@ -42,7 +42,7 @@
 
 <script lang="ts" setup>
 import { Search } from '@element-plus/icons-vue'
-import type { CategoryOption } from '../types'
+import type { CategoryOption } from '@/types/ui'
 
 defineProps<{
   keyword: string

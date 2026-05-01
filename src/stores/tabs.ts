@@ -4,13 +4,9 @@
 
 import { ref } from 'vue'
 import { defineStore } from 'pinia'
+import type { TabItem } from '@/types/ui'
 
-export interface TabItem {
-  path: string
-  title: string
-  name?: string
-  closable?: boolean
-}
+export type { TabItem }
 
 const HOME_TAB: TabItem = {
   path: '/admin/dashboard',

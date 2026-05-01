@@ -21,14 +21,50 @@
               <span class="reply-name">{{ msg.reply.senderNickname }}</span>
               : {{ msg.reply.content ?? '[文件]' }}
             </div>
-            <span>{{ msg.content }}</span>
+            <!-- Image message -->
+            <template v-if="msg.messageType === 'image' && msg.file">
+              <el-image
+                :src="msg.file.fileUrl"
+                :preview-src-list="[msg.file.fileUrl]"
+                fit="cover"
+                class="msg-image"
+                :style="{ maxWidth: '240px', maxHeight: '200px' }"
+              />
+              <span v-if="msg.content" class="msg-image-caption">{{ msg.content }}</span>
+            </template>
+            <!-- File message -->
+            <template v-else-if="(msg.messageType === 'file' || msg.messageType === 'voice') && msg.file">
+              <div class="msg-file" @click="downloadFile(msg.file!.fileUrl, msg.file!.originalName)">
+                <el-icon size="24"><Document /></el-icon>
+                <div class="msg-file-info">
+                  <span class="msg-file-name">{{ msg.file.originalName }}</span>
+                  <span class="msg-file-size">{{ formatFileSize(msg.file.fileSize) }}</span>
+                </div>
+              </div>
+            </template>
+            <!-- Text message -->
+            <template v-else>
+              <span>{{ msg.content }}</span>
+            </template>
+            <span v-if="msg.edited" class="msg-edited-tag">已编辑</span>
           </div>
-          <div class="msg-time">{{ msg.createdAt }}</div>
+          <div class="msg-meta">
+            <span class="msg-time">{{ formatTime(msg.createdAt) }}</span>
+            <span v-if="msg.senderId === currentUserId && deliveryStatus(msg)" class="msg-status">
+              {{ deliveryStatus(msg) }}
+            </span>
+          </div>
         </div>
         <el-dropdown v-if="!msg.revoked" trigger="click" class="msg-actions">
           <el-icon class="msg-more"><MoreFilled /></el-icon>
           <template #dropdown>
             <el-dropdown-menu>
+              <el-dropdown-item
+                v-if="msg.senderId === currentUserId && msg.messageType === 'text'"
+                @click="startEdit(msg)"
+              >
+                编辑
+              </el-dropdown-item>
               <el-dropdown-item v-if="msg.senderId === currentUserId" @click="emit('revoke', msg.id)">
                 撤回
               </el-dropdown-item>
@@ -39,12 +75,21 @@
       </div>
     </template>
     <el-empty v-else description="暂无消息" :image-size="64" />
+
+    <!-- Inline edit dialog -->
+    <el-dialog v-model="editVisible" title="编辑消息" width="400px" append-to-body>
+      <el-input v-model="editContent" type="textarea" :rows="3" placeholder="修改消息内容..." />
+      <template #footer>
+        <el-button @click="editVisible = false">取消</el-button>
+        <el-button type="primary" :disabled="!editContent.trim()" @click="confirmEdit">确定</el-button>
+      </template>
+    </el-dialog>
   </div>
 </template>
 
 <script lang="ts" setup>
 import { ref, watch, nextTick } from 'vue'
-import { MoreFilled } from '@element-plus/icons-vue'
+import { MoreFilled, Document } from '@element-plus/icons-vue'
 import type { ChatMessageVO } from '@/types/api-types'
 
 const props = defineProps<{
@@ -56,9 +101,13 @@ const props = defineProps<{
 const emit = defineEmits<{
   revoke: [messageId: number]
   delete: [messageId: number]
+  edit: [messageId: number, content: string]
 }>()
 
 const listRef = ref<HTMLElement | null>(null)
+const editVisible = ref(false)
+const editMessageId = ref(0)
+const editContent = ref('')
 
 function scrollToBottom(): void {
   nextTick(() => {
@@ -67,6 +116,47 @@ function scrollToBottom(): void {
 }
 
 watch(() => props.messages.length, scrollToBottom)
+
+function formatTime(value: string | null | undefined): string {
+  if (!value) return ''
+  // Show only HH:mm for same-day messages
+  const date = new Date(value)
+  return `${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`
+}
+
+function formatFileSize(bytes: number): string {
+  if (bytes < 1024) return `${bytes} B`
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`
+  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`
+}
+
+function downloadFile(url: string, filename: string): void {
+  const a = document.createElement('a')
+  a.href = url
+  a.download = filename
+  a.target = '_blank'
+  document.body.appendChild(a)
+  a.click()
+  document.body.removeChild(a)
+}
+
+function deliveryStatus(msg: ChatMessageVO): string {
+  if (msg.readByCurrentUser) return '已读'
+  if (msg.deliveryStatus === 1 || msg.deliveryStatus === 2) return '已送达'
+  return ''
+}
+
+function startEdit(msg: ChatMessageVO): void {
+  editMessageId.value = msg.id
+  editContent.value = msg.content ?? ''
+  editVisible.value = true
+}
+
+function confirmEdit(): void {
+  if (!editContent.value.trim()) return
+  emit('edit', editMessageId.value, editContent.value.trim())
+  editVisible.value = false
+}
 </script>
 
 <style scoped>
@@ -124,6 +214,7 @@ watch(() => props.messages.length, scrollToBottom)
   font-size: 14px;
   line-height: 1.5;
   word-break: break-word;
+  position: relative;
 }
 
 .msg-reply {
@@ -141,9 +232,72 @@ watch(() => props.messages.length, scrollToBottom)
   color: var(--el-color-primary);
 }
 
+.msg-image {
+  border-radius: 6px;
+  cursor: pointer;
+  display: block;
+}
+
+.msg-image-caption {
+  display: block;
+  margin-top: 4px;
+  font-size: 13px;
+}
+
+.msg-file {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px;
+  border-radius: 6px;
+  background: var(--el-fill-color-lighter);
+  cursor: pointer;
+  min-width: 180px;
+}
+
+.msg-file:hover {
+  background: var(--el-fill-color);
+}
+
+.msg-file-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.msg-file-name {
+  font-size: 13px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.msg-file-size {
+  font-size: 11px;
+  color: var(--el-text-color-placeholder);
+}
+
+.msg-edited-tag {
+  font-size: 11px;
+  color: var(--el-text-color-placeholder);
+  margin-left: 6px;
+}
+
+.msg-meta {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
 .msg-time {
   font-size: 11px;
   color: var(--el-text-color-placeholder);
+}
+
+.msg-status {
+  font-size: 10px;
+  color: var(--el-color-primary-light-5);
 }
 
 .msg-actions {

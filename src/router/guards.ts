@@ -65,6 +65,7 @@ export function setupRouterGuards(router: Router): void {
 
     // 注册动态后台路由
     const adminMenus = getAdminMenus(authStore.userMenus)
+
     const dynamicRoutesAdded = ensureDynamicAdminRoutes(router, authStore.userMenus)
 
     // /admin 前缀统一视为后台，固定首页与后端菜单组合后作为后台可访问路由集合

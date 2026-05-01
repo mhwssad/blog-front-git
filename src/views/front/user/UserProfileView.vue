@@ -1,122 +1,222 @@
 <template>
   <div class="user-profile-page">
-    <div class="profile-card">
-      <el-avatar :size="64">{{ userId }}</el-avatar>
-      <div class="profile-info">
-        <div class="profile-name">
-          用户 {{ userId }}
-          <UserLevelBadge :level="3" size="small" />
-        </div>
-        <div class="profile-actions">
-          <el-button size="small" type="primary">关注</el-button>
-          <el-button size="small" plain>私信</el-button>
+    <div v-if="profileLoading" class="loading-area">
+      <el-skeleton :rows="3" animated />
+    </div>
+    <template v-else>
+      <div class="profile-card">
+        <el-avatar :size="64" :src="profile.avatar ?? undefined">
+          {{ profile.nickname?.charAt(0) ?? profile.username?.charAt(0) ?? '?' }}
+        </el-avatar>
+        <div class="profile-info">
+          <div class="profile-name">
+            {{ profile.nickname || profile.username || `用户 ${userId}` }}
+          </div>
+          <div class="profile-stats">
+            <span>{{ followTotal }} 关注</span>
+            <span>{{ fanTotal }} 粉丝</span>
+          </div>
+          <div v-if="!isSelf" class="profile-actions">
+            <el-button
+              size="small"
+              :type="isFollowing ? 'default' : 'primary'"
+              :loading="followLoading"
+              @click="toggleFollow"
+            >
+              {{ isFollowing ? '已关注' : '关注' }}
+            </el-button>
+          </div>
         </div>
       </div>
-    </div>
 
-    <div class="profile-tabs">
-      <el-tabs v-model="activeTab">
-        <el-tab-pane label="关注" name="follow">
-          <div v-if="loading" class="loading-area">
-            <el-skeleton :rows="4" animated />
-          </div>
-          <template v-else-if="users.length">
-            <div v-for="user in users" :key="user.userId" class="user-item">
-              <div class="user-main">
-                <el-avatar :size="36" :src="user.avatar ?? undefined">
-                  {{ user.nickname?.charAt(0) }}
-                </el-avatar>
-                <span class="user-name">{{ user.nickname }}</span>
+      <div class="profile-tabs">
+        <el-tabs v-model="activeTab">
+          <el-tab-pane label="关注" name="follow">
+            <div v-if="loading" class="loading-area">
+              <el-skeleton :rows="4" animated />
+            </div>
+            <template v-else-if="users.length">
+              <div v-for="user in users" :key="user.userId" class="user-item" @click="router.push(`/user/${user.userId}`)">
+                <div class="user-main">
+                  <el-avatar :size="36" :src="user.avatar ?? undefined">
+                    {{ user.nickname?.charAt(0) }}
+                  </el-avatar>
+                  <span class="user-name">{{ user.nickname }}</span>
+                </div>
+                <span class="user-time">{{ formatAiDate(user.followTime) }}</span>
               </div>
-              <span class="user-time">{{ user.followTime }}</span>
-            </div>
-            <div v-if="total > pageSize" class="pagination-area">
-              <el-pagination
-                v-model:current-page="currentPage"
-                :page-size="pageSize"
-                :total="total"
-                layout="prev, pager, next"
-                small
-                @current-change="loadData"
-              />
-            </div>
-          </template>
-          <el-empty v-else description="暂无关注" :image-size="64" />
-        </el-tab-pane>
+              <div v-if="followTotal > pageSize" class="pagination-area">
+                <el-pagination
+                  v-model:current-page="currentPage"
+                  :page-size="pageSize"
+                  :total="followTotal"
+                  layout="prev, pager, next"
+                  small
+                  @current-change="loadData"
+                />
+              </div>
+            </template>
+            <el-empty v-else description="暂无关注" :image-size="64" />
+          </el-tab-pane>
 
-        <el-tab-pane label="粉丝" name="fan">
-          <div v-if="loading" class="loading-area">
-            <el-skeleton :rows="4" animated />
-          </div>
-          <template v-else-if="users.length">
-            <div v-for="user in users" :key="user.userId" class="user-item">
-              <div class="user-main">
-                <el-avatar :size="36" :src="user.avatar ?? undefined">
-                  {{ user.nickname?.charAt(0) }}
-                </el-avatar>
-                <span class="user-name">{{ user.nickname }}</span>
+          <el-tab-pane label="粉丝" name="fan">
+            <div v-if="loading" class="loading-area">
+              <el-skeleton :rows="4" animated />
+            </div>
+            <template v-else-if="users.length">
+              <div v-for="user in users" :key="user.userId" class="user-item" @click="router.push(`/user/${user.userId}`)">
+                <div class="user-main">
+                  <el-avatar :size="36" :src="user.avatar ?? undefined">
+                    {{ user.nickname?.charAt(0) }}
+                  </el-avatar>
+                  <span class="user-name">{{ user.nickname }}</span>
+                </div>
+                <span class="user-time">{{ formatAiDate(user.followTime) }}</span>
               </div>
-              <span class="user-time">{{ user.followTime }}</span>
-            </div>
-            <div v-if="total > pageSize" class="pagination-area">
-              <el-pagination
-                v-model:current-page="currentPage"
-                :page-size="pageSize"
-                :total="total"
-                layout="prev, pager, next"
-                small
-                @current-change="loadData"
-              />
-            </div>
-          </template>
-          <el-empty v-else description="暂无粉丝" :image-size="64" />
-        </el-tab-pane>
-      </el-tabs>
-    </div>
+              <div v-if="fanTotal > pageSize" class="pagination-area">
+                <el-pagination
+                  v-model:current-page="currentPage"
+                  :page-size="pageSize"
+                  :total="fanTotal"
+                  layout="prev, pager, next"
+                  small
+                  @current-change="loadData"
+                />
+              </div>
+            </template>
+            <el-empty v-else description="暂无粉丝" :image-size="64" />
+          </el-tab-pane>
+        </el-tabs>
+      </div>
+    </template>
   </div>
 </template>
 
 <script lang="ts" setup>
-import { ref, computed, onMounted, watch } from 'vue'
-import { useRoute } from 'vue-router'
+import { ref, reactive, computed, onMounted, watch } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
+import { ElMessage } from 'element-plus'
 import { FollowApi } from '@/api/follow'
+import { useUserFollowStore } from '@/stores'
+import { useAuthStore } from '@/stores'
+import { formatAiDate } from '@/utils'
 import type { PublicFollowUserVO } from '@/types/api-types'
-import UserLevelBadge from '@/components/common/UserLevelBadge.vue'
 
 const route = useRoute()
+const router = useRouter()
+const authStore = useAuthStore()
+const followStore = useUserFollowStore()
+
 const userId = computed(() => Number(route.params.userId))
+const isSelf = computed(() => authStore.currentUser?.id === userId.value)
 
 const activeTab = ref('follow')
 const users = ref<PublicFollowUserVO[]>([])
-const total = ref(0)
 const currentPage = ref(1)
 const pageSize = 10
 const loading = ref(false)
+const followTotal = ref(0)
+const fanTotal = ref(0)
+
+const profile = reactive({
+  nickname: '',
+  username: '',
+  avatar: '' as string | null,
+})
+const profileLoading = ref(false)
+const isFollowing = ref(false)
+const followLoading = ref(false)
+
+function updateProfileFromUser(user: PublicFollowUserVO | undefined): void {
+  if (!user) return
+  if (!profile.nickname) {
+    profile.nickname = user.nickname
+    profile.username = user.username
+    profile.avatar = user.avatar ?? null
+  }
+}
 
 async function loadData(): Promise<void> {
   loading.value = true
   try {
     const params = { current: currentPage.value, size: pageSize }
-    const response =
-      activeTab.value === 'follow'
-        ? await FollowApi.getUserFollows(userId.value, params)
-        : await FollowApi.getUserFans(userId.value, params)
-    users.value = response.data.data.records
-    total.value = response.data.data.total
+    if (activeTab.value === 'follow') {
+      const response = await FollowApi.getUserFollows(userId.value, params)
+      users.value = response.data.data.records
+      followTotal.value = response.data.data.total
+      updateProfileFromUser(users.value[0])
+    } else {
+      const response = await FollowApi.getUserFans(userId.value, params)
+      users.value = response.data.data.records
+      fanTotal.value = response.data.data.total
+      updateProfileFromUser(users.value[0])
+    }
   } catch {
     users.value = []
-    total.value = 0
   } finally {
     loading.value = false
   }
 }
 
+async function loadAllData(): Promise<void> {
+  profileLoading.value = true
+  loading.value = true
+  try {
+    const [followRes, fanRes] = await Promise.all([
+      FollowApi.getUserFollows(userId.value, { current: 1, size: 1 }),
+      FollowApi.getUserFans(userId.value, { current: 1, size: 1 }),
+    ])
+    followTotal.value = followRes.data.data.total
+    fanTotal.value = fanRes.data.data.total
+    profileLoading.value = false
+
+    await loadData()
+  } catch {
+    profileLoading.value = false
+  }
+}
+
+async function toggleFollow(): Promise<void> {
+  followLoading.value = true
+  try {
+    if (isFollowing.value) {
+      const success = await followStore.unfollowUser(userId.value)
+      if (success) {
+        isFollowing.value = false
+        fanTotal.value = Math.max(0, fanTotal.value - 1)
+        ElMessage.success('已取消关注')
+      }
+    } else {
+      const success = await followStore.followUser(userId.value)
+      if (success) {
+        isFollowing.value = true
+        fanTotal.value += 1
+        ElMessage.success('已关注')
+      }
+    }
+  } finally {
+    followLoading.value = false
+  }
+}
+
 watch(activeTab, () => {
   currentPage.value = 1
-  loadData()
+  void loadData()
 })
 
-onMounted(loadData)
+watch(userId, () => {
+  profile.nickname = ''
+  profile.username = ''
+  profile.avatar = null
+  followTotal.value = 0
+  fanTotal.value = 0
+  currentPage.value = 1
+  void loadAllData()
+})
+
+onMounted(() => {
+  void loadAllData()
+})
 </script>
 
 <style scoped>
@@ -124,6 +224,10 @@ onMounted(loadData)
   max-width: 960px;
   margin: 0 auto;
   padding: 24px;
+}
+
+.loading-area {
+  padding: 16px 0;
 }
 
 .profile-card {
@@ -143,6 +247,14 @@ onMounted(loadData)
   gap: 8px;
 }
 
+.profile-stats {
+  display: flex;
+  gap: 16px;
+  margin-top: 4px;
+  font-size: 13px;
+  color: var(--el-text-color-secondary);
+}
+
 .profile-actions {
   display: flex;
   gap: 8px;
@@ -156,15 +268,12 @@ onMounted(loadData)
   border-radius: 8px;
 }
 
-.loading-area {
-  padding: 16px 0;
-}
-
 .user-item {
   display: flex;
   align-items: center;
   justify-content: space-between;
   padding: 12px 0;
+  cursor: pointer;
 }
 
 .user-item:not(:last-child) {

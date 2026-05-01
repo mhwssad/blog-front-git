@@ -5,16 +5,16 @@
       <el-button type="primary" :loading="saving" @click="handleSave">保存设置</el-button>
     </div>
 
-    <el-card shadow="never" class="settings-card">
+    <el-card v-loading="store.loading" shadow="never" class="settings-card">
       <div class="settings-section">
         <div class="section-title">评论与互动</div>
         <div class="setting-list">
-          <div v-for="item in interactionSettings" :key="item.key" class="setting-item">
+          <div v-for="item in interactionTypes" :key="item.type" class="setting-item">
             <div>
-              <div class="setting-label">{{ item.label }}</div>
-              <div class="setting-desc">{{ item.desc }}</div>
+              <div class="setting-label">{{ findLabel(item.type) }}</div>
+              <div class="setting-desc">{{ findDesc(item.type) }}</div>
             </div>
-            <el-switch v-model="settings[item.key]" />
+            <el-switch v-model="item.enabled" />
           </div>
         </div>
       </div>
@@ -24,12 +24,12 @@
       <div class="settings-section">
         <div class="section-title">社交关系</div>
         <div class="setting-list">
-          <div v-for="item in socialSettings" :key="item.key" class="setting-item">
+          <div v-for="item in socialTypes" :key="item.type" class="setting-item">
             <div>
-              <div class="setting-label">{{ item.label }}</div>
-              <div class="setting-desc">{{ item.desc }}</div>
+              <div class="setting-label">{{ findLabel(item.type) }}</div>
+              <div class="setting-desc">{{ findDesc(item.type) }}</div>
             </div>
-            <el-switch v-model="settings[item.key]" />
+            <el-switch v-model="item.enabled" />
           </div>
         </div>
       </div>
@@ -39,12 +39,12 @@
       <div class="settings-section">
         <div class="section-title">系统消息</div>
         <div class="setting-list">
-          <div v-for="item in systemSettings" :key="item.key" class="setting-item">
+          <div v-for="item in systemTypes" :key="item.type" class="setting-item">
             <div>
-              <div class="setting-label">{{ item.label }}</div>
-              <div class="setting-desc">{{ item.desc }}</div>
+              <div class="setting-label">{{ findLabel(item.type) }}</div>
+              <div class="setting-desc">{{ findDesc(item.type) }}</div>
             </div>
-            <el-switch v-model="settings[item.key]" />
+            <el-switch v-model="item.enabled" />
           </div>
         </div>
       </div>
@@ -53,59 +53,69 @@
 </template>
 
 <script lang="ts" setup>
-import { reactive, ref } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import { ElMessage } from 'element-plus'
+import { useNotificationSettingsStore } from '@/stores'
+import type { UserNotificationSettingItemVO } from '@/types/api-types'
 
-interface NotificationSettings {
-  commentArticle: boolean
-  likeArticle: boolean
-  collectArticle: boolean
-  newFollower: boolean
-  groupMention: boolean
-  privateMessage: boolean
-  channelAnnouncement: boolean
-  systemAnnouncement: boolean
-  aiTaskComplete: boolean
-}
-
-const settings = reactive<NotificationSettings>({
-  commentArticle: true,
-  likeArticle: true,
-  collectArticle: false,
-  newFollower: true,
-  groupMention: true,
-  privateMessage: true,
-  channelAnnouncement: true,
-  systemAnnouncement: true,
-  aiTaskComplete: false,
-})
-
+const store = useNotificationSettingsStore()
 const saving = ref(false)
 
-const interactionSettings = [
-  { key: 'commentArticle' as const, label: '评论我的文章', desc: '有人评论你发布的文章时通知你' },
-  { key: 'likeArticle' as const, label: '点赞我的文章', desc: '有人点赞你发布的文章时通知你' },
-  { key: 'collectArticle' as const, label: '收藏我的文章', desc: '有人收藏你发布的文章时通知你' },
-]
+const interactionKeys = ['comment_article', 'like_article', 'collect_article']
+const socialKeys = ['new_follower', 'group_mention']
+const systemKeys = ['private_message', 'channel_announcement', 'system_announcement', 'ai_task_complete']
 
-const socialSettings = [
-  { key: 'newFollower' as const, label: '有人关注我', desc: '有新用户关注你时通知你' },
-  { key: 'groupMention' as const, label: '群聊有人 @ 我', desc: '群聊中有人 @ 你时通知你' },
-]
+const descriptions: Record<string, string> = {
+  comment_article: '有人评论你发布的文章时通知你',
+  like_article: '有人点赞你发布的文章时通知你',
+  collect_article: '有人收藏你发布的文章时通知你',
+  new_follower: '有新用户关注你时通知你',
+  group_mention: '群聊中有人 @ 你时通知你',
+  private_message: '有人给你发送私信时通知你',
+  channel_announcement: '频道发布新公告时通知你',
+  system_announcement: '系统发布重要公告时通知你',
+  ai_task_complete: 'AI 处理任务完成时通知你',
+}
 
-const systemSettings = [
-  { key: 'privateMessage' as const, label: '收到私聊', desc: '有人给你发送私信时通知你' },
-  { key: 'channelAnnouncement' as const, label: '频道公告', desc: '频道发布新公告时通知你' },
-  { key: 'systemAnnouncement' as const, label: '系统公告', desc: '系统发布重要公告时通知你' },
-  { key: 'aiTaskComplete' as const, label: 'AI 任务完成', desc: 'AI 处理任务完成时通知你' },
-]
+const interactionTypes = computed(() =>
+  store.settings.filter(s => interactionKeys.includes(s.type)),
+)
+const socialTypes = computed(() =>
+  store.settings.filter(s => socialKeys.includes(s.type)),
+)
+const systemTypes = computed(() =>
+  store.settings.filter(s => systemKeys.includes(s.type)),
+)
+
+function findLabel(type: string): string {
+  return store.settings.find(s => s.type === type)?.label ?? type
+}
+
+function findDesc(type: string): string {
+  return descriptions[type] ?? ''
+}
 
 async function handleSave(): Promise<void> {
   saving.value = true
-  await new Promise((r) => setTimeout(r, 500))
-  saving.value = false
-  ElMessage.success('通知设置已保存')
+  try {
+    const settings: Array<{ type: string; enabled: boolean }> = store.settings.map(s => ({
+      type: s.type,
+      enabled: s.enabled,
+    }))
+    const success = await store.batchUpdateSettings({ settings })
+    if (success) {
+      ElMessage.success('通知设置已保存')
+    } else {
+      ElMessage.error('保存失败')
+    }
+  } finally {
+    saving.value = false
+  }
 }
+
+onMounted(() => {
+  void store.fetchSettings()
+})
 </script>
 
 <style scoped>

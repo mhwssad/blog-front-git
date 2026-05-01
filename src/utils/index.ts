@@ -92,6 +92,17 @@ export {
   formatSystemFlag,
   formatUpdateTime,
 } from './systemAdmin'
+export {
+  AI_CHANNEL_STATUS_OPTIONS,
+  AI_SCENE_TYPE_OPTIONS,
+  AI_SESSION_STATUS_OPTIONS,
+  AI_SUCCESS_STATUS_OPTIONS,
+  formatAiChannelStatus,
+  formatAiDate,
+  formatAiSceneType,
+  formatAiSessionStatus,
+  formatAiSuccessStatus,
+} from './aiAdmin'
 
 // ==================== DOM 操作 ====================
 export { DomUtils } from './domUtils'

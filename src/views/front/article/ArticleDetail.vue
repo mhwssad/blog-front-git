@@ -43,7 +43,7 @@
       </template>
     </template>
 
-    <el-empty v-else description="文章不存在或已被删除">
+    <el-empty v-else :description="articleEmptyText">
       <el-button type="primary" @click="router.push('/')">返回首页</el-button>
     </el-empty>
 
@@ -63,6 +63,7 @@ import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import { useAuthStore, useFrontContentStore, useUserContentStore } from '@/stores'
+import type { TocHeading } from '@/types/ui'
 import ArticleHeader from './components/ArticleHeader.vue'
 import ArticleContent from './components/ArticleContent.vue'
 import ArticleSidebar from './components/ArticleSidebar.vue'
@@ -70,12 +71,6 @@ import ActionBar from './components/ActionBar.vue'
 import CommentSection from './components/CommentSection.vue'
 import CollectionModal from './components/CollectionModal.vue'
 import PasswordModal from './components/PasswordModal.vue'
-
-interface TocHeading {
-  id: string
-  text: string
-  level: number
-}
 
 const route = useRoute()
 const router = useRouter()
@@ -85,6 +80,12 @@ const userContentStore = useUserContentStore()
 
 const articleId = computed(() => Number(route.params.id))
 const article = computed(() => frontContentStore.currentArticle)
+const articleEmptyText = computed(() => {
+  const error = frontContentStore.articleError
+  if (error === 403) return '无权访问此文章（仅指定用户可见）'
+  if (error === 401) return '请先登录后再查看此文章'
+  return '文章不存在或已被删除'
+})
 const needPassword = ref(false)
 const showPasswordModal = ref(true)
 const collectModalVisible = ref(false)

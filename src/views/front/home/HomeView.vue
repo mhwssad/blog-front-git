@@ -36,6 +36,8 @@
         </el-col>
       </el-row>
     </div>
+
+    <SiteFooter />
   </div>
 </template>
 
@@ -46,7 +48,8 @@ import type { PublicArticleQueryRequest, PublicCategoryTreeVO } from '@/types/ap
 import HomeArticleSection from './components/HomeArticleSection.vue'
 import HomeBanner from './components/HomeBanner.vue'
 import HomeSidebar from './components/HomeSidebar.vue'
-import type { CategoryOption, SortOption } from './types'
+import SiteFooter from './components/SiteFooter.vue'
+import type { CategoryOption, SortOption } from '@/types/ui'
 
 const frontContentStore = useFrontContentStore()
 

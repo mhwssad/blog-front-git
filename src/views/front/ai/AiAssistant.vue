@@ -1,77 +1,124 @@
 <template>
   <div class="ai-assistant-page">
-    <div class="page-header">
-      <h2 class="page-title">AI 助手</h2>
-      <div class="header-actions">
-        <el-tag type="info" effect="plain">今日剩余: {{ remainCount }} 次</el-tag>
-        <el-button size="small" @click="showQuotaDetail">额度明细</el-button>
+    <!-- 左侧会话列表 -->
+    <div class="session-sidebar">
+      <div class="sidebar-header">
+        <span class="sidebar-title">对话列表</span>
+        <el-button type="primary" size="small" @click="handleNewSession">
+          <el-icon><Plus /></el-icon>
+          新对话
+        </el-button>
       </div>
+      <el-scrollbar class="session-list">
+        <div
+          v-for="session in store.sessions"
+          :key="session.id"
+          :class="['session-item', { 'session-item--active': selectedId === session.id }]"
+          @click="handleSelectSession(session.id)"
+        >
+          <div class="session-info">
+            <div class="session-title">
+              <el-tag v-if="session.status === 0" type="info" size="small">已关闭</el-tag>
+              {{ session.title || '新对话' }}
+            </div>
+            <div class="session-time">{{ formatSessionTime(session.lastMessageAt) }}</div>
+          </div>
+          <el-button
+            v-if="session.status === 1"
+            :icon="Close"
+            circle
+            size="small"
+            text
+            @click.stop="handleCloseSession(session.id)"
+          />
+        </div>
+        <div v-if="store.sessions.length === 0" class="session-empty">暂无对话</div>
+      </el-scrollbar>
     </div>
 
-    <div class="chat-area" ref="chatAreaRef">
-      <AiMessageBubble
-        v-for="msg in messages"
-        :key="msg.id"
-        :role="msg.role"
-        :content="msg.content"
-      />
-      <div v-if="loading" class="thinking-indicator">
-        <span class="thinking-text">正在思考...</span>
-        <span class="thinking-dots">
-          <span class="dot"></span>
-          <span class="dot"></span>
-          <span class="dot"></span>
-        </span>
+    <!-- 主聊天区域 -->
+    <div class="chat-main">
+      <div class="chat-header">
+        <div class="chat-title">
+          {{ store.currentSession?.title || 'AI 助手' }}
+          <el-tag v-if="store.currentSession" type="info" size="small" style="margin-left: 8px">
+            {{ store.currentSession.modelName || store.currentSession.channelName }}
+          </el-tag>
+        </div>
+        <div class="header-actions">
+          <el-tag v-if="store.quota" :type="store.quota.remainingToday <= 5 ? 'danger' : 'info'" effect="plain">
+            今日剩余: {{ store.quota.remainingToday }} / {{ store.quota.dailyLimit }}
+          </el-tag>
+        </div>
       </div>
-    </div>
 
-    <div class="quick-questions">
-      <el-button
-        v-for="q in quickQuestions"
-        :key="q"
-        size="small"
-        round
-        @click="sendQuickQuestion(q)"
-      >
-        {{ q }}
-      </el-button>
-    </div>
+      <div ref="chatAreaRef" class="chat-area">
+        <template v-if="store.currentSession">
+          <AiMessageBubble
+            v-for="msg in store.messages"
+            :key="msg.id"
+            :role="msg.roleType as 'user' | 'assistant' | 'system'"
+            :content="msg.content"
+            :error-message="msg.responseStatus === 0 ? msg.errorMessage ?? undefined : undefined"
+            :created-at="formatMsgTime(msg.createdAt)"
+          />
+          <div v-if="store.sending" class="thinking-indicator">
+            <span class="thinking-text">正在思考...</span>
+            <span class="thinking-dots">
+              <span class="dot"></span>
+              <span class="dot"></span>
+              <span class="dot"></span>
+            </span>
+          </div>
+        </template>
+        <template v-else>
+          <div class="welcome-area">
+            <div class="welcome-title">你好！我是 AI 助手</div>
+            <div class="welcome-desc">有什么可以帮助你的吗？你可以直接输入问题，或者点击下方的快捷问题开始对话。</div>
+            <div class="quick-questions">
+              <el-button
+                v-for="q in quickQuestions"
+                :key="q"
+                size="default"
+                round
+                @click="handleQuickQuestion(q)"
+              >
+                {{ q }}
+              </el-button>
+            </div>
+          </div>
+        </template>
+      </div>
 
-    <div class="input-area">
-      <el-input
-        v-model="inputText"
-        placeholder="输入你的问题..."
-        @keyup.enter="sendMessage"
-      />
-      <el-button type="primary" :disabled="!inputText.trim() || loading" @click="sendMessage">
-        发送
-      </el-button>
+      <div v-if="store.currentSession" class="input-area">
+        <el-input
+          v-model="inputText"
+          placeholder="输入你的问题..."
+          :disabled="store.sending"
+          @keyup.enter="handleSendMessage"
+        />
+        <el-button
+          type="primary"
+          :disabled="!inputText.trim() || store.sending"
+          @click="handleSendMessage"
+        >
+          发送
+        </el-button>
+      </div>
     </div>
   </div>
 </template>
 
 <script lang="ts" setup>
-import { ref, nextTick } from 'vue'
-import { ElMessage } from 'element-plus'
+import { nextTick, onMounted, ref, watch } from 'vue'
+import { ElMessage, ElMessageBox } from 'element-plus'
+import { Close, Plus } from '@element-plus/icons-vue'
 import AiMessageBubble from './components/AiMessageBubble.vue'
+import { useUserAiStore } from '@/stores'
 
-interface Message {
-  id: number
-  role: 'user' | 'assistant'
-  content: string
-}
-
-const messages = ref<Message[]>([
-  {
-    id: 1,
-    role: 'assistant',
-    content: '你好！我是 AI 助手，有什么可以帮助你的吗？你可以直接输入问题，或者点击下方的快捷问题开始对话。',
-  },
-])
-
+const store = useUserAiStore()
 const inputText = ref('')
-const loading = ref(false)
-const remainCount = ref(20)
+const selectedId = ref<number | null>(null)
 const chatAreaRef = ref<HTMLElement | null>(null)
 
 const quickQuestions = [
@@ -81,17 +128,6 @@ const quickQuestions = [
   'React 和 Vue 的区别',
 ]
 
-const mockReplies: Record<string, string> = {
-  'Vue3 有哪些新特性':
-    'Vue 3 的主要新特性包括：\n\n1. Composition API — 提供更灵活的逻辑组织和复用\n2. 更好的 TypeScript 支持\n3. Teleport 组件 — 将内容渲染到 DOM 中的任意位置\n4. Fragments — 支持多根节点组件\n5. Suspense — 处理异步组件加载\n6. 更小的打包体积和更好的性能',
-  'TypeScript 入门指南':
-    'TypeScript 入门建议：\n\n1. 先掌握 JavaScript 基础\n2. 学习基本类型注解：string, number, boolean\n3. 理解接口（interface）和类型别名（type）\n4. 学习泛型的使用\n5. 在实际项目中逐步引入\n\n推荐从官方文档开始：www.typescriptlang.org',
-  '如何学习前端开发':
-    '前端学习路径建议：\n\n1. HTML + CSS 基础 — 网页结构和样式\n2. JavaScript — 编程基础和 DOM 操作\n3. 版本控制 — Git 基本使用\n4. 框架学习 — Vue 或 React\n5. 构建工具 — Vite、Webpack\n6. TypeScript — 类型安全\n7. 项目实战 — 做完整项目练习',
-  'React 和 Vue 的区别':
-    'React 和 Vue 的主要区别：\n\n1. 模板语法：Vue 使用模板，React 使用 JSX\n2. 响应式：Vue 自动追踪依赖，React 需要手动触发更新\n3. 状态管理：Vue 用 Pinia，React 用 Redux/Zustand\n4. 学习曲线：Vue 更平缓，React 更灵活\n5. 生态系统：React 更大，Vue 更统一\n\n两者都很优秀，选择适合团队的即可。',
-}
-
 function scrollToBottom(): void {
   nextTick(() => {
     if (chatAreaRef.value) {
@@ -100,67 +136,189 @@ function scrollToBottom(): void {
   })
 }
 
-function sendMessage(): void {
-  if (!inputText.value.trim() || loading.value) return
-
-  const userMessage: Message = {
-    id: Date.now(),
-    role: 'user',
-    content: inputText.value.trim(),
+function formatSessionTime(value: string | null | undefined): string {
+  if (!value) return ''
+  const date = new Date(value)
+  const now = new Date()
+  if (date.toDateString() === now.toDateString()) {
+    return value.slice(11, 16)
   }
-  messages.value.push(userMessage)
-  const question = inputText.value.trim()
-  inputText.value = ''
-  scrollToBottom()
+  return value.slice(5, 16)
+}
 
-  loading.value = true
-  setTimeout(() => {
-    const reply =
-      mockReplies[question] ??
-      `这是一个关于「${question}」的好问题！让我为你分析一下...\n\n这个问题涉及多个方面，建议你可以从基础概念入手，逐步深入学习。如果需要更详细的解答，欢迎继续提问。`
-    messages.value.push({
-      id: Date.now() + 1,
-      role: 'assistant',
-      content: reply,
-    })
-    loading.value = false
-    remainCount.value = Math.max(0, remainCount.value - 1)
+function formatMsgTime(value: string | null | undefined): string {
+  if (!value) return ''
+  return value.slice(11, 16)
+}
+
+async function handleNewSession(): Promise<void> {
+  const session = await store.createSession({ title: '新对话' })
+  if (session) {
+    selectedId.value = session.id
+    await store.selectSession(session.id)
     scrollToBottom()
-  }, 1000)
+  } else {
+    ElMessage.error('创建会话失败')
+  }
 }
 
-function sendQuickQuestion(question: string): void {
+async function handleSelectSession(id: number): Promise<void> {
+  selectedId.value = id
+  await store.selectSession(id)
+  scrollToBottom()
+}
+
+async function handleSendMessage(): Promise<void> {
+  if (!inputText.value.trim() || store.sending || !selectedId.value) return
+
+  const content = inputText.value.trim()
+  inputText.value = ''
+
+  await store.sendMessage(selectedId.value, { content })
+  scrollToBottom()
+}
+
+async function handleCloseSession(id: number): Promise<void> {
+  try {
+    await ElMessageBox.confirm('确定要关闭此对话吗？', '提示', {
+      confirmButtonText: '确定',
+      cancelButtonText: '取消',
+      type: 'warning',
+    })
+    const success = await store.closeSession(id)
+    if (success) {
+      if (selectedId.value === id) selectedId.value = null
+      ElMessage.success('会话已关闭')
+    }
+  } catch {
+    // 用户取消
+  }
+}
+
+function handleQuickQuestion(question: string): void {
   inputText.value = question
-  sendMessage()
+  if (!selectedId.value) {
+    void handleNewSession().then(() => {
+      void handleSendMessage()
+    })
+  } else {
+    void handleSendMessage()
+  }
 }
 
-function showQuotaDetail(): void {
-  ElMessage.info('额度明细功能开发中')
-}
+watch(
+  () => store.messages.length,
+  () => scrollToBottom(),
+)
+
+onMounted(async () => {
+  await store.fetchSessions({ current: 1, size: 50 })
+  await store.fetchQuota()
+})
 </script>
 
 <style scoped>
 .ai-assistant-page {
-  max-width: 960px;
-  margin: 0 auto;
-  padding: 24px;
   display: flex;
-  flex-direction: column;
   height: calc(100vh - 60px);
+  max-width: 1200px;
+  margin: 0 auto;
   box-sizing: border-box;
 }
 
-.page-header {
+.session-sidebar {
+  width: 280px;
+  border-right: 1px solid var(--el-border-color-light);
+  display: flex;
+  flex-direction: column;
+  background: var(--el-bg-color);
+  flex-shrink: 0;
+}
+
+.sidebar-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 16px;
+  padding: 16px;
+  border-bottom: 1px solid var(--el-border-color-light);
 }
 
-.page-title {
-  margin: 0;
-  font-size: 22px;
-  font-weight: 700;
+.sidebar-title {
+  font-weight: 600;
+  font-size: 16px;
+}
+
+.session-list {
+  flex: 1;
+  overflow: hidden;
+}
+
+.session-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  cursor: pointer;
+  transition: background 0.2s;
+  border-bottom: 1px solid var(--el-border-color-extra-light);
+}
+
+.session-item:hover {
+  background: var(--el-fill-color-light);
+}
+
+.session-item--active {
+  background: var(--el-color-primary-light-9);
+}
+
+.session-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.session-title {
+  font-size: 14px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.session-time {
+  font-size: 12px;
+  color: var(--el-text-color-placeholder);
+  margin-top: 4px;
+}
+
+.session-empty {
+  padding: 40px 16px;
+  text-align: center;
+  color: var(--el-text-color-placeholder);
+  font-size: 14px;
+}
+
+.chat-main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.chat-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 24px;
+  border-bottom: 1px solid var(--el-border-color-light);
+}
+
+.chat-title {
+  font-size: 16px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
 }
 
 .header-actions {
@@ -172,13 +330,39 @@ function showQuotaDetail(): void {
 .chat-area {
   flex: 1;
   overflow-y: auto;
-  padding: 16px;
+  padding: 16px 24px;
   display: flex;
   flex-direction: column;
   gap: 12px;
-  background: #fafafa;
-  border-radius: 8px;
-  margin-bottom: 12px;
+}
+
+.welcome-area {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  text-align: center;
+}
+
+.welcome-title {
+  font-size: 24px;
+  font-weight: 700;
+}
+
+.welcome-desc {
+  font-size: 14px;
+  color: var(--el-text-color-secondary);
+  max-width: 400px;
+}
+
+.quick-questions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: center;
+  margin-top: 8px;
 }
 
 .thinking-indicator {
@@ -207,22 +391,12 @@ function showQuotaDetail(): void {
   animation: dot-pulse 1.4s infinite ease-in-out both;
 }
 
-.dot:nth-child(1) {
-  animation-delay: 0s;
-}
-
-.dot:nth-child(2) {
-  animation-delay: 0.2s;
-}
-
-.dot:nth-child(3) {
-  animation-delay: 0.4s;
-}
+.dot:nth-child(1) { animation-delay: 0s; }
+.dot:nth-child(2) { animation-delay: 0.2s; }
+.dot:nth-child(3) { animation-delay: 0.4s; }
 
 @keyframes dot-pulse {
-  0%,
-  80%,
-  100% {
+  0%, 80%, 100% {
     opacity: 0.3;
     transform: scale(0.6);
   }
@@ -232,15 +406,20 @@ function showQuotaDetail(): void {
   }
 }
 
-.quick-questions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  margin-bottom: 12px;
-}
-
 .input-area {
   display: flex;
   gap: 8px;
+  padding: 16px 24px;
+  border-top: 1px solid var(--el-border-color-light);
+}
+
+@media (max-width: 768px) {
+  .session-sidebar {
+    width: 220px;
+  }
+
+  .ai-assistant-page {
+    max-width: 100%;
+  }
 }
 </style>

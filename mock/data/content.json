@@ -1,0 +1,351 @@
+{
+  "categories": [
+    {
+      "id": 1,
+      "parentId": 0,
+      "name": "前端工程",
+      "code": "frontend",
+      "type": "article",
+      "level": 1,
+      "sortOrder": 10,
+      "icon": "Monitor",
+      "description": "Vue 与工程化",
+      "status": 1,
+      "createdAt": "2026-03-31 12:00:00",
+      "updatedAt": "2026-03-31 12:00:00",
+      "children": [
+        {
+          "id": 2,
+          "parentId": 1,
+          "name": "Vue 3",
+          "code": "vue3",
+          "type": "article",
+          "level": 2,
+          "sortOrder": 10,
+          "icon": "Connection",
+          "description": "Vue 3 实战",
+          "status": 1,
+          "createdAt": "2026-03-31 12:00:00",
+          "updatedAt": "2026-03-31 12:00:00",
+          "children": []
+        },
+        {
+          "id": 3,
+          "parentId": 1,
+          "name": "工程化",
+          "code": "tooling",
+          "type": "article",
+          "level": 2,
+          "sortOrder": 20,
+          "icon": "Tools",
+          "description": "构建与发布",
+          "status": 1,
+          "createdAt": "2026-03-31 12:00:00",
+          "updatedAt": "2026-03-31 12:00:00",
+          "children": []
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "parentId": 0,
+      "name": "内容运营",
+      "code": "content",
+      "type": "article",
+      "level": 1,
+      "sortOrder": 20,
+      "icon": "Reading",
+      "description": "选题与增长",
+      "status": 1,
+      "createdAt": "2026-03-31 12:00:00",
+      "updatedAt": "2026-03-31 12:00:00",
+      "children": [
+        {
+          "id": 5,
+          "parentId": 4,
+          "name": "增长实验",
+          "code": "growth",
+          "type": "article",
+          "level": 2,
+          "sortOrder": 10,
+          "icon": "TrendCharts",
+          "description": "增长与推荐",
+          "status": 1,
+          "createdAt": "2026-03-31 12:00:00",
+          "updatedAt": "2026-03-31 12:00:00",
+          "children": []
+        }
+      ]
+    }
+  ],
+  "tags": [
+    {
+      "id": 1,
+      "name": "Vue",
+      "color": "#42b883",
+      "createdAt": "2026-03-31 12:00:00"
+    },
+    {
+      "id": 2,
+      "name": "TypeScript",
+      "color": "#3178c6",
+      "createdAt": "2026-03-31 12:00:00"
+    },
+    {
+      "id": 3,
+      "name": "Vite",
+      "color": "#f59e0b",
+      "createdAt": "2026-03-31 12:00:00"
+    },
+    {
+      "id": 4,
+      "name": "UX",
+      "color": "#ec4899",
+      "createdAt": "2026-03-31 12:00:00"
+    },
+    {
+      "id": 5,
+      "name": "性能优化",
+      "color": "#8b5cf6",
+      "createdAt": "2026-03-31 12:00:00"
+    },
+    {
+      "id": 6,
+      "name": "增长",
+      "color": "#ef4444",
+      "createdAt": "2026-03-31 12:00:00"
+    }
+  ],
+  "articles": [
+    {
+      "id": 1,
+      "title": "用 Vite 为中后台建立可维护的模块边界",
+      "summary": "从目录、路由、权限和 API 分层出发，梳理一套能长期迭代的前端工程结构。",
+      "content": "# 模块边界",
+      "coverImage": null,
+      "authorId": 1,
+      "authorName": "admin",
+      "isTop": 1,
+      "isOriginal": 1,
+      "status": 1,
+      "accessLevel": 0,
+      "viewCount": 1824,
+      "likeCount": 138,
+      "commentCount": 16,
+      "collectCount": 42,
+      "shareCount": 21,
+      "publishTime": "2026-03-20 09:00:00",
+      "createdAt": "2026-03-19 09:00:00",
+      "updatedAt": "2026-03-31 12:00:00",
+      "remark": "首页推荐",
+      "sourceUrl": null,
+      "categoryIds": [
+        1,
+        3
+      ],
+      "tagIds": [
+        2,
+        3,
+        5
+      ],
+      "accessList": []
+    },
+    {
+      "id": 2,
+      "title": "Vue 3 表格页面如何兼顾响应式与信息密度",
+      "summary": "结合后台内容管理场景，讨论断点、表格高度、自适应交互的取舍。",
+      "content": "# 响应式表格",
+      "coverImage": null,
+      "authorId": 2,
+      "authorName": "editor",
+      "isTop": 1,
+      "isOriginal": 1,
+      "status": 1,
+      "accessLevel": 0,
+      "viewCount": 1336,
+      "likeCount": 96,
+      "commentCount": 12,
+      "collectCount": 31,
+      "shareCount": 13,
+      "publishTime": "2026-03-19 14:30:00",
+      "createdAt": "2026-03-18 10:00:00",
+      "updatedAt": "2026-03-31 12:00:00",
+      "remark": null,
+      "sourceUrl": null,
+      "categoryIds": [
+        1,
+        2
+      ],
+      "tagIds": [
+        1,
+        4
+      ],
+      "accessList": []
+    },
+    {
+      "id": 3,
+      "title": "前端接口 Mock 不只是顶替后端，而是缩短反馈回路",
+      "summary": "把 mock 当作开发工具链的一部分，而不是临时数据补丁。",
+      "content": "# Mock 的价值",
+      "coverImage": null,
+      "authorId": 2,
+      "authorName": "editor",
+      "isTop": 0,
+      "isOriginal": 1,
+      "status": 1,
+      "accessLevel": 0,
+      "viewCount": 1502,
+      "likeCount": 118,
+      "commentCount": 9,
+      "collectCount": 37,
+      "shareCount": 12,
+      "publishTime": "2026-03-17 09:45:00",
+      "createdAt": "2026-03-16 09:45:00",
+      "updatedAt": "2026-03-31 12:00:00",
+      "remark": "Mock 实践",
+      "sourceUrl": null,
+      "categoryIds": [
+        1,
+        3
+      ],
+      "tagIds": [
+        2,
+        3
+      ],
+      "accessList": []
+    },
+    {
+      "id": 4,
+      "title": "权限菜单动态路由最容易踩的三个坑",
+      "summary": "路径别名、组件解析和多层路由的组合，是动态菜单落地时最常见的问题源。",
+      "content": "# 动态路由",
+      "coverImage": null,
+      "authorId": 1,
+      "authorName": "admin",
+      "isTop": 0,
+      "isOriginal": 1,
+      "status": 1,
+      "accessLevel": 4,
+      "viewCount": 612,
+      "likeCount": 58,
+      "commentCount": 4,
+      "collectCount": 22,
+      "shareCount": 9,
+      "publishTime": "2026-03-15 15:10:00",
+      "createdAt": "2026-03-14 15:10:00",
+      "updatedAt": "2026-03-31 12:00:00",
+      "remark": "指定用户可见",
+      "sourceUrl": null,
+      "categoryIds": [
+        1,
+        2
+      ],
+      "tagIds": [
+        1,
+        2,
+        3
+      ],
+      "accessList": [
+        {
+          "userId": 1,
+          "accessType": 1,
+          "expireTime": null,
+          "grantReason": "管理员永久可见"
+        },
+        {
+          "userId": 2,
+          "accessType": 1,
+          "expireTime": null,
+          "grantReason": "编辑协作"
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "title": "文章编辑器二期需求梳理",
+      "summary": "用于演示草稿状态与后台编辑流程。",
+      "content": "# 草稿文章",
+      "coverImage": null,
+      "authorId": 2,
+      "authorName": "editor",
+      "isTop": 0,
+      "isOriginal": 1,
+      "status": 0,
+      "accessLevel": 0,
+      "viewCount": 0,
+      "likeCount": 0,
+      "commentCount": 0,
+      "collectCount": 0,
+      "shareCount": 0,
+      "publishTime": null,
+      "createdAt": "2026-03-20 07:30:00",
+      "updatedAt": "2026-03-31 12:00:00",
+      "remark": "草稿",
+      "sourceUrl": null,
+      "categoryIds": [
+        1,
+        2
+      ],
+      "tagIds": [
+        1
+      ],
+      "accessList": []
+    }
+  ],
+  "comments": [
+    {
+      "id": 1,
+      "targetId": 1,
+      "targetType": "article",
+      "content": "这个目录拆分思路很清楚，尤其是动态路由和权限的边界。",
+      "images": [],
+      "userId": 2,
+      "userNickname": "editor",
+      "userAvatar": "https://api.dicebear.com/7.x/initials/svg?seed=ED",
+      "rootId": 1,
+      "parentId": 0,
+      "likeCount": 12,
+      "replyCount": 1,
+      "status": 1,
+      "createdAt": "2026-03-19 10:10:00",
+      "liked": true,
+      "children": []
+    },
+    {
+      "id": 2,
+      "targetId": 1,
+      "targetType": "article",
+      "content": "后端菜单做单一真相来源，这一点很关键。",
+      "images": [],
+      "userId": 1,
+      "userNickname": "admin",
+      "userAvatar": "https://api.dicebear.com/7.x/initials/svg?seed=AD",
+      "rootId": 1,
+      "parentId": 1,
+      "likeCount": 6,
+      "replyCount": 0,
+      "status": 1,
+      "createdAt": "2026-03-19 10:30:00",
+      "liked": false,
+      "children": []
+    },
+    {
+      "id": 3,
+      "targetId": 3,
+      "targetType": "article",
+      "content": "Mock 做好以后，前端联调效率确实会上一个台阶。",
+      "images": [],
+      "userId": 3,
+      "userNickname": "tester",
+      "userAvatar": "https://api.dicebear.com/7.x/initials/svg?seed=TS",
+      "rootId": 3,
+      "parentId": 0,
+      "likeCount": 9,
+      "replyCount": 0,
+      "status": 1,
+      "createdAt": "2026-03-17 15:00:00",
+      "liked": false,
+      "children": []
+    }
+  ]
+}

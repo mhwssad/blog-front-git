@@ -7,12 +7,7 @@
 
 <script lang="ts" setup>
 import { onMounted, onUpdated, ref, watch } from 'vue'
-
-interface TocHeading {
-  id: string
-  text: string
-  level: number
-}
+import type { TocHeading } from '@/types/ui'
 
 const props = defineProps<{
   content?: string | null

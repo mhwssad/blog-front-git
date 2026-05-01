@@ -1,0 +1,130 @@
+{
+  "folders": [
+    {
+      "id": 1,
+      "userId": 1,
+      "folderName": "默认收藏夹",
+      "folderType": "article",
+      "description": "系统默认创建",
+      "isPublic": 0,
+      "isDefault": 1,
+      "sortOrder": 10,
+      "collectionCount": 2,
+      "createdAt": "2026-03-31 12:00:00",
+      "updatedAt": "2026-03-31 12:00:00"
+    }
+  ],
+  "collections": [
+    {
+      "id": 1,
+      "userId": 1,
+      "folderId": 1,
+      "targetId": 1,
+      "targetType": "article",
+      "remark": "路由权限设计参考",
+      "targetTitle": "用 Vite 为中后台建立可维护的模块边界",
+      "targetUrl": "/articles/1",
+      "createdAt": "2026-03-31 12:00:00"
+    }
+  ],
+  "footprints": [
+    {
+      "id": 1,
+      "userId": 1,
+      "targetId": 1,
+      "targetType": "article",
+      "targetTitle": "用 Vite 为中后台建立可维护的模块边界",
+      "targetUrl": "/articles/1",
+      "ipAddress": "192.168.1.10",
+      "userAgent": "Chrome/120",
+      "visitedAt": "2026-03-31 12:00:00"
+    },
+    {
+      "id": 2,
+      "userId": 2,
+      "targetId": 1,
+      "targetType": "article",
+      "targetTitle": "用 Vite 为中后台建立可维护的模块边界",
+      "targetUrl": "/articles/1",
+      "ipAddress": "192.168.1.11",
+      "userAgent": "Firefox/121",
+      "visitedAt": "2026-04-26 08:15:00"
+    },
+    {
+      "id": 3,
+      "userId": 1,
+      "targetId": 2,
+      "targetType": "article",
+      "targetTitle": "Vue 3 组合式函数设计实践",
+      "targetUrl": "/articles/2",
+      "ipAddress": "192.168.1.10",
+      "userAgent": "Chrome/120",
+      "visitedAt": "2026-04-26 09:30:00"
+    },
+    {
+      "id": 4,
+      "userId": 3,
+      "targetId": 3,
+      "targetType": "article",
+      "targetTitle": "TypeScript 类型体操入门",
+      "targetUrl": "/articles/3",
+      "ipAddress": "10.0.0.5",
+      "userAgent": "Safari/17",
+      "visitedAt": "2026-04-26 10:00:00"
+    },
+    {
+      "id": 5,
+      "userId": 2,
+      "targetId": 5,
+      "targetType": "article",
+      "targetTitle": "Pinia 状态管理最佳实践",
+      "targetUrl": "/articles/5",
+      "ipAddress": "192.168.1.11",
+      "userAgent": "Firefox/121",
+      "visitedAt": "2026-04-26 11:20:00"
+    },
+    {
+      "id": 6,
+      "userId": 1,
+      "targetId": 1,
+      "targetType": "article",
+      "targetTitle": "用 Vite 为中后台建立可维护的模块边界",
+      "targetUrl": "/articles/1",
+      "ipAddress": "192.168.1.10",
+      "userAgent": "Chrome/120",
+      "visitedAt": "2026-04-26 14:05:00"
+    },
+    {
+      "id": 7,
+      "userId": 3,
+      "targetId": 4,
+      "targetType": "article",
+      "targetTitle": "Element Plus 后台管理实战",
+      "targetUrl": "/articles/4",
+      "ipAddress": "10.0.0.5",
+      "userAgent": "Safari/17",
+      "visitedAt": "2026-04-26 15:45:00"
+    },
+    {
+      "id": 8,
+      "userId": 1,
+      "targetId": 6,
+      "targetType": "article",
+      "targetTitle": "前端权限控制体系设计",
+      "targetUrl": "/articles/6",
+      "ipAddress": "192.168.1.10",
+      "userAgent": "Chrome/120",
+      "visitedAt": "2026-04-26 16:30:00"
+    }
+  ],
+  "interactions": [
+    {
+      "id": 1,
+      "userId": 1,
+      "targetId": 1,
+      "targetType": "article",
+      "actionType": "like",
+      "createdAt": "2026-03-19 10:00:00"
+    }
+  ]
+}

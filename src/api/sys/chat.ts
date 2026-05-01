@@ -11,6 +11,8 @@ import type {
   ChatLobbyPinnedMessageVO,
   ChatLobbySettingsUpdateRequest,
   ChatMessageVO,
+  GroupJoinApplicationReviewRequest,
+  GroupJoinApplicationVO,
   PageResult,
   SysChannelApplicationQueryRequest,
   SysChannelApplicationReviewRequest,
@@ -264,6 +266,36 @@ export class SysChatApi {
    */
   static reviewChannelApplication(id: number, data: SysChannelApplicationReviewRequest) {
     return http.put<void>(`/sys/chats/channel-applications/${id}/review`, data)
+  }
+
+  // ==================== 入群申请管理 ====================
+
+  /**
+   * 分页查询入群申请
+   * GET /api/sys/chats/group-join-applications
+   */
+  static getGroupJoinApplications(params?: {
+    conversationId?: number
+    applyStatus?: number
+    keyword?: string
+    current?: number
+    size?: number
+  }) {
+    return http.get<PageResult<GroupJoinApplicationVO>>(
+      '/sys/chats/group-join-applications',
+      params,
+    )
+  }
+
+  /**
+   * 审核入群申请
+   * PUT /api/sys/chats/group-join-applications/{applicationId}/review
+   */
+  static reviewGroupJoinApplication(
+    applicationId: number,
+    data: GroupJoinApplicationReviewRequest,
+  ) {
+    return http.put<void>(`/sys/chats/group-join-applications/${applicationId}/review`, data)
   }
 }
 

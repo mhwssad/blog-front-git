@@ -1,17 +1,27 @@
 <template>
   <div class="user-level-page">
     <el-card class="search-card" shadow="never">
-      <el-form :model="query" inline>
-        <el-form-item label="用户名">
-          <el-input v-model="query.username" placeholder="请输入用户名" clearable style="width: 200px" />
+      <el-form :model="query" inline class="search-form">
+        <el-form-item label="用户ID" class="filter-item">
+          <el-input
+            v-model.number="query.userId"
+            placeholder="请输入用户ID"
+            clearable
+            class="filter-control"
+          />
         </el-form-item>
-        <el-form-item label="等级">
-          <el-select v-model="query.level" placeholder="全部" clearable style="width: 140px">
-            <el-option v-for="lv in 10" :key="lv" :label="`Lv.${lv}`" :value="lv" />
+        <el-form-item label="来源类型" class="filter-item">
+          <el-select v-model="query.sourceType" placeholder="全部" clearable class="filter-control">
+            <el-option label="发文" value="ARTICLE" />
+            <el-option label="评论" value="COMMENT" />
+            <el-option label="点赞" value="LIKE" />
+            <el-option label="登录" value="LOGIN" />
+            <el-option label="签到" value="CHECK_IN" />
+            <el-option label="系统调整" value="ADMIN_ADJUST" />
           </el-select>
         </el-form-item>
-        <el-form-item>
-          <el-button type="primary" @click="handleQuery">查询</el-button>
+        <el-form-item class="search-actions">
+          <el-button type="primary" @click="handleSearch">查询</el-button>
           <el-button @click="handleReset">重置</el-button>
         </el-form-item>
       </el-form>
@@ -19,103 +29,140 @@
 
     <el-card class="table-card" shadow="never">
       <template #header>
-        <div style="display: flex; justify-content: space-between; align-items: center">
-          <span>用户等级列表</span>
-          <div>
-            <el-button type="success" @click="handleExport">导出</el-button>
-            <el-button type="warning" @click="ruleDialogVisible = true">配置规则</el-button>
-          </div>
+        <div class="card-header">
+          <span>经验流水日志</span>
+          <el-button type="warning" @click="openRuleDialog">配置规则</el-button>
         </div>
       </template>
-      <el-table :data="tableData" v-loading="loading" border stripe>
-        <el-table-column prop="username" label="用户" min-width="120" align="center" />
-        <el-table-column prop="level" label="当前等级" min-width="100" align="center">
-          <template #default="{ row }">
-            <el-tag :color="levelColor(row.level)" effect="dark" style="border: none">
-              Lv.{{ row.level }}
-            </el-tag>
-          </template>
-        </el-table-column>
-        <el-table-column prop="experience" label="经验值" min-width="120" align="center" />
-        <el-table-column label="升级来源" min-width="200" align="center">
-          <template #default="{ row }">
-            <div class="progress-group">
-              <div class="progress-item">
-                <span class="progress-label">发文</span>
-                <el-progress :percentage="row.articlePercent" :color="'#409eff'" :stroke-width="8" />
-              </div>
-              <div class="progress-item">
-                <span class="progress-label">互动</span>
-                <el-progress :percentage="row.interactPercent" :color="'#67c23a'" :stroke-width="8" />
-              </div>
-            </div>
-          </template>
-        </el-table-column>
-        <el-table-column label="操作" min-width="120" align="center">
-          <template #default="{ row }">
-            <el-button link type="primary" @click="handleAdjust(row)">调整等级</el-button>
-          </template>
-        </el-table-column>
-      </el-table>
-      <div class="pagination-area">
+
+      <div ref="tableWrapperRef" class="table-wrapper">
+        <el-table
+          v-loading="experienceStore.loading"
+          :data="experienceStore.logs"
+          :height="tableHeight"
+          :size="isCompactTable ? 'small' : 'default'"
+          table-layout="auto"
+          border
+          stripe
+        >
+          <el-table-column prop="userId" label="用户ID" min-width="80" align="center" />
+          <el-table-column prop="sourceTypeLabel" label="来源类型" min-width="100" align="center">
+            <template #default="{ row }">
+              <el-tag :type="sourceTagType(row.sourceType)" size="small">
+                {{ row.sourceTypeLabel || row.sourceType }}
+              </el-tag>
+            </template>
+          </el-table-column>
+          <el-table-column prop="experienceChange" label="经验变化" min-width="100" align="center">
+            <template #default="{ row }">
+              <span :class="row.experienceChange > 0 ? 'exp-positive' : 'exp-negative'">
+                {{ row.experienceChange > 0 ? '+' : '' }}{{ row.experienceChange }}
+              </span>
+            </template>
+          </el-table-column>
+          <el-table-column label="等级变化" min-width="120" align="center">
+            <template #default="{ row }">
+              <template v-if="row.levelBefore !== row.levelAfter">
+                <el-tag size="small" type="info">Lv.{{ row.levelBefore }}</el-tag>
+                <span class="level-arrow">-&gt;</span>
+                <el-tag size="small" type="success">Lv.{{ row.levelAfter }}</el-tag>
+              </template>
+              <template v-else>
+                <span class="level-same">Lv.{{ row.levelBefore }}</span>
+              </template>
+            </template>
+          </el-table-column>
+          <el-table-column
+            prop="description"
+            label="描述"
+            min-width="180"
+            align="center"
+            show-overflow-tooltip
+          >
+            <template #default="{ row }">
+              {{ row.description || '-' }}
+            </template>
+          </el-table-column>
+          <el-table-column label="时间" min-width="160" align="center">
+            <template #default="{ row }">
+              {{ formatAiDate(row.createdAt) }}
+            </template>
+          </el-table-column>
+        </el-table>
+      </div>
+
+      <div ref="paginationRef" class="pagination">
         <el-pagination
           v-model:current-page="pagination.current"
           v-model:page-size="pagination.size"
-          :total="pagination.total"
+          :total="experienceStore.logTotal"
           :page-sizes="[10, 20, 50]"
-          layout="total, sizes, prev, pager, next"
-          @size-change="handleQuery"
-          @current-change="handleQuery"
+          :layout="paginationLayout"
+          :small="isCompactTable"
+          @size-change="handleSizeChange"
+          @current-change="handleCurrentChange"
         />
       </div>
     </el-card>
 
-    <el-dialog v-model="adjustDialogVisible" title="调整等级" width="440px">
-      <el-form label-width="80px">
-        <el-form-item label="用户">
-          <span>{{ adjustTarget.username }}</span>
+    <el-dialog v-model="adjustDialogVisible" title="调整等级" width="440px" :close-on-click-modal="false">
+      <el-form :model="adjustForm" label-width="80px">
+        <el-form-item label="用户ID" required>
+          <el-input-number
+            v-model="adjustForm.userId"
+            :min="1"
+            placeholder="请输入用户ID"
+            controls-position="right"
+            style="width: 100%"
+          />
         </el-form-item>
-        <el-form-item label="当前等级">
-          <el-tag>Lv.{{ adjustTarget.level }}</el-tag>
+        <el-form-item label="调整方式" required>
+          <el-radio-group v-model="adjustForm.adjustType">
+            <el-radio value="level">调整等级</el-radio>
+            <el-radio value="experience">调整经验</el-radio>
+          </el-radio-group>
         </el-form-item>
-        <el-form-item label="新等级">
-          <el-select v-model="adjustForm.newLevel" placeholder="请选择等级" style="width: 100%">
-            <el-option v-for="lv in 10" :key="lv" :label="`Lv.${lv}`" :value="lv" />
-          </el-select>
+        <el-form-item :label="adjustForm.adjustType === 'level' ? '新等级' : '新经验值'" required>
+          <el-input-number
+            v-model="adjustForm.newValue"
+            :min="0"
+            controls-position="right"
+            style="width: 100%"
+          />
         </el-form-item>
-        <el-form-item label="备注">
-          <el-input v-model="adjustForm.remark" type="textarea" :rows="3" placeholder="请输入调整原因" />
+        <el-form-item label="原因">
+          <el-input
+            v-model="adjustForm.reason"
+            type="textarea"
+            :rows="3"
+            placeholder="请输入调整原因"
+          />
         </el-form-item>
       </el-form>
       <template #footer>
         <el-button @click="adjustDialogVisible = false">取消</el-button>
-        <el-button type="primary" @click="confirmAdjust">确认</el-button>
+        <el-button type="primary" :loading="adjusting" @click="confirmAdjust">确认</el-button>
       </template>
     </el-dialog>
 
-    <el-dialog v-model="ruleDialogVisible" title="配置等级规则" width="560px">
-      <el-form label-width="120px">
-        <el-divider content-position="left">经验来源权重</el-divider>
-        <el-form-item label="发文经验">
-          <el-input-number v-model="ruleForm.articleWeight" :min="0" :max="100" />
-        </el-form-item>
-        <el-form-item label="互动经验">
-          <el-input-number v-model="ruleForm.interactWeight" :min="0" :max="100" />
-        </el-form-item>
-        <el-form-item label="登录经验">
-          <el-input-number v-model="ruleForm.loginWeight" :min="0" :max="100" />
-        </el-form-item>
-        <el-divider content-position="left">每日上限</el-divider>
-        <el-form-item label="每日经验上限">
-          <el-input-number v-model="ruleForm.dailyLimit" :min="0" :max="10000" />
-        </el-form-item>
-        <el-form-item label="单次互动上限">
-          <el-input-number v-model="ruleForm.singleInteractLimit" :min="0" :max="1000" />
-        </el-form-item>
-      </el-form>
+    <el-dialog
+      v-model="ruleDialogVisible"
+      title="配置经验来源规则"
+      width="560px"
+      :close-on-click-modal="false"
+    >
+      <div v-loading="experienceStore.configLoading">
+        <el-form label-width="140px">
+          <el-divider content-position="left">经验来源配置</el-divider>
+          <el-form-item v-for="item in ruleFormList" :key="item.configKey" :label="item.configKey">
+            <el-input v-model="item.configValue" placeholder="请输入配置值" style="width: 240px" />
+          </el-form-item>
+          <el-empty v-if="ruleFormList.length === 0" description="暂无配置项" />
+        </el-form>
+      </div>
       <template #footer>
         <el-button @click="ruleDialogVisible = false">取消</el-button>
-        <el-button type="primary" @click="saveRules">保存</el-button>
+        <el-button type="primary" :loading="savingConfig" @click="saveRules">保存</el-button>
       </template>
     </el-dialog>
   </div>
@@ -124,147 +171,260 @@
 <script lang="ts" setup>
 import { onMounted, reactive, ref } from 'vue'
 import { ElMessage } from 'element-plus'
+import { useExperienceStore } from '@/stores'
+import { useContentAdmin } from '@/composables/useContentAdmin'
+import { formatAiDate } from '@/utils'
 
-interface UserLevel {
-  id: number
-  username: string
-  level: number
-  experience: number
-  articlePercent: number
-  interactPercent: number
-}
+const experienceStore = useExperienceStore()
 
 const query = reactive({
-  username: '',
-  level: '' as number | string,
+  userId: undefined as number | undefined,
+  sourceType: '' as string,
 })
 
 const pagination = reactive({
   current: 1,
   size: 10,
-  total: 0,
 })
 
-const tableData = ref<UserLevel[]>([])
-const loading = ref(false)
+const { tableWrapperRef, paginationRef, tableHeight, isCompactTable, paginationLayout } =
+  useContentAdmin({
+    minHeight: 360,
+    bottomOffset: 16,
+  })
+
+// Adjust dialog
 const adjustDialogVisible = ref(false)
-const ruleDialogVisible = ref(false)
-
-const adjustTarget = ref<UserLevel>({} as UserLevel)
+const adjusting = ref(false)
 const adjustForm = reactive({
-  newLevel: 1,
-  remark: '',
+  userId: undefined as number | undefined,
+  adjustType: 'level' as 'level' | 'experience',
+  newValue: 0,
+  reason: '',
 })
 
-const ruleForm = reactive({
-  articleWeight: 30,
-  interactWeight: 40,
-  loginWeight: 30,
-  dailyLimit: 500,
-  singleInteractLimit: 50,
-})
+// Rule dialog
+const ruleDialogVisible = ref(false)
+const savingConfig = ref(false)
+const ruleFormList = ref<{ configKey: string; configValue: string }[]>([])
 
-function levelColor(level: number) {
-  const colors = [
-    '#909399', '#67c23a', '#409eff', '#e6a23c', '#f56c6c',
-    '#9b59b6', '#1abc9c', '#e74c3c', '#8e44ad', '#c0392b',
-  ]
-  return colors[Math.min(level - 1, 9)]
+function sourceTagType(sourceType: string): 'success' | 'warning' | 'danger' | 'info' {
+  const map: Record<string, 'success' | 'warning' | 'danger' | 'info'> = {
+    ARTICLE: 'success',
+    COMMENT: 'info',
+    LIKE: 'warning',
+    LOGIN: 'info',
+    CHECK_IN: 'info',
+    ADMIN_ADJUST: 'danger',
+  }
+  return map[sourceType] ?? 'info'
 }
 
-function handleQuery() {
-  loading.value = true
-  setTimeout(() => {
-    tableData.value = [
-      { id: 1, username: '张三', level: 5, experience: 3200, articlePercent: 60, interactPercent: 40 },
-      { id: 2, username: '李四', level: 8, experience: 8900, articlePercent: 70, interactPercent: 80 },
-      { id: 3, username: '王五', level: 2, experience: 600, articlePercent: 20, interactPercent: 30 },
-      { id: 4, username: '赵六', level: 10, experience: 15000, articlePercent: 90, interactPercent: 95 },
-      { id: 5, username: '孙七', level: 3, experience: 1200, articlePercent: 35, interactPercent: 50 },
-    ]
-    pagination.total = 5
-    loading.value = false
-  }, 300)
+async function fetchLogs(): Promise<void> {
+  try {
+    await experienceStore.fetchLogs({
+      current: pagination.current,
+      size: pagination.size,
+      userId: query.userId,
+      sourceType: query.sourceType || undefined,
+    })
+  } catch {
+    ElMessage.error('获取经验日志失败')
+  }
 }
 
-function handleReset() {
-  query.username = ''
-  query.level = ''
+function handleSearch(): void {
   pagination.current = 1
-  handleQuery()
+  void fetchLogs()
 }
 
-function handleExport() {
-  ElMessage.success('导出功能开发中')
+function handleReset(): void {
+  query.userId = undefined
+  query.sourceType = ''
+  pagination.current = 1
+  pagination.size = 10
+  void fetchLogs()
 }
 
-function handleAdjust(row: UserLevel) {
-  adjustTarget.value = { ...row }
-  adjustForm.newLevel = row.level
-  adjustForm.remark = ''
+function handleSizeChange(size: number): void {
+  pagination.size = size
+  pagination.current = 1
+  void fetchLogs()
+}
+
+function handleCurrentChange(current: number): void {
+  pagination.current = current
+  void fetchLogs()
+}
+
+function handleAdjust(): void {
+  adjustForm.userId = undefined
+  adjustForm.adjustType = 'level'
+  adjustForm.newValue = 0
+  adjustForm.reason = ''
   adjustDialogVisible.value = true
 }
 
-function confirmAdjust() {
-  adjustTarget.value.level = adjustForm.newLevel
-  const target = tableData.value.find((item) => item.id === adjustTarget.value.id)
-  if (target) {
-    target.level = adjustForm.newLevel
+async function confirmAdjust(): Promise<void> {
+  if (!adjustForm.userId) {
+    ElMessage.warning('请输入用户ID')
+    return
   }
-  adjustDialogVisible.value = false
-  ElMessage.success('等级调整成功')
+  if (adjustForm.newValue < 0) {
+    ElMessage.warning('请输入有效的数值')
+    return
+  }
+
+  adjusting.value = true
+  try {
+    const success = await experienceStore.adjustUserLevel(adjustForm.userId, {
+      adjustType: adjustForm.adjustType,
+      newValue: adjustForm.newValue,
+      reason: adjustForm.reason || undefined,
+    })
+    if (success) {
+      ElMessage.success('调整成功')
+      adjustDialogVisible.value = false
+      void fetchLogs()
+    } else {
+      ElMessage.error('调整失败')
+    }
+  } catch {
+    ElMessage.error('调整失败')
+  } finally {
+    adjusting.value = false
+  }
 }
 
-function saveRules() {
-  ruleDialogVisible.value = false
-  ElMessage.success('规则保存成功')
+async function openRuleDialog(): Promise<void> {
+  ruleDialogVisible.value = true
+  try {
+    await experienceStore.fetchConfig()
+    ruleFormList.value = experienceStore.configs.map((c) => ({ ...c }))
+  } catch {
+    ElMessage.error('获取配置失败')
+  }
+}
+
+async function saveRules(): Promise<void> {
+  savingConfig.value = true
+  try {
+    for (const item of ruleFormList.value) {
+      const success = await experienceStore.updateConfig({
+        configKey: item.configKey,
+        configValue: item.configValue,
+      })
+      if (!success) {
+        ElMessage.error(`保存配置 ${item.configKey} 失败`)
+        return
+      }
+    }
+    ElMessage.success('规则保存成功')
+    ruleDialogVisible.value = false
+  } catch {
+    ElMessage.error('保存失败')
+  } finally {
+    savingConfig.value = false
+  }
 }
 
 onMounted(() => {
-  handleQuery()
+  void fetchLogs()
 })
 </script>
 
 <style scoped>
 .user-level-page {
-  padding: 20px;
+  padding: 0;
+  max-width: 1560px;
+  margin: 0 auto;
 }
 
 .search-card {
   margin-bottom: 16px;
 }
 
-.table-card {
-  margin-bottom: 16px;
+.search-form {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 12px 0;
 }
 
-.pagination-area {
+.search-card :deep(.el-form-item) {
+  margin-bottom: 0;
+}
+
+.filter-item {
+  margin-right: 16px;
+}
+
+.filter-control {
+  width: 200px;
+}
+
+.search-actions {
+  margin-left: 0;
+  margin-right: 0;
+}
+
+.table-card {
+  min-height: 0;
+}
+
+.card-header {
   display: flex;
-  justify-content: flex-end;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  font-weight: 500;
+}
+
+.table-wrapper {
+  min-height: 0;
+}
+
+.pagination {
+  display: flex;
+  justify-content: center;
   margin-top: 16px;
 }
 
-.progress-group {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  width: 100%;
+.exp-positive {
+  color: var(--el-color-success);
+  font-weight: 600;
 }
 
-.progress-item {
-  display: flex;
-  align-items: center;
-  gap: 8px;
+.exp-negative {
+  color: var(--el-color-danger);
+  font-weight: 600;
 }
 
-.progress-label {
-  flex-shrink: 0;
-  font-size: 12px;
+.level-arrow {
+  margin: 0 4px;
   color: var(--el-text-color-secondary);
-  width: 30px;
 }
 
-.progress-item :deep(.el-progress) {
-  flex: 1;
+.level-same {
+  color: var(--el-text-color-regular);
+}
+
+@media (max-width: 768px) {
+  .filter-item,
+  .search-actions {
+    width: 100%;
+    margin-right: 0;
+    margin-left: 0;
+  }
+
+  .filter-control {
+    width: 100%;
+  }
+
+  .search-actions :deep(.el-form-item__content) {
+    width: 100%;
+    justify-content: center;
+  }
 }
 </style>

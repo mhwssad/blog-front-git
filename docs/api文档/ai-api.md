@@ -58,7 +58,9 @@ Authorization: Bearer <accessToken>
 
 | 字段 | 类型 | 必填 | 说明 |
 | --- | --- | --- | --- |
-| `channelId` | Long | 否 | 渠道配置ID，不填则使用默认渠道 |
+| `channelConfigId` | Long | 否 | 渠道配置ID，不填则使用默认渠道 |
+| `title` | String | 否 | 会话标题 |
+| `sceneType` | String | 否 | 会话场景，默认 `general` |
 
 - 响应：`AiSessionVO`
 
@@ -146,7 +148,9 @@ Authorization: Bearer <accessToken>
 
 | 字段 | 类型 | 必填 | 说明 |
 | --- | --- | --- | --- |
-| `content` | String | 是 | 消息内容 |
+| `content` | String | 是 | 消息内容，最大2000字符 |
+| `requestSceneType` | String | 否 | 请求场景类型，默认 `general` |
+| `requestTargetId` | Long | 否 | 关联目标ID |
 
 - 响应：`AiMessageVO`
 
@@ -207,11 +211,21 @@ Authorization: Bearer <accessToken>
 | `id` | Long | 渠道ID |
 | `channelCode` | String | 渠道编码 |
 | `channelName` | String | 渠道名称 |
-| `status` | Integer | 状态：0-禁用/1-启用 |
-| `priority` | Integer | 优先级 |
+| `provider` | String | 提供方 |
 | `modelName` | String | 模型名称 |
-| `dailyLimit` | Integer | 每日限制次数 |
+| `apiBaseUrl` | String | 接口基础地址 |
+| `apiKeyEncrypted` | String | 加密后的API Key |
+| `dailyQuota` | Integer | 全局每日额度，0表示不限制 |
+| `userDailyQuota` | Integer | 单用户每日额度，0表示不限制 |
+| `maxContextTokens` | Integer | 上下文长度上限，0表示不限制 |
+| `dataScopeJson` | String | 可读取数据范围配置JSON |
+| `systemPromptTemplate` | String | 系统提示词模板 |
+| `status` | Integer | 状态：0-停用/1-启用 |
+| `isDefault` | Integer | 是否默认渠道：0-否/1-是 |
+| `createdBy` | Long | 创建人ID |
+| `updatedBy` | Long | 更新人ID |
 | `createdAt` | DateTime | 创建时间 |
+| `updatedAt` | DateTime | 更新时间 |
 
 #### 4.1.3 查询渠道配置详情
 
@@ -229,18 +243,24 @@ Authorization: Bearer <accessToken>
 | --- | --- | --- | --- |
 | `channelCode` | String | 是 | 渠道编码 |
 | `channelName` | String | 是 | 渠道名称 |
+| `provider` | String | 是 | 提供方 |
 | `modelName` | String | 是 | 模型名称 |
-| `apiKey` | String | 是 | API密钥 |
-| `baseUrl` | String | 是 | API地址 |
-| `status` | Integer | 否 | 状态，默认1启用 |
-| `priority` | Integer | 否 | 优先级，默认0 |
-| `dailyLimit` | Integer | 否 | 每日限制次数 |
+| `apiBaseUrl` | String | 否 | 接口基础地址 |
+| `apiKeyEncrypted` | String | 否 | 加密后的API Key |
+| `dailyQuota` | Integer | 否 | 全局每日额度，0表示不限制 |
+| `userDailyQuota` | Integer | 否 | 单用户每日额度，0表示不限制 |
+| `maxContextTokens` | Integer | 否 | 上下文长度上限，0表示不限制 |
+| `dataScopeJson` | String | 否 | 可读取数据范围配置JSON |
+| `systemPromptTemplate` | String | 否 | 系统提示词模板 |
+| `status` | Integer | 否 | 状态：0-停用/1-启用 |
+| `isDefault` | Integer | 否 | 是否默认渠道：0-否/1-是 |
+| `mfaTicket` | String | 否 | 二次验证票据（修改高风险字段时必填） |
 
 #### 4.1.5 更新渠道配置
 
 - 请求：`PUT /api/sys/ai/channels/{id}`
 - 鉴权：`ai:channel-config:update`
-- 请求体：`AiChannelConfigSaveRequest`（同上）
+- 请求体：`AiChannelConfigSaveRequest`（字段同创建渠道配置）
 
 #### 4.1.6 更新渠道状态
 
@@ -250,7 +270,7 @@ Authorization: Bearer <accessToken>
 
 | 字段 | 类型 | 必填 | 说明 |
 | --- | --- | --- | --- |
-| `status` | Integer | 是 | 状态：0-禁用/1-启用 |
+| `status` | Integer | 是 | 状态：0-停用/1-启用 |
 
 #### 4.1.7 删除渠道配置
 
@@ -289,10 +309,13 @@ Authorization: Bearer <accessToken>
 | `id` | Long | 会话ID |
 | `userId` | Long | 用户ID |
 | `username` | String | 用户名 |
-| `channelId` | Long | 渠道ID |
+| `nickname` | String | 用户昵称 |
+| `channelConfigId` | Long | 渠道配置ID |
 | `channelName` | String | 渠道名称 |
-| `status` | String | 状态 |
-| `messageCount` | Integer | 消息条数 |
+| `title` | String | 会话标题 |
+| `sceneType` | String | 场景类型 |
+| `status` | Integer | 状态：0-关闭/1-正常 |
+| `lastMessageAt` | DateTime | 最后消息时间 |
 | `createdAt` | DateTime | 创建时间 |
 | `updatedAt` | DateTime | 更新时间 |
 
@@ -333,16 +356,15 @@ Authorization: Bearer <accessToken>
 | --- | --- | --- |
 | `id` | Long | 日志ID |
 | `userId` | Long | 用户ID |
-| `username` | String | 用户名 |
-| `channelId` | Long | 渠道ID |
-| `channelName` | String | 渠道名称 |
+| `channelConfigId` | Long | 渠道配置ID |
 | `sessionId` | Long | 会话ID |
-| `modelName` | String | 模型名称 |
-| `inputTokens` | Integer | 输入Token数 |
-| `outputTokens` | Integer | 输出Token数 |
-| `cost` | BigDecimal | 消耗金额 |
-| `success` | Boolean | 是否成功 |
-| `errorMessage` | String | 错误信息 |
+| `requestSceneType` | String | 请求场景类型 |
+| `requestTokens` | Integer | 请求token数 |
+| `responseTokens` | Integer | 响应token数 |
+| `totalTokens` | Integer | 总token数 |
+| `quotaCost` | Integer | 额度消耗 |
+| `successStatus` | Integer | 成功状态：0-失败/1-成功 |
+| `errorCode` | String | 错误码 |
 | `createdAt` | DateTime | 调用时间 |
 
 #### 4.3.3 获取使用统计
@@ -354,12 +376,11 @@ Authorization: Bearer <accessToken>
 
 | 字段 | 类型 | 说明 |
 | --- | --- | --- |
-| `totalCalls` | Long | 总调用次数 |
-| `successCalls` | Long | 成功次数 |
-| `failedCalls` | Long | 失败次数 |
-| `totalInputTokens` | Long | 总输入Token |
-| `totalOutputTokens` | Long | 总输出Token |
-| `totalCost` | BigDecimal | 总消耗金额 |
+| `totalCalls` | long | 总调用次数 |
+| `successCalls` | long | 成功调用次数 |
+| `failedCalls` | long | 失败调用次数 |
+| `totalTokens` | long | 总token数 |
+| `totalQuotaCost` | long | 总额度消耗 |
 
 ## 5. 枚举值说明
 
@@ -367,7 +388,7 @@ Authorization: Bearer <accessToken>
 
 | 值 | 说明 |
 | --- | --- |
-| `0` | 禁用 |
+| `0` | 停用 |
 | `1` | 启用 |
 
 ### 5.2 会话状态
@@ -384,6 +405,13 @@ Authorization: Bearer <accessToken>
 | `user` | 用户消息 |
 | `assistant` | AI回复 |
 | `system` | 系统消息 |
+
+### 5.4 默认渠道标识
+
+| 值 | 说明 |
+| --- | --- |
+| `0` | 非默认 |
+| `1` | 默认渠道 |
 
 ## 6. 维护规则
 

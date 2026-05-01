@@ -4,6 +4,7 @@ import { stripMarkdownMeta } from '@/utils/markdown'
 export function createEmptyForm(): ArticleSaveRequest {
   return {
     title: '',
+    authorId: 0,
     summary: '',
     content: '',
     coverImage: '',

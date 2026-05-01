@@ -1,0 +1,25 @@
+{
+  "seq": {
+    "user": 3,
+    "role": 3,
+    "category": 5,
+    "tag": 6,
+    "article": 8,
+    "comment": 4,
+    "config": 3,
+    "notice": 3,
+    "userNotice": 3,
+    "log": 3,
+    "followRelation": 4,
+    "file": 4,
+    "fileReference": 5,
+    "fileTask": 5,
+    "conversation": 3,
+    "message": 6,
+    "footprint": 8,
+    "aiChannel": 4,
+    "aiSession": 6,
+    "aiUsageLog": 15,
+    "aiMessage": 10
+  }
+}

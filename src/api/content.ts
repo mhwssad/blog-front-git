@@ -105,6 +105,14 @@ export class ContentApi {
   static getPublicChannelDetail(conversationId: number) {
     return http.get<PublicChannelDetailVO>(`/public/chat/channels/${conversationId}`)
   }
+
+  /**
+   * 代理访问文件（带文章权限校验）
+   * GET /api/public/files/{fileId}
+   */
+  static getPublicFile(fileId: number) {
+    return http.get<string>(`/public/files/${fileId}`)
+  }
 }
 
 export default ContentApi

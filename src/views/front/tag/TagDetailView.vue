@@ -1,58 +1,87 @@
 <template>
   <div class="tag-detail-page">
     <div class="tag-header">
-      <h1 class="tag-name"># {{ tagInfo.name }}</h1>
-      <el-tag type="info" size="large">{{ tagInfo.articleCount }} 篇文章</el-tag>
+      <h1 class="tag-name"># {{ currentTag?.name || '...' }}</h1>
+      <el-tag type="info" size="large">{{ frontStore.total }} 篇文章</el-tag>
     </div>
 
-    <div v-if="articleList.length" class="article-list">
-      <div v-for="item in articleList" :key="item.id" class="article-card" @click="router.push(`/articles/${item.id}`)">
+    <div v-if="frontStore.articles.length" class="article-list">
+      <div
+        v-for="item in frontStore.articles"
+        :key="item.id"
+        class="article-card"
+        @click="router.push(`/articles/${item.id}`)"
+      >
         <h3 class="article-title">{{ item.title }}</h3>
         <p class="article-summary">{{ item.summary }}</p>
         <div class="article-meta">
-          <span>{{ item.author }}</span>
-          <span>{{ item.createTime }}</span>
+          <span>{{ item.authorName }}</span>
+          <span>{{ item.publishTime }}</span>
+          <span>{{ item.viewCount }} 阅读</span>
+          <span>{{ item.likeCount }} 赞</span>
         </div>
       </div>
     </div>
-    <el-empty v-else description="该标签下暂无文章" />
+    <el-empty v-else-if="!frontStore.loading" description="该标签下暂无文章" />
 
-    <div v-if="total > pageSize" class="pagination-wrap">
+    <div v-if="frontStore.total > pagination.size" class="pagination-wrap">
       <el-pagination
-        v-model:current-page="currentPage"
-        :page-size="pageSize"
-        :total="total"
+        v-model:current-page="pagination.current"
+        v-model:page-size="pagination.size"
+        :total="frontStore.total"
         layout="prev, pager, next"
-        @current-change="fetchArticles"
+        @current-change="handlePageChange"
       />
     </div>
   </div>
 </template>
 
 <script lang="ts" setup>
-import { ref, onMounted } from 'vue'
+import { ref, reactive, onMounted, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import { useFrontContentStore } from '@/stores'
+import type { PublicTagVO } from '@/types/api-types'
 
 const route = useRoute()
 const router = useRouter()
+const frontStore = useFrontContentStore()
 
-const tagInfo = ref({ name: 'Vue.js', articleCount: 0 })
-const articleList = ref<{ id: number; title: string; summary: string; author: string; createTime: string }[]>([])
-const currentPage = ref(1)
-const pageSize = 10
-const total = ref(0)
+const currentTag = ref<PublicTagVO | null>(null)
+const pagination = reactive({ current: 1, size: 10 })
 
-function fetchArticles(): void {
-  // Mock
-  tagInfo.value = { name: 'Vue.js', articleCount: 15 }
-  articleList.value = [
-    { id: 1, title: 'Vue 3 组合式 API 最佳实践', summary: '深入理解 Composition API 的使用场景...', author: '技术博主', createTime: '2025-01-15' },
-    { id: 2, title: 'Vue Router 5 新特性解析', summary: '探索 Vue Router 5 带来的变化...', author: '前端达人', createTime: '2025-01-12' },
-  ]
-  total.value = 15
+async function loadData(): Promise<void> {
+  const tagId = Number(route.params.id)
+  if (!tagId) return
+
+  await frontStore.fetchArticles({
+    tagId,
+    current: pagination.current,
+    size: pagination.size,
+  })
+
+  if (!currentTag.value) {
+    const tag = frontStore.tags.find(t => t.id === tagId)
+    if (tag) currentTag.value = tag
+  }
 }
 
-onMounted(fetchArticles)
+function handlePageChange(page: number): void {
+  pagination.current = page
+  void loadData()
+}
+
+watch(() => route.params.id, () => {
+  currentTag.value = null
+  pagination.current = 1
+  void loadData()
+})
+
+onMounted(async () => {
+  if (!frontStore.tags.length) {
+    await frontStore.fetchTags()
+  }
+  await loadData()
+})
 </script>
 
 <style scoped>

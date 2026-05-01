@@ -24,12 +24,25 @@
       </div>
     </div>
 
-    <template v-if="existingApplication">
+    <template v-if="existingApplication && existingApplication.applyStatus === 1">
       <div class="status-card">
         <el-icon :size="48" color="var(--el-color-warning)"><Clock /></el-icon>
         <div class="status-info">
           <div class="status-text">你已提交申请，正在审核中</div>
-          <div class="status-time">提交时间：{{ existingApplication.submitTime }}</div>
+          <div class="status-time">提交时间：{{ existingApplication.submittedAt }}</div>
+        </div>
+      </div>
+    </template>
+
+    <template v-else-if="existingApplication">
+      <div class="status-card">
+        <el-icon :size="48" :color="existingApplication.applyStatus === 2 ? 'var(--el-color-success)' : 'var(--el-color-danger)'">
+          <component :is="existingApplication.applyStatus === 2 ? 'Select' : 'CloseBold'" />
+        </el-icon>
+        <div class="status-info">
+          <div class="status-text">{{ existingApplication.applyStatusLabel }}</div>
+          <div v-if="existingApplication.reviewComment" class="status-time">审核意见：{{ existingApplication.reviewComment }}</div>
+          <div class="status-time">提交时间：{{ existingApplication.submittedAt }}</div>
         </div>
       </div>
     </template>
@@ -42,27 +55,27 @@
         label-width="100px"
         class="apply-form"
       >
-        <el-form-item label="申请说明" prop="reason">
+        <el-form-item label="申请说明" prop="applyReason">
           <el-input
-            v-model="form.reason"
+            v-model="form.applyReason"
             type="textarea"
             :rows="4"
             placeholder="请说明你为什么想成为作者"
           />
         </el-form-item>
 
-        <el-form-item label="擅长方向" prop="expertise">
+        <el-form-item label="擅长方向" prop="contentDirection">
           <el-input
-            v-model="form.expertise"
+            v-model="form.contentDirection"
             type="textarea"
             :rows="3"
             placeholder="请描述你擅长的技术方向或领域"
           />
         </el-form-item>
 
-        <el-form-item label="个人简介" prop="bio">
+        <el-form-item label="个人简介">
           <el-input
-            v-model="form.bio"
+            v-model="form.introduction"
             type="textarea"
             :rows="3"
             placeholder="简单介绍一下自己（选填）"
@@ -71,29 +84,29 @@
 
         <el-form-item label="代表作品">
           <div class="works-list">
-            <div v-for="(_, index) in workLinks" :key="index" class="work-link-row">
+            <div v-for="(_, index) in form.sampleLinks" :key="index" class="work-link-row">
               <el-input
-                v-model="workLinks[index]"
+                v-model="form.sampleLinks[index]"
                 placeholder="请输入作品链接"
                 class="work-input"
               />
               <el-button
-                v-if="workLinks.length > 1"
+                v-if="form.sampleLinks.length > 1"
                 type="danger"
                 link
-                @click="removeWorkLink(index)"
+                @click="form.sampleLinks.splice(index, 1)"
               >
                 删除
               </el-button>
             </div>
-            <el-button type="primary" link @click="addWorkLink">
+            <el-button type="primary" link @click="form.sampleLinks.push('')">
               + 添加更多
             </el-button>
           </div>
         </el-form-item>
 
         <el-form-item>
-          <el-button type="primary" @click="handleSubmit">提交申请</el-button>
+          <el-button type="primary" :loading="submitting" @click="handleSubmit">提交申请</el-button>
         </el-form-item>
       </el-form>
     </template>
@@ -103,46 +116,53 @@
 <script lang="ts" setup>
 import { ref, reactive, onMounted } from 'vue'
 import { ElMessage } from 'element-plus'
-import { EditPen, FolderOpened, Medal, Unlock, Clock } from '@element-plus/icons-vue'
+import { EditPen, FolderOpened, Medal, Unlock, Clock, Select, CloseBold } from '@element-plus/icons-vue'
 import type { FormInstance, FormRules } from 'element-plus'
+import { useUserAuthorApplicationStore } from '@/stores'
+import type { UserAuthorApplicationVO } from '@/types/api-types'
 
-interface ExistingApplication {
-  submitTime: string
-}
-
+const store = useUserAuthorApplicationStore()
 const formRef = ref<FormInstance>()
-const existingApplication = ref<ExistingApplication | null>(null)
+const existingApplication = ref<UserAuthorApplicationVO | null>(null)
+const submitting = ref(false)
 
 const form = reactive({
-  reason: '',
-  expertise: '',
-  bio: '',
+  applyReason: '',
+  contentDirection: '',
+  introduction: '',
+  sampleLinks: [''] as string[],
 })
 
 const rules = reactive<FormRules>({
-  reason: [{ required: true, message: '请填写申请说明', trigger: 'blur' }],
-  expertise: [{ required: true, message: '请填写擅长方向', trigger: 'blur' }],
+  applyReason: [{ required: true, message: '请填写申请说明', trigger: 'blur' }],
+  contentDirection: [{ required: true, message: '请填写擅长方向', trigger: 'blur' }],
 })
-
-const workLinks = ref<string[]>([''])
-
-function addWorkLink(): void {
-  workLinks.value.push('')
-}
-
-function removeWorkLink(index: number): void {
-  workLinks.value.splice(index, 1)
-}
 
 async function handleSubmit(): Promise<void> {
   const valid = await formRef.value?.validate().catch(() => false)
   if (!valid) return
 
-  ElMessage.success('申请已提交，请等待审核')
+  submitting.value = true
+  try {
+    const success = await store.submitApplication({
+      applyReason: form.applyReason,
+      contentDirection: form.contentDirection,
+      introduction: form.introduction || undefined,
+      sampleLinks: form.sampleLinks.filter(l => l.trim()) || undefined,
+    })
+    if (success) {
+      ElMessage.success('申请已提交，请等待审核')
+      existingApplication.value = await store.fetchLatestApplication()
+    } else {
+      ElMessage.error('提交失败，请稍后重试')
+    }
+  } finally {
+    submitting.value = false
+  }
 }
 
-onMounted(() => {
-  existingApplication.value = null
+onMounted(async () => {
+  existingApplication.value = await store.fetchLatestApplication()
 })
 </script>
 

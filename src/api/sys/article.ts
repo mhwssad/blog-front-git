@@ -66,18 +66,18 @@ export class ArticleApi {
 
   /**
    * 切换文章置顶
-   * PUT /api/sys/articles/{id}/top
+   * PUT /api/sys/articles/{id}/top?enabled=true
    */
-  static toggleArticleTop(id: number) {
-    return http.put<void>(`/sys/articles/${id}/top`)
+  static toggleArticleTop(id: number, enabled: boolean) {
+    return http.put<void>(`/sys/articles/${id}/top`, undefined, { params: { enabled } })
   }
 
   /**
    * 切换文章推荐
-   * PUT /api/sys/articles/{id}/recommend
+   * PUT /api/sys/articles/{id}/recommend?enabled=true
    */
-  static toggleArticleRecommend(id: number) {
-    return http.put<void>(`/sys/articles/${id}/recommend`)
+  static toggleArticleRecommend(id: number, enabled: boolean) {
+    return http.put<void>(`/sys/articles/${id}/recommend`, undefined, { params: { enabled } })
   }
 
   /**

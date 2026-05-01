@@ -8,7 +8,11 @@
         <el-form-item label="邮箱">
           <div class="code-input-group">
             <el-input v-model="form.email" placeholder="请输入注册邮箱" />
-            <el-button :disabled="countdown > 0" @click="handleSendCode">
+            <el-button
+              :disabled="countdown > 0 || sendingCode"
+              :loading="sendingCode"
+              @click="handleSendCode"
+            >
               {{ countdown > 0 ? `${countdown}s` : '发送验证码' }}
             </el-button>
           </div>
@@ -19,11 +23,21 @@
         </el-form-item>
 
         <el-form-item label="新密码">
-          <el-input v-model="form.password" type="password" show-password placeholder="请输入新密码（6-20位）" />
+          <el-input
+            v-model="form.password"
+            type="password"
+            show-password
+            placeholder="请输入新密码（6-20位）"
+          />
         </el-form-item>
 
         <el-form-item label="确认密码">
-          <el-input v-model="form.confirmPassword" type="password" show-password placeholder="请再次输入新密码" />
+          <el-input
+            v-model="form.confirmPassword"
+            type="password"
+            show-password
+            placeholder="请再次输入新密码"
+          />
         </el-form-item>
 
         <el-button type="primary" :loading="loading" class="submit-btn" @click="handleReset">
@@ -42,9 +56,11 @@
 import { ref, reactive } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
+import { authApi } from '@/api/auth'
 
 const router = useRouter()
 const loading = ref(false)
+const sendingCode = ref(false)
 const countdown = ref(0)
 
 const form = reactive({
@@ -56,32 +72,60 @@ const form = reactive({
 
 let timer: ReturnType<typeof setInterval> | null = null
 
-function handleSendCode(): void {
+async function handleSendCode(): Promise<void> {
   if (!form.email) {
     ElMessage.warning('请输入邮箱')
     return
   }
-  countdown.value = 60
-  timer = setInterval(() => {
-    countdown.value--
-    if (countdown.value <= 0 && timer) {
-      clearInterval(timer)
-      timer = null
-    }
-  }, 1000)
-  ElMessage.success('验证码已发送')
+
+  sendingCode.value = true
+  try {
+    await authApi.sendEmailCode({ email: form.email })
+    ElMessage.success('验证码已发送')
+    countdown.value = 60
+    timer = setInterval(() => {
+      countdown.value--
+      if (countdown.value <= 0 && timer) {
+        clearInterval(timer)
+        timer = null
+      }
+    }, 1000)
+  } catch {
+    ElMessage.error('验证码发送失败，请稍后重试')
+  } finally {
+    sendingCode.value = false
+  }
 }
 
 async function handleReset(): Promise<void> {
+  if (!form.email) {
+    ElMessage.warning('请输入邮箱')
+    return
+  }
+  if (!form.code) {
+    ElMessage.warning('请输入验证码')
+    return
+  }
+  if (!form.password) {
+    ElMessage.warning('请输入新密码')
+    return
+  }
   if (form.password !== form.confirmPassword) {
     ElMessage.error('两次输入的密码不一致')
     return
   }
+
   loading.value = true
-  await new Promise((r) => setTimeout(r, 1000))
-  loading.value = false
-  ElMessage.success('密码重置成功，请重新登录')
-  router.push('/login')
+  try {
+    // TODO: replace with real reset endpoint when backend adds one
+    await new Promise((r) => setTimeout(r, 1000))
+    ElMessage.success('密码重置成功，请重新登录')
+    router.push('/login')
+  } catch {
+    ElMessage.error('密码重置失败，请稍后重试')
+  } finally {
+    loading.value = false
+  }
 }
 </script>
 

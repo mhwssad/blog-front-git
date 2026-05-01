@@ -20,11 +20,7 @@
 </template>
 
 <script lang="ts" setup>
-interface TocHeading {
-  id: string
-  text: string
-  level: number
-}
+import type { TocHeading } from '@/types/ui'
 
 defineProps<{
   headings: TocHeading[]

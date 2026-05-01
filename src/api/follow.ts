@@ -6,6 +6,7 @@
 import { http } from './request'
 import type {
   PageResult,
+  PublicAuthorProfileVO,
   PublicFollowPageQueryRequest,
   PublicFollowUserVO,
 } from '@/types/api-types'
@@ -29,6 +30,14 @@ export class FollowApi {
    */
   static getUserFans(userId: number, params?: PublicFollowPageQueryRequest) {
     return http.get<PageResult<PublicFollowUserVO>>(`/users/${userId}/fans`, params)
+  }
+
+  /**
+   * 查询公开作者主页摘要
+   * GET /api/users/{userId}/author-profile
+   */
+  static getAuthorProfile(userId: number) {
+    return http.get<PublicAuthorProfileVO>(`/users/${userId}/author-profile`)
   }
 }
 

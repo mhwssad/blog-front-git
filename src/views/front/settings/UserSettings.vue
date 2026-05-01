@@ -15,7 +15,7 @@
                 :on-change="handleAvatarChange"
               >
                 <el-avatar :size="72" :src="profileForm.avatar">
-                  {{ profileForm.nickname[0] }}
+                  {{ profileForm.nickname?.charAt(0) ?? '?' }}
                 </el-avatar>
               </el-upload>
             </el-form-item>
@@ -61,9 +61,6 @@
               <el-switch v-model="prefForm.darkMode" disabled />
               <span class="form-hint">即将推出</span>
             </el-form-item>
-            <el-form-item>
-              <el-button type="primary" :loading="saving" @click="handleSavePref">保存设置</el-button>
-            </el-form-item>
           </el-form>
         </el-card>
       </el-tab-pane>
@@ -72,18 +69,21 @@
 </template>
 
 <script lang="ts" setup>
-import { ref, reactive } from 'vue'
+import { ref, reactive, onMounted } from 'vue'
 import { ElMessage } from 'element-plus'
 import type { UploadFile } from 'element-plus'
+import { useAuthStore } from '@/stores'
+
+const authStore = useAuthStore()
 
 const activeTab = ref('profile')
 const saving = ref(false)
 
 const profileForm = reactive({
   avatar: '',
-  nickname: '测试用户',
-  bio: '这个人很懒，什么都没写。',
-  email: 'test@example.com',
+  nickname: '',
+  bio: '',
+  email: '',
 })
 
 const passwordForm = reactive({
@@ -96,6 +96,15 @@ const prefForm = reactive({
   darkMode: false,
 })
 
+function loadProfile(): void {
+  const user = authStore.currentUser
+  if (user) {
+    profileForm.avatar = user.avatar ?? ''
+    profileForm.nickname = user.nickname ?? ''
+    profileForm.email = user.email ?? ''
+  }
+}
+
 function handleAvatarChange(file: UploadFile): void {
   if (file.raw) {
     profileForm.avatar = URL.createObjectURL(file.raw)
@@ -103,29 +112,47 @@ function handleAvatarChange(file: UploadFile): void {
 }
 
 async function handleSaveProfile(): Promise<void> {
+  if (!profileForm.nickname.trim()) {
+    ElMessage.warning('昵称不能为空')
+    return
+  }
   saving.value = true
-  await new Promise((r) => setTimeout(r, 500))
-  saving.value = false
-  ElMessage.success('基本信息已保存')
+  try {
+    // TODO: 调用用户资料更新接口 (待后端提供)
+    await new Promise((r) => setTimeout(r, 300))
+    ElMessage.success('基本信息已保存')
+  } finally {
+    saving.value = false
+  }
 }
 
 async function handleSavePassword(): Promise<void> {
+  if (!passwordForm.oldPassword || !passwordForm.newPassword) {
+    ElMessage.warning('请填写密码')
+    return
+  }
   if (passwordForm.newPassword !== passwordForm.confirmPassword) {
     ElMessage.error('两次输入的密码不一致')
     return
   }
+  if (passwordForm.newPassword.length < 6) {
+    ElMessage.warning('密码长度至少 6 位')
+    return
+  }
   saving.value = true
-  await new Promise((r) => setTimeout(r, 500))
-  saving.value = false
-  ElMessage.success('密码已修改')
+  try {
+    // TODO: 调用修改密码接口 (待后端提供)
+    await new Promise((r) => setTimeout(r, 300))
+    ElMessage.success('密码已修改')
+    passwordForm.oldPassword = ''
+    passwordForm.newPassword = ''
+    passwordForm.confirmPassword = ''
+  } finally {
+    saving.value = false
+  }
 }
 
-async function handleSavePref(): Promise<void> {
-  saving.value = true
-  await new Promise((r) => setTimeout(r, 500))
-  saving.value = false
-  ElMessage.success('偏好设置已保存')
-}
+onMounted(loadProfile)
 </script>
 
 <style scoped>

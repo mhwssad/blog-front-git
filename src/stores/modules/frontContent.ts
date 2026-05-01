@@ -191,14 +191,19 @@ export const useFrontContentStore = defineStore('frontContent', () => {
   /**
    * 查询文章详情
    */
+  const articleError = ref<number | null>(null)
+
   async function fetchArticleById(id: number): Promise<PublicArticleDetailVO | null> {
     articleLoading.value = true
+    articleError.value = null
     try {
       const response = await ContentApi.getArticleById(id)
       currentArticle.value = response.data.data
       return currentArticle.value
-    } catch {
+    } catch (e: unknown) {
       currentArticle.value = null
+      const err = e as { code?: number; response?: { status?: number } }
+      articleError.value = err.response?.status ?? err.code ?? null
       return null
     } finally {
       articleLoading.value = false
@@ -342,6 +347,7 @@ export const useFrontContentStore = defineStore('frontContent', () => {
     tags,
     comments,
     currentArticle,
+    articleError,
     articleComments,
     total,
     current,

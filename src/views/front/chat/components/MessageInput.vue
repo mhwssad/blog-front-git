@@ -1,5 +1,24 @@
 <template>
   <div class="message-input">
+    <div class="input-actions">
+      <el-upload
+        :show-file-list="false"
+        :before-upload="handleImageUpload"
+        accept="image/*"
+      >
+        <el-button text title="发送图片">
+          <el-icon><Picture /></el-icon>
+        </el-button>
+      </el-upload>
+      <el-upload
+        :show-file-list="false"
+        :before-upload="handleFileUpload"
+      >
+        <el-button text title="发送文件">
+          <el-icon><Document /></el-icon>
+        </el-button>
+      </el-upload>
+    </div>
     <el-input
       v-model="text"
       type="textarea"
@@ -16,6 +35,9 @@
 
 <script lang="ts" setup>
 import { ref } from 'vue'
+import { Picture, Document } from '@element-plus/icons-vue'
+import { ElMessage } from 'element-plus'
+import type { UploadRawFile } from 'element-plus'
 
 defineProps<{
   sending?: boolean
@@ -23,6 +45,7 @@ defineProps<{
 
 const emit = defineEmits<{
   send: [content: string]
+  sendFile: [file: File]
 }>()
 
 const text = ref('')
@@ -31,6 +54,24 @@ function handleSend(): void {
   if (!text.value.trim()) return
   emit('send', text.value.trim())
   text.value = ''
+}
+
+function handleImageUpload(file: UploadRawFile): boolean {
+  if (file.size > 10 * 1024 * 1024) {
+    ElMessage.warning('图片大小不能超过 10MB')
+    return false
+  }
+  emit('sendFile', file)
+  return false
+}
+
+function handleFileUpload(file: UploadRawFile): boolean {
+  if (file.size > 50 * 1024 * 1024) {
+    ElMessage.warning('文件大小不能超过 50MB')
+    return false
+  }
+  emit('sendFile', file)
+  return false
 }
 </script>
 
@@ -41,6 +82,18 @@ function handleSend(): void {
   align-items: flex-end;
   padding: 12px 16px;
   border-top: 1px solid var(--el-border-color-lighter);
+}
+
+.input-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding-bottom: 4px;
+}
+
+.input-actions :deep(.el-button) {
+  padding: 4px;
+  font-size: 18px;
 }
 
 .message-input :deep(.el-textarea__inner) {

@@ -2,7 +2,7 @@
   <div class="channel-list-page">
     <div class="page-header">
       <h2 class="page-title">频道列表</h2>
-      <el-button type="primary" @click="$router.push('/channel/apply')">
+      <el-button type="primary" @click="router.push('/channel/apply')">
         申请创建频道
       </el-button>
     </div>
@@ -12,11 +12,21 @@
       placeholder="搜索频道..."
       clearable
       style="margin-bottom: 24px"
-    />
+      @clear="handleSearch"
+      @keyup.enter="handleSearch"
+    >
+      <template #append>
+        <el-button :icon="Search" @click="handleSearch" />
+      </template>
+    </el-input>
 
+    <!-- 我的频道 -->
     <div class="section">
       <h3 class="section-title">我的频道</h3>
-      <el-empty v-if="filteredMyChannels.length === 0" description="暂无加入的频道" />
+      <div v-if="store.loading" style="text-align: center; padding: 24px 0">
+        <el-icon class="is-loading" :size="24"><Loading /></el-icon>
+      </div>
+      <el-empty v-else-if="myChannels.length === 0" description="暂无加入的频道" />
       <el-row v-else :gutter="16">
         <el-col
           v-for="channel in filteredMyChannels"
@@ -28,24 +38,31 @@
           <el-card shadow="hover" class="channel-card">
             <div class="channel-name"># {{ channel.name }}</div>
             <div class="channel-meta">
-              <span>{{ channel.memberCount }} 成员</span>
-              <el-divider direction="vertical" />
-              <span>{{ channel.onlineCount }} 在线</span>
+              <span>{{ channel.memberCount ?? 0 }} 成员</span>
             </div>
-            <el-button size="small" type="primary" @click="enterChannel(channel.id)">
-              进入
-            </el-button>
+            <el-tag v-if="channel.selfRole" size="small" style="margin-bottom: 12px">
+              {{ roleLabel(channel.selfRole) }}
+            </el-tag>
+            <div>
+              <el-button size="small" type="primary" @click="enterChannel(channel.id)">
+                进入
+              </el-button>
+            </div>
           </el-card>
         </el-col>
       </el-row>
     </div>
 
+    <!-- 发现频道 -->
     <div class="section">
-      <h3 class="section-title">推荐频道</h3>
-      <el-empty v-if="filteredRecommendChannels.length === 0" description="暂无推荐频道" />
+      <h3 class="section-title">发现频道</h3>
+      <div v-if="store.searchLoading" style="text-align: center; padding: 24px 0">
+        <el-icon class="is-loading" :size="24"><Loading /></el-icon>
+      </div>
+      <el-empty v-else-if="discoverChannels.length === 0" description="暂无可加入的频道" />
       <el-row v-else :gutter="16">
         <el-col
-          v-for="channel in filteredRecommendChannels"
+          v-for="channel in filteredDiscoverChannels"
           :key="channel.id"
           :xs="24"
           :sm="12"
@@ -53,39 +70,50 @@
         >
           <el-card shadow="hover" class="channel-card">
             <div class="channel-name"># {{ channel.name }}</div>
+            <div v-if="channel.description" class="channel-desc">
+              {{ channel.description }}
+            </div>
             <div class="channel-meta">
-              <span>{{ channel.memberCount }} 成员</span>
-              <el-divider direction="vertical" />
-              <span>{{ channel.onlineCount }} 在线</span>
+              <span>{{ channel.memberCount ?? 0 }} 成员</span>
             </div>
             <div class="channel-type">
-              <el-tag size="small" :type="channel.type === 'public' ? undefined : 'warning'">
-                {{ channel.type === 'public' ? '公开' : '私有' }}
+              <el-tag
+                size="small"
+                :type="channel.visibilityScope === 'public' ? undefined : 'warning'"
+              >
+                {{ channel.visibilityScope === 'public' ? '公开' : '私有' }}
               </el-tag>
             </div>
-            <el-button
-              v-if="channel.joined"
-              size="small"
-              disabled
-            >
-              已加入
-            </el-button>
-            <el-button
-              v-else-if="channel.type === 'public'"
-              size="small"
-              type="primary"
-              @click="joinChannel(channel)"
-            >
-              加入
-            </el-button>
-            <el-button
-              v-else
-              size="small"
-              type="warning"
-              @click="applyJoinChannel(channel)"
-            >
-              申请加入
-            </el-button>
+            <div>
+              <el-button
+                v-if="channel.joined"
+                size="small"
+                disabled
+              >
+                已加入
+              </el-button>
+              <el-button
+                v-else-if="channel.joinRule === 'free'"
+                size="small"
+                type="primary"
+                :loading="joiningId === channel.id"
+                @click="handleJoin(channel)"
+              >
+                加入
+              </el-button>
+              <el-button
+                v-else-if="channel.joinRule === 'approval'"
+                size="small"
+                type="warning"
+                :loading="applyingId === channel.id"
+                @click="handleApplyJoin(channel)"
+              >
+                申请加入
+              </el-button>
+              <el-button v-else size="small" disabled>
+                仅限邀请
+              </el-button>
+            </div>
           </el-card>
         </el-col>
       </el-row>
@@ -94,59 +122,100 @@
 </template>
 
 <script lang="ts" setup>
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
-
-interface Channel {
-  id: number
-  name: string
-  memberCount: number
-  onlineCount: number
-  joined: boolean
-  type: 'public' | 'private'
-}
+import { Search, Loading } from '@element-plus/icons-vue'
+import { useUserChatStore } from '@/stores'
+import type { ChatGroupSearchVO } from '@/types/api-types'
 
 const router = useRouter()
+const store = useUserChatStore()
+
 const keyword = ref('')
+const joiningId = ref<number | null>(null)
+const applyingId = ref<number | null>(null)
 
-const myChannels = ref<Channel[]>([
-  { id: 1, name: '前端技术', memberCount: 128, onlineCount: 32, joined: true, type: 'public' },
-  { id: 2, name: 'Vue爱好者', memberCount: 256, onlineCount: 64, joined: true, type: 'public' },
-  { id: 3, name: '项目协作', memberCount: 15, onlineCount: 5, joined: true, type: 'private' },
-])
-
-const recommendChannels = ref<Channel[]>([
-  { id: 4, name: 'TypeScript', memberCount: 512, onlineCount: 89, joined: false, type: 'public' },
-  { id: 5, name: 'Node.js', memberCount: 340, onlineCount: 45, joined: false, type: 'public' },
-  { id: 6, name: '设计模式', memberCount: 67, onlineCount: 12, joined: false, type: 'private' },
-  { id: 7, name: '开源项目', memberCount: 200, onlineCount: 30, joined: false, type: 'public' },
-  { id: 8, name: '面试交流', memberCount: 180, onlineCount: 55, joined: false, type: 'public' },
-  { id: 9, name: '算法刷题', memberCount: 99, onlineCount: 20, joined: false, type: 'private' },
-])
+// My channels: from conversations list, filtered to channels with a selfRole
+const myChannels = computed(() => {
+  return store.conversations.filter(
+    (c) =>
+      c.selfRole &&
+      (c.conversationType === 'group' ||
+        c.sceneType === 'topic_channel' ||
+        c.sceneType === 'hall_channel'),
+  )
+})
 
 const filteredMyChannels = computed(() => {
   if (!keyword.value.trim()) return myChannels.value
-  return myChannels.value.filter((c) => c.name.includes(keyword.value.trim()))
+  const kw = keyword.value.trim().toLowerCase()
+  return myChannels.value.filter((c) => c.name?.toLowerCase().includes(kw))
 })
 
-const filteredRecommendChannels = computed(() => {
-  if (!keyword.value.trim()) return recommendChannels.value
-  return recommendChannels.value.filter((c) => c.name.includes(keyword.value.trim()))
+// Discover channels: search results excluding already joined ones
+const discoverChannels = computed(() => {
+  return store.searchResults.filter((c) => !c.joined)
 })
+
+const filteredDiscoverChannels = computed(() => {
+  if (!keyword.value.trim()) return discoverChannels.value
+  const kw = keyword.value.trim().toLowerCase()
+  return discoverChannels.value.filter((c) => c.name?.toLowerCase().includes(kw))
+})
+
+function roleLabel(role: string): string {
+  const map: Record<string, string> = {
+    owner: '创建者',
+    admin: '管理员',
+    member: '成员',
+  }
+  return map[role] || role
+}
+
+async function loadData(): Promise<void> {
+  await Promise.all([
+    store.fetchConversations({ size: 200 }),
+    store.searchGroups({ size: 200 }),
+  ])
+}
+
+function handleSearch(): void {
+  store.searchGroups({ keyword: keyword.value.trim() || undefined, size: 200 })
+}
 
 function enterChannel(id: number): void {
   router.push(`/channel/${id}`)
 }
 
-function joinChannel(channel: Channel): void {
-  channel.joined = true
-  ElMessage.success(`已加入频道 #${channel.name}`)
+async function handleJoin(channel: ChatGroupSearchVO): Promise<void> {
+  joiningId.value = channel.id
+  try {
+    const ok = await store.joinConversation(channel.id)
+    if (ok) {
+      ElMessage.success(`已加入频道 #${channel.name}`)
+      channel.joined = true
+    }
+  } finally {
+    joiningId.value = null
+  }
 }
 
-function applyJoinChannel(channel: Channel): void {
-  ElMessage.success(`已发送加入 #${channel.name} 的申请`)
+async function handleApplyJoin(channel: ChatGroupSearchVO): Promise<void> {
+  applyingId.value = channel.id
+  try {
+    const ok = await store.submitJoinApplication(channel.id)
+    if (ok) {
+      ElMessage.success(`已发送加入 #${channel.name} 的申请`)
+    }
+  } finally {
+    applyingId.value = null
+  }
 }
+
+onMounted(() => {
+  loadData()
+})
 </script>
 
 <style scoped>
@@ -188,6 +257,17 @@ function applyJoinChannel(channel: Channel): void {
   font-size: 16px;
   font-weight: 600;
   margin-bottom: 8px;
+}
+
+.channel-desc {
+  font-size: 13px;
+  color: var(--el-text-color-secondary);
+  margin-bottom: 8px;
+  line-height: 1.5;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 
 .channel-meta {

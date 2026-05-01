@@ -443,10 +443,10 @@ export interface ArticleDetailVO extends ArticleAdminVO {
 
 export interface ArticleSaveRequest {
   title: string
+  authorId: number
   summary?: string
   content?: string
   coverImage?: string
-  authorId?: number
   isTop?: number
   isOriginal?: number
   sourceUrl?: string
@@ -1166,7 +1166,7 @@ export interface ChatConversationReadVO {
   userId: number
   readMessageId: number
   readAt?: string | null
-  deliveredMessageId?: string | null
+  deliveredMessageId?: number | null
   deliveredAt?: string | null
   unreadCount: number
 }
@@ -1181,6 +1181,7 @@ export interface ChatGroupCreateRequest {
   joinRule?: 'free' | 'approval' | 'invite_only' | string
   speakLevelLimit?: number
   memberLimit?: number
+  slowModeSeconds?: number
   memberUserIds: number[]
 }
 
@@ -1265,7 +1266,9 @@ export interface SysChatConversationStatusUpdateRequest {
 // ==================== AI 模块类型 ====================
 
 export interface AiSessionCreateRequest {
-  channelId?: number
+  channelConfigId?: number
+  title?: string
+  sceneType?: string
 }
 
 export interface AiSessionVO {
@@ -1296,6 +1299,8 @@ export interface AiMessageVO {
 
 export interface AiMessageSendRequest {
   content: string
+  requestSceneType?: string
+  requestTargetId?: number
 }
 
 export interface AiQuotaVO {
@@ -1308,22 +1313,38 @@ export interface AiChannelConfigVO {
   id: number
   channelCode: string
   channelName: string
-  status: number
-  priority: number
+  provider: string
   modelName: string
-  dailyLimit: number
+  apiBaseUrl?: string
+  apiKeyEncrypted?: string
+  dailyQuota: number
+  userDailyQuota: number
+  maxContextTokens: number
+  dataScopeJson?: string
+  systemPromptTemplate?: string
+  status: number
+  isDefault: number
+  createdBy?: number
+  updatedBy?: number
   createdAt: string
+  updatedAt?: string
 }
 
 export interface AiChannelConfigSaveRequest {
   channelCode: string
   channelName: string
+  provider: string
   modelName: string
-  apiKey: string
-  baseUrl: string
+  apiBaseUrl?: string
+  apiKeyEncrypted?: string
+  dailyQuota?: number
+  userDailyQuota?: number
+  maxContextTokens?: number
+  dataScopeJson?: string
+  systemPromptTemplate?: string
   status?: number
-  priority?: number
-  dailyLimit?: number
+  isDefault?: number
+  mfaTicket?: string
 }
 
 export interface AiChannelStatusRequest {
@@ -1334,10 +1355,13 @@ export interface AiSessionAdminVO {
   id: number
   userId: number
   username: string
-  channelId: number
+  nickname: string
+  channelConfigId: number
   channelName: string
-  status: string
-  messageCount: number
+  title: string
+  sceneType: string
+  status: number
+  lastMessageAt?: string
   createdAt: string
   updatedAt?: string
 }
@@ -1345,16 +1369,15 @@ export interface AiSessionAdminVO {
 export interface AiUsageLogVO {
   id: number
   userId: number
-  username: string
-  channelId: number
-  channelName: string
+  channelConfigId: number
   sessionId: number
-  modelName: string
-  inputTokens: number
-  outputTokens: number
-  cost: number
-  success: boolean
-  errorMessage?: string | null
+  requestSceneType: string
+  requestTokens: number
+  responseTokens: number
+  totalTokens: number
+  quotaCost: number
+  successStatus: number
+  errorCode?: string
   createdAt: string
 }
 
@@ -1362,9 +1385,8 @@ export interface AiUsageStatsVO {
   totalCalls: number
   successCalls: number
   failedCalls: number
-  totalInputTokens: number
-  totalOutputTokens: number
-  totalCost: number
+  totalTokens: number
+  totalQuotaCost: number
 }
 
 // ==================== 举报模块类型 ====================
@@ -2031,8 +2053,3 @@ export interface ChatLobbyPinnedMessageVO {
   message?: ChatMessageVO
 }
 
-// ==================== 退出登录请求 ====================
-
-export interface LogoutRequest {
-  accessToken?: string
-}

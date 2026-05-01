@@ -1,110 +1,262 @@
 <template>
   <div class="channel-detail-page">
-    <div class="channel-header">
-      <div class="channel-header-left">
-        <h2 class="channel-name"># {{ channel.name }}</h2>
-        <span class="channel-meta">
-          {{ channel.memberCount }} 成员 · {{ channel.onlineCount }} 在线
-        </span>
+    <div v-if="store.loading && !store.currentConversation" class="channel-loading">
+      <el-skeleton :rows="3" animated />
+    </div>
+
+    <template v-else-if="store.currentConversation">
+      <!-- Channel header -->
+      <div class="channel-header">
+        <div class="channel-header-left">
+          <h2 class="channel-name"># {{ store.currentConversation.name ?? '未命名频道' }}</h2>
+          <span class="channel-meta">
+            {{ store.currentConversation.memberCount ?? 0 }} 成员
+          </span>
+        </div>
+        <div class="channel-header-right">
+          <el-button
+            v-if="isJoined"
+            type="default"
+            :loading="joinLoading"
+            @click="handleLeave"
+          >
+            已加入
+          </el-button>
+          <el-button
+            v-else
+            type="primary"
+            :loading="joinLoading"
+            @click="handleJoin"
+          >
+            加入
+          </el-button>
+          <el-button
+            v-if="isManager"
+            @click="$router.push(`/channel/${conversationId}/settings`)"
+          >
+            设置
+          </el-button>
+        </div>
       </div>
-      <div class="channel-header-right">
-        <el-button
-          :type="channel.joined ? 'default' : 'primary'"
-          @click="toggleJoin"
+
+      <!-- Announcement bar -->
+      <div v-if="store.currentConversation.notice" class="announcement-bar">
+        <el-icon><InfoFilled /></el-icon>
+        <span>{{ store.currentConversation.notice }}</span>
+      </div>
+
+      <!-- Message list -->
+      <div ref="messageListRef" class="message-list" @scroll="onScroll">
+        <div v-if="hasMoreMessages" class="load-more-area">
+          <el-button
+            text
+            size="small"
+            :loading="loadingMore"
+            @click="loadMoreMessages"
+          >
+            加载更多消息
+          </el-button>
+        </div>
+        <div
+          v-for="msg in store.messages"
+          :key="msg.id"
+          class="message-item"
         >
-          {{ channel.joined ? '已加入' : '加入' }}
-        </el-button>
-        <el-button v-if="channel.joined" @click="$router.push(`/channel/${channelId}/settings`)">
-          设置
+          <el-avatar
+            :size="36"
+            :src="msg.senderAvatar ?? undefined"
+            class="message-avatar"
+          >
+            {{ msg.senderNickname?.charAt(0) ?? '?' }}
+          </el-avatar>
+          <div class="message-body">
+            <div class="message-header">
+              <span class="message-username">{{ msg.senderNickname ?? msg.senderUsername ?? '未知用户' }}</span>
+              <span class="message-time">{{ formatTime(msg.createdAt) }}</span>
+            </div>
+            <div v-if="msg.revoked" class="message-content revoked">消息已撤回</div>
+            <div v-else class="message-content">{{ msg.content }}</div>
+          </div>
+        </div>
+        <el-empty v-if="store.messages.length === 0 && !store.loading" description="暂无消息" />
+      </div>
+
+      <!-- Message input -->
+      <div v-if="isJoined" class="message-input-area">
+        <el-input
+          v-model="inputText"
+          placeholder="输入消息..."
+          :disabled="store.sending"
+          @keyup.enter="handleSend"
+        />
+        <el-button
+          type="primary"
+          :loading="store.sending"
+          :disabled="!inputText.trim()"
+          @click="handleSend"
+        >
+          发送
         </el-button>
       </div>
-    </div>
-
-    <div v-if="channel.announcement" class="announcement-bar">
-      <el-icon><InfoFilled /></el-icon>
-      <span>{{ channel.announcement }}</span>
-    </div>
-
-    <div class="message-list">
-      <div
-        v-for="msg in messages"
-        :key="msg.id"
-        class="message-item"
-      >
-        <span class="message-username">{{ msg.username }}</span>
-        <span class="message-content">{{ msg.content }}</span>
-        <span class="message-time">{{ msg.time }}</span>
+      <div v-else class="message-input-area join-prompt">
+        <span class="join-prompt-text">加入频道后即可发送消息</span>
+        <el-button type="primary" :loading="joinLoading" @click="handleJoin">
+          加入频道
+        </el-button>
       </div>
-      <el-empty v-if="messages.length === 0" description="暂无消息" />
-    </div>
+    </template>
 
-    <div class="message-input-area">
-      <el-input
-        v-model="inputText"
-        placeholder="输入消息..."
-        @keyup.enter="sendMessage"
-      />
-      <el-button type="primary" :disabled="!inputText.trim()" @click="sendMessage">
-        发送
-      </el-button>
-    </div>
+    <el-empty v-else description="频道不存在或无权访问" />
   </div>
 </template>
 
 <script lang="ts" setup>
-import { ref } from 'vue'
+import { ref, computed, watch, onMounted, nextTick } from 'vue'
 import { useRoute } from 'vue-router'
 import { ElMessage } from 'element-plus'
 import { InfoFilled } from '@element-plus/icons-vue'
+import { useUserChatStore } from '@/stores'
 
 const route = useRoute()
-const channelId = Number(route.params.id)
-
-const channel = ref({
-  id: channelId,
-  name: '前端技术',
-  memberCount: 128,
-  onlineCount: 32,
-  joined: true,
-  announcement: '欢迎来到前端技术频道，请遵守社区规范，友善交流。',
-})
-
-interface Message {
-  id: number
-  username: string
-  content: string
-  time: string
-}
-
-const messages = ref<Message[]>([
-  { id: 1, username: '张三', content: '大家好，今天研究了 Vue 3.5 的新特性', time: '10:30' },
-  { id: 2, username: '李四', content: '响应式系统有了很大改进', time: '10:32' },
-  { id: 3, username: '王五', content: '推荐看看 Reactivity Transform', time: '10:35' },
-  { id: 4, username: '赵六', content: '有没有人用过 Pinia 做大型项目状态管理？', time: '10:40' },
-  { id: 5, username: '张三', content: '我们项目一直在用，体验很好', time: '10:42' },
-])
+const store = useUserChatStore()
 
 const inputText = ref('')
+const joinLoading = ref(false)
+const loadingMore = ref(false)
+const messageListRef = ref<HTMLElement | null>(null)
 
-function toggleJoin(): void {
-  channel.value.joined = !channel.value.joined
-  if (channel.value.joined) {
-    ElMessage.success('已加入频道')
-  } else {
-    ElMessage.info('已退出频道')
+const conversationId = computed(() => Number(route.params.id))
+
+const isJoined = computed(() => !!store.currentConversation?.selfRole)
+
+const isManager = computed(
+  () =>
+    store.currentConversation?.selfRole === 'owner' ||
+    store.currentConversation?.selfRole === 'admin',
+)
+
+const hasMoreMessages = computed(() => {
+  const loaded = store.messages.length
+  const total = store.msgTotal
+  return loaded > 0 && loaded < total
+})
+
+function formatTime(dateStr: string): string {
+  if (!dateStr) return ''
+  const date = new Date(dateStr)
+  const now = new Date()
+  const isToday =
+    date.getFullYear() === now.getFullYear() &&
+    date.getMonth() === now.getMonth() &&
+    date.getDate() === now.getDate()
+  if (isToday) {
+    return date.toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' })
+  }
+  return date.toLocaleDateString('zh-CN', {
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+  })
+}
+
+async function loadConversation(): Promise<void> {
+  const id = conversationId.value
+  if (!id || Number.isNaN(id)) return
+  await store.selectConversation(id)
+  await nextTick()
+  scrollToBottom()
+}
+
+async function loadMoreMessages(): Promise<void> {
+  if (loadingMore.value || !hasMoreMessages.value) return
+  const listEl = messageListRef.value
+  const prevScrollHeight = listEl?.scrollHeight ?? 0
+
+  loadingMore.value = true
+  try {
+    await store.fetchMessages(conversationId.value, {
+      current: store.msgCurrent + 1,
+      size: store.msgSize,
+    })
+    await nextTick()
+    if (listEl) {
+      listEl.scrollTop = listEl.scrollHeight - prevScrollHeight
+    }
+  } finally {
+    loadingMore.value = false
   }
 }
 
-function sendMessage(): void {
-  if (!inputText.value.trim()) return
-  messages.value.push({
-    id: Date.now(),
-    username: '我',
-    content: inputText.value.trim(),
-    time: new Intl.DateTimeFormat('zh-CN', { hour: '2-digit', minute: '2-digit' }).format(new Date()),
-  })
-  inputText.value = ''
+function onScroll(): void {
+  const listEl = messageListRef.value
+  if (!listEl) return
+  if (listEl.scrollTop < 60 && hasMoreMessages.value && !loadingMore.value) {
+    loadMoreMessages()
+  }
 }
+
+function scrollToBottom(): void {
+  const listEl = messageListRef.value
+  if (listEl) {
+    listEl.scrollTop = listEl.scrollHeight
+  }
+}
+
+async function handleJoin(): Promise<void> {
+  joinLoading.value = true
+  try {
+    const ok = await store.joinConversation(conversationId.value)
+    if (ok) {
+      ElMessage.success('已加入频道')
+      await store.selectConversation(conversationId.value)
+    } else {
+      ElMessage.error('加入失败，请稍后重试')
+    }
+  } finally {
+    joinLoading.value = false
+  }
+}
+
+async function handleLeave(): Promise<void> {
+  joinLoading.value = true
+  try {
+    const ok = await store.leaveConversation(conversationId.value)
+    if (ok) {
+      ElMessage.info('已退出频道')
+      await store.selectConversation(conversationId.value)
+    } else {
+      ElMessage.error('退出失败，请稍后重试')
+    }
+  } finally {
+    joinLoading.value = false
+  }
+}
+
+async function handleSend(): Promise<void> {
+  const content = inputText.value.trim()
+  if (!content) return
+
+  const msg = await store.sendText({
+    conversationId: conversationId.value,
+    content,
+  })
+  if (msg) {
+    inputText.value = ''
+    await nextTick()
+    scrollToBottom()
+  } else {
+    ElMessage.error('发送失败，请稍后重试')
+  }
+}
+
+watch(conversationId, () => {
+  loadConversation()
+})
+
+onMounted(() => {
+  loadConversation()
+})
 </script>
 
 <style scoped>
@@ -116,6 +268,10 @@ function sendMessage(): void {
   flex-direction: column;
   height: calc(100vh - 60px);
   box-sizing: border-box;
+}
+
+.channel-loading {
+  padding-top: 40px;
 }
 
 .channel-header {
@@ -165,11 +321,31 @@ function sendMessage(): void {
   padding: 12px 0;
 }
 
+.load-more-area {
+  text-align: center;
+  padding: 8px 0;
+}
+
 .message-item {
   padding: 8px 0;
   display: flex;
+  gap: 10px;
+}
+
+.message-avatar {
+  flex-shrink: 0;
+}
+
+.message-body {
+  flex: 1;
+  min-width: 0;
+}
+
+.message-header {
+  display: flex;
   align-items: baseline;
   gap: 8px;
+  margin-bottom: 2px;
 }
 
 .message-username {
@@ -179,16 +355,21 @@ function sendMessage(): void {
   white-space: nowrap;
 }
 
-.message-content {
-  flex: 1;
-  font-size: 14px;
-  line-height: 1.5;
-}
-
 .message-time {
   font-size: 12px;
   color: var(--el-text-color-placeholder);
   white-space: nowrap;
+}
+
+.message-content {
+  font-size: 14px;
+  line-height: 1.5;
+  word-break: break-word;
+}
+
+.message-content.revoked {
+  color: var(--el-text-color-placeholder);
+  font-style: italic;
 }
 
 .message-input-area {
@@ -196,5 +377,16 @@ function sendMessage(): void {
   gap: 8px;
   padding-top: 12px;
   border-top: 1px solid var(--el-border-color-lighter);
+}
+
+.message-input-area.join-prompt {
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+}
+
+.join-prompt-text {
+  font-size: 14px;
+  color: var(--el-text-color-secondary);
 }
 </style>

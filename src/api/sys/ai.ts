@@ -19,7 +19,12 @@ export const aiSysApi = {
    * 4.1.2 分页查询渠道配置
    * GET /api/sys/ai/channels
    */
-  getChannels: (params?: { current?: number; size?: number }) =>
+  getChannels: (params?: {
+    channelName?: string
+    status?: number
+    current?: number
+    size?: number
+  }) =>
     http.get<PageResult<AiChannelConfigVO>>('/sys/ai/channels', { params }),
 
   /**
