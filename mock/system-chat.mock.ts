@@ -88,7 +88,7 @@ function handle(req: any) {
     if (req.query.deliveryStatus !== undefined && req.query.deliveryStatus !== '') records = records.filter((item: any) => item.deliveryStatus === num(req.query.deliveryStatus))
     if (req.query.visibleStatus !== undefined && req.query.visibleStatus !== '') records = records.filter((item: any) => item.visibleStatus === num(req.query.visibleStatus))
 
-    return ok(page(records, req.query))
+    return ok(page(records.map(({ conversationId, messageId, ...r }: any) => r), req.query))
   }
 
   if (method === 'PUT' && memberRoleMatch) {

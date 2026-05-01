@@ -7,7 +7,8 @@
       "configValue": "Blog Front Mock",
       "isSystem": 1,
       "remark": "前台标题与站点名",
-      "createTime": "2026-03-31 12:00:00"
+      "createTime": "2026-03-31 12:00:00",
+      "updateTime": "2026-03-31 12:00:00"
     },
     {
       "id": 2,
@@ -16,7 +17,8 @@
       "configValue": "3",
       "isSystem": 0,
       "remark": "控制首页推荐位数量",
-      "createTime": "2026-03-31 12:00:00"
+      "createTime": "2026-03-31 12:00:00",
+      "updateTime": "2026-03-31 12:00:00"
     }
   ],
   "notices": [
@@ -64,7 +66,10 @@
       "content": "当前开发环境已接入本地 Mock 服务，可直接登录并调试后台页面。",
       "isRead": 0,
       "readTime": null,
-      "createTime": "2026-03-31 12:00:00"
+      "createTime": "2026-03-31 12:00:00",
+      "type": 1,
+      "level": "info",
+      "publishTime": "2026-03-31 12:00:00"
     }
   ],
   "logs": [

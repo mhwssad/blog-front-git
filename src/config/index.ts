@@ -24,14 +24,8 @@ export const apiConfig = {
  * 应用配置
  */
 export const appConfig = {
-  // 应用名称
-  name: import.meta.env.VITE_APP_NAME || 'Blog Front',
-
-  // 应用版本
-  version: import.meta.env.VITE_APP_VERSION || '1.0.0',
-
-  // 是否启用开发工具
-  enableDevTools: import.meta.env.DEV
+  name: 'Blog Front',
+  version: '1.0.0',
 }
 
 /**

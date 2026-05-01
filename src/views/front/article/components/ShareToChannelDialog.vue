@@ -60,12 +60,7 @@
 <script lang="ts" setup>
 import { ref } from 'vue'
 import { ElMessage } from 'element-plus'
-
-interface Channel {
-  id: number
-  name: string
-  memberCount: number
-}
+import type { ChannelPickOption as Channel } from '@/types/ui'
 
 defineProps<{
   modelValue: boolean

@@ -290,8 +290,10 @@ Prettier 配置为准 (`.prettierrc.json`):
 
 - 所有环境变量在 `env.d.ts` 中声明
 - 新增变量必须同步更新 `.env.example`
-- Mock 默认启用 (`VITE_ENABLE_MOCK=true`)
-- 真实后端联调: `VITE_ENABLE_MOCK=false`，设置 `VITE_DEV_PROXY_TARGET`
+- 三套环境：`.env.development`（Mock）、`.env.staging`（联调）、`.env.production`（生产）
+- 开发默认启用 Mock：`VITE_ENABLE_MOCK=true`
+- 联调真实后端：`VITE_ENABLE_MOCK=false`，`VITE_API_BASE_URL` 指向后端地址
+- WebSocket 地址由 `VITE_DEV_PROXY_TARGET` 决定（Mock 也使用，指向 `localhost`）
 
 ## 提交规范
 

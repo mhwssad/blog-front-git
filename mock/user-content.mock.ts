@@ -15,7 +15,10 @@ function handle(req: any) {
   }
 
   if (m === 'GET' && path === '/api/user/footprints') {
-    return ok(page(db.footprints.filter((i: any) => i.userId === u.id), req.query))
+    const rs = db.footprints
+      .filter((i: any) => i.userId === u.id)
+      .map(({ userId, ipAddress, userAgent, ...fp }: any) => fp)
+    return ok(page(rs, req.query))
   }
 
   return ok(null, '未匹配到用户内容接口', 404)

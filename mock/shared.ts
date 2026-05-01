@@ -117,7 +117,8 @@ export const detail = (a: any) => ({
   content: a.content,
   isOriginal: a.isOriginal,
   sourceUrl: a.sourceUrl,
-  shareCount: a.shareCount,
+  visibilityScope: a.visibilityScope ?? 0,
+  shareCount: a.shareCount ?? 0,
   categories: flat(db.categories).filter(i => a.categoryIds.includes(i.id)),
   tags: db.tags.filter((i: any) => a.tagIds.includes(i.id)),
   liked: db.interactions.some(
@@ -125,6 +126,7 @@ export const detail = (a: any) => ({
   ),
   collected: db.collections.some((i: any) => i.targetType === 'article' && i.targetId === a.id),
   canComment: true,
+  seriesList: [],
 })
 
 export const syncComments = (id: number) => {
@@ -147,8 +149,11 @@ export const fillArticle = (a: any, b: any) =>
     isOriginal: b.isOriginal ?? 1,
     sourceUrl: b.sourceUrl ?? null,
     status: b.status ?? 0,
+    reviewStatus: b.reviewStatus ?? 1,
     publishTime: (b.status ?? a.status) === 1 ? b.publishTime || a.publishTime || now() : null,
+    scheduledPublishTime: b.scheduledPublishTime ?? null,
     accessLevel: b.accessLevel ?? 0,
+    visibilityScope: b.visibilityScope ?? 0,
     remark: b.remark ?? null,
     categoryIds: cp(b.categoryIds ?? []),
     tagIds: cp(b.tagIds ?? []),

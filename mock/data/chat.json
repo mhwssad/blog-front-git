@@ -16,7 +16,17 @@
       "targetUsername": "editor",
       "targetNickname": "内容编辑",
       "createdAt": "2026-03-20 09:00:00",
-      "updatedAt": "2026-03-31 12:00:00"
+      "updatedAt": "2026-03-31 12:00:00",
+      "sceneType": "single_chat",
+      "visibilityScope": "member",
+      "allowGuestView": 0,
+      "requireJoinToSpeak": 0,
+      "joinRule": "free",
+      "speakLevelLimit": 0,
+      "memberLimit": null,
+      "slowModeSeconds": 0,
+      "displaySort": 0,
+      "channelCategoryCode": null
     },
     {
       "id": 2,
@@ -34,7 +44,17 @@
       "targetUsername": null,
       "targetNickname": null,
       "createdAt": "2026-03-24 10:00:00",
-      "updatedAt": "2026-03-31 11:40:00"
+      "updatedAt": "2026-03-31 11:40:00",
+      "sceneType": "user_group",
+      "visibilityScope": "member",
+      "allowGuestView": 0,
+      "requireJoinToSpeak": 1,
+      "joinRule": "free",
+      "speakLevelLimit": 0,
+      "memberLimit": 50,
+      "slowModeSeconds": 0,
+      "displaySort": 0,
+      "channelCategoryCode": null
     },
     {
       "id": 3,
@@ -52,7 +72,17 @@
       "targetUsername": null,
       "targetNickname": null,
       "createdAt": "2026-03-18 08:00:00",
-      "updatedAt": "2026-03-30 18:00:00"
+      "updatedAt": "2026-03-30 18:00:00",
+      "sceneType": "global_channel",
+      "visibilityScope": "public",
+      "allowGuestView": 1,
+      "requireJoinToSpeak": 0,
+      "joinRule": "free",
+      "speakLevelLimit": 0,
+      "memberLimit": null,
+      "slowModeSeconds": 0,
+      "displaySort": 0,
+      "channelCategoryCode": "system"
     }
   ],
   "chatMembers": [

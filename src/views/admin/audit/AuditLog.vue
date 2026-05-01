@@ -71,16 +71,7 @@
 
 <script lang="ts" setup>
 import { onMounted, reactive, ref } from 'vue'
-
-interface AuditLog {
-  id: number
-  time: string
-  operator: string
-  operationType: 'user' | 'content' | 'config' | 'security'
-  description: string
-  ip: string
-  result: 'success' | 'failure'
-}
+import type { AuditLog } from '@/types/ui'
 
 const query = reactive({
   operator: '',

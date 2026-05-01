@@ -11,6 +11,7 @@ function handle(req: any) {
     if (req.query.username) rs = rs.filter((i: any) => has(i.username, req.query.username))
     if (req.query.nickname) rs = rs.filter((i: any) => has(i.nickname, req.query.nickname))
     if (req.query.email) rs = rs.filter((i: any) => has(i.email, req.query.email))
+    if (req.query.phone) rs = rs.filter((i: any) => has(i.phone, req.query.phone))
     if (req.query.status !== undefined && req.query.status !== '') rs = rs.filter((i: any) => i.status === num(req.query.status))
     return ok(page(rs, req.query))
   }
@@ -88,7 +89,7 @@ function handle(req: any) {
   }
 
   if (m === 'POST' && path === '/api/sys/users') {
-    db.users.push({ id: ++db.seq.user, username: req.body.username, nickname: req.body.nickname || req.body.username, email: req.body.email || `${req.body.username}@example.com`, phone: req.body.phone || '', avatar: req.body.avatar || `https://api.dicebear.com/7.x/initials/svg?seed=${req.body.username}`, gender: req.body.gender ?? 1, birthday: req.body.birthday ?? '2000-01-01', status: req.body.status ?? 1, remark: req.body.remark ?? null, lastLoginTime: null, lastLoginIp: null, createTime: new Date().toISOString().slice(0, 19).replace('T', ' '), updateTime: new Date().toISOString().slice(0, 19).replace('T', ' '), password: req.body.password || '123456', roleIds: [] })
+    db.users.push({ id: ++db.seq.user, username: req.body.username, nickname: req.body.nickname || req.body.username, email: req.body.email || `${req.body.username}@example.com`, phone: req.body.phone || '', avatar: req.body.avatar || `https://api.dicebear.com/7.x/initials/svg?seed=${req.body.username}`, gender: req.body.gender ?? 1, birthday: req.body.birthday ?? '2000-01-01', status: req.body.status ?? 1, userLevel: 1, experiencePoints: 0, levelUpdatedAt: null, remark: req.body.remark ?? null, lastLoginTime: null, lastLoginIp: null, createTime: new Date().toISOString().slice(0, 19).replace('T', ' '), updateTime: new Date().toISOString().slice(0, 19).replace('T', ' '), password: req.body.password || '123456', roleIds: [] })
     return ok(null)
   }
 

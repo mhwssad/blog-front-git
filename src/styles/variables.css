@@ -4,7 +4,7 @@
 
 :root {
   /* 布局尺寸 */
-  --sidebar-width: 240px;
+  --sidebar-width: 200px;
   --sidebar-collapsed-width: 64px;
   --header-height: 56px;
   --tags-view-height: 40px;

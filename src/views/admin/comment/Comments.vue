@@ -244,15 +244,7 @@ import {
   formatTargetType,
 } from '@/utils'
 import CommentDetailDialog from './components/CommentDetailDialog.vue'
-
-interface CommentSearchForm {
-  targetId?: number | null
-  targetType?: string
-  userId?: number | null
-  rootId?: number | null
-  parentId?: number | null
-  status?: number | null
-}
+import type { CommentSearchForm } from '@/types/ui'
 
 const commentStore = useCommentStore()
 

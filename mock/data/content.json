@@ -148,7 +148,10 @@
         3,
         5
       ],
-      "accessList": []
+      "accessList": [],
+      "reviewStatus": 1,
+      "visibilityScope": 0,
+      "scheduledPublishTime": null
     },
     {
       "id": 2,
@@ -180,7 +183,10 @@
         1,
         4
       ],
-      "accessList": []
+      "accessList": [],
+      "reviewStatus": 1,
+      "visibilityScope": 0,
+      "scheduledPublishTime": null
     },
     {
       "id": 3,
@@ -212,7 +218,10 @@
         2,
         3
       ],
-      "accessList": []
+      "accessList": [],
+      "reviewStatus": 1,
+      "visibilityScope": 0,
+      "scheduledPublishTime": null
     },
     {
       "id": 4,
@@ -258,7 +267,10 @@
           "expireTime": null,
           "grantReason": "编辑协作"
         }
-      ]
+      ],
+      "reviewStatus": 1,
+      "visibilityScope": 0,
+      "scheduledPublishTime": null
     },
     {
       "id": 5,
@@ -289,7 +301,10 @@
       "tagIds": [
         1
       ],
-      "accessList": []
+      "accessList": [],
+      "reviewStatus": 0,
+      "visibilityScope": 0,
+      "scheduledPublishTime": null
     }
   ],
   "comments": [

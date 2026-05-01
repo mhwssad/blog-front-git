@@ -29,15 +29,7 @@
 
 <script lang="ts" setup>
 import { ref, watch, nextTick } from 'vue'
-
-export interface HallMessage {
-  id: number
-  username: string
-  level: number
-  content: string
-  time: string
-  isSystem: boolean
-}
+import type { HallMessage } from '@/types/ui'
 
 const props = defineProps<{
   messages: HallMessage[]

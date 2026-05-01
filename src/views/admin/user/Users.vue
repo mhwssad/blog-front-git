@@ -27,6 +27,14 @@
             clearable
           />
         </el-form-item>
+        <el-form-item label="手机号" class="filter-item">
+          <el-input
+            v-model="searchForm.phone"
+            class="filter-control"
+            placeholder="请输入手机号"
+            clearable
+          />
+        </el-form-item>
         <el-form-item label="状态" class="filter-item">
           <el-select
             v-model="searchForm.status"
@@ -61,8 +69,8 @@
 
       <div ref="tableWrapperRef" class="table-wrapper">
         <el-table
-          v-loading="loading"
-          :data="tableData"
+          v-loading="userStore.loading"
+          :data="userStore.users"
           :height="tableHeight"
           :size="isCompactTable ? 'small' : 'default'"
           table-layout="auto"
@@ -80,10 +88,16 @@
                 <div class="user-summary__line">用户名：{{ row.username || '-' }}</div>
                 <div class="user-summary__line">邮箱：{{ row.email || '-' }}</div>
                 <div class="user-summary__line">手机号：{{ row.phone || '-' }}</div>
+                <div class="user-summary__line">
+                  等级：Lv.{{ row.userLevel }}
+                  <template v-if="row.lastLoginTime">
+                    · 最后登录：{{ row.lastLoginTime }}
+                  </template>
+                </div>
               </div>
             </template>
           </el-table-column>
-          <el-table-column v-else prop="id" label="ID" min-width="80" align="center" />
+          <el-table-column v-else prop="id" label="ID" width="80" align="center" />
           <el-table-column
             v-if="!isCompactTable"
             prop="username"
@@ -116,18 +130,52 @@
             align="center"
             show-overflow-tooltip
           />
+          <el-table-column
+            v-if="!isCompactTable"
+            label="等级"
+            width="90"
+            align="center"
+          >
+            <template #default="{ row }">
+              <el-tag type="warning" size="small">Lv.{{ row.userLevel }}</el-tag>
+            </template>
+          </el-table-column>
           <el-table-column prop="status" label="状态" :width="isCompactTable ? 112 : 124" align="center">
             <template #default="{ row }">
               <el-switch
                 v-permission.disable="'sys:user:update'"
-                v-model="row.status"
+                :model-value="row.status"
                 :active-value="1"
                 :inactive-value="0"
                 active-text="正常"
                 inactive-text="禁用"
                 inline-prompt
-                @change="handleStatusChange(row)"
+                @change="handleStatusChange(row, $event as number)"
               />
+            </template>
+          </el-table-column>
+          <el-table-column
+            v-if="!isCompactTable"
+            prop="lastLoginTime"
+            label="最后登录"
+            min-width="180"
+            align="center"
+            show-overflow-tooltip
+          >
+            <template #default="{ row }">
+              {{ row.lastLoginTime || '-' }}
+            </template>
+          </el-table-column>
+          <el-table-column
+            v-if="!isCompactTable"
+            prop="createTime"
+            label="注册时间"
+            min-width="180"
+            align="center"
+            show-overflow-tooltip
+          >
+            <template #default="{ row }">
+              {{ row.createTime || '-' }}
             </template>
           </el-table-column>
           <el-table-column
@@ -171,7 +219,7 @@
         <el-pagination
           v-model:current-page="pagination.current"
           v-model:page-size="pagination.size"
-          :total="pagination.total"
+          :total="userStore.total"
           :page-sizes="[10, 20, 50, 100]"
           :layout="paginationLayout"
           :small="isCompactTable"
@@ -210,33 +258,29 @@
 import { onMounted, reactive, ref } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { Plus } from '@element-plus/icons-vue'
-import { UserApi } from '@/api/sys/user'
+import { useUserStore } from '@/stores/modules/user'
 import type { SysUserAdminVO, UserQueryRequest } from '@/types/api-types'
 import { useContentAdmin } from '@/composables/useContentAdmin'
 import UserFormDialog from './components/UserFormDialog.vue'
 import AssignRolesDialog from './components/AssignRolesDialog.vue'
 import ResetPasswordDialog from './components/ResetPasswordDialog.vue'
 
+const userStore = useUserStore()
+
 // 搜索表单
-const searchForm = reactive<UserQueryRequest>({
-  current: 1,
-  size: 10,
-  username: undefined,
-  nickname: undefined,
-  email: undefined,
-  status: undefined
+const searchForm = reactive({
+  username: '',
+  nickname: '',
+  email: '',
+  phone: '',
+  status: undefined as number | undefined
 })
 
 // 分页信息
 const pagination = reactive({
   current: 1,
-  size: 10,
-  total: 0
+  size: 10
 })
-
-// 表格数据
-const tableData = ref<SysUserAdminVO[]>([])
-const loading = ref(false)
 
 // 对话框状态
 const formDialogVisible = ref(false)
@@ -245,7 +289,7 @@ const passwordDialogVisible = ref(false)
 
 // 当前操作的用户
 const editingUserId = ref<number | null>(null)
-const currentUserId = ref<number>(0)
+const currentUserId = ref(0)
 const currentUsername = ref('')
 
 const {
@@ -253,29 +297,31 @@ const {
   paginationRef,
   tableHeight,
   paginationLayout,
-  isCompactTable,
+  isCompactTable
 } = useContentAdmin({
   minHeight: 360,
-  bottomOffset: 16,
+  bottomOffset: 16
 })
+
+// 构建查询参数，只发送有值的筛选条件
+function buildParams(): UserQueryRequest {
+  const params: UserQueryRequest = {
+    current: pagination.current,
+    size: pagination.size
+  }
+  if (searchForm.username.trim()) params.username = searchForm.username.trim()
+  if (searchForm.nickname.trim()) params.nickname = searchForm.nickname.trim()
+  if (searchForm.email.trim()) params.email = searchForm.email.trim()
+  if (searchForm.phone.trim()) params.phone = searchForm.phone.trim()
+  if (searchForm.status !== undefined) params.status = searchForm.status
+  return params
+}
 
 // 获取用户列表
 async function fetchUsers() {
-  loading.value = true
-  try {
-    const response = await UserApi.getUsers({
-      ...searchForm,
-      current: pagination.current,
-      size: pagination.size
-    })
-    const data = response.data.data
-    tableData.value = data.records
-    pagination.total = data.total
-  } catch {
-    ElMessage.error('获取用户列表失败')
-  } finally {
-    loading.value = false
-  }
+  await userStore.fetchUsers(buildParams())
+  pagination.current = userStore.current
+  pagination.size = userStore.size
 }
 
 // 搜索
@@ -287,11 +333,10 @@ function handleSearch() {
 // 重置
 function handleReset() {
   Object.assign(searchForm, {
-    current: 1,
-    size: 10,
-    username: undefined,
-    nickname: undefined,
-    email: undefined,
+    username: '',
+    nickname: '',
+    email: '',
+    phone: '',
     status: undefined
   })
   pagination.current = 1
@@ -323,12 +368,14 @@ function handleEdit(row: SysUserAdminVO) {
 }
 
 // 状态变更
-async function handleStatusChange(row: SysUserAdminVO) {
-  try {
-    await UserApi.updateUserStatus(row.id, { status: row.status })
+async function handleStatusChange(row: SysUserAdminVO, newVal: number) {
+  const oldVal = row.status
+  row.status = newVal
+  const ok = await userStore.updateUserStatus(row.id, { status: newVal })
+  if (ok) {
     ElMessage.success('状态更新成功')
-  } catch {
-    row.status = row.status === 1 ? 0 : 1 // 回滚
+  } else {
+    row.status = oldVal
     ElMessage.error('状态更新失败')
   }
 }
@@ -355,12 +402,15 @@ async function handleDelete(row: SysUserAdminVO) {
       cancelButtonText: '取消',
       type: 'warning'
     })
-
-    await UserApi.deleteUser(row.id)
-    ElMessage.success('删除成功')
-    fetchUsers()
+    const ok = await userStore.deleteUser(row.id)
+    if (ok) {
+      ElMessage.success('删除成功')
+      fetchUsers()
+    } else {
+      ElMessage.error('删除失败')
+    }
   } catch {
-    // 用户取消或删除失败
+    // 用户取消
   }
 }
 

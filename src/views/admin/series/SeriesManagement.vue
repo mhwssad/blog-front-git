@@ -69,16 +69,7 @@
 <script lang="ts" setup>
 import { onMounted, reactive, ref } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
-
-interface Series {
-  id: number
-  name: string
-  author: string
-  articleCount: number
-  totalRead: number
-  createTime: string
-  description: string
-}
+import type { SeriesFormItem as Series } from '@/types/ui'
 
 const query = reactive({
   name: '',

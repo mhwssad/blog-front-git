@@ -130,6 +130,7 @@ import { NoticeApi } from '@/api/sys/notice'
 import { UserApi } from '@/api/sys/user'
 import { flattenMenus } from '@/router/menu'
 import { useAuthStore } from '@/stores'
+import type { NoticeSummary } from '@/types/ui'
 
 interface DashboardStat {
   title: string
@@ -153,13 +154,6 @@ interface FocusItem {
   title: string
   description: string
   total: number
-}
-
-interface NoticeSummary {
-  id: number
-  title: string
-  publishTime?: string | null
-  createTime?: string | null
 }
 
 const router = useRouter()

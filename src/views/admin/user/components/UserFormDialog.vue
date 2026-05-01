@@ -3,102 +3,147 @@
     v-model="dialogVisible"
     :title="isEdit ? '编辑用户' : '新增用户'"
     class="user-form-dialog"
-    width="600px"
+    width="680px"
     :close-on-click-modal="false"
+    destroy-on-close
     align-center
     center
     @close="handleClose"
   >
+    <div v-if="detailLoading" class="form-loading">
+      <el-icon class="is-loading" :size="28"><Loading /></el-icon>
+      <span>加载用户信息...</span>
+    </div>
+
     <el-form
+      v-else
       ref="formRef"
       :model="formData"
       :rules="formRules"
       class="user-form"
-      label-width="100px"
+      label-width="90px"
     >
-      <el-form-item label="用户名" prop="username">
-        <el-input
-          v-model="formData.username"
-          placeholder="请输入用户名"
-          :disabled="isEdit"
-        />
-      </el-form-item>
+      <!-- 账号信息 -->
+      <div class="form-section">
+        <div class="form-section__title">账号信息</div>
+        <el-row :gutter="20">
+          <el-col :span="12">
+            <el-form-item label="用户名" prop="username">
+              <el-input
+                v-model="formData.username"
+                placeholder="请输入用户名"
+                :disabled="isEdit"
+              />
+            </el-form-item>
+          </el-col>
+          <el-col :span="12">
+            <el-form-item v-if="!isEdit" label="密码" prop="password">
+              <el-input
+                v-model="formData.password"
+                type="password"
+                placeholder="请输入密码"
+                show-password
+              />
+            </el-form-item>
+            <el-form-item v-else label="昵称" prop="nickname">
+              <el-input v-model="formData.nickname" placeholder="请输入昵称" />
+            </el-form-item>
+          </el-col>
+        </el-row>
+        <el-row v-if="!isEdit" :gutter="20">
+          <el-col :span="12">
+            <el-form-item label="昵称" prop="nickname">
+              <el-input v-model="formData.nickname" placeholder="请输入昵称" />
+            </el-form-item>
+          </el-col>
+          <el-col :span="12">
+            <el-form-item label="邮箱" prop="email">
+              <el-input v-model="formData.email" placeholder="请输入邮箱" />
+            </el-form-item>
+          </el-col>
+        </el-row>
+        <el-row v-else :gutter="20">
+          <el-col :span="12">
+            <el-form-item label="邮箱" prop="email">
+              <el-input v-model="formData.email" placeholder="请输入邮箱" />
+            </el-form-item>
+          </el-col>
+        </el-row>
+      </div>
 
-      <el-form-item label="密码" prop="password" v-if="!isEdit">
-        <el-input
-          v-model="formData.password"
-          type="password"
-          placeholder="请输入密码"
-          show-password
-        />
-      </el-form-item>
+      <!-- 个人信息 -->
+      <div class="form-section">
+        <div class="form-section__title">个人信息</div>
+        <el-row :gutter="20">
+          <el-col :span="12">
+            <el-form-item label="手机号" prop="phone">
+              <el-input v-model="formData.phone" placeholder="请输入手机号" />
+            </el-form-item>
+          </el-col>
+          <el-col :span="12">
+            <el-form-item label="性别" prop="gender">
+              <el-radio-group v-model="formData.gender">
+                <el-radio :value="1">男</el-radio>
+                <el-radio :value="2">女</el-radio>
+                <el-radio :value="0">保密</el-radio>
+              </el-radio-group>
+            </el-form-item>
+          </el-col>
+        </el-row>
+        <el-row :gutter="20">
+          <el-col :span="12">
+            <el-form-item label="生日" prop="birthday">
+              <el-date-picker
+                v-model="formData.birthday"
+                type="date"
+                placeholder="请选择生日"
+                value-format="YYYY-MM-DD"
+                style="width: 100%"
+              />
+            </el-form-item>
+          </el-col>
+          <el-col :span="12">
+            <el-form-item label="头像" prop="avatar">
+              <el-input v-model="formData.avatar" placeholder="请输入头像URL" />
+            </el-form-item>
+          </el-col>
+        </el-row>
+      </div>
 
-      <el-form-item label="昵称" prop="nickname">
-        <el-input
-          v-model="formData.nickname"
-          placeholder="请输入昵称"
-        />
-      </el-form-item>
-
-      <el-form-item label="邮箱" prop="email">
-        <el-input
-          v-model="formData.email"
-          placeholder="请输入邮箱"
-        />
-      </el-form-item>
-
-      <el-form-item label="手机号" prop="phone">
-        <el-input
-          v-model="formData.phone"
-          placeholder="请输入手机号"
-        />
-      </el-form-item>
-
-      <el-form-item label="头像" prop="avatar">
-        <el-input
-          v-model="formData.avatar"
-          placeholder="请输入头像URL"
-        />
-      </el-form-item>
-
-      <el-form-item label="性别" prop="gender">
-        <el-radio-group v-model="formData.gender" class="option-group">
-          <el-radio :value="1">男</el-radio>
-          <el-radio :value="2">女</el-radio>
-          <el-radio :value="0">保密</el-radio>
-        </el-radio-group>
-      </el-form-item>
-
-      <el-form-item label="生日" prop="birthday">
-        <el-date-picker
-          v-model="formData.birthday"
-          type="date"
-          placeholder="请选择生日"
-          value-format="YYYY-MM-DD"
-          style="width: 100%"
-        />
-      </el-form-item>
-
-      <el-form-item label="状态" prop="status">
-        <el-radio-group v-model="formData.status" class="option-group">
-          <el-radio :value="1">正常</el-radio>
-          <el-radio :value="0">禁用</el-radio>
-        </el-radio-group>
-      </el-form-item>
-
-      <el-form-item label="备注" prop="remark">
-        <el-input
-          v-model="formData.remark"
-          type="textarea"
-          :rows="3"
-          placeholder="请输入备注"
-        />
-      </el-form-item>
+      <!-- 状态与备注 -->
+      <div class="form-section">
+        <div class="form-section__title">状态与备注</div>
+        <el-row :gutter="20">
+          <el-col :span="12">
+            <el-form-item label="状态" prop="status">
+              <el-radio-group v-model="formData.status">
+                <el-radio :value="1">正常</el-radio>
+                <el-radio :value="0">禁用</el-radio>
+              </el-radio-group>
+            </el-form-item>
+          </el-col>
+        </el-row>
+        <el-form-item label="备注" prop="remark">
+          <el-input
+            v-model="formData.remark"
+            type="textarea"
+            :rows="3"
+            placeholder="请输入备注"
+            show-word-limit
+            maxlength="200"
+          />
+        </el-form-item>
+      </div>
     </el-form>
 
     <template #footer>
       <el-button @click="handleClose">取消</el-button>
-      <el-button v-permission="submitPermission" type="primary" :loading="submitting" @click="handleSubmit">
+      <el-button
+        v-permission="submitPermission"
+        type="primary"
+        :loading="submitting"
+        @click="handleSubmit"
+      >
         {{ isEdit ? '保存' : '创建' }}
       </el-button>
     </template>
@@ -108,6 +153,7 @@
 <script lang="ts" setup>
 import { ref, reactive, computed, watch } from 'vue'
 import { ElMessage } from 'element-plus'
+import { Loading } from '@element-plus/icons-vue'
 import { UserApi } from '@/api/sys/user'
 import type { SysUserSaveRequest } from '@/types/api-types'
 
@@ -126,6 +172,7 @@ const emit = defineEmits<Emits>()
 
 const formRef = ref()
 const submitting = ref(false)
+const detailLoading = ref(false)
 
 const dialogVisible = computed({
   get: () => props.visible,
@@ -135,8 +182,7 @@ const dialogVisible = computed({
 const isEdit = computed(() => !!props.userId)
 const submitPermission = computed(() => (isEdit.value ? 'sys:user:update' : 'sys:user:create'))
 
-// 表单数据
-const formData = reactive<SysUserSaveRequest>({
+const defaultFormData = (): SysUserSaveRequest => ({
   username: '',
   password: '',
   nickname: '',
@@ -149,7 +195,8 @@ const formData = reactive<SysUserSaveRequest>({
   remark: ''
 })
 
-// 表单验证规则
+const formData = reactive<SysUserSaveRequest>(defaultFormData())
+
 const formRules = {
   username: [
     { required: true, message: '请输入用户名', trigger: 'blur' },
@@ -159,19 +206,17 @@ const formRules = {
     { required: true, message: '请输入密码', trigger: 'blur' },
     { min: 6, max: 20, message: '密码长度在 6 到 20 个字符', trigger: 'blur' }
   ],
-  email: [
-    { type: 'email', message: '请输入正确的邮箱地址', trigger: 'blur' }
-  ],
-  phone: [
-    { pattern: /^1[3-9]\d{9}$/, message: '请输入正确的手机号', trigger: 'blur' }
-  ]
+  email: [{ type: 'email', message: '请输入正确的邮箱地址', trigger: 'blur' }],
+  phone: [{ pattern: /^1[3-9]\d{9}$/, message: '请输入正确的手机号', trigger: 'blur' }]
 }
 
 // 监听 userId 变化，获取用户详情
 watch(
-  () => props.userId,
-  async (id) => {
+  () => [props.visible, props.userId] as const,
+  async ([visible, id]) => {
+    if (!visible) return
     if (id) {
+      detailLoading.value = true
       try {
         const response = await UserApi.getUserById(id)
         const user = response.data.data
@@ -181,51 +226,27 @@ watch(
           email: user.email,
           phone: user.phone,
           avatar: user.avatar,
-          gender: user.gender,
-          birthday: user.birthday,
+          gender: user.gender ?? 0,
+          birthday: user.birthday ?? '',
           status: user.status,
-          remark: user.remark
+          remark: user.remark ?? ''
         })
       } catch {
         ElMessage.error('获取用户详情失败')
+      } finally {
+        detailLoading.value = false
       }
     } else {
-      // 重置表单
-      Object.assign(formData, {
-        username: '',
-        password: '',
-        nickname: '',
-        email: '',
-        phone: '',
-        avatar: '',
-        gender: 0,
-        birthday: '',
-        status: 1,
-        remark: ''
-      })
+      resetForm()
     }
-  },
-  { immediate: true }
+  }
 )
 
-// 重置表单
 function resetForm() {
-  Object.assign(formData, {
-    username: '',
-    password: '',
-    nickname: '',
-    email: '',
-    phone: '',
-    avatar: '',
-    gender: 0,
-    birthday: '',
-    status: 1,
-    remark: ''
-  })
+  Object.assign(formData, defaultFormData())
   formRef.value?.clearValidate()
 }
 
-// 提交表单
 async function handleSubmit() {
   try {
     await formRef.value?.validate()
@@ -248,7 +269,6 @@ async function handleSubmit() {
   }
 }
 
-// 关闭对话框
 function handleClose() {
   resetForm()
   emit('update:visible', false)
@@ -257,26 +277,48 @@ function handleClose() {
 
 <style scoped>
 .user-form {
-  padding: 0 4px;
+  padding: 0 12px;
 }
 
-.option-group {
+.form-section {
+  margin-bottom: 4px;
+}
+
+.form-section__title {
+  margin-bottom: 16px;
+  padding-bottom: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--el-text-color-primary);
+  border-bottom: 1px solid var(--el-border-color-lighter);
+}
+
+.form-section:last-child {
+  margin-bottom: 0;
+}
+
+.form-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 48px 0;
+  color: var(--el-text-color-secondary);
+  font-size: 14px;
+}
+
+.user-form :deep(.el-form-item) {
+  margin-bottom: 18px;
+}
+
+.user-form :deep(.el-radio-group) {
   display: inline-flex;
   align-items: center;
-  gap: 20px;
+  gap: 16px;
 }
 
-:deep(.option-group .el-radio) {
+.user-form :deep(.el-radio) {
   margin-right: 0;
-}
-
-:deep(.option-group .el-radio__label) {
-  color: var(--color-text-primary);
-}
-
-:deep(.user-form-dialog) {
-  max-width: calc(100vw - 32px);
-  margin: 0 auto;
 }
 
 :deep(.user-form-dialog .el-dialog__header) {

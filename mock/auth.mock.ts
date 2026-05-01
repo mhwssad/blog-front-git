@@ -34,6 +34,9 @@ function handle(req: any) {
       gender: 1,
       birthday: '2000-01-01',
       status: 1,
+      userLevel: 1,
+      experiencePoints: 0,
+      levelUpdatedAt: new Date().toISOString().slice(0, 19).replace('T', ' '),
       remark: 'Mock 注册用户',
       createTime: new Date().toISOString().slice(0, 19).replace('T', ' '),
       updateTime: new Date().toISOString().slice(0, 19).replace('T', ' '),
@@ -58,6 +61,8 @@ function handle(req: any) {
       email: u.email,
       phone: u.phone,
       status: u.status,
+      userLevel: u.userLevel,
+      experiencePoints: u.experiencePoints,
       roles: u.roleIds.map((id: number) => db.roles.find((i: any) => i.id === id)?.code).filter(Boolean),
       permissions: perms(u),
     })
