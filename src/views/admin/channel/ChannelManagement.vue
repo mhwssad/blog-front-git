@@ -41,16 +41,14 @@
         </div>
       </template>
 
-      <div ref="tableWrapperRef" class="table-wrapper">
-        <el-table
-          v-loading="chatStore.conversationLoading"
-          :data="chatStore.conversations"
-          :height="tableHeight"
-          :size="isCompactTable ? 'small' : 'default'"
-          table-layout="auto"
-          border
-          stripe
-        >
+      <el-table
+        v-loading="chatStore.conversationLoading"
+        :data="chatStore.conversations"
+        :size="isCompactTable ? 'small' : 'default'"
+        table-layout="auto"
+        border
+        stripe
+      >
           <el-table-column prop="id" label="ID" width="80" align="center" />
           <el-table-column prop="name" label="频道名" min-width="160" align="center" show-overflow-tooltip />
           <el-table-column label="场景类型" min-width="120" align="center">
@@ -100,9 +98,8 @@
             </template>
           </el-table-column>
         </el-table>
-      </div>
 
-      <div ref="paginationRef" class="pagination">
+      <div class="pagination">
         <el-pagination
           v-model:current-page="pagination.current"
           v-model:page-size="pagination.size"
@@ -191,15 +188,9 @@ const pagination = reactive({
 })
 
 const {
-  tableWrapperRef,
-  paginationRef,
-  tableHeight,
   isCompactTable,
   paginationLayout,
-} = useContentAdmin({
-  minHeight: 360,
-  bottomOffset: 16,
-})
+} = useContentAdmin()
 
 const formDialogVisible = ref(false)
 const isEdit = ref(false)
@@ -405,20 +396,12 @@ onMounted(() => {
   margin-right: 0;
 }
 
-.table-card {
-  min-height: 0;
-}
-
 .card-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
   gap: 12px;
   font-weight: 500;
-}
-
-.table-wrapper {
-  min-height: 0;
 }
 
 .pagination {

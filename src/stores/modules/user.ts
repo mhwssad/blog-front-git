@@ -6,6 +6,7 @@
 import { ref } from 'vue'
 import { defineStore } from 'pinia'
 import { UserApi } from '@/api/sys/user'
+import { AdminApi } from '@/api/sys/admin'
 import type {
   UserQueryRequest,
   SysUserAdminVO,
@@ -13,6 +14,10 @@ import type {
   StatusUpdateRequest,
   PasswordResetRequest,
   UserRoleAssignRequest,
+  BanUserRequest,
+  AdjustLevelRequest,
+  AdjustExperienceRequest,
+  UserRoleAuditAssignRequest,
 } from '@/types/api-types'
 
 export const useUserStore = defineStore('user', () => {
@@ -165,6 +170,56 @@ export const useUserStore = defineStore('user', () => {
     }
   }
 
+  // ==================== 超管安全操作 ====================
+
+  async function banUser(id: number, data: BanUserRequest): Promise<boolean> {
+    try {
+      await AdminApi.banUser(id, data)
+      return true
+    } catch {
+      return false
+    }
+  }
+
+  async function unbanUser(id: number, data: BanUserRequest): Promise<boolean> {
+    try {
+      await AdminApi.unbanUser(id, data)
+      return true
+    } catch {
+      return false
+    }
+  }
+
+  async function adjustUserLevel(id: number, data: AdjustLevelRequest): Promise<boolean> {
+    try {
+      await AdminApi.adjustUserLevel(id, data)
+      return true
+    } catch {
+      return false
+    }
+  }
+
+  async function adjustUserExperience(id: number, data: AdjustExperienceRequest): Promise<boolean> {
+    try {
+      await AdminApi.adjustUserExperience(id, data)
+      return true
+    } catch {
+      return false
+    }
+  }
+
+  async function assignRolesWithAudit(
+    id: number,
+    data: UserRoleAuditAssignRequest,
+  ): Promise<boolean> {
+    try {
+      await AdminApi.assignRolesWithAudit(id, data)
+      return true
+    } catch {
+      return false
+    }
+  }
+
   /**
    * 清空列表
    */
@@ -193,6 +248,11 @@ export const useUserStore = defineStore('user', () => {
     deleteUser,
     fetchUserRoles,
     assignUserRoles,
+    banUser,
+    unbanUser,
+    adjustUserLevel,
+    adjustUserExperience,
+    assignRolesWithAudit,
     clearUsers
   }
 })

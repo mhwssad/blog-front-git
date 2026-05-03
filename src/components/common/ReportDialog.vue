@@ -53,6 +53,7 @@
 import { reactive } from 'vue'
 import { ElMessage } from 'element-plus'
 import { Plus } from '@element-plus/icons-vue'
+import { reportUserApi } from '@/api/user/report'
 import type { UploadUserFile } from 'element-plus'
 
 interface Props {
@@ -94,9 +95,19 @@ function handleCancel() {
   emit('update:modelValue', false)
 }
 
-function handleSubmit() {
-  ElMessage.success('举报已提交，我们会尽快处理')
-  resetForm()
-  emit('update:modelValue', false)
+async function handleSubmit() {
+  try {
+    await reportUserApi.createReport({
+      targetType: props.targetType === 'message' ? 'chat_message' : props.targetType,
+      targetId: props.targetId,
+      reasonCode: form.type,
+      reasonDetail: form.description || undefined,
+    })
+    ElMessage.success('举报已提交，我们会尽快处理')
+    resetForm()
+    emit('update:modelValue', false)
+  } catch {
+    ElMessage.error('举报提交失败，请稍后重试')
+  }
 }
 </script>

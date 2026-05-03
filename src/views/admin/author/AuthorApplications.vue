@@ -2,6 +2,9 @@
   <div class="author-application-page">
     <el-card class="search-card" shadow="never">
       <el-form :model="searchForm" inline>
+        <el-form-item label="用户 ID">
+          <el-input-number v-model="searchForm.userId" :min="1" controls-position="right" style="width: 140px" />
+        </el-form-item>
         <el-form-item label="状态">
           <el-select v-model="searchForm.applyStatus" placeholder="全部" clearable style="width: 160px">
             <el-option label="待审核" :value="1" />
@@ -41,7 +44,10 @@
               <el-button link type="success" @click="handleReview(row, 2)">通过</el-button>
               <el-button link type="danger" @click="handleReview(row, 3)">拒绝</el-button>
             </template>
-            <el-button link type="primary" @click="handleView(row)">查看</el-button>
+            <template v-else>
+              <el-button link type="primary" @click="handleView(row)">查看</el-button>
+              <el-button link type="warning" @click="handleRepair(row)">修复状态</el-button>
+            </template>
           </template>
         </el-table-column>
       </el-table>
@@ -82,6 +88,30 @@
         <el-button @click="detailVisible = false">关闭</el-button>
       </template>
     </el-dialog>
+
+    <el-dialog v-model="repairVisible" title="修复申请状态" width="480px">
+      <el-form label-width="100px">
+        <el-form-item label="目标状态">
+          <el-select v-model="repairForm.targetStatus" style="width: 100%">
+            <el-option label="待审核" :value="1" />
+            <el-option label="已通过" :value="2" />
+            <el-option label="已拒绝" :value="3" />
+          </el-select>
+        </el-form-item>
+        <el-form-item label="备注">
+          <el-input
+            v-model="repairForm.reviewComment"
+            type="textarea"
+            :rows="3"
+            placeholder="请输入修复原因"
+          />
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <el-button @click="repairVisible = false">取消</el-button>
+        <el-button type="primary" :loading="repairLoading" @click="confirmRepair">确认修复</el-button>
+      </template>
+    </el-dialog>
   </div>
 </template>
 
@@ -95,6 +125,7 @@ import type { SysAuthorApplicationAdminVO } from '@/types/api-types'
 const store = useAuthorApplicationStore()
 
 const searchForm = reactive({
+  userId: undefined as number | undefined,
   applyStatus: undefined as number | undefined,
   keyword: undefined as string | undefined,
 })
@@ -102,6 +133,14 @@ const searchForm = reactive({
 const pagination = reactive({ current: 1, size: 10 })
 const detailVisible = ref(false)
 const currentRow = ref<SysAuthorApplicationAdminVO>({} as SysAuthorApplicationAdminVO)
+
+const repairVisible = ref(false)
+const repairLoading = ref(false)
+const repairRow = ref<SysAuthorApplicationAdminVO | null>(null)
+const repairForm = reactive({
+  targetStatus: 1 as 0 | 1 | 2 | 3,
+  reviewComment: '',
+})
 
 function statusTagType(status: number): 'info' | 'warning' | 'success' | 'danger' {
   if (status === 1) return 'warning'
@@ -124,6 +163,7 @@ function handleSearch(): void {
 }
 
 function handleReset(): void {
+  searchForm.userId = undefined
   searchForm.applyStatus = undefined
   searchForm.keyword = undefined
   pagination.current = 1
@@ -162,6 +202,43 @@ async function handleReview(row: SysAuthorApplicationAdminVO, status: 1 | 2 | 3)
 function handleView(row: SysAuthorApplicationAdminVO): void {
   currentRow.value = { ...row }
   detailVisible.value = true
+}
+
+function handleRepair(row: SysAuthorApplicationAdminVO): void {
+  repairRow.value = row
+  repairForm.targetStatus = row.applyStatus as 0 | 1 | 2 | 3
+  repairForm.reviewComment = ''
+  repairVisible.value = true
+}
+
+async function confirmRepair(): Promise<void> {
+  if (!repairRow.value) return
+  try {
+    await ElMessageBox.confirm('确定要修复该申请的状态吗？', '提示', {
+      confirmButtonText: '确定',
+      cancelButtonText: '取消',
+      type: 'warning',
+    })
+  } catch {
+    return
+  }
+
+  repairLoading.value = true
+  try {
+    const success = await store.repairApplication(repairRow.value.id, {
+      targetStatus: repairForm.targetStatus,
+      reviewComment: repairForm.reviewComment || '管理员修复申请状态',
+    })
+    if (success) {
+      ElMessage.success('申请状态已修复')
+      repairVisible.value = false
+      void fetchList()
+    } else {
+      ElMessage.error('修复操作失败')
+    }
+  } finally {
+    repairLoading.value = false
+  }
 }
 
 onMounted(() => {

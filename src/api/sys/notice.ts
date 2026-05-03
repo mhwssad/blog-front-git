@@ -1,6 +1,6 @@
 /**
  * 通知管理模块 API
- * 基于 auth-api.md 文档 第6节
+ * 基于 auth-api.md 文档 8.5 节
  */
 
 import { http } from '../request'

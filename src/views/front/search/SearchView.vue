@@ -26,8 +26,8 @@
             class="article-card"
             @click="router.push(`/articles/${item.id}`)"
           >
-            <h3 class="article-title">{{ item.title }}</h3>
-            <p class="article-summary">{{ item.summary }}</p>
+            <h3 class="article-title" v-html="highlight(item.title)" />
+            <p class="article-summary" v-html="highlight(item.summary)" />
             <div class="article-meta">
               <span>{{ item.authorName }}</span>
               <span>{{ item.publishTime }}</span>
@@ -43,7 +43,7 @@
         <div v-if="frontContentStore.tags.length" class="tag-grid">
           <div v-for="t in frontContentStore.tags" :key="t.id" class="tag-item">
             <el-tag size="large" effect="plain" :color="t.color || undefined">
-              {{ t.name }}
+              <span v-html="highlight(t.name)" />
             </el-tag>
           </div>
         </div>
@@ -76,6 +76,14 @@ const frontContentStore = useFrontContentStore()
 const keyword = ref('')
 const activeTab = ref('article')
 const currentPage = ref(1)
+
+function highlight(text: string | null | undefined): string {
+  if (!text) return ''
+  const kw = keyword.value.trim()
+  if (!kw) return text
+  const escaped = kw.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+  return text.replace(new RegExp(`(${escaped})`, 'gi'), '<mark class="search-highlight">$1</mark>')
+}
 
 async function doSearch(): Promise<void> {
   const kw = keyword.value.trim()
@@ -175,5 +183,14 @@ watch(activeTab, () => {
   display: flex;
   justify-content: center;
   margin-top: 24px;
+}
+</style>
+
+<style>
+.search-highlight {
+  background-color: #fef08a;
+  color: inherit;
+  padding: 0 2px;
+  border-radius: 2px;
 }
 </style>

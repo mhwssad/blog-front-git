@@ -37,6 +37,23 @@
               />
             </el-select>
           </el-form-item>
+          <el-form-item label="审核状态" class="filter-item">
+            <el-select v-model="searchForm.reviewStatus" class="filter-control" clearable placeholder="请选择审核状态">
+              <el-option label="待审核" :value="1" />
+              <el-option label="已通过" :value="2" />
+              <el-option label="已拒绝" :value="3" />
+            </el-select>
+          </el-form-item>
+          <el-form-item label="可见范围" class="filter-item">
+            <el-select v-model="searchForm.visibilityScope" class="filter-control" clearable placeholder="请选择可见范围">
+              <el-option
+                v-for="option in VISIBILITY_OPTIONS"
+                :key="option.value"
+                :label="option.label"
+                :value="option.value"
+              />
+            </el-select>
+          </el-form-item>
           <el-form-item label="访问级别" class="filter-item">
             <el-select
               v-model="searchForm.accessLevel"
@@ -105,11 +122,9 @@
           </div>
         </template>
 
-        <div ref="tableWrapperRef" class="table-wrapper">
           <el-table
             v-loading="articleStore.loading"
             :data="articleStore.articles"
-            :height="tableHeight"
             :size="isCompactTable ? 'small' : 'default'"
             table-layout="auto"
             class="article-table"
@@ -172,6 +187,11 @@
               <el-tag :type="getAccessTagType(row.accessLevel)" effect="light">
                 {{ formatAccessLevel(row.accessLevel) }}
               </el-tag>
+            </template>
+          </el-table-column>
+          <el-table-column v-if="!isCompactTable" label="可见范围" min-width="100" align="center">
+            <template #default="{ row }">
+              {{ formatVisibility(row.visibilityScope) }}
             </template>
           </el-table-column>
           <el-table-column v-if="!isCompactTable" label="原创" min-width="92" align="center">
@@ -243,9 +263,8 @@
             </template>
           </el-table-column>
           </el-table>
-        </div>
 
-        <div ref="paginationRef" class="pagination">
+        <div class="pagination">
           <el-pagination
             v-model:current-page="pagination.current"
             v-model:page-size="pagination.size"
@@ -280,11 +299,13 @@ import { useArticleStore, useCategoryStore, useTagStore } from '@/stores'
 import {
   ACCESS_LEVEL_OPTIONS,
   ARTICLE_STATUS_OPTIONS,
+  VISIBILITY_OPTIONS,
   formatAccessLevel,
   formatArticleStatus,
   formatBooleanText,
   formatOptionalText,
   formatPublishTime,
+  formatVisibility,
   formatUpdatedAt,
 } from '@/utils'
 import ArticleAccessDialog from './components/ArticleAccessDialog.vue'
@@ -325,11 +346,7 @@ const accessDialogVisible = ref(false)
 const currentArticleId = ref(0)
 const currentArticleTitle = ref('')
 
-const { tableWrapperRef, paginationRef, tableHeight, isCompactTable, paginationLayout } =
-  useContentAdmin({
-    minHeight: 360,
-    bottomOffset: 16,
-  })
+const { isCompactTable, paginationLayout } = useContentAdmin()
 
 const flattenedCategories = computed<CategorySelectOption[]>(() => {
   const options: CategorySelectOption[] = []
@@ -411,7 +428,9 @@ function handleReset(): void {
     keyword: undefined,
     authorId: undefined,
     status: undefined,
+    reviewStatus: undefined,
     accessLevel: undefined,
+    visibilityScope: undefined,
     categoryId: undefined,
     tagId: undefined,
     isTop: undefined,
@@ -565,10 +584,6 @@ onMounted(async () => {
   margin-right: 0;
 }
 
-.table-card {
-  min-height: 0;
-}
-
 .card-header {
   display: flex;
   justify-content: space-between;
@@ -576,10 +591,6 @@ onMounted(async () => {
   flex-wrap: wrap;
   gap: 12px 16px;
   font-weight: 500;
-}
-
-.table-wrapper {
-  min-height: 0;
 }
 
 .article-table {

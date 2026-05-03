@@ -1,4 +1,4 @@
-import { cp, db, has, now, num, ok, page, p } from './shared'
+import { cp, db, has, me, now, num, ok, page, p } from './shared'
 
 function handleSys(req: any) {
   const path = p(req)
@@ -175,7 +175,13 @@ function handleUser(req: any) {
 
   // 3.8 查询配额
   if (method === 'GET' && /^\/api\/user\/ai\/sessions\/quota\/?$/.test(path)) {
-    return ok({ dailyLimit: 50, usedToday: 12, remainingToday: 38 })
+    const defaultChannel = db.aiChannels.find((c: any) => c.isDefault === 1) || db.aiChannels[0]
+    const dailyLimit = defaultChannel?.userDailyQuota ?? 50
+    const today = new Date().toISOString().slice(0, 10)
+    const usedToday = db.aiUsageLogs.filter(
+      (l: any) => l.userId === me(req).id && l.createdAt?.slice(0, 10) === today,
+    ).length
+    return ok({ dailyLimit, usedToday, remainingToday: Math.max(0, dailyLimit - usedToday) })
   }
 
   // 3.2 创建会话
@@ -184,6 +190,7 @@ function handleUser(req: any) {
     const id = ++db.seq.aiSession
     const session = {
       id,
+      userId: me(req).id,
       channelConfigId: body.channelConfigId ?? 1,
       title: body.title ?? '新对话',
       sceneType: body.sceneType ?? 'general',
@@ -198,7 +205,8 @@ function handleUser(req: any) {
 
   // 3.3 查询会话列表
   if (method === 'GET' && /^\/api\/user\/ai\/sessions\/?$/.test(path)) {
-    const list = cp(db.aiSessions).filter((s: any) => s.userId === 1).sort((a: any, b: any) => b.id - a.id)
+    const uid = me(req).id
+    const list = cp(db.aiSessions).filter((s: any) => s.userId === uid).sort((a: any, b: any) => b.id - a.id)
     return ok(page(list, req.query || {}))
   }
 

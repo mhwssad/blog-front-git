@@ -71,6 +71,7 @@ declare module 'vue' {
     ElUpload: typeof import('element-plus/es')['ElUpload']
     ExperienceBar: typeof import('./components/common/ExperienceBar.vue')['default']
     HtmlCodeEditor: typeof import('./components/editor/HtmlCodeEditor.vue')['default']
+    ImageUpload: typeof import('./components/common/ImageUpload.vue')['default']
     LevelRequirementTip: typeof import('./components/common/LevelRequirementTip.vue')['default']
     ReportDialog: typeof import('./components/common/ReportDialog.vue')['default']
     RiskConfirmDialog: typeof import('./components/common/RiskConfirmDialog.vue')['default']

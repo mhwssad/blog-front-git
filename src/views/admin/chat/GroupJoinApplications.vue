@@ -36,11 +36,10 @@
       <template #header>
         <span>入群申请列表</span>
       </template>
-      <div ref="tableWrapperRef">
+      <div>
         <el-table
           :data="tableData"
           v-loading="loading"
-          :height="tableHeight"
           :size="isCompactTable ? 'small' : 'default'"
           border
           stripe
@@ -78,7 +77,7 @@
           </el-table-column>
         </el-table>
       </div>
-      <div ref="paginationRef" class="pagination-area">
+      <div class="pagination-area">
         <el-pagination
           v-model:current-page="pagination.current"
           v-model:page-size="pagination.size"
@@ -138,11 +137,7 @@ const loading = ref(false)
 const detailVisible = ref(false)
 const currentRow = ref<GroupJoinApplicationVO>({} as GroupJoinApplicationVO)
 
-const { tableWrapperRef, paginationRef, tableHeight, paginationLayout, isCompactTable } =
-  useContentAdmin({
-    minHeight: 360,
-    bottomOffset: 28,
-  })
+const { paginationLayout, isCompactTable } = useContentAdmin()
 
 function statusTagType(status: number): 'warning' | 'success' | 'danger' | 'info' {
   const map: Record<number, 'warning' | 'success' | 'danger' | 'info'> = {

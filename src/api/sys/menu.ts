@@ -1,6 +1,6 @@
 /**
  * 菜单管理模块 API
- * 基于 auth-api.md 文档 第4节
+ * 基于 auth-api.md 文档 8.3 节
  */
 
 import { http } from '../request'

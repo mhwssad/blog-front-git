@@ -22,12 +22,34 @@
               </el-select>
             </div>
 
+            <!-- 子分类 Tab 切换 -->
+            <div v-if="childCategories.length" class="sub-category-tabs">
+              <button
+                class="sub-tab"
+                :class="{ active: selectedChildId === null }"
+                @click="selectChild(null)"
+              >
+                全部
+              </button>
+              <button
+                v-for="child in childCategories"
+                :key="child.id"
+                class="sub-tab"
+                :class="{ active: selectedChildId === child.id }"
+                @click="selectChild(child.id)"
+              >
+                {{ child.name }}
+              </button>
+            </div>
+
             <div v-if="store.loading" class="section-loading">
               <el-skeleton :rows="4" animated />
             </div>
 
             <template v-else-if="store.articles.length">
-              <HomeArticleCard v-for="article in store.articles" :key="article.id" :article="article" />
+              <div class="article-grid">
+                <HomeArticleCard v-for="article in store.articles" :key="article.id" :article="article" />
+              </div>
 
               <div class="section-pagination">
                 <el-pagination
@@ -64,12 +86,19 @@ import { useFrontContentStore } from '@/stores'
 import HomeArticleCard from '../home/components/HomeArticleCard.vue'
 import HomeSidebar from '../home/components/HomeSidebar.vue'
 
+interface CategoryNode {
+  id: number
+  name: string
+  children?: CategoryNode[]
+}
+
 const route = useRoute()
 const store = useFrontContentStore()
 
 const currentSort = ref<'latest' | 'top' | 'hot'>('latest')
 const currentPage = ref(1)
 const pageSize = 9
+const selectedChildId = ref<number | null>(null)
 
 const categoryId = computed(() => Number(route.params.id))
 const categoryName = computed(() => {
@@ -77,7 +106,12 @@ const categoryName = computed(() => {
   return findCategoryName(store.categories, categoryId.value)
 })
 
-function findCategoryName(categories: any[], id: number): string | undefined {
+const childCategories = computed<CategoryNode[]>(() => {
+  if (!categoryId.value) return []
+  return findCategoryChildren(store.categories, categoryId.value)
+})
+
+function findCategoryName(categories: CategoryNode[], id: number): string | undefined {
   for (const cat of categories) {
     if (cat.id === id) return cat.name
     if (cat.children?.length) {
@@ -88,11 +122,29 @@ function findCategoryName(categories: any[], id: number): string | undefined {
   return undefined
 }
 
+function findCategoryChildren(categories: CategoryNode[], id: number): CategoryNode[] {
+  for (const cat of categories) {
+    if (cat.id === id) return cat.children ?? []
+    if (cat.children?.length) {
+      const found = findCategoryChildren(cat.children, id)
+      if (found.length) return found
+    }
+  }
+  return []
+}
+
+function selectChild(childId: number | null): void {
+  selectedChildId.value = childId
+  currentPage.value = 1
+  loadArticles()
+}
+
 async function loadArticles(): Promise<void> {
+  const filterCategoryId = selectedChildId.value || categoryId.value
   await store.fetchArticles({
     current: currentPage.value,
     size: pageSize,
-    categoryId: categoryId.value || undefined,
+    categoryId: filterCategoryId || undefined,
     sort: currentSort.value,
   })
 }
@@ -116,6 +168,7 @@ watch(currentSort, () => {
 
 watch(() => route.params.id, () => {
   currentPage.value = 1
+  selectedChildId.value = null
   loadArticles()
 })
 
@@ -173,6 +226,43 @@ onMounted(async () => {
   font-weight: 600;
 }
 
+/* 子分类 Tab */
+.sub-category-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.sub-tab {
+  padding: 6px 16px;
+  border-radius: 20px;
+  border: 1px solid var(--el-border-color);
+  background: #fff;
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.2s;
+  color: var(--el-text-color-regular);
+}
+
+.sub-tab:hover {
+  border-color: var(--el-color-primary);
+  color: var(--el-color-primary);
+}
+
+.sub-tab.active {
+  background: var(--el-color-primary);
+  border-color: var(--el-color-primary);
+  color: #fff;
+}
+
+/* 文章网格布局 */
+.article-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+}
+
 .section-loading {
   padding: 16px 0;
 }
@@ -188,6 +278,16 @@ onMounted(async () => {
 @media (max-width: 768px) {
   .category-container {
     padding: 16px 16px 32px;
+  }
+
+  .article-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (min-width: 769px) and (max-width: 1023px) {
+  .article-grid {
+    grid-template-columns: repeat(2, 1fr);
   }
 }
 </style>

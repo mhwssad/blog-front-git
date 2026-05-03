@@ -9,6 +9,12 @@
         </p>
       </div>
       <div class="hero-actions">
+        <el-select v-model="rangeType" style="width: 120px" @change="refreshDashboard">
+          <el-option label="今日" value="today" />
+          <el-option label="本周" value="week" />
+          <el-option label="本月" value="month" />
+          <el-option label="全部" value="all" />
+        </el-select>
         <el-button type="primary" @click="goFirstShortcut">进入常用模块</el-button>
         <el-button plain @click="refreshDashboard">刷新总览</el-button>
       </div>
@@ -88,6 +94,46 @@
         <el-card shadow="never" class="panel-card">
           <template #header>
             <div class="panel-header">
+              <span>举报治理</span>
+              <span class="panel-tip">待处理与处理中举报</span>
+            </div>
+          </template>
+
+          <div class="focus-list">
+            <div class="focus-item">
+              <div>
+                <div class="focus-title">待处理举报</div>
+                <div class="focus-desc">尚未被接手的举报</div>
+              </div>
+              <el-tag type="warning">{{ governanceStats.pendingReportCount }}</el-tag>
+            </div>
+            <div class="focus-item">
+              <div>
+                <div class="focus-title">处理中举报</div>
+                <div class="focus-desc">已接手但未结案</div>
+              </div>
+              <el-tag type="primary">{{ governanceStats.processingReportCount }}</el-tag>
+            </div>
+            <div class="focus-item">
+              <div>
+                <div class="focus-title">待审核文章</div>
+                <div class="focus-desc">需要审核的文章投稿</div>
+              </div>
+              <el-tag type="warning">{{ governanceStats.pendingArticleReviewCount }}</el-tag>
+            </div>
+            <div class="focus-item">
+              <div>
+                <div class="focus-title">待审核作者申请</div>
+                <div class="focus-desc">作者身份待审批</div>
+              </div>
+              <el-tag type="warning">{{ governanceStats.pendingAuthorAppCount }}</el-tag>
+            </div>
+          </div>
+        </el-card>
+
+        <el-card shadow="never" class="panel-card">
+          <template #header>
+            <div class="panel-header">
               <span>近期通知</span>
               <span class="panel-tip">系统公告与联调提示</span>
             </div>
@@ -107,7 +153,7 @@
 </template>
 
 <script lang="ts" setup>
-import { computed, onMounted, ref } from 'vue'
+import { computed, onMounted, reactive, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import {
   Bell,
@@ -127,6 +173,8 @@ import { SysFileApi } from '@/api/sys/file'
 import { FootprintApi } from '@/api/sys/footprint'
 import { SysFollowApi } from '@/api/sys/follow'
 import { NoticeApi } from '@/api/sys/notice'
+import { reportSysApi } from '@/api/sys/report'
+import { AuthorApplicationSysApi } from '@/api/sys/authorApplication'
 import { UserApi } from '@/api/sys/user'
 import { flattenMenus } from '@/router/menu'
 import { useAuthStore } from '@/stores'
@@ -158,6 +206,15 @@ interface FocusItem {
 
 const router = useRouter()
 const authStore = useAuthStore()
+
+const rangeType = ref<'today' | 'week' | 'month' | 'all'>('today')
+
+const governanceStats = reactive({
+  pendingReportCount: 0,
+  processingReportCount: 0,
+  pendingArticleReviewCount: 0,
+  pendingAuthorAppCount: 0,
+})
 
 const stats = ref<DashboardStat[]>([
   {
@@ -285,18 +342,46 @@ function goFirstShortcut(): void {
   }
 }
 
+function getDateRange(): { start: string; end: string } | null {
+  const now = new Date()
+  switch (rangeType.value) {
+    case 'today': {
+      const day = now.toISOString().slice(0, 10)
+      return { start: `${day} 00:00:00`, end: `${day} 23:59:59` }
+    }
+    case 'week': {
+      const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000)
+      return { start: weekAgo.toISOString().slice(0, 10) + ' 00:00:00', end: now.toISOString().slice(0, 10) + ' 23:59:59' }
+    }
+    case 'month': {
+      const monthAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000)
+      return { start: monthAgo.toISOString().slice(0, 10) + ' 00:00:00', end: now.toISOString().slice(0, 10) + ' 23:59:59' }
+    }
+    default:
+      return null
+  }
+}
+
 async function refreshDashboard(): Promise<void> {
-  const today = new Date().toISOString().slice(0, 10)
+  const dateRange = getDateRange()
 
   const results = await Promise.allSettled([
     ArticleApi.getArticles({ current: 1, size: 1 }),
     UserApi.getUsers({ current: 1, size: 1 }),
     CommentApi.getComments({ current: 1, size: 1 }),
-    FootprintApi.getFootprints({ current: 1, size: 1, visitedAtStart: today, visitedAtEnd: `${today} 23:59:59` }),
+    FootprintApi.getFootprints({
+      current: 1,
+      size: 1,
+      ...(dateRange ? { visitedAtStart: dateRange.start, visitedAtEnd: dateRange.end } : {}),
+    }),
     SysFollowApi.getFollows({ current: 1, size: 1, followStatus: 2 }),
     SysFileApi.getUploadTasks({ current: 1, size: 1, taskStatus: 3 }),
     SysChatApi.getConversations({ current: 1, size: 1, status: 0 }),
     NoticeApi.getNotices({ current: 1, size: 3 }),
+    reportSysApi.getReports({ current: 1, size: 1, status: 0 }),
+    reportSysApi.getReports({ current: 1, size: 1, status: 1 }),
+    ArticleApi.getArticleReviews({ current: 1, size: 1, reviewStatus: 1 }),
+    AuthorApplicationSysApi.getApplications({ current: 1, size: 1, applyStatus: 1 }),
   ])
 
   const getTotal = (index: number) => {
@@ -322,6 +407,11 @@ async function refreshDashboard(): Promise<void> {
   const noticeResult = results[7]
   notices.value =
     noticeResult?.status === 'fulfilled' ? noticeResult.value.data.data?.records ?? [] : []
+
+  governanceStats.pendingReportCount = getTotal(8)
+  governanceStats.processingReportCount = getTotal(9)
+  governanceStats.pendingArticleReviewCount = getTotal(10)
+  governanceStats.pendingAuthorAppCount = getTotal(11)
 }
 
 onMounted(() => {

@@ -111,16 +111,14 @@
 
       <el-tabs v-model="activeTab" @tab-change="handleTabChange">
         <el-tab-pane label="文件库" name="files">
-          <div ref="fileTableWrapperRef" class="table-wrapper">
-            <el-table
-              v-loading="fileStore.loading"
-              :data="fileStore.files"
-              :height="fileTableHeight"
-              :size="fileCompact ? 'small' : 'default'"
-              border
-              stripe
-              table-layout="auto"
-            >
+          <el-table
+            v-loading="fileStore.loading"
+            :data="fileStore.files"
+            :size="fileCompact ? 'small' : 'default'"
+            border
+            stripe
+            table-layout="auto"
+          >
               <el-table-column prop="id" label="文件 ID" min-width="90" align="center" />
               <el-table-column prop="originalName" label="原始文件名" min-width="220" align="center" show-overflow-tooltip />
               <el-table-column prop="fileType" label="文件类型" min-width="100" align="center" />
@@ -188,9 +186,8 @@
                 </template>
               </el-table-column>
             </el-table>
-          </div>
 
-          <div ref="filePaginationRef" class="pagination">
+          <div class="pagination">
             <el-pagination
               v-model:current-page="filePagination.current"
               v-model:page-size="filePagination.size"
@@ -205,16 +202,14 @@
         </el-tab-pane>
 
         <el-tab-pane label="上传任务" name="tasks">
-          <div ref="taskTableWrapperRef" class="table-wrapper">
-            <el-table
-              v-loading="fileStore.loading"
-              :data="fileStore.uploadTasks"
-              :height="taskTableHeight"
-              :size="taskCompact ? 'small' : 'default'"
-              border
-              stripe
-              table-layout="auto"
-            >
+          <el-table
+            v-loading="fileStore.loading"
+            :data="fileStore.uploadTasks"
+            :size="taskCompact ? 'small' : 'default'"
+            border
+            stripe
+            table-layout="auto"
+          >
               <el-table-column prop="id" label="任务 ID" min-width="90" align="center" />
               <el-table-column prop="uploadId" label="上传 ID" min-width="200" align="center" show-overflow-tooltip />
               <el-table-column prop="originalName" label="原始文件名" min-width="200" align="center" show-overflow-tooltip />
@@ -261,9 +256,8 @@
                 </template>
               </el-table-column>
             </el-table>
-          </div>
 
-          <div ref="taskPaginationRef" class="pagination">
+          <div class="pagination">
             <el-pagination
               v-model:current-page="taskPagination.current"
               v-model:page-size="taskPagination.size"
@@ -288,7 +282,7 @@
 </template>
 
 <script lang="ts" setup>
-import { nextTick, onMounted, reactive, ref } from 'vue'
+import { onMounted, reactive, ref } from 'vue'
 import { ElMessage, ElMessageBox, type TabPaneName } from 'element-plus'
 import { useContentAdmin } from '@/composables/useContentAdmin'
 import { useFileStore } from '@/stores'
@@ -351,26 +345,8 @@ const taskPagination = reactive({
   size: 10,
 })
 
-const fileTable = useContentAdmin({ minHeight: 340, bottomOffset: 24 })
-const taskTable = useContentAdmin({ minHeight: 320, bottomOffset: 24 })
-
-const {
-  tableWrapperRef: fileTableWrapperRef,
-  paginationRef: filePaginationRef,
-  tableHeight: fileTableHeight,
-  paginationLayout: filePaginationLayout,
-  isCompactTable: fileCompact,
-  updateViewportState: updateFileViewport,
-} = fileTable
-
-const {
-  tableWrapperRef: taskTableWrapperRef,
-  paginationRef: taskPaginationRef,
-  tableHeight: taskTableHeight,
-  paginationLayout: taskPaginationLayout,
-  isCompactTable: taskCompact,
-  updateViewportState: updateTaskViewport,
-} = taskTable
+const { isCompactTable: fileCompact, paginationLayout: filePaginationLayout } = useContentAdmin()
+const { isCompactTable: taskCompact, paginationLayout: taskPaginationLayout } = useContentAdmin()
 
 function buildFileQuery() {
   return {
@@ -468,14 +444,6 @@ function handleTaskSizeChange(size: number): void {
 
 function handleTabChange(name: TabPaneName): void {
   activeTab.value = name === 'tasks' ? 'tasks' : 'files'
-  void nextTick(() => {
-    if (activeTab.value === 'files') {
-      updateFileViewport()
-      return
-    }
-
-    updateTaskViewport()
-  })
 }
 
 async function handleViewDetail(id: number): Promise<void> {
@@ -599,10 +567,6 @@ onMounted(() => {
   justify-content: space-between;
   gap: 12px;
   font-weight: 500;
-}
-
-.table-wrapper {
-  min-height: 0;
 }
 
 .pagination {

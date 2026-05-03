@@ -25,6 +25,16 @@
             />
           </el-select>
         </el-form-item>
+        <el-form-item label="目标类型" class="filter-item">
+          <el-select v-model="searchForm.targetType" class="filter-control" clearable placeholder="请选择目标类型">
+            <el-option
+              v-for="option in NOTICE_TARGET_TYPE_OPTIONS"
+              :key="option.value"
+              :label="option.label"
+              :value="option.value"
+            />
+          </el-select>
+        </el-form-item>
         <el-form-item class="search-actions">
           <el-button v-permission="'sys:notice:query'" type="primary" @click="handleSearch">
             查询
@@ -45,17 +55,15 @@
         </div>
       </template>
 
-      <div ref="tableWrapperRef" class="table-wrapper">
-        <el-table
-          v-loading="noticeStore.loading"
-          :data="noticeStore.notices"
-          :height="tableHeight"
-          :size="isCompactTable ? 'small' : 'default'"
-          table-layout="auto"
-          class="notice-table"
-          border
-          stripe
-        >
+      <el-table
+        v-loading="noticeStore.loading"
+        :data="noticeStore.notices"
+        :size="isCompactTable ? 'small' : 'default'"
+        table-layout="auto"
+        class="notice-table"
+        border
+        stripe
+      >
           <el-table-column prop="id" label="ID" min-width="80" align="center" />
           <el-table-column prop="title" label="通知标题" min-width="220" align="center" show-overflow-tooltip />
           <el-table-column label="通知类型" min-width="120" align="center">
@@ -130,9 +138,8 @@
             </template>
           </el-table-column>
         </el-table>
-      </div>
 
-      <div ref="paginationRef" class="pagination">
+      <div class="pagination">
         <el-pagination
           v-model:current-page="pagination.current"
           v-model:page-size="pagination.size"
@@ -161,6 +168,7 @@ import { useContentAdmin } from '@/composables/useContentAdmin'
 import { useNoticeStore } from '@/stores'
 import {
   NOTICE_STATUS_OPTIONS,
+  NOTICE_TARGET_TYPE_OPTIONS,
   NOTICE_TYPE_OPTIONS,
   formatCreateTime,
   formatNoticeStatus,
@@ -190,11 +198,7 @@ const detailDialogVisible = ref(false)
 const editingNoticeId = ref<number | null>(null)
 const currentNotice = ref<SysNoticeAdminVO | null>(null)
 
-const { tableWrapperRef, paginationRef, tableHeight, isCompactTable, paginationLayout } =
-  useContentAdmin({
-    minHeight: 360,
-    bottomOffset: 16,
-  })
+const { isCompactTable, paginationLayout } = useContentAdmin()
 
 function getNoticeStatusTagType(status: number): 'info' | 'success' | 'warning' {
   const normalizedStatus = normalizeNoticeStatus(status)
@@ -260,7 +264,8 @@ function handleReset(): void {
     size: 10,
     title: undefined,
     type: undefined,
-    status: undefined,
+    publishStatus: undefined,
+    targetType: undefined,
   })
   pagination.current = 1
   pagination.size = 10
@@ -404,20 +409,12 @@ onMounted(() => {
   margin-right: 0;
 }
 
-.table-card {
-  min-height: 0;
-}
-
 .card-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
   gap: 12px;
   font-weight: 500;
-}
-
-.table-wrapper {
-  min-height: 0;
 }
 
 .notice-table {

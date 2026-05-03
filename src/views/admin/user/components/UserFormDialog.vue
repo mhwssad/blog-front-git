@@ -104,7 +104,7 @@
           </el-col>
           <el-col :span="12">
             <el-form-item label="头像" prop="avatar">
-              <el-input v-model="formData.avatar" placeholder="请输入头像URL" />
+              <ImageUpload v-model="formData.avatar" mode="avatar" category="avatar" />
             </el-form-item>
           </el-col>
         </el-row>
@@ -155,6 +155,7 @@ import { ref, reactive, computed, watch } from 'vue'
 import { ElMessage } from 'element-plus'
 import { Loading } from '@element-plus/icons-vue'
 import { UserApi } from '@/api/sys/user'
+import ImageUpload from '@/components/common/ImageUpload.vue'
 import type { SysUserSaveRequest } from '@/types/api-types'
 
 interface Props {

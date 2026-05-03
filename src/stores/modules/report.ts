@@ -87,6 +87,15 @@ export const useReportStore = defineStore('report', () => {
     }
   }
 
+  async function overrideReport(id: number): Promise<boolean> {
+    try {
+      await reportSysApi.overrideReport(id)
+      return true
+    } catch {
+      return false
+    }
+  }
+
   function clearReports(): void {
     reports.value = []
     total.value = 0
@@ -105,6 +114,7 @@ export const useReportStore = defineStore('report', () => {
     handleReport,
     rejectReport,
     getReportLogs,
+    overrideReport,
     clearReports,
   }
 })

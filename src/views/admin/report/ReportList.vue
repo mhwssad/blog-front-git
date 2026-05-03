@@ -46,11 +46,9 @@
           <span>举报列表</span>
         </div>
       </template>
-      <div ref="tableWrapperRef">
         <el-table
           :data="tableData"
           v-loading="loading"
-          :height="tableHeight"
           :size="isCompactTable ? 'small' : 'default'"
           border
           stripe
@@ -94,12 +92,12 @@
               </template>
               <template v-else>
                 <el-button link type="primary" @click="handleView(row)">查看</el-button>
+                <el-button link type="warning" @click="handleOverride(row)">覆盖</el-button>
               </template>
             </template>
           </el-table-column>
         </el-table>
-      </div>
-      <div ref="paginationRef" class="pagination-area">
+      <div class="pagination-area">
         <el-pagination
           v-model:current-page="pagination.current"
           v-model:page-size="pagination.size"
@@ -203,11 +201,14 @@ import { onMounted, reactive, ref } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { reportSysApi } from '@/api/sys/report'
 import { useContentAdmin } from '@/composables/useContentAdmin'
+import { useReportStore } from '@/stores'
 import { formatAiDate } from '@/utils'
 import type {
   ReportAdminVO,
   ReportHandleLogVO,
 } from '@/types/api-types'
+
+const reportStore = useReportStore()
 
 const query = reactive({
   reportTargetType: '' as string,
@@ -235,7 +236,7 @@ const processForm = reactive({
   remark: '',
 })
 
-const { tableWrapperRef, paginationRef, tableHeight, paginationLayout, isCompactTable } =
+const { paginationLayout, isCompactTable } =
   useContentAdmin({
     minHeight: 360,
     bottomOffset: 28,
@@ -399,6 +400,25 @@ async function handleReject(row: ReportAdminVO) {
     void fetchList()
   } catch {
     // user cancelled or API error
+  }
+}
+
+async function handleOverride(row: ReportAdminVO) {
+  try {
+    await ElMessageBox.confirm('确定要覆盖该举报的处理结果吗？', '覆盖举报', {
+      confirmButtonText: '确定',
+      cancelButtonText: '取消',
+      type: 'warning',
+    })
+    const success = await reportStore.overrideReport(row.id)
+    if (success) {
+      ElMessage.success('已覆盖该举报')
+      void fetchList()
+    } else {
+      ElMessage.error('覆盖操作失败')
+    }
+  } catch {
+    // user cancelled
   }
 }
 

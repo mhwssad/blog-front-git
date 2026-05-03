@@ -6,7 +6,7 @@
 import { ElMessage } from 'element-plus'
 import type { ApiError } from '@/types/api-types'
 import { apiConfig } from '@/config'
-import { createLogger } from '@/utils/logger'
+import { log } from '@/composables/useLogger'
 
 /**
  * 错误码映射表
@@ -27,7 +27,7 @@ const ERROR_CODE_MAP: Record<number, string> = {
  */
 export const isDev = import.meta.env.MODE === 'development'
 
-const requestLogger = createLogger('http')
+const requestLogger = log.http
 
 /**
  * 请求日志

@@ -5,12 +5,12 @@
 
 import type { AuthMenuInfo } from '@/types/api-types'
 import type { RouteRecordRaw, Router } from 'vue-router'
-import { createLogger } from '@/utils/logger'
+import { log } from '@/composables/useLogger'
 import { ADMIN_FIXED_ROUTE_PATHS } from './fixed-routes'
 import { resolveMenuComponent } from './component-resolver'
 import { flattenMenus, isExternalPath, normalizeAuthMenus } from './menu'
 
-const logger = createLogger('router')
+const logger = log.router
 
 // ==================== 状态 ====================
 

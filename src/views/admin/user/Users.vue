@@ -9,6 +9,7 @@
             class="filter-control"
             placeholder="请输入用户名"
             clearable
+            @keyup.enter="handleSearch"
           />
         </el-form-item>
         <el-form-item label="昵称" class="filter-item">
@@ -17,22 +18,7 @@
             class="filter-control"
             placeholder="请输入昵称"
             clearable
-          />
-        </el-form-item>
-        <el-form-item label="邮箱" class="filter-item">
-          <el-input
-            v-model="searchForm.email"
-            class="filter-control"
-            placeholder="请输入邮箱"
-            clearable
-          />
-        </el-form-item>
-        <el-form-item label="手机号" class="filter-item">
-          <el-input
-            v-model="searchForm.phone"
-            class="filter-control"
-            placeholder="请输入手机号"
-            clearable
+            @keyup.enter="handleSearch"
           />
         </el-form-item>
         <el-form-item label="状态" class="filter-item">
@@ -46,11 +32,37 @@
             <el-option label="禁用" :value="0" />
           </el-select>
         </el-form-item>
+        <template v-if="searchExpanded">
+          <el-form-item label="邮箱" class="filter-item">
+            <el-input
+              v-model="searchForm.email"
+              class="filter-control"
+              placeholder="请输入邮箱"
+              clearable
+              @keyup.enter="handleSearch"
+            />
+          </el-form-item>
+          <el-form-item label="手机号" class="filter-item">
+            <el-input
+              v-model="searchForm.phone"
+              class="filter-control"
+              placeholder="请输入手机号"
+              clearable
+              @keyup.enter="handleSearch"
+            />
+          </el-form-item>
+        </template>
         <el-form-item class="search-actions">
           <el-button v-permission="'sys:user:query'" type="primary" @click="handleSearch">
             查询
           </el-button>
           <el-button @click="handleReset">重置</el-button>
+          <el-button link type="primary" @click="searchExpanded = !searchExpanded">
+            {{ searchExpanded ? '收起' : '更多' }}
+            <el-icon class="expand-icon" :class="{ 'is-expanded': searchExpanded }">
+              <ArrowDown />
+            </el-icon>
+          </el-button>
         </el-form-item>
       </el-form>
     </el-card>
@@ -59,7 +71,16 @@
     <el-card class="table-card" shadow="never">
       <template #header>
         <div class="card-header">
-          <span>用户列表</span>
+          <div class="card-header__left">
+            <span>用户列表</span>
+            <div v-if="!userStore.loading && userStore.total > 0" class="stats-bar">
+              <span class="stats-item">
+                共 <strong>{{ userStore.total }}</strong> 人
+              </span>
+              <span class="stats-item stats-item--success"> 正常 {{ activeCount }} </span>
+              <span class="stats-item stats-item--danger"> 禁用 {{ disabledCount }} </span>
+            </div>
+          </div>
           <el-button v-permission="'sys:user:create'" type="primary" @click="handleAdd">
             <el-icon><Plus /></el-icon>
             新增用户
@@ -67,161 +88,223 @@
         </div>
       </template>
 
-      <div ref="tableWrapperRef" class="table-wrapper">
-        <el-table
-          v-loading="userStore.loading"
-          :data="userStore.users"
-          :height="tableHeight"
-          :size="isCompactTable ? 'small' : 'default'"
-          table-layout="auto"
-          class="user-table"
-          border
-          stripe
+      <!-- 批量操作栏 -->
+      <transition name="el-fade-in">
+        <div v-if="selectedRows.length > 0" class="batch-bar">
+          <span class="batch-bar__text">
+            已选择 <strong>{{ selectedRows.length }}</strong> 项
+          </span>
+          <el-button size="small" @click="clearSelection">取消选择</el-button>
+          <el-button
+            v-permission="'sys:user:update'"
+            size="small"
+            type="success"
+            plain
+            @click="handleBatchStatus(1)"
+          >
+            批量启用
+          </el-button>
+          <el-button
+            v-permission="'sys:user:update'"
+            size="small"
+            type="warning"
+            plain
+            @click="handleBatchStatus(0)"
+          >
+            批量禁用
+          </el-button>
+          <el-button
+            v-permission="'sys:user:delete'"
+            size="small"
+            type="danger"
+            plain
+            @click="handleBatchDelete"
+          >
+            批量删除
+          </el-button>
+        </div>
+      </transition>
+
+      <el-table
+        ref="tableRef"
+        v-loading="userStore.loading"
+        :data="userStore.users"
+        :size="isCompactTable ? 'small' : 'default'"
+        :row-class-name="getRowClassName"
+        table-layout="auto"
+        class="user-table"
+        border
+        stripe
+        @selection-change="handleSelectionChange"
+      >
+        <!-- 空数据 -->
+        <template #empty>
+          <div class="table-empty">
+            <el-empty description="暂无用户数据" :image-size="80" />
+          </div>
+        </template>
+        <!-- 多选列 -->
+        <el-table-column v-if="!isCompactTable" type="selection" width="44" align="center" />
+
+        <!-- 紧凑模式：合并用户信息列 -->
+        <el-table-column v-if="isCompactTable" label="用户信息" min-width="300" align="center">
+          <template #default="{ row }">
+            <div class="user-summary">
+              <div class="user-summary__header">
+                <el-avatar :src="row.avatar" :size="28">
+                  {{ (row.nickname || row.username).charAt(0) }}
+                </el-avatar>
+                <span class="user-summary__name">{{ row.nickname || row.username }}</span>
+                <el-icon v-if="row.gender === 1" :size="14" color="#409eff"><Male /></el-icon>
+                <el-icon v-else-if="row.gender === 2" :size="14" color="#f56c6c"
+                  ><Female
+                /></el-icon>
+                <UserLevelBadge :level="row.userLevel" size="small" />
+                <span class="user-summary__id">ID: {{ row.id }}</span>
+              </div>
+              <div class="user-summary__line">用户名：{{ row.username || '-' }}</div>
+              <div v-if="row.email" class="user-summary__line">{{ row.email }}</div>
+              <div class="user-summary__line">
+                经验：{{ row.experiencePoints }} XP
+                <template v-if="row.lastLoginTime"> · 最后登录：{{ row.lastLoginTime }}</template>
+              </div>
+            </div>
+          </template>
+        </el-table-column>
+
+        <!-- 桌面端：头像 + 用户信息 -->
+        <el-table-column v-if="!isCompactTable" label="用户信息" min-width="200">
+          <template #default="{ row }">
+            <div class="user-cell">
+              <el-avatar :src="row.avatar" :size="36">
+                {{ (row.nickname || row.username).charAt(0) }}
+              </el-avatar>
+              <div class="user-cell__content">
+                <div class="user-cell__top">
+                  <span class="user-cell__name">{{ row.nickname || '-' }}</span>
+                  <el-icon v-if="row.gender === 1" :size="14" color="#409eff"><Male /></el-icon>
+                  <el-icon v-else-if="row.gender === 2" :size="14" color="#f56c6c"
+                    ><Female
+                  /></el-icon>
+                </div>
+                <div class="user-cell__bottom">
+                  <span class="user-cell__sub">@{{ row.username }}</span>
+                  <span class="user-cell__id">ID {{ row.id }}</span>
+                </div>
+              </div>
+            </div>
+          </template>
+        </el-table-column>
+
+        <!-- 邮箱 -->
+        <el-table-column
+          v-if="!isCompactTable"
+          label="邮箱"
+          min-width="160"
+          align="center"
+          show-overflow-tooltip
         >
-          <el-table-column v-if="isCompactTable" label="用户信息" min-width="320" align="center">
-            <template #default="{ row }">
-              <div class="user-summary">
-                <div class="user-summary__header">
-                  <span class="user-summary__name">{{ row.nickname || row.username }}</span>
-                  <span class="user-summary__id">ID: {{ row.id }}</span>
-                </div>
-                <div class="user-summary__line">用户名：{{ row.username || '-' }}</div>
-                <div class="user-summary__line">邮箱：{{ row.email || '-' }}</div>
-                <div class="user-summary__line">手机号：{{ row.phone || '-' }}</div>
-                <div class="user-summary__line">
-                  等级：Lv.{{ row.userLevel }}
-                  <template v-if="row.lastLoginTime">
-                    · 最后登录：{{ row.lastLoginTime }}
-                  </template>
-                </div>
-              </div>
-            </template>
-          </el-table-column>
-          <el-table-column v-else prop="id" label="ID" width="80" align="center" />
-          <el-table-column
-            v-if="!isCompactTable"
-            prop="username"
-            label="用户名"
-            min-width="140"
-            align="center"
-            show-overflow-tooltip
-          />
-          <el-table-column
-            v-if="!isCompactTable"
-            prop="nickname"
-            label="昵称"
-            min-width="140"
-            align="center"
-            show-overflow-tooltip
-          />
-          <el-table-column
-            v-if="!isCompactTable"
-            prop="email"
-            label="邮箱"
-            min-width="220"
-            align="center"
-            show-overflow-tooltip
-          />
-          <el-table-column
-            v-if="!isCompactTable"
-            prop="phone"
-            label="手机号"
-            min-width="150"
-            align="center"
-            show-overflow-tooltip
-          />
-          <el-table-column
-            v-if="!isCompactTable"
-            label="等级"
-            width="90"
-            align="center"
-          >
-            <template #default="{ row }">
-              <el-tag type="warning" size="small">Lv.{{ row.userLevel }}</el-tag>
-            </template>
-          </el-table-column>
-          <el-table-column prop="status" label="状态" :width="isCompactTable ? 112 : 124" align="center">
-            <template #default="{ row }">
-              <el-switch
-                v-permission.disable="'sys:user:update'"
-                :model-value="row.status"
-                :active-value="1"
-                :inactive-value="0"
-                active-text="正常"
-                inactive-text="禁用"
-                inline-prompt
-                @change="handleStatusChange(row, $event as number)"
-              />
-            </template>
-          </el-table-column>
-          <el-table-column
-            v-if="!isCompactTable"
-            prop="lastLoginTime"
-            label="最后登录"
-            min-width="180"
-            align="center"
-            show-overflow-tooltip
-          >
-            <template #default="{ row }">
-              {{ row.lastLoginTime || '-' }}
-            </template>
-          </el-table-column>
-          <el-table-column
-            v-if="!isCompactTable"
-            prop="createTime"
-            label="注册时间"
-            min-width="180"
-            align="center"
-            show-overflow-tooltip
-          >
-            <template #default="{ row }">
-              {{ row.createTime || '-' }}
-            </template>
-          </el-table-column>
-          <el-table-column
-            label="操作"
-            :min-width="isCompactTable ? 156 : 280"
-            :fixed="isCompactTable ? false : 'right'"
-            align="center"
-          >
-            <template #default="{ row }">
-              <div class="table-actions" :class="{ 'table-actions--compact': isCompactTable }">
-                <el-button v-permission="'sys:user:update'" link type="primary" @click="handleEdit(row)">
-                  编辑
+          <template #default="{ row }">{{ row.email || '-' }}</template>
+        </el-table-column>
+
+        <!-- 等级 -->
+        <el-table-column v-if="!isCompactTable" label="等级" min-width="100" align="center">
+          <template #default="{ row }">
+            <UserLevelBadge :level="row.userLevel" size="small" />
+          </template>
+        </el-table-column>
+
+        <!-- 状态 -->
+        <el-table-column
+          prop="status"
+          label="状态"
+          :width="isCompactTable ? 100 : 100"
+          align="center"
+        >
+          <template #default="{ row }">
+            <el-switch
+              v-permission.disable="'sys:user:update'"
+              :model-value="row.status"
+              :active-value="1"
+              :inactive-value="0"
+              active-text="正常"
+              inactive-text="禁用"
+              inline-prompt
+              @change="handleStatusChange(row, $event as number)"
+            />
+          </template>
+        </el-table-column>
+
+        <!-- 注册时间 -->
+        <el-table-column
+          v-if="!isCompactTable"
+          label="注册时间"
+          min-width="140"
+          align="center"
+          show-overflow-tooltip
+        >
+          <template #default="{ row }">{{ row.createTime || '-' }}</template>
+        </el-table-column>
+
+        <!-- 操作 -->
+        <el-table-column label="操作" :width="isCompactTable ? 90 : 110" align="center">
+          <template #default="{ row }">
+            <div class="table-actions">
+              <el-button link type="primary" @click="handleView(row)">查看</el-button>
+              <el-button
+                v-permission="'sys:user:update'"
+                link
+                type="primary"
+                @click="handleEdit(row)"
+              >
+                编辑
+              </el-button>
+              <el-dropdown trigger="click" @command="(cmd: string) => handleAction(cmd, row)">
+                <el-button link type="primary">
+                  <el-icon class="el-icon--right"><ArrowDown /></el-icon>
                 </el-button>
-                <el-button
-                  v-permission="'sys:user:assign-role'"
-                  link
-                  type="primary"
-                  @click="handleAssignRoles(row)"
-                >
-                  分配角色
-                </el-button>
-                <el-button
-                  v-permission="'sys:user:reset-password'"
-                  link
-                  type="warning"
-                  @click="handleResetPassword(row)"
-                >
-                  重置密码
-                </el-button>
-                <el-button v-permission="'sys:user:delete'" link type="danger" @click="handleDelete(row)">
-                  删除
-                </el-button>
-              </div>
-            </template>
-          </el-table-column>
-        </el-table>
-      </div>
+                <template #dropdown>
+                  <el-dropdown-menu>
+                    <el-dropdown-item v-permission="'sys:user:assign-role'" command="assign-role">
+                      分配角色
+                    </el-dropdown-item>
+                    <el-dropdown-item
+                      v-permission="'sys:user:reset-password'"
+                      command="reset-password"
+                    >
+                      重置密码
+                    </el-dropdown-item>
+                    <el-dropdown-item v-permission="'sys:user:delete'" command="delete" divided>
+                      <span class="dropdown-danger">删除</span>
+                    </el-dropdown-item>
+                    <el-dropdown-item v-permission="'sys:user:ban'" command="ban">
+                      封禁用户
+                    </el-dropdown-item>
+                    <el-dropdown-item v-permission="'sys:user:unban'" command="unban">
+                      解封用户
+                    </el-dropdown-item>
+                    <el-dropdown-item v-permission="'sys:user:adjust-level'" command="adjust-level">
+                      调整等级
+                    </el-dropdown-item>
+                    <el-dropdown-item v-permission="'sys:user:adjust-experience'" command="adjust-exp">
+                      调整经验
+                    </el-dropdown-item>
+                  </el-dropdown-menu>
+                </template>
+              </el-dropdown>
+            </div>
+          </template>
+        </el-table-column>
+      </el-table>
 
       <!-- 分页 -->
-      <div ref="paginationRef" class="pagination">
+      <div class="pagination">
         <el-pagination
           v-model:current-page="pagination.current"
           v-model:page-size="pagination.size"
           :total="userStore.total"
           :page-sizes="[10, 20, 50, 100]"
-          :layout="paginationLayout"
+          layout="total, sizes, prev, pager, next, jumper"
           :small="isCompactTable"
           @size-change="handleSizeChange"
           @current-change="handleCurrentChange"
@@ -251,21 +334,38 @@
       :username="currentUsername"
       @success="handlePasswordSuccess"
     />
+
+    <!-- 查看详情对话框 -->
+    <UserDetailDialog v-model:visible="detailDialogVisible" :user="viewingUser" />
+
+    <!-- 超管安全操作对话框 -->
+    <SuperAdminActionDialog
+      v-model:visible="superAdminDialogVisible"
+      :user-id="currentUserId"
+      :username="currentUsername"
+      :action="superAdminAction"
+      @success="fetchUsers"
+    />
   </div>
 </template>
 
 <script lang="ts" setup>
-import { onMounted, reactive, ref } from 'vue'
+import { computed, onMounted, reactive, ref } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { Plus } from '@element-plus/icons-vue'
+import { Plus, ArrowDown, Male, Female } from '@element-plus/icons-vue'
 import { useUserStore } from '@/stores/modules/user'
-import type { SysUserAdminVO, UserQueryRequest } from '@/types/api-types'
 import { useContentAdmin } from '@/composables/useContentAdmin'
+import UserLevelBadge from '@/components/common/UserLevelBadge.vue'
+import type { SysUserAdminVO, UserQueryRequest } from '@/types/api-types'
 import UserFormDialog from './components/UserFormDialog.vue'
 import AssignRolesDialog from './components/AssignRolesDialog.vue'
 import ResetPasswordDialog from './components/ResetPasswordDialog.vue'
+import UserDetailDialog from './components/UserDetailDialog.vue'
+import SuperAdminActionDialog from './components/SuperAdminActionDialog.vue'
 
 const userStore = useUserStore()
+
+const tableRef = ref()
 
 // 搜索表单
 const searchForm = reactive({
@@ -273,41 +373,44 @@ const searchForm = reactive({
   nickname: '',
   email: '',
   phone: '',
-  status: undefined as number | undefined
+  status: undefined as number | undefined,
 })
+const searchExpanded = ref(false)
 
 // 分页信息
 const pagination = reactive({
   current: 1,
-  size: 10
+  size: 10,
 })
+
+// 批量选择
+const selectedRows = ref<SysUserAdminVO[]>([])
 
 // 对话框状态
 const formDialogVisible = ref(false)
 const rolesDialogVisible = ref(false)
 const passwordDialogVisible = ref(false)
+const detailDialogVisible = ref(false)
+const superAdminDialogVisible = ref(false)
+const superAdminAction = ref<'ban' | 'unban' | 'adjust-level' | 'adjust-exp' | null>(null)
 
 // 当前操作的用户
 const editingUserId = ref<number | null>(null)
 const currentUserId = ref(0)
 const currentUsername = ref('')
+const viewingUser = ref<SysUserAdminVO | null>(null)
 
-const {
-  tableWrapperRef,
-  paginationRef,
-  tableHeight,
-  paginationLayout,
-  isCompactTable
-} = useContentAdmin({
-  minHeight: 360,
-  bottomOffset: 16
-})
+const { isCompactTable } = useContentAdmin()
+
+// 统计
+const activeCount = computed(() => userStore.users.filter(u => u.status === 1).length)
+const disabledCount = computed(() => userStore.users.filter(u => u.status === 0).length)
 
 // 构建查询参数，只发送有值的筛选条件
 function buildParams(): UserQueryRequest {
   const params: UserQueryRequest = {
     current: pagination.current,
-    size: pagination.size
+    size: pagination.size,
   }
   if (searchForm.username.trim()) params.username = searchForm.username.trim()
   if (searchForm.nickname.trim()) params.nickname = searchForm.nickname.trim()
@@ -337,7 +440,7 @@ function handleReset() {
     nickname: '',
     email: '',
     phone: '',
-    status: undefined
+    status: undefined,
   })
   pagination.current = 1
   fetchUsers()
@@ -355,10 +458,25 @@ function handleCurrentChange(current: number) {
   fetchUsers()
 }
 
+// 多选处理
+function handleSelectionChange(rows: SysUserAdminVO[]) {
+  selectedRows.value = rows
+}
+
+function clearSelection() {
+  tableRef.value?.clearSelection()
+}
+
 // 新增用户
 function handleAdd() {
   editingUserId.value = null
   formDialogVisible.value = true
+}
+
+// 查看详情
+function handleView(row: SysUserAdminVO) {
+  viewingUser.value = row
+  detailDialogVisible.value = true
 }
 
 // 编辑用户
@@ -380,27 +498,46 @@ async function handleStatusChange(row: SysUserAdminVO, newVal: number) {
   }
 }
 
-// 分配角色
-function handleAssignRoles(row: SysUserAdminVO) {
-  currentUserId.value = row.id
-  currentUsername.value = row.username
-  rolesDialogVisible.value = true
+// 行样式：禁用用户置灰
+function getRowClassName({ row }: { row: SysUserAdminVO }): string {
+  return row.status === 0 ? 'row-disabled' : ''
 }
 
-// 重置密码
-function handleResetPassword(row: SysUserAdminVO) {
-  currentUserId.value = row.id
-  currentUsername.value = row.username
-  passwordDialogVisible.value = true
+// 操作下拉菜单统一入口
+function handleAction(command: string, row: SysUserAdminVO) {
+  switch (command) {
+    case 'assign-role':
+      currentUserId.value = row.id
+      currentUsername.value = row.username
+      rolesDialogVisible.value = true
+      break
+    case 'reset-password':
+      currentUserId.value = row.id
+      currentUsername.value = row.username
+      passwordDialogVisible.value = true
+      break
+    case 'delete':
+      confirmDelete(row)
+      break
+    case 'ban':
+    case 'unban':
+    case 'adjust-level':
+    case 'adjust-exp':
+      currentUserId.value = row.id
+      currentUsername.value = row.username
+      superAdminAction.value = command as 'ban' | 'unban' | 'adjust-level' | 'adjust-exp'
+      superAdminDialogVisible.value = true
+      break
+  }
 }
 
 // 删除用户
-async function handleDelete(row: SysUserAdminVO) {
+async function confirmDelete(row: SysUserAdminVO) {
   try {
     await ElMessageBox.confirm(`确定要删除用户 "${row.username}" 吗？`, '提示', {
       confirmButtonText: '确定',
       cancelButtonText: '取消',
-      type: 'warning'
+      type: 'warning',
     })
     const ok = await userStore.deleteUser(row.id)
     if (ok) {
@@ -409,6 +546,59 @@ async function handleDelete(row: SysUserAdminVO) {
     } else {
       ElMessage.error('删除失败')
     }
+  } catch {
+    // 用户取消
+  }
+}
+
+// 批量状态变更
+async function handleBatchStatus(status: number) {
+  const label = status === 1 ? '启用' : '禁用'
+  const ids = selectedRows.value.map(r => r.id)
+  try {
+    await ElMessageBox.confirm(`确定要批量${label} ${ids.length} 个用户吗？`, '提示', {
+      confirmButtonText: '确定',
+      cancelButtonText: '取消',
+      type: 'warning',
+    })
+    const results = await Promise.allSettled(
+      ids.map(id => userStore.updateUserStatus(id, { status }))
+    )
+    const failed = results.filter(r => r.status === 'fulfilled' && !r.value).length
+    if (failed === 0) {
+      ElMessage.success(`批量${label}成功`)
+    } else {
+      ElMessage.warning(`${label}完成，${failed} 个失败`)
+    }
+    clearSelection()
+    fetchUsers()
+  } catch {
+    // 用户取消
+  }
+}
+
+// 批量删除
+async function handleBatchDelete() {
+  const ids = selectedRows.value.map(r => r.id)
+  try {
+    await ElMessageBox.confirm(
+      `确定要批量删除 ${ids.length} 个用户吗？此操作不可撤销。`,
+      '危险操作',
+      {
+        confirmButtonText: '确定删除',
+        cancelButtonText: '取消',
+        type: 'error',
+      }
+    )
+    const results = await Promise.allSettled(ids.map(id => userStore.deleteUser(id)))
+    const failed = results.filter(r => r.status === 'fulfilled' && !r.value).length
+    if (failed === 0) {
+      ElMessage.success('批量删除成功')
+    } else {
+      ElMessage.warning(`删除完成，${failed} 个失败`)
+    }
+    clearSelection()
+    fetchUsers()
   } catch {
     // 用户取消
   }
@@ -437,12 +627,15 @@ onMounted(() => {
 
 <style scoped>
 .user-management-page {
+  display: flex;
+  flex-direction: column;
   padding: 0;
   max-width: 1440px;
   margin: 0 auto;
 }
 
 .search-card {
+  flex-shrink: 0;
   margin-bottom: 16px;
 }
 
@@ -475,8 +668,42 @@ onMounted(() => {
   margin-right: 0;
 }
 
+.expand-icon {
+  transition: transform 0.3s;
+  margin-left: 2px;
+}
+
+.expand-icon.is-expanded {
+  transform: rotate(180deg);
+}
+
+/* 批量操作栏 */
+.batch-bar {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px;
+  margin-bottom: 12px;
+  background: var(--el-fill-color-light);
+  border-radius: 6px;
+  border: 1px solid var(--el-border-color-lighter);
+}
+
+.batch-bar__text {
+  font-size: 13px;
+  color: var(--el-text-color-regular);
+  margin-right: auto;
+}
+
 .table-card {
-  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.table-card :deep(.el-card__body) {
+  display: flex;
+  flex-direction: column;
 }
 
 .user-table {
@@ -487,10 +714,94 @@ onMounted(() => {
   text-align: center;
 }
 
-.table-wrapper {
-  min-height: 0;
+/* 禁用用户行置灰 */
+.user-table :deep(.row-disabled) {
+  --el-table-tr-bg-color: var(--el-fill-color-lighter);
+  color: var(--el-text-color-placeholder);
 }
 
+.user-table :deep(.row-disabled .el-avatar) {
+  opacity: 0.5;
+}
+
+/* 空数据 */
+.table-empty {
+  padding: 24px 0;
+}
+
+/* 下拉菜单危险操作 */
+.dropdown-danger {
+  color: var(--el-color-danger);
+}
+
+/* 用户信息单元格 */
+.user-cell {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 4px 0;
+}
+
+.user-cell__content {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.user-cell__top {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.user-cell__bottom {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.user-cell__name {
+  font-weight: 500;
+  color: var(--el-text-color-primary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.user-cell__sub {
+  font-size: 12px;
+  color: var(--el-text-color-secondary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.user-cell__id {
+  font-size: 11px;
+  color: var(--el-text-color-placeholder);
+}
+
+/* 等级单元格 */
+.level-cell {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.level-cell__xp {
+  font-size: 11px;
+  color: var(--el-text-color-secondary);
+}
+
+/* 子文本 */
+.sub-text {
+  font-size: 12px;
+  color: var(--el-text-color-secondary);
+}
+
+/* 紧凑模式 - 用户摘要 */
 .user-summary {
   display: flex;
   flex-direction: column;
@@ -505,7 +816,7 @@ onMounted(() => {
   align-items: center;
   justify-content: center;
   flex-wrap: wrap;
-  gap: 12px;
+  gap: 8px;
 }
 
 .user-summary__name {
@@ -532,27 +843,45 @@ onMounted(() => {
   font-weight: 500;
 }
 
+.card-header__left {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.stats-bar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 12px;
+  color: var(--el-text-color-secondary);
+  font-weight: 400;
+}
+
+.stats-item strong {
+  color: var(--el-text-color-primary);
+}
+
+.stats-item--success {
+  color: var(--el-color-success);
+}
+
+.stats-item--danger {
+  color: var(--el-color-danger);
+}
+
 .table-actions {
   display: inline-flex;
-  flex-wrap: wrap;
-  justify-content: center;
   align-items: center;
-  gap: 4px 8px;
-}
-
-.table-actions--compact {
-  flex-direction: column;
-  align-items: center;
-}
-
-.table-actions :deep(.el-button + .el-button) {
-  margin-left: 0;
+  gap: 8px;
 }
 
 .pagination {
+  flex-shrink: 0;
   display: flex;
   justify-content: center;
-  margin-top: 16px;
+  margin-top: 20px;
+  padding: 12px 0 8px;
 }
 
 @media (max-width: 768px) {
@@ -571,6 +900,10 @@ onMounted(() => {
   .search-actions :deep(.el-form-item__content) {
     width: 100%;
     justify-content: center;
+  }
+
+  .batch-bar {
+    flex-wrap: wrap;
   }
 }
 </style>

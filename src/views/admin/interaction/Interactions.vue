@@ -70,17 +70,15 @@
         </div>
       </template>
 
-      <div ref="tableWrapperRef" class="table-wrapper">
-        <el-table
-          v-loading="interactionStore.loading"
-          :data="interactionStore.interactions"
-          :height="tableHeight"
-          stripe
-          border
-          table-layout="auto"
-          size="small"
-          class="behaviors-table"
-        >
+      <el-table
+        v-loading="interactionStore.loading"
+        :data="interactionStore.interactions"
+        stripe
+        border
+        table-layout="auto"
+        size="small"
+        class="behaviors-table"
+      >
           <el-table-column prop="id" label="ID" width="80" align="center" />
           <el-table-column
             prop="userId"
@@ -143,9 +141,8 @@
             </template>
           </el-table-column>
         </el-table>
-      </div>
 
-      <div ref="paginationRef" class="pagination">
+      <div class="pagination">
         <el-pagination
           v-model:current-page="pagination.current"
           v-model:page-size="pagination.size"
@@ -187,12 +184,7 @@ const pagination = reactive({
   size: 10,
 })
 
-const table = useContentAdmin({ minHeight: 340, bottomOffset: 24 })
-const tableWrapperRef = table.tableWrapperRef
-const paginationRef = table.paginationRef
-const tableHeight = table.tableHeight
-const paginationLayout = table.paginationLayout
-const isCompactTable = table.isCompactTable
+const { paginationLayout, isCompactTable } = useContentAdmin()
 
 const targetTypeOptions = TARGET_TYPE_OPTIONS
 const interactionTypeOptions = INTERACTION_TYPE_OPTIONS
@@ -266,11 +258,6 @@ onMounted(() => {
   margin: 0 auto;
 }
 
-.search-card,
-.table-card {
-  min-height: 0;
-}
-
 .card-header {
   display: flex;
   justify-content: space-between;
@@ -295,10 +282,6 @@ onMounted(() => {
   margin-top: 8px;
   display: flex;
   gap: 8px;
-}
-
-.table-wrapper {
-  min-height: 0;
 }
 
 .behaviors-table {

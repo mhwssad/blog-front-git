@@ -1,6 +1,6 @@
 /**
  * 用户关注关系 API
- * 基于 auth-api.md 文档 第5节
+ * 基于 follow-api.md 文档
  */
 
 import { http } from '../request'

@@ -1,5 +1,5 @@
 import { defineMock } from 'vite-plugin-mock-dev-server'
-import { cp, db, me, num, ok, p, page } from './shared'
+import { cp, db, me, now, num, ok, p, page } from './shared'
 
 const stripUserNotice = ({ userId, ...n }: any) => n
 
@@ -22,6 +22,18 @@ function handle(req: any) {
     return x ? ok(stripUserNotice(cp(x))) : ok(null, '通知不存在', 404)
   }
 
+  if (m === 'POST' && path === '/api/user/notices/read-all') {
+    db.userNotices.filter((i: any) => i.userId === u.id && i.isRead === 0).forEach((i: any) => { i.isRead = 1; i.readTime = now() })
+    return ok(null)
+  }
+
+  const readMatch = path.match(/^\/api\/user\/notices\/(\d+)\/read$/)
+  if (m === 'POST' && readMatch) {
+    const x = db.userNotices.find((i: any) => i.id === num(readMatch[1]) && i.userId === u.id)
+    if (x) { x.isRead = 1; x.readTime = now() }
+    return ok(null)
+  }
+
   return ok(null, '未匹配到用户通知接口', 404)
 }
 
@@ -29,4 +41,6 @@ export default defineMock([
   { url: '/api/user/notices', method: 'GET', body: handle },
   { url: '/api/user/notices/unread-count', method: 'GET', body: handle },
   { url: '/api/user/notices/:id', method: 'GET', body: handle },
+  { url: '/api/user/notices/:id/read', method: 'POST', body: handle },
+  { url: '/api/user/notices/read-all', method: 'POST', body: handle },
 ])

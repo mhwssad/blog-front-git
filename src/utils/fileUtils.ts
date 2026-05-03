@@ -1,3 +1,5 @@
+import { log } from '@/composables/useLogger'
+
 /**
  * 文件处理工具类
  * 提供常用的文件操作方法
@@ -567,7 +569,7 @@ export class FileUtils {
         const result = await processor(file)
         results.push(result)
       } catch (error) {
-        console.error(`处理文件 ${file.name} 失败:`, error)
+        log.file.error(`处理文件 ${file.name} 失败`, error)
       }
     }
     return results

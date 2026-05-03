@@ -40,11 +40,9 @@
         </div>
       </template>
 
-      <div ref="tableWrapperRef" class="table-wrapper">
         <el-table
           v-loading="channelStore.loading"
           :data="channelStore.channels"
-          :height="tableHeight"
           :size="isCompactTable ? 'small' : 'default'"
           table-layout="auto"
           border
@@ -100,9 +98,8 @@
             </template>
           </el-table-column>
         </el-table>
-      </div>
 
-      <div ref="paginationRef" class="pagination">
+      <div class="pagination">
         <el-pagination
           v-model:current-page="pagination.current"
           v-model:page-size="pagination.size"
@@ -145,7 +142,7 @@ const pagination = reactive({ current: 1, size: 10 })
 const formDialogVisible = ref(false)
 const editingChannelId = ref<number | null>(null)
 
-const { tableWrapperRef, paginationRef, tableHeight, isCompactTable, paginationLayout } =
+const { isCompactTable, paginationLayout } =
   useContentAdmin({ minHeight: 360, bottomOffset: 16 })
 
 async function fetchChannels(): Promise<void> {
@@ -272,10 +269,6 @@ onMounted(() => {
   align-items: center;
   gap: 12px;
   font-weight: 500;
-}
-
-.table-wrapper {
-  min-height: 0;
 }
 
 .table-actions {

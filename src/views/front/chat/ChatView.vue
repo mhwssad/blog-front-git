@@ -97,6 +97,7 @@
 import { ref, reactive, computed, onMounted } from 'vue'
 import { ElMessage } from 'element-plus'
 import { Setting } from '@element-plus/icons-vue'
+import SparkMD5 from 'spark-md5'
 import { useUserChatStore, useAuthStore } from '@/stores'
 import { useChatSocket } from '@/composables/useChatSocket'
 import { UserFileApi } from '@/api/user/file'
@@ -152,12 +153,17 @@ async function handleSendFile(file: File): Promise<void> {
   if (!store.currentConversation) return
 
   try {
+    // 计算文件 MD5
+    const fileMd5 = await computeFileMD5(file)
+
     // Step 1: Initialize upload task
     const initReq: FileUploadInitRequest = {
       originalName: file.name,
       fileSize: file.size,
+      fileMd5,
       mimeType: file.type || undefined,
-      category: 'chat',
+      referenceType: 'temp',
+      category: 'temp',
       isPublic: 0,
     }
     const initRes = await UserFileApi.initUploadTask(initReq)
@@ -190,6 +196,34 @@ async function handleSendFile(file: File): Promise<void> {
   }
 }
 
+function computeFileMD5(file: File): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const spark = new SparkMD5.ArrayBuffer()
+    const reader = new FileReader()
+    const blockSize = 2 * 1024 * 1024
+    const totalBlocks = Math.ceil(file.size / blockSize)
+    let currentBlock = 0
+
+    reader.onload = (e) => {
+      if (!e.target?.result) return
+      spark.append(e.target.result as ArrayBuffer)
+      currentBlock++
+      if (currentBlock < totalBlocks) {
+        loadNext()
+      } else {
+        resolve(spark.end())
+      }
+    }
+    reader.onerror = () => reject(reader.error ?? new Error('文件读取失败'))
+
+    function loadNext() {
+      const start = currentBlock * blockSize
+      reader.readAsArrayBuffer(file.slice(start, Math.min(start + blockSize, file.size)))
+    }
+    loadNext()
+  })
+}
+
 async function handleRevoke(messageId: number): Promise<void> {
   const success = await store.revokeMessage(messageId)
   if (success) ElMessage.success('已撤回')
@@ -213,8 +247,11 @@ async function handleCreateGroup(data: { name: string }): Promise<void> {
   }
 }
 
-onMounted(() => {
-  store.fetchConversations()
+onMounted(async () => {
+  await store.fetchConversations()
+  if (store.conversations.length > 0 && !store.currentConversation) {
+    store.selectConversation(store.conversations[0]!.id)
+  }
   connect()
 })
 </script>

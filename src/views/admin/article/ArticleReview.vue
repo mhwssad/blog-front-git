@@ -49,7 +49,10 @@
             >
               审核
             </el-button>
-            <el-button v-else link type="primary" @click="handleView(row)">查看</el-button>
+            <template v-else>
+              <el-button link type="primary" @click="handleView(row)">查看</el-button>
+              <el-button link type="warning" @click="handleRepair(row)">修复状态</el-button>
+            </template>
           </template>
         </el-table-column>
       </el-table>
@@ -136,17 +139,44 @@
         </template>
       </template>
     </el-dialog>
+
+    <el-dialog v-model="repairVisible" title="修复审核状态" width="480px">
+      <el-form label-width="100px">
+        <el-form-item label="目标状态">
+          <el-select v-model="repairForm.targetReviewStatus" style="width: 100%">
+            <el-option label="待审核" :value="1" />
+            <el-option label="已通过" :value="2" />
+            <el-option label="已拒绝" :value="3" />
+          </el-select>
+        </el-form-item>
+        <el-form-item label="备注">
+          <el-input
+            v-model="repairForm.reviewComment"
+            type="textarea"
+            :rows="3"
+            placeholder="请输入修复原因"
+          />
+        </el-form-item>
+      </el-form>
+      <template #footer>
+        <el-button @click="repairVisible = false">取消</el-button>
+        <el-button type="primary" :loading="repairLoading" @click="confirmRepair">确认修复</el-button>
+      </template>
+    </el-dialog>
   </div>
 </template>
 
 <script lang="ts" setup>
 import { onMounted, reactive, ref } from 'vue'
-import { ElMessage } from 'element-plus'
+import { ElMessage, ElMessageBox } from 'element-plus'
 import { ArticleApi } from '@/api/sys/article'
+import { useArticleStore } from '@/stores'
 import type {
   ArticleAdminVO,
   ArticleReviewAdminDetailVO,
 } from '@/types/api-types'
+
+const articleStore = useArticleStore()
 
 const query = reactive({
   reviewStatus: undefined as number | undefined,
@@ -166,6 +196,14 @@ const isReviewMode = ref(false)
 const detailData = ref<ArticleReviewAdminDetailVO | null>(null)
 const reviewComment = ref('')
 const actionLoading = ref(false)
+
+const repairVisible = ref(false)
+const repairLoading = ref(false)
+const repairRow = ref<ArticleAdminVO | null>(null)
+const repairForm = reactive({
+  targetReviewStatus: 1,
+  reviewComment: '',
+})
 
 function reviewStatusTagType(
   status: number,
@@ -270,6 +308,43 @@ async function handleRejectArticle(): Promise<void> {
     ElMessage.error('审核操作失败')
   } finally {
     actionLoading.value = false
+  }
+}
+
+function handleRepair(row: ArticleAdminVO): void {
+  repairRow.value = row
+  repairForm.targetReviewStatus = row.reviewStatus
+  repairForm.reviewComment = ''
+  repairVisible.value = true
+}
+
+async function confirmRepair(): Promise<void> {
+  if (!repairRow.value) return
+  try {
+    await ElMessageBox.confirm('确定要修复该文章的审核状态吗？', '提示', {
+      confirmButtonText: '确定',
+      cancelButtonText: '取消',
+      type: 'warning',
+    })
+  } catch {
+    return
+  }
+
+  repairLoading.value = true
+  try {
+    const success = await articleStore.repairArticleReviewStatus(repairRow.value.id, {
+      targetReviewStatus: repairForm.targetReviewStatus,
+      reviewComment: repairForm.reviewComment || '管理员修复审核状态',
+    })
+    if (success) {
+      ElMessage.success('审核状态已修复')
+      repairVisible.value = false
+      handleQuery()
+    } else {
+      ElMessage.error('修复操作失败')
+    }
+  } finally {
+    repairLoading.value = false
   }
 }
 

@@ -58,11 +58,9 @@
         </div>
       </template>
 
-      <div ref="tableWrapperRef" class="table-wrapper">
         <el-table
           v-loading="chatStore.conversationLoading"
           :data="chatStore.conversations"
-          :height="tableHeight"
           :size="isCompactTable ? 'small' : 'default'"
           border
           stripe
@@ -122,9 +120,8 @@
             </template>
           </el-table-column>
         </el-table>
-      </div>
 
-      <div ref="paginationRef" class="pagination">
+      <div class="pagination">
         <el-pagination
           v-model:current-page="pagination.current"
           v-model:page-size="pagination.size"
@@ -506,11 +503,7 @@ const pagination = reactive({ current: 1, size: 10 })
 const messagePagination = reactive({ current: 1, size: 10 })
 const receiptPagination = reactive({ current: 1, size: 10 })
 
-const { tableWrapperRef, paginationRef, tableHeight, paginationLayout, isCompactTable } =
-  useContentAdmin({
-    minHeight: 340,
-    bottomOffset: 24,
-  })
+const { paginationLayout, isCompactTable } = useContentAdmin()
 
 const selectedConversation = computed(() => chatStore.conversationDetail)
 
@@ -838,10 +831,6 @@ onMounted(() => {
   justify-content: space-between;
   gap: 12px;
   font-weight: 500;
-}
-
-.table-wrapper {
-  min-height: 0;
 }
 
 .detail-row {

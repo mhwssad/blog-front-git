@@ -29,11 +29,10 @@
         </div>
       </template>
 
-      <div ref="tableWrapperRef" class="table-wrapper">
+      <div>
         <el-table
           v-loading="categoryStore.loading"
           :data="filteredCategoryTree"
-          :height="tableHeight"
           :size="isCompactTable ? 'small' : 'default'"
           row-key="id"
           :tree-props="{ children: 'children' }"
@@ -159,10 +158,7 @@ import type { CategoryAdminVO } from '@/types/api-types'
 
 const categoryStore = useCategoryStore()
 const keyword = ref('')
-const { tableWrapperRef, tableHeight, isCompactTable, updateTableHeight } = useContentAdmin({
-  minHeight: 420,
-  bottomOffset: 24,
-})
+const { isCompactTable } = useContentAdmin()
 const formDialogVisible = ref(false)
 const editingCategory = ref<CategoryAdminVO | null>(null)
 const dialogParentId = ref(0)
@@ -231,7 +227,6 @@ function resolveParentLabel(parentId: number): string {
 
 async function refreshCategories(): Promise<void> {
   await categoryStore.fetchCategoryTree()
-  updateTableHeight()
 }
 
 function handleAddRoot(): void {
@@ -326,10 +321,6 @@ onMounted(() => {
   gap: 8px;
 }
 
-.table-card {
-  min-height: 0;
-}
-
 .card-header {
   display: flex;
   justify-content: space-between;
@@ -341,10 +332,6 @@ onMounted(() => {
 .card-header__meta {
   color: var(--el-text-color-secondary);
   font-size: 13px;
-}
-
-.table-wrapper {
-  min-height: 0;
 }
 
 .category-table {

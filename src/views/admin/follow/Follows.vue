@@ -54,11 +54,9 @@
         </div>
       </template>
 
-      <div ref="tableWrapperRef" class="table-wrapper">
         <el-table
           v-loading="followStore.loading"
           :data="followStore.relations"
-          :height="tableHeight"
           :size="isCompactTable ? 'small' : 'default'"
           border
           stripe
@@ -131,9 +129,8 @@
             </template>
           </el-table-column>
         </el-table>
-      </div>
 
-      <div ref="paginationRef" class="pagination">
+      <div class="pagination">
         <el-pagination
           v-model:current-page="pagination.current"
           v-model:page-size="pagination.size"
@@ -211,15 +208,9 @@ const cleanForm = reactive({
 })
 
 const {
-  tableWrapperRef,
-  paginationRef,
-  tableHeight,
   paginationLayout,
   isCompactTable,
-} = useContentAdmin({
-  minHeight: 360,
-  bottomOffset: 24,
-})
+} = useContentAdmin()
 
 function buildQueryParams() {
   return {
@@ -343,10 +334,6 @@ onMounted(() => {
   justify-content: space-between;
   gap: 12px;
   font-weight: 500;
-}
-
-.table-wrapper {
-  min-height: 0;
 }
 
 .pagination {

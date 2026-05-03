@@ -11,6 +11,20 @@
         <el-form-item label="操作人" class="filter-item">
           <el-input v-model="searchForm.username" class="filter-control" clearable placeholder="请输入操作人" />
         </el-form-item>
+        <el-form-item label="请求方法" class="filter-item">
+          <el-select v-model="searchForm.requestMethod" class="filter-control" clearable placeholder="请选择请求方法">
+            <el-option label="GET" value="GET" />
+            <el-option label="POST" value="POST" />
+            <el-option label="PUT" value="PUT" />
+            <el-option label="DELETE" value="DELETE" />
+          </el-select>
+        </el-form-item>
+        <el-form-item label="请求地址" class="filter-item">
+          <el-input v-model="searchForm.requestUri" class="filter-control" clearable placeholder="请输入请求地址" />
+        </el-form-item>
+        <el-form-item label="IP" class="filter-item">
+          <el-input v-model="searchForm.ip" class="filter-control" clearable placeholder="请输入IP地址" />
+        </el-form-item>
         <el-form-item label="时间范围" class="filter-item filter-item--range">
           <el-date-picker
             v-model="timeRange"
@@ -43,17 +57,15 @@
         </div>
       </template>
 
-      <div ref="tableWrapperRef" class="table-wrapper">
-        <el-table
-          v-loading="logStore.loading"
-          :data="logStore.logs"
-          :height="tableHeight"
-          :size="isCompactTable ? 'small' : 'default'"
-          table-layout="auto"
-          class="log-table"
-          border
-          stripe
-        >
+      <el-table
+        v-loading="logStore.loading"
+        :data="logStore.logs"
+        :size="isCompactTable ? 'small' : 'default'"
+        table-layout="auto"
+        class="log-table"
+        border
+        stripe
+      >
           <el-table-column prop="id" label="ID" min-width="80" align="center" />
           <el-table-column prop="module" label="模块" min-width="120" align="center" show-overflow-tooltip />
           <el-table-column prop="action" label="操作类型" min-width="120" align="center" show-overflow-tooltip />
@@ -97,9 +109,8 @@
             </template>
           </el-table-column>
         </el-table>
-      </div>
 
-      <div ref="paginationRef" class="pagination">
+      <div class="pagination">
         <el-pagination
           v-model:current-page="pagination.current"
           v-model:page-size="pagination.size"
@@ -134,6 +145,9 @@ const searchForm = reactive<LogQueryRequest>({
   module: undefined,
   action: undefined,
   username: undefined,
+  requestMethod: undefined,
+  requestUri: undefined,
+  ip: undefined,
   startTime: undefined,
   endTime: undefined,
 })
@@ -147,11 +161,7 @@ const timeRange = ref<[string, string] | []>([])
 const detailDialogVisible = ref(false)
 const currentLog = ref<SysLogAdminVO | null>(null)
 
-const { tableWrapperRef, paginationRef, tableHeight, isCompactTable, paginationLayout } =
-  useContentAdmin({
-    minHeight: 360,
-    bottomOffset: 16,
-  })
+const { isCompactTable, paginationLayout } = useContentAdmin()
 
 async function fetchLogs(): Promise<void> {
   const [startTime, endTime] = timeRange.value
@@ -181,6 +191,9 @@ function handleReset(): void {
     module: undefined,
     action: undefined,
     username: undefined,
+    requestMethod: undefined,
+    requestUri: undefined,
+    ip: undefined,
     startTime: undefined,
     endTime: undefined,
   })
@@ -307,10 +320,6 @@ onMounted(() => {
   margin-right: 0;
 }
 
-.table-card {
-  min-height: 0;
-}
-
 .card-header {
   display: flex;
   justify-content: space-between;
@@ -322,10 +331,6 @@ onMounted(() => {
 .card-header__meta {
   color: var(--el-text-color-secondary);
   font-size: 13px;
-}
-
-.table-wrapper {
-  min-height: 0;
 }
 
 .log-table {

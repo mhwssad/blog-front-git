@@ -1,5 +1,5 @@
 import { defineMock } from 'vite-plugin-mock-dev-server'
-import { ad, cp, db, detail, has, num, ok, p, page } from './shared'
+import { ad, cp, db, detail, has, me, num, ok, p, page } from './shared'
 
 function handle(req: any) {
   const m = String(req.method).toUpperCase()
@@ -41,11 +41,6 @@ function handle(req: any) {
   }
 
   return ok(null, '未匹配到公开内容接口', 404)
-}
-
-function me(req: any) {
-  const m = String(req.headers?.authorization || '').match(/(\d+)/)
-  return db.users.find((i: any) => i.id === Number(m?.[1])) || db.users[0]
 }
 
 export default defineMock([

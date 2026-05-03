@@ -2,13 +2,13 @@
 import { computed, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 import zhCn from 'element-plus/es/locale/lang/zh-cn'
-import { appLogger } from '@/utils/logger'
+import { log } from '@/composables/useLogger'
 
 const route = useRoute()
 const isAdminRoute = computed(() => route.path.startsWith('/admin'))
 
 onMounted(() => {
-  appLogger.info('Application mounted')
+  log.app.info('Application mounted')
 })
 </script>
 

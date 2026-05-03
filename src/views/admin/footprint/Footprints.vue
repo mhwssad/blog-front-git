@@ -111,16 +111,14 @@
         </div>
       </template>
 
-      <div ref="tableWrapperRef" class="table-wrapper">
-        <el-table
-          v-loading="footprintStore.loading"
-          :data="footprintStore.footprints"
-          :height="tableHeight"
-          :size="isCompactTable ? 'small' : 'default'"
-          stripe
-          border
-          table-layout="auto"
-        >
+      <el-table
+        v-loading="footprintStore.loading"
+        :data="footprintStore.footprints"
+        :size="isCompactTable ? 'small' : 'default'"
+        stripe
+        border
+        table-layout="auto"
+      >
           <el-table-column prop="id" label="ID" width="80" align="center" />
           <el-table-column prop="userId" label="用户 ID" width="100" align="center" />
           <el-table-column prop="targetId" label="目标 ID" width="100" align="center" />
@@ -164,9 +162,8 @@
             </template>
           </el-table-column>
         </el-table>
-      </div>
 
-      <div ref="paginationRef" class="pagination">
+      <div class="pagination">
         <el-pagination
           v-model:current-page="pagination.current"
           v-model:page-size="pagination.size"
@@ -206,15 +203,9 @@ const pagination = reactive({
 })
 
 const {
-  tableWrapperRef,
-  paginationRef,
-  tableHeight,
   paginationLayout,
   isCompactTable,
-} = useContentAdmin({
-  minHeight: 360,
-  bottomOffset: 24,
-})
+} = useContentAdmin()
 
 const targetTypeOptions = TARGET_TYPE_OPTIONS
 
@@ -317,11 +308,6 @@ onMounted(() => {
   margin: 0 auto;
 }
 
-.search-card,
-.table-card {
-  min-height: 0;
-}
-
 .card-header {
   display: flex;
   align-items: center;
@@ -346,10 +332,6 @@ onMounted(() => {
   margin-top: 8px;
   display: flex;
   gap: 8px;
-}
-
-.table-wrapper {
-  min-height: 0;
 }
 
 .pagination {

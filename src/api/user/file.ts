@@ -1,6 +1,6 @@
 /**
  * 用户文件管理 API
- * 基于 auth-api.md 文档 第6节
+ * 基于 file-api.md 文档
  */
 
 import { http } from '../request'
@@ -28,7 +28,7 @@ const multipartHeaders = {
  */
 export class UserFileApi {
   /**
-   * 6.1 初始化上传任务
+   * 4.1 初始化上传任务
    * POST /api/user/files/upload-tasks/init
    */
   static initUploadTask(data: FileUploadInitRequest) {
@@ -36,7 +36,7 @@ export class UserFileApi {
   }
 
   /**
-   * 6.2 快速检查上传任务状态
+   * 4.2 秒传检测
    * POST /api/user/files/upload-tasks/{uploadId}/quick-check
    */
   static quickCheckUploadTask(uploadId: string) {
@@ -44,7 +44,7 @@ export class UserFileApi {
   }
 
   /**
-   * 6.3 上传文件（简单模式）
+   * 4.3 普通上传
    * POST /api/user/files/upload-tasks/{uploadId}/file
    */
   static uploadFile(uploadId: string, data: FormData) {
@@ -56,7 +56,7 @@ export class UserFileApi {
   }
 
   /**
-   * 6.4 上传分片（分片模式）
+   * 4.4 上传分片
    * POST /api/user/files/upload-tasks/{uploadId}/chunks/{chunkNumber}
    */
   static uploadChunk(uploadId: string, chunkNumber: number, data: FormData) {
@@ -68,7 +68,7 @@ export class UserFileApi {
   }
 
   /**
-   * 6.5 完成上传任务
+   * 4.5 完成上传
    * POST /api/user/files/upload-tasks/{uploadId}/complete
    */
   static completeUploadTask(uploadId: string) {
@@ -76,7 +76,7 @@ export class UserFileApi {
   }
 
   /**
-   * 6.6 分页查询我的文件列表
+   * 4.6 查询我的文件
    * GET /api/user/files
    */
   static getMyFiles(params?: UserFilePageQueryRequest) {
@@ -84,7 +84,7 @@ export class UserFileApi {
   }
 
   /**
-   * 6.7 分页查询我的上传任务列表
+   * 4.7 查询我的上传任务
    * GET /api/user/files/upload-tasks
    */
   static getMyUploadTasks(params?: UserFileTaskPageQueryRequest) {
@@ -92,7 +92,7 @@ export class UserFileApi {
   }
 
   /**
-   * 6.8 删除我的文件
+   * 4.8 删除我的文件引用
    * DELETE /api/user/files/{businessId}
    */
   static deleteMyFile(businessId: number) {

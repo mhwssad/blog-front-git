@@ -20,6 +20,12 @@
     "aiChannel": 4,
     "aiSession": 6,
     "aiUsageLog": 15,
-    "aiMessage": 10
+    "aiMessage": 10,
+    "report": 3,
+    "reportLog": 3,
+    "authorApplication": 3,
+    "folder": 1,
+    "collection": 1,
+    "interaction": 1
   }
 }

@@ -2,28 +2,34 @@
   <div class="ai-usage-stats-page">
     <!-- 统计卡片 -->
     <el-row :gutter="16" style="margin-bottom: 16px">
-      <el-col :span="6">
+      <el-col :lg="4" :sm="8" :xs="12">
         <el-card shadow="never" class="stat-card">
           <div class="stat-value">{{ stats?.totalCalls ?? 0 }}</div>
           <div class="stat-label">总调用次数</div>
         </el-card>
       </el-col>
-      <el-col :span="6">
+      <el-col :lg="4" :sm="8" :xs="12">
         <el-card shadow="never" class="stat-card">
           <div class="stat-value">{{ stats?.successCalls ?? 0 }}</div>
           <div class="stat-label">成功次数</div>
         </el-card>
       </el-col>
-      <el-col :span="6">
+      <el-col :lg="4" :sm="8" :xs="12">
         <el-card shadow="never" class="stat-card">
           <div class="stat-value stat-value--danger">{{ stats?.failedCalls ?? 0 }}</div>
           <div class="stat-label">失败次数</div>
         </el-card>
       </el-col>
-      <el-col :span="6">
+      <el-col :lg="6" :sm="12" :xs="12">
         <el-card shadow="never" class="stat-card">
           <div class="stat-value">{{ formatTokenCount(stats?.totalTokens ?? 0) }}</div>
           <div class="stat-label">总 Token 消耗</div>
+        </el-card>
+      </el-col>
+      <el-col :lg="6" :sm="12" :xs="12">
+        <el-card shadow="never" class="stat-card">
+          <div class="stat-value">{{ stats?.totalQuotaCost?.toFixed(2) ?? '0.00' }}</div>
+          <div class="stat-label">总配额消耗</div>
         </el-card>
       </el-col>
     </el-row>

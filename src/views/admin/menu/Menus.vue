@@ -29,90 +29,72 @@
         </div>
       </template>
 
-      <div ref="tableWrapperRef" class="table-wrapper">
-        <el-table
-          v-loading="menuStore.loading"
-          :data="filteredMenuTree"
-          :height="tableHeight"
-          :size="isCompactTable ? 'small' : 'default'"
-          row-key="id"
-          :expand-row-keys="expandedRowKeys"
-          :tree-props="{ children: 'children' }"
-          table-layout="auto"
-          class="menu-table"
-          border
-          stripe
-          @expand-change="handleExpandChange"
-        >
-          <el-table-column label="菜单名称" min-width="200" align="center" show-overflow-tooltip>
+      <el-table
+        v-loading="menuStore.loading"
+        :data="filteredMenuTree"
+        :size="isCompactTable ? 'small' : 'default'"
+        row-key="id"
+        :expand-row-keys="expandedRowKeys"
+        :tree-props="{ children: 'children' }"
+        table-layout="auto"
+        class="menu-table"
+        border
+        stripe
+        @expand-change="handleExpandChange"
+      >
+          <el-table-column label="菜单名称" min-width="200" show-overflow-tooltip>
             <template #default="{ row }">
               <div class="menu-name-cell">
                 <span>{{ row.name }}</span>
-                <el-tag size="small" effect="plain">{{ formatMenuType(row.type) }}</el-tag>
+                <el-tag size="small" effect="plain" :type="menuTypeTagType(row.type)">
+                  {{ formatMenuType(row.type) }}
+                </el-tag>
               </div>
-            </template>
-          </el-table-column>
-          <el-table-column prop="routeName" label="路由名称" min-width="140" align="center" show-overflow-tooltip>
-            <template #default="{ row }">
-              {{ formatOptionalText(row.routeName) }}
-            </template>
-          </el-table-column>
-          <el-table-column prop="routePath" label="路由路径" min-width="180" align="center" show-overflow-tooltip>
-            <template #default="{ row }">
-              {{ formatOptionalText(row.routePath) }}
-            </template>
-          </el-table-column>
-          <el-table-column prop="component" label="组件路径" min-width="180" align="center" show-overflow-tooltip>
-            <template #default="{ row }">
-              {{ formatOptionalText(row.component) }}
             </template>
           </el-table-column>
           <el-table-column prop="perm" label="权限标识" min-width="180" align="center" show-overflow-tooltip>
             <template #default="{ row }">
-              {{ formatOptionalText(row.perm) }}
+              <span v-if="row.perm" class="mono-text">{{ row.perm }}</span>
+              <span v-else class="text-muted">-</span>
             </template>
           </el-table-column>
-          <el-table-column prop="icon" label="图标" min-width="120" align="center" show-overflow-tooltip>
+          <el-table-column prop="routePath" label="路由路径" min-width="180" align="center" show-overflow-tooltip>
             <template #default="{ row }">
-              {{ formatOptionalText(row.icon) }}
+              <span v-if="row.routePath">{{ row.routePath }}</span>
+              <span v-else class="text-muted">-</span>
             </template>
           </el-table-column>
-          <el-table-column prop="sort" label="排序" min-width="90" align="center" />
-          <el-table-column label="显示" min-width="90" align="center">
+          <el-table-column prop="component" label="组件路径" min-width="180" align="center" show-overflow-tooltip>
             <template #default="{ row }">
-              {{ formatMenuVisible(row.visible) }}
+              <span v-if="row.component" class="mono-text">{{ row.component }}</span>
+              <span v-else class="text-muted">-</span>
             </template>
           </el-table-column>
-          <el-table-column label="始终显示" min-width="110" align="center">
+          <el-table-column prop="sort" label="排序" width="80" align="center" />
+          <el-table-column label="状态" min-width="160" align="center">
             <template #default="{ row }">
-              {{ formatSystemFlag(row.alwaysShow ?? 0) }}
-            </template>
-          </el-table-column>
-          <el-table-column label="缓存" min-width="90" align="center">
-            <template #default="{ row }">
-              {{ formatSystemFlag(row.keepAlive ?? 0) }}
-            </template>
-          </el-table-column>
-          <el-table-column prop="redirect" label="重定向" min-width="160" align="center" show-overflow-tooltip>
-            <template #default="{ row }">
-              {{ formatOptionalText(row.redirect) }}
-            </template>
-          </el-table-column>
-          <el-table-column label="路由参数" min-width="160" align="center" show-overflow-tooltip>
-            <template #default="{ row }">
-              {{ formatMenuParams(row.params) }}
+              <div class="flag-tags">
+                <el-tag v-if="row.visible === 0" size="small" type="info">隐藏</el-tag>
+                <el-tag v-if="row.alwaysShow === 1" size="small" type="warning">始终显示</el-tag>
+                <el-tag v-if="row.keepAlive === 1" size="small" type="success">缓存</el-tag>
+                <span v-if="row.visible !== 0 && row.alwaysShow !== 1 && row.keepAlive !== 1" class="text-muted">-</span>
+              </div>
             </template>
           </el-table-column>
           <el-table-column
             label="操作"
-            :min-width="isCompactTable ? 140 : 220"
+            :min-width="isCompactTable ? 120 : 200"
             :fixed="isCompactTable ? false : 'right'"
+            class-name="action-column"
             align="center"
           >
             <template #default="{ row }">
               <div class="table-actions" :class="{ 'table-actions--compact': isCompactTable }">
+                <el-button link type="primary" @click="handleView(row)">
+                  查看
+                </el-button>
                 <el-button v-permission="'sys:menu:create'" link type="primary" @click="handleAddChild(row)">
-                  新增子菜单
+                  新增
                 </el-button>
                 <el-button v-permission="'sys:menu:update'" link type="primary" @click="handleEdit(row)">
                   编辑
@@ -124,7 +106,6 @@
             </template>
           </el-table-column>
         </el-table>
-      </div>
     </el-card>
 
     <MenuFormDialog
@@ -133,6 +114,11 @@
       :parent-id="currentParentId"
       :menu-tree="menuStore.menuTree"
       @success="handleFormSuccess"
+    />
+
+    <MenuDetailDialog
+      v-model:visible="detailDialogVisible"
+      :menu="viewingMenu"
     />
   </div>
 </template>
@@ -143,26 +129,20 @@ import { ElMessage, ElMessageBox } from 'element-plus'
 import { Plus, Refresh } from '@element-plus/icons-vue'
 import type { SysMenuAdminVO } from '@/types/api-types'
 import { useContentAdmin } from '@/composables/useContentAdmin'
-import { useAuthStore, useMenuStore } from '@/stores'
-import {
-  formatMenuType,
-  formatMenuVisible,
-  formatOptionalText,
-  formatSystemFlag,
-} from '@/utils'
+import { useMenuStore } from '@/stores'
+import { formatMenuType } from '@/utils'
 import MenuFormDialog from './components/MenuFormDialog.vue'
+import MenuDetailDialog from './components/MenuDetailDialog.vue'
 
 const menuStore = useMenuStore()
-const authStore = useAuthStore()
 const keyword = ref('')
 const formDialogVisible = ref(false)
 const editingMenuId = ref<number | null>(null)
 const currentParentId = ref(0)
+const detailDialogVisible = ref(false)
+const viewingMenu = ref<SysMenuAdminVO | null>(null)
 
-const { tableWrapperRef, tableHeight, isCompactTable } = useContentAdmin({
-  minHeight: 420,
-  bottomOffset: 24,
-})
+const { isCompactTable } = useContentAdmin()
 
 // 表格展开状态持久化
 const MENU_EXPAND_KEY = 'menu_table_expanded'
@@ -231,6 +211,15 @@ function countMenus(tree: SysMenuAdminVO[]): number {
   return tree.reduce((total, item) => total + 1 + countMenus(item.children ?? []), 0)
 }
 
+function menuTypeTagType(type: string): 'primary' | 'success' | 'info' | 'warning' {
+  const map: Record<string, 'primary' | 'success' | 'info' | 'warning'> = {
+    C: 'primary',
+    M: 'success',
+    B: 'warning',
+  }
+  return map[type] ?? 'info'
+}
+
 function filterMenuTree(tree: SysMenuAdminVO[], value: string): SysMenuAdminVO[] {
   const normalized = value.trim().toLowerCase()
   if (!normalized) {
@@ -258,16 +247,6 @@ function filterMenuTree(tree: SysMenuAdminVO[], value: string): SysMenuAdminVO[]
   return result
 }
 
-function formatMenuParams(params?: Record<string, string> | null): string {
-  if (!params || Object.keys(params).length === 0) {
-    return '-'
-  }
-
-  return Object.entries(params)
-    .map(([key, value]) => `${key}=${value}`)
-    .join(', ')
-}
-
 async function fetchMenuTree(): Promise<void> {
   try {
     await menuStore.fetchMenuTree()
@@ -282,6 +261,11 @@ function handleAddRoot(): void {
   editingMenuId.value = null
   currentParentId.value = 0
   formDialogVisible.value = true
+}
+
+function handleView(row: SysMenuAdminVO): void {
+  viewingMenu.value = row
+  detailDialogVisible.value = true
 }
 
 function handleAddChild(row: SysMenuAdminVO): void {
@@ -356,10 +340,6 @@ onMounted(() => {
   gap: 8px;
 }
 
-.table-card {
-  min-height: 0;
-}
-
 .card-header {
   display: flex;
   justify-content: space-between;
@@ -373,10 +353,6 @@ onMounted(() => {
   font-size: 13px;
 }
 
-.table-wrapper {
-  min-height: 0;
-}
-
 .menu-table {
   width: 100%;
 }
@@ -385,24 +361,39 @@ onMounted(() => {
   text-align: center;
 }
 
+.menu-table :deep(.action-column) {
+  border-left: 2px solid var(--el-border-color);
+}
+
 .menu-name-cell {
   display: inline-flex;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-start;
   flex-wrap: wrap;
   gap: 8px;
+}
+
+.mono-text {
+  font-family: var(--el-font-family-monospace, monospace);
+  font-size: 13px;
+}
+
+.text-muted {
+  color: var(--el-text-color-placeholder);
+}
+
+.flag-tags {
+  display: inline-flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  gap: 4px;
 }
 
 .table-actions {
   display: inline-flex;
   flex-wrap: wrap;
   justify-content: center;
-  align-items: center;
-  gap: 4px 8px;
-}
-
-.table-actions--compact {
-  flex-direction: column;
   align-items: center;
 }
 

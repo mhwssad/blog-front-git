@@ -1,5 +1,5 @@
 import { defineMock } from 'vite-plugin-mock-dev-server'
-import { cp, db, detail, fillArticle, find, has, num, ok, p, page, syncComments } from './shared'
+import { cp, db, detail, fillArticle, find, has, now, num, ok, p, page, syncComments } from './shared'
 
 function filterFootprints(query: Record<string, any> = {}) {
   return db.footprints.filter((item: any) => {
@@ -65,7 +65,15 @@ function handle(req: any) {
 
   if (m === 'GET' && path === '/api/sys/collections/folders') return ok(page(db.folders, req.query))
   if (m === 'GET' && path === '/api/sys/collections') return ok(page(db.collections, req.query))
+  if (match(/^\/api\/sys\/collections\/(\d+)$/) && m === 'DELETE') {
+    db.collections = db.collections.filter((i: any) => i.id !== num(match(/^\/api\/sys\/collections\/(\d+)$/)![1]))
+    return ok(null)
+  }
   if (m === 'GET' && path === '/api/sys/interactions') return ok(page(db.interactions, req.query))
+  if (match(/^\/api\/sys\/interactions\/(\d+)$/) && m === 'DELETE') {
+    db.interactions = db.interactions.filter((i: any) => i.id !== num(match(/^\/api\/sys\/interactions\/(\d+)$/)![1]))
+    return ok(null)
+  }
   if (m === 'GET' && path === '/api/sys/footprints') return ok(page(filterFootprints(req.query), req.query))
 
   if (m === 'POST' && path === '/api/sys/articles') {
@@ -87,6 +95,79 @@ function handle(req: any) {
   if (match(/^\/api\/sys\/articles\/(\d+)\/access$/) && m === 'PUT') {
     const a = db.articles.find((i: any) => i.id === num(match(/^\/api\/sys\/articles\/(\d+)\/access$/)![1]))
     if (a) a.accessList = cp(req.body.accessList ?? [])
+    return ok(null)
+  }
+
+  if (match(/^\/api\/sys\/articles\/(\d+)\/top$/) && m === 'PUT') {
+    const a = db.articles.find((i: any) => i.id === num(match(/^\/api\/sys\/articles\/(\d+)\/top$/)![1]))
+    if (a) a.isTop = req.body.isTop ?? (a.isTop ? 0 : 1)
+    return ok(null)
+  }
+
+  if (match(/^\/api\/sys\/articles\/(\d+)\/recommend$/) && m === 'PUT') {
+    const a = db.articles.find((i: any) => i.id === num(match(/^\/api\/sys\/articles\/(\d+)\/recommend$/)![1]))
+    return ok(null)
+  }
+
+  if (m === 'GET' && path === '/api/sys/article-reviews') {
+    let rs = db.articles.filter((i: any) => i.reviewStatus !== undefined)
+    if (req.query.reviewStatus !== undefined && req.query.reviewStatus !== '') rs = rs.filter((i: any) => i.reviewStatus === num(req.query.reviewStatus))
+    if (req.query.authorId) rs = rs.filter((i: any) => i.authorId === num(req.query.authorId))
+    if (req.query.keyword) rs = rs.filter((i: any) => has(i.title, req.query.keyword))
+    const reviews = rs.map((a: any) => ({
+      id: a.id,
+      articleId: a.id,
+      title: a.title,
+      authorId: a.authorId,
+      authorName: a.authorName,
+      reviewStatus: a.reviewStatus,
+      reviewerId: 1,
+      reviewerName: 'admin',
+      reviewComment: null,
+      reviewTime: a.status === 1 ? a.publishTime : null,
+      createTime: a.createdAt,
+      updateTime: a.updatedAt,
+    }))
+    return ok(page(reviews, req.query))
+  }
+
+  if (m === 'GET' && match(/^\/api\/sys\/article-reviews\/(\d+)$/)) {
+    const a = db.articles.find((i: any) => i.id === num(match(/^\/api\/sys\/article-reviews\/(\d+)$/)![1]))
+    if (!a) return ok(null, '审核记录不存在', 404)
+    return ok({
+      id: a.id,
+      articleId: a.id,
+      title: a.title,
+      content: a.content,
+      summary: a.summary,
+      authorId: a.authorId,
+      authorName: a.authorName,
+      reviewStatus: a.reviewStatus,
+      reviewerId: 1,
+      reviewerName: 'admin',
+      reviewComment: null,
+      reviewTime: a.status === 1 ? a.publishTime : null,
+      reviewLogs: a.reviewStatus !== undefined ? [{ actionType: 'submit', fromReviewStatus: 0, toReviewStatus: a.reviewStatus, operatorUsername: 'system', reviewComment: '初始状态', createTime: a.createdAt }] : [],
+      createTime: a.createdAt,
+      updateTime: a.updatedAt,
+    })
+  }
+
+  if (match(/^\/api\/sys\/article-reviews\/(\d+)\/approve$/) && m === 'PUT') {
+    const a = db.articles.find((i: any) => i.id === num(match(/^\/api\/sys\/article-reviews\/(\d+)\/approve$/)![1]))
+    if (a) { a.reviewStatus = 1; a.status = 1; a.publishTime = a.publishTime || now() }
+    return ok(null)
+  }
+
+  if (match(/^\/api\/sys\/article-reviews\/(\d+)\/reject$/) && m === 'PUT') {
+    const a = db.articles.find((i: any) => i.id === num(match(/^\/api\/sys\/article-reviews\/(\d+)\/reject$/)![1]))
+    if (a) a.reviewStatus = 3
+    return ok(null)
+  }
+
+  if (match(/^\/api\/sys\/article-reviews\/(\d+)\/repair-status$/) && m === 'PUT') {
+    const a = db.articles.find((i: any) => i.id === num(match(/^\/api\/sys\/article-reviews\/(\d+)\/repair-status$/)![1]))
+    if (a) a.reviewStatus = req.body.targetStatus ?? a.reviewStatus
     return ok(null)
   }
 
@@ -197,6 +278,13 @@ export default defineMock([
   { url: '/api/sys/articles/:id', method: ['GET', 'PUT', 'DELETE'], body: handle },
   { url: '/api/sys/articles/:id/status', method: 'PUT', body: handle },
   { url: '/api/sys/articles/:id/access', method: 'PUT', body: handle },
+  { url: '/api/sys/articles/:id/top', method: 'PUT', body: handle },
+  { url: '/api/sys/articles/:id/recommend', method: 'PUT', body: handle },
+  { url: '/api/sys/article-reviews', method: 'GET', body: handle },
+  { url: '/api/sys/article-reviews/:id', method: 'GET', body: handle },
+  { url: '/api/sys/article-reviews/:id/approve', method: 'PUT', body: handle },
+  { url: '/api/sys/article-reviews/:id/reject', method: 'PUT', body: handle },
+  { url: '/api/sys/article-reviews/:id/repair-status', method: 'PUT', body: handle },
   { url: '/api/sys/categories', method: 'POST', body: handle },
   { url: '/api/sys/categories/tree', method: 'GET', body: handle },
   { url: '/api/sys/categories/:id', method: ['GET', 'PUT', 'DELETE'], body: handle },
@@ -208,7 +296,9 @@ export default defineMock([
   { url: '/api/sys/comments/:id/status', method: 'PUT', body: handle },
   { url: '/api/sys/collections', method: 'GET', body: handle },
   { url: '/api/sys/collections/folders', method: 'GET', body: handle },
+  { url: '/api/sys/collections/:id', method: 'DELETE', body: handle },
   { url: '/api/sys/interactions', method: 'GET', body: handle },
+  { url: '/api/sys/interactions/:id', method: 'DELETE', body: handle },
   { url: '/api/sys/footprints', method: ['GET', 'DELETE'], body: handle },
   { url: '/api/sys/footprints/:id', method: 'DELETE', body: handle },
 ])

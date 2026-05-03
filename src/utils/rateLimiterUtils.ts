@@ -1,3 +1,5 @@
+import { log } from '@/composables/useLogger'
+
 /**
  * 限流工具类
  * 提供多种限流算法，适用于不同场景
@@ -526,7 +528,7 @@ export function rateLimit(maxRequests: number, windowMs: number) {
 
       const result = limiter.limit()
       if (!result.allowed) {
-        console.warn(`[RateLimit] ${propertyKey} 被限流，请等待 ${result.waitTime}ms`)
+        log.app.warn(`[RateLimit] ${propertyKey} 被限流，请等待 ${result.waitTime}ms`)
         return undefined
       }
 

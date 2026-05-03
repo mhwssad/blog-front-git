@@ -1,18 +1,7 @@
 <template>
   <div class="home-view">
     <div class="home-container">
-      <HomeBanner
-        :keyword="keyword"
-        :loading="frontContentStore.loading"
-        :categories="flattenedCategories"
-        :selected-category-id="filters.categoryId"
-        @update:keyword="keyword = $event"
-        @search="handleSearch"
-      />
-
-      <el-row :gutter="24">
-        <el-col :xs="24" :lg="17">
-          <HomeArticleSection
+      <HomeArticleSection
             :loading="frontContentStore.loading"
             :articles="frontContentStore.articles"
             :total="frontContentStore.total"
@@ -20,40 +9,24 @@
             :size="pagination.size"
             :sort-options="sortOptions"
             :selected-sort="filters.sort || 'latest'"
+            :categories="frontContentStore.categories"
+            :selected-category-id="filters.categoryId"
             @sort-change="setSort"
             @page-change="handleCurrentChange"
+            @category-change="setCategory"
           />
-        </el-col>
-
-        <el-col :xs="24" :lg="7">
-          <HomeSidebar
-            :hot-articles="frontContentStore.hotArticles"
-            :tags="frontContentStore.tags"
-            :comments="frontContentStore.comments"
-            :format-date="formatDate"
-            @select-tag="setTag"
-          />
-        </el-col>
-      </el-row>
-    </div>
-
-    <SiteFooter />
+        </div>
   </div>
 </template>
 
 <script lang="ts" setup>
-import { computed, onMounted, reactive, ref } from 'vue'
+import { onMounted, reactive } from 'vue'
 import { useFrontContentStore } from '@/stores'
-import type { PublicArticleQueryRequest, PublicCategoryTreeVO } from '@/types/api-types'
+import type { PublicArticleQueryRequest } from '@/types/api-types'
 import HomeArticleSection from './components/HomeArticleSection.vue'
-import HomeBanner from './components/HomeBanner.vue'
-import HomeSidebar from './components/HomeSidebar.vue'
-import SiteFooter from './components/SiteFooter.vue'
-import type { CategoryOption, SortOption } from '@/types/ui'
+import type { SortOption } from '@/types/ui'
 
 const frontContentStore = useFrontContentStore()
-
-const keyword = ref('')
 
 const filters = reactive<PublicArticleQueryRequest>({
   current: 1,
@@ -75,30 +48,11 @@ const sortOptions: SortOption[] = [
   { label: '热门内容', value: 'hot' },
 ]
 
-const flattenedCategories = computed(() => {
-  const result: CategoryOption[] = []
-
-  function walk(nodes: PublicCategoryTreeVO[], depth = 0): void {
-    for (const node of nodes) {
-      result.push({
-        id: node.id,
-        label: `${depth > 0 ? `${'· '.repeat(depth)}` : ''}${node.name}`,
-      })
-      if (node.children?.length) {
-        walk(node.children, depth + 1)
-      }
-    }
-  }
-
-  walk(frontContentStore.categories)
-  return result
-})
-
 function buildQuery(): PublicArticleQueryRequest {
   return {
     current: pagination.current,
     size: pagination.size,
-    keyword: keyword.value.trim() || undefined,
+    keyword: filters.keyword || undefined,
     categoryId: filters.categoryId,
     tagId: filters.tagId,
     sort: filters.sort,
@@ -109,7 +63,8 @@ async function refreshArticles(): Promise<void> {
   await frontContentStore.fetchArticles(buildQuery())
 }
 
-function handleSearch(): void {
+function setCategory(categoryId?: number): void {
+  filters.categoryId = categoryId
   pagination.current = 1
   void refreshArticles()
 }
@@ -120,27 +75,9 @@ function setSort(sort: SortOption['value']): void {
   void refreshArticles()
 }
 
-function setTag(tagId?: number): void {
-  filters.tagId = tagId
-  pagination.current = 1
-  void refreshArticles()
-}
-
 function handleCurrentChange(current: number): void {
   pagination.current = current
   void refreshArticles()
-}
-
-function formatDate(value?: string | null): string {
-  if (!value) return '刚刚'
-  const date = new Date(value)
-  if (Number.isNaN(date.getTime())) return value
-  return new Intl.DateTimeFormat('zh-CN', {
-    month: '2-digit',
-    day: '2-digit',
-    hour: '2-digit',
-    minute: '2-digit',
-  }).format(date)
 }
 
 onMounted(async () => {

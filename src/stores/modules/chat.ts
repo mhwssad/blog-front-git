@@ -13,6 +13,8 @@ import type {
   ChatLobbyPinnedMessageVO,
   ChatLobbySettingsUpdateRequest,
   ChatMessageVO,
+  GroupJoinApplicationReviewRequest,
+  GroupJoinApplicationVO,
   SysChannelApplicationQueryRequest,
   SysChannelApplicationReviewRequest,
   SysChannelApplicationVO,
@@ -107,6 +109,10 @@ export const useChatStore = defineStore('admin-chat', () => {
   const channelAppTotal = ref(0)
   const channelAppDetail = ref<SysChannelApplicationVO | null>(null)
   const channelAppLoading = ref(false)
+
+  const groupJoinApplications = ref<GroupJoinApplicationVO[]>([])
+  const groupJoinAppTotal = ref(0)
+  const groupJoinAppLoading = ref(false)
 
   // ==================== 操作 ====================
 
@@ -300,6 +306,8 @@ export const useChatStore = defineStore('admin-chat', () => {
     channelApplications.value = []
     channelAppTotal.value = 0
     channelAppDetail.value = null
+    groupJoinApplications.value = []
+    groupJoinAppTotal.value = 0
   }
 
   // ==================== 大厅频道管理 ====================
@@ -430,6 +438,38 @@ export const useChatStore = defineStore('admin-chat', () => {
     }
   }
 
+  // ==================== 入群申请管理 ====================
+
+  async function fetchGroupJoinApplications(params?: {
+    conversationId?: number
+    applyStatus?: number
+    keyword?: string
+    current?: number
+    size?: number
+  }): Promise<void> {
+    groupJoinAppLoading.value = true
+    try {
+      const response = await SysChatApi.getGroupJoinApplications(params)
+      const data = response.data.data
+      groupJoinApplications.value = data.records
+      groupJoinAppTotal.value = data.total
+    } finally {
+      groupJoinAppLoading.value = false
+    }
+  }
+
+  async function reviewGroupJoinApplication(
+    applicationId: number,
+    data: GroupJoinApplicationReviewRequest,
+  ): Promise<boolean> {
+    try {
+      await SysChatApi.reviewGroupJoinApplication(applicationId, data)
+      return true
+    } catch {
+      return false
+    }
+  }
+
   return {
     conversations,
     conversationTotal,
@@ -452,6 +492,9 @@ export const useChatStore = defineStore('admin-chat', () => {
     channelAppTotal,
     channelAppDetail,
     channelAppLoading,
+    groupJoinApplications,
+    groupJoinAppTotal,
+    groupJoinAppLoading,
 
     fetchConversations,
     fetchConversationDetail,
@@ -476,5 +519,7 @@ export const useChatStore = defineStore('admin-chat', () => {
     fetchChannelApplications,
     fetchChannelApplicationById,
     reviewChannelApplication,
+    fetchGroupJoinApplications,
+    reviewGroupJoinApplication,
   }
 })

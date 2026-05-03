@@ -40,12 +40,10 @@
         </div>
       </template>
 
-      <div ref="tableWrapperRef" class="table-wrapper">
         <el-table
           :data="filteredTags"
           row-key="id"
           :loading="tagStore.loading"
-          :height="tableHeight"
           stripe
           border
           table-layout="auto"
@@ -87,7 +85,6 @@
             </template>
           </el-table-column>
         </el-table>
-      </div>
     </el-card>
 
     <TagFormDialog
@@ -104,7 +101,6 @@ import { ElMessage, ElMessageBox } from 'element-plus'
 import { Plus, RefreshLeft } from '@element-plus/icons-vue'
 import { storeToRefs } from 'pinia'
 import { DateUtils } from '@/utils/dateUtils'
-import { useContentAdmin } from '@/composables/useContentAdmin'
 import { useTagStore } from '@/stores'
 import TagFormDialog from './components/TagFormDialog.vue'
 import type { TagVO } from '@/types/api-types'
@@ -113,15 +109,6 @@ const tagStore = useTagStore()
 const { tags } = storeToRefs(tagStore)
 const searchForm = reactive({
   name: '',
-})
-
-const {
-  tableWrapperRef,
-  tableHeight,
-  updateTableHeight,
-} = useContentAdmin({
-  minHeight: 360,
-  bottomOffset: 32,
 })
 
 const formDialogVisible = ref(false)
@@ -219,10 +206,6 @@ onMounted(() => {
   margin-left: auto;
 }
 
-.table-card {
-  min-height: 0;
-}
-
 .table-header {
   display: flex;
   align-items: center;
@@ -233,10 +216,6 @@ onMounted(() => {
   display: flex;
   align-items: center;
   gap: 8px;
-}
-
-.table-wrapper {
-  min-height: 0;
 }
 
 .tag-table {

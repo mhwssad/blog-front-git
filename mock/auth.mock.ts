@@ -47,7 +47,8 @@ function handle(req: any) {
   }
 
   if (m === 'POST' && path === '/api/auth/refresh') {
-    return ok({ tokenType: 'Bearer', accessToken: 'mock-access-token-1', refreshToken: 'mock-refresh-token-1', expiresIn: 7200 }, '刷新成功')
+    const userId = Number(String(req.body?.refreshToken || '').match(/(\d+)/)?.[1]) || 1
+    return ok({ tokenType: 'Bearer', accessToken: `mock-access-token-${userId}`, refreshToken: `mock-refresh-token-${userId}`, expiresIn: 7200 }, '刷新成功')
   }
 
   if (path === '/api/auth/logout') return ok(null)

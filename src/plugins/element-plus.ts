@@ -1,8 +1,8 @@
 import * as ElementPlusIconsVue from '@element-plus/icons-vue'
 import type { App } from 'vue'
-import { createLogger } from '@/utils/logger'
+import { createScopedLogger } from '@/composables/useLogger'
 
-const logger = createLogger('element-plus')
+const logger = createScopedLogger('element-plus')
 
 /**
  * 注册 Element Plus 所有图标

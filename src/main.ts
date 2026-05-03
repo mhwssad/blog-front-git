@@ -16,7 +16,8 @@ import App from './App.vue'
 import router from './router'
 import { registerElementPlusIcons } from './plugins/element-plus'
 import { registerPermissionDirective } from './plugins/permission'
-import { appLogger, installLogger } from './utils/logger'
+import { installLogger } from './utils/logger'
+import { log } from './composables/useLogger'
 
 const app = createApp(App)
 
@@ -30,7 +31,7 @@ app.use(createPinia())
 app.use(router)
 
 router.onError(error => {
-  appLogger.error('Router navigation error', error)
+  log.router.error('Router navigation error', error)
 })
 
 app.mount('#app')

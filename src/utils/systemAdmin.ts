@@ -25,6 +25,11 @@ export const NOTICE_STATUS_OPTIONS = [
   { label: '已撤回', value: 2 },
 ] as const satisfies readonly ContentOption<number>[]
 
+export const NOTICE_TARGET_TYPE_OPTIONS = [
+  { label: '全站', value: 0 },
+  { label: '指定用户', value: 1 },
+] as const satisfies readonly ContentOption<number>[]
+
 export const LOG_STATUS_OPTIONS = [
   { label: '失败', value: 0 },
   { label: '成功', value: 1 },

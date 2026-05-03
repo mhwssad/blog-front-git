@@ -35,11 +35,9 @@
           <span>频道申请列表</span>
         </div>
       </template>
-      <div ref="tableWrapperRef" class="table-wrapper">
         <el-table
           v-loading="chatStore.channelAppLoading"
           :data="chatStore.channelApplications"
-          :height="tableHeight"
           :size="isCompactTable ? 'small' : 'default'"
           border
           stripe
@@ -71,8 +69,7 @@
             </template>
           </el-table-column>
         </el-table>
-      </div>
-      <div ref="paginationRef" class="pagination-area">
+      <div class="pagination-area">
         <el-pagination
           v-model:current-page="pagination.current"
           v-model:page-size="pagination.size"
@@ -134,7 +131,7 @@ import type {
 } from '@/types/api-types'
 
 const chatStore = useChatStore()
-const { tableWrapperRef, paginationRef, tableHeight, isCompactTable, paginationLayout } =
+const { isCompactTable, paginationLayout } =
   useContentAdmin()
 
 const searchForm = reactive({
@@ -260,10 +257,6 @@ onMounted(() => {
 
 .table-card {
   margin-bottom: 16px;
-}
-
-.table-wrapper {
-  width: 100%;
 }
 
 .pagination-area {

@@ -52,11 +52,9 @@
       <template #header>
         <span>AI 会话列表</span>
       </template>
-      <div ref="tableWrapperRef">
         <el-table
           :data="tableData"
           v-loading="loading"
-          :height="tableHeight"
           :size="isCompactTable ? 'small' : 'default'"
           border
           stripe
@@ -90,8 +88,7 @@
             </template>
           </el-table-column>
         </el-table>
-      </div>
-      <div ref="paginationRef" class="pagination-area">
+      <div class="pagination-area">
         <el-pagination
           v-model:current-page="pagination.current"
           v-model:page-size="pagination.size"
@@ -137,7 +134,7 @@ const tableData = ref<AiSessionAdminVO[]>([])
 const loading = ref(false)
 const channelList = ref<AiChannelConfigVO[]>([])
 
-const { tableWrapperRef, paginationRef, tableHeight, paginationLayout, isCompactTable } =
+const { paginationLayout, isCompactTable } =
   useContentAdmin({
     minHeight: 360,
     bottomOffset: 28,

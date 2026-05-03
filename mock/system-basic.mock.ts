@@ -1,5 +1,5 @@
 import { defineMock } from 'vite-plugin-mock-dev-server'
-import { cp, db, del, find, has, me, menuFilter, num, ok, p, page } from './shared'
+import { cp, db, del, find, has, me, menuFilter, num, now, ok, p, page } from './shared'
 
 function handle(req: any) {
   const m = String(req.method).toUpperCase()
@@ -81,15 +81,51 @@ function handle(req: any) {
     return x ? ok(cp(x)) : ok(null, '通知不存在', 404)
   }
 
-  if (m === 'GET' && path === '/api/sys/logs') return ok(page(db.logs, req.query))
+  if (m === 'GET' && path === '/api/sys/logs') {
+    let rs = [...db.logs]
+    if (req.query.module) rs = rs.filter((i: any) => has(i.module, req.query.module))
+    if (req.query.action) rs = rs.filter((i: any) => has(i.action, req.query.action))
+    if (req.query.username) rs = rs.filter((i: any) => has(i.username, req.query.username))
+    if (req.query.requestMethod) rs = rs.filter((i: any) => i.requestMethod === req.query.requestMethod)
+    if (req.query.requestUri) rs = rs.filter((i: any) => has(i.requestUri, req.query.requestUri))
+    if (req.query.ip) rs = rs.filter((i: any) => has(i.ip, req.query.ip))
+    if (req.query.status !== undefined && req.query.status !== '') rs = rs.filter((i: any) => i.status === num(req.query.status))
+    if (req.query.startTime) rs = rs.filter((i: any) => String(i.createTime) >= String(req.query.startTime))
+    if (req.query.endTime) rs = rs.filter((i: any) => String(i.createTime) <= String(req.query.endTime))
+    return ok(page(rs, req.query))
+  }
 
   if (m === 'GET' && match(/^\/api\/sys\/logs\/(\d+)$/)) {
     const x = db.logs.find((i: any) => i.id === num(match(/^\/api\/sys\/logs\/(\d+)$/)![1]))
     return x ? ok(cp(x)) : ok(null, '日志不存在', 404)
   }
 
+  if (m === 'DELETE' && match(/^\/api\/sys\/logs\/(\d+)$/)) {
+    const id = num(match(/^\/api\/sys\/logs\/(\d+)$/)![1])
+    db.logs = db.logs.filter((i: any) => i.id !== id)
+    return ok(null)
+  }
+
+  if (m === 'POST' && path === '/api/sys/logs/clean') {
+    const before = db.logs.length
+    const q = req.body || {}
+    db.logs = db.logs.filter((i: any) => {
+      if (q.module && !has(i.module, q.module)) return true
+      if (q.startTime && String(i.createTime) < String(q.startTime)) return true
+      if (q.endTime && String(i.createTime) > String(q.endTime)) return true
+      return false
+    })
+    return ok(before - db.logs.length)
+  }
+
   if (m === 'POST' && path === '/api/sys/users') {
     db.users.push({ id: ++db.seq.user, username: req.body.username, nickname: req.body.nickname || req.body.username, email: req.body.email || `${req.body.username}@example.com`, phone: req.body.phone || '', avatar: req.body.avatar || `https://api.dicebear.com/7.x/initials/svg?seed=${req.body.username}`, gender: req.body.gender ?? 1, birthday: req.body.birthday ?? '2000-01-01', status: req.body.status ?? 1, userLevel: 1, experiencePoints: 0, levelUpdatedAt: null, remark: req.body.remark ?? null, lastLoginTime: null, lastLoginIp: null, createTime: new Date().toISOString().slice(0, 19).replace('T', ' '), updateTime: new Date().toISOString().slice(0, 19).replace('T', ' '), password: req.body.password || '123456', roleIds: [] })
+    return ok(null)
+  }
+
+  if (match(/^\/api\/sys\/users\/(\d+)\/password\/reset$/) && m === 'PUT') {
+    const x = db.users.find((i: any) => i.id === num(match(/^\/api\/sys\/users\/(\d+)\/password\/reset$/)![1]))
+    if (x) x.password = req.body.newPassword || '123456'
     return ok(null)
   }
 
@@ -226,6 +262,7 @@ export default defineMock([
   { url: '/api/sys/users', method: ['GET', 'POST'], body: handle },
   { url: '/api/sys/users/:id', method: ['GET', 'PUT', 'DELETE'], body: handle },
   { url: '/api/sys/users/:id/status', method: 'PUT', body: handle },
+  { url: '/api/sys/users/:id/password/reset', method: 'PUT', body: handle },
   { url: '/api/sys/users/:id/roles', method: ['GET', 'PUT'], body: handle },
   { url: '/api/sys/roles', method: ['GET', 'POST'], body: handle },
   { url: '/api/sys/roles/:id', method: ['GET', 'PUT', 'DELETE'], body: handle },
@@ -242,6 +279,7 @@ export default defineMock([
   { url: '/api/sys/notices/:id/publish', method: 'POST', body: handle },
   { url: '/api/sys/notices/:id/revoke', method: 'POST', body: handle },
   { url: '/api/sys/logs', method: 'GET', body: handle },
-  { url: '/api/sys/logs/:id', method: 'GET', body: handle },
+  { url: '/api/sys/logs/:id', method: ['GET', 'DELETE'], body: handle },
+  { url: '/api/sys/logs/clean', method: 'POST', body: handle },
 ])
 

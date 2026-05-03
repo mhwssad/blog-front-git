@@ -15,7 +15,9 @@
     "lint": "run-s lint:*",
     "lint:oxlint": "oxlint . --fix",
     "lint:eslint": "eslint . --fix --cache",
-    "format": "prettier --write --experimental-cli src/"
+    "format": "prettier --write --experimental-cli src/",
+    "test": "vitest",
+    "test:run": "vitest run"
   },
   "dependencies": {
     "@codemirror/lang-html": "^6.4.11",
@@ -39,6 +41,7 @@
     "pinia": "^3.0.4",
     "qs": "^6.15.1",
     "sortablejs": "^1.15.7",
+    "spark-md5": "^3.0.2",
     "vue": "^3.5.33",
     "vue-draggable-plus": "^0.6.1",
     "vue-i18n": "^11.3.2",
@@ -57,10 +60,12 @@
     "@types/path-browserify": "^1.0.3",
     "@types/qs": "^6.15.0",
     "@types/sortablejs": "^1.15.9",
+    "@types/spark-md5": "^3.0.5",
     "@typescript-eslint/eslint-plugin": "^8.59.0",
     "@typescript-eslint/parser": "^8.59.0",
     "@vitejs/plugin-vue": "^6.0.6",
     "@vue/eslint-config-typescript": "^14.7.0",
+    "@vue/test-utils": "^2.4.10",
     "@vue/tsconfig": "^0.9.1",
     "autoprefixer": "^10.5.0",
     "commitizen": "^4.3.1",
@@ -71,6 +76,7 @@
     "eslint-plugin-prettier": "^5.5.5",
     "eslint-plugin-vue": "~10.9.0",
     "globals": "^17.5.0",
+    "happy-dom": "^20.9.0",
     "husky": "^9.1.7",
     "jiti": "^2.6.1",
     "lint-staged": "^16.4.0",
@@ -97,6 +103,7 @@
     "vite": "^8.0.10",
     "vite-plugin-mock-dev-server": "^2.1.1",
     "vite-plugin-vue-devtools": "^8.1.1",
+    "vitest": "^4.1.5",
     "vue-eslint-parser": "^10.4.0",
     "vue-tsc": "^3.2.7"
   },

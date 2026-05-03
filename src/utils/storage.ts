@@ -1,3 +1,5 @@
+import { log } from '@/composables/useLogger'
+
 /**
  * 存储类型枚举
  */
@@ -86,7 +88,7 @@ class StorageUtil {
       }
       this.storage.setItem(key, JSON.stringify(payload))
     } catch (error) {
-      console.error(`Storage set error for key "${key}":`, error)
+      log.storage.error(`Storage set error for key "${key}"`, error)
     }
   }
 
@@ -105,7 +107,7 @@ class StorageUtil {
 
       return parsed.value ?? defaultValue
     } catch (error) {
-      console.error(`Storage get error for key "${key}":`, error)
+      log.storage.error(`Storage get error for key "${key}"`, error)
       return defaultValue
     }
   }
@@ -114,7 +116,7 @@ class StorageUtil {
     try {
       this.storage.removeItem(key)
     } catch (error) {
-      console.error(`Storage remove error for key "${key}":`, error)
+      log.storage.error(`Storage remove error for key "${key}"`, error)
     }
   }
 
@@ -122,7 +124,7 @@ class StorageUtil {
     try {
       this.storage.clear()
     } catch (error) {
-      console.error('Storage clear error:', error)
+      log.storage.error('Storage clear error', error)
     }
   }
 

@@ -82,11 +82,9 @@
         </div>
       </template>
 
-      <div ref="tableWrapperRef" class="table-wrapper">
         <el-table
           v-loading="commentStore.loading"
           :data="commentStore.comments"
-          :height="tableHeight"
           :size="isCompactTable ? 'small' : 'default'"
           :row-key="row => row.id"
           border
@@ -207,9 +205,8 @@
             </template>
           </el-table-column>
         </el-table>
-      </div>
 
-      <div ref="paginationRef" class="pagination">
+      <div class="pagination">
         <el-pagination
           v-model:current-page="pagination.current"
           v-model:page-size="pagination.size"
@@ -264,11 +261,7 @@ const pagination = reactive({
 })
 
 const detailDialogVisible = ref(false)
-const { tableWrapperRef, paginationRef, tableHeight, paginationLayout, isCompactTable, updateTableHeight } =
-  useContentAdmin({
-    minHeight: 360,
-    bottomOffset: 28,
-  })
+const { paginationLayout, isCompactTable } = useContentAdmin()
 
 const targetTypeOptions = TARGET_TYPE_OPTIONS
 const statusOptions = COMMENT_STATUS_OPTIONS
@@ -373,8 +366,6 @@ async function fetchComments(): Promise<void> {
     pagination.size = commentStore.size
   } catch {
     ElMessage.error('获取评论列表失败')
-  } finally {
-    void updateTableHeight()
   }
 }
 
@@ -499,10 +490,6 @@ onMounted(() => {
   gap: 12px;
 }
 
-.table-card {
-  min-height: 0;
-}
-
 .card-header {
   display: flex;
   align-items: center;
@@ -522,10 +509,6 @@ onMounted(() => {
 .card-header__count {
   font-size: 13px;
   color: var(--el-text-color-secondary);
-}
-
-.table-wrapper {
-  min-height: 0;
 }
 
 .comment-table {

@@ -94,6 +94,9 @@ export default [
       '**/types/auto-imports.d.ts',
       '**/uno.css',
       'mock/**',
+      'src/**/__tests__/**',
+      'src/**/*.spec.ts',
+      'src/**/*.test.ts',
     ],
   },
 
@@ -197,7 +200,7 @@ export default [
     },
   },
 
-  // ==================== TypeScript 文件 ====================
+  // ==================== TypeScript 文件 =====================
   {
     files: ['**/*.{ts,mts,cts,tsx}'],
     languageOptions: {
@@ -262,12 +265,32 @@ export default [
     rules: prettierConflictRules,
   },
 
-  // ==================== 测试文件 ====================
+  // ==================== 测试文件（无类型感知检查）====================
   {
     files: ['**/__tests__/**', '**/*.spec.{ts,js}', '**/*.test.{ts,js}'],
+    languageOptions: {
+      parser: typescriptParser,
+      parserOptions: {
+        ecmaVersion: 'latest',
+        sourceType: 'module',
+      },
+    },
+    plugins: {
+      '@typescript-eslint': typescriptEslint,
+    },
     rules: {
-      'no-console': 'off',
+      '@typescript-eslint/no-unused-vars': [
+        'error',
+        {
+          argsIgnorePattern: '^_',
+          varsIgnorePattern: '^_',
+          caughtErrorsIgnorePattern: '^_',
+        },
+      ],
       '@typescript-eslint/no-explicit-any': 'off',
+      '@typescript-eslint/await-thenable': 'off',
+      '@typescript-eslint/no-unnecessary-type-assertion': 'off',
+      'no-console': 'off',
       'vue/no-v-html': 'off',
     },
   },

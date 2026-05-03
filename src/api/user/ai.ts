@@ -27,7 +27,7 @@ export const aiUserApi = {
    * GET /api/user/ai/sessions
    */
   getSessions: (params?: { current?: number; size?: number }) =>
-    http.get<PageResult<AiSessionVO>>('/user/ai/sessions', { params }),
+    http.get<PageResult<AiSessionVO>>('/user/ai/sessions', params),
 
   /**
    * 3.4 查询AI会话详情
@@ -41,7 +41,7 @@ export const aiUserApi = {
    * GET /api/user/ai/sessions/{id}/messages
    */
   getSessionMessages: (id: number, params?: { current?: number; size?: number }) =>
-    http.get<PageResult<AiMessageVO>>(`/user/ai/sessions/${id}/messages`, { params }),
+    http.get<PageResult<AiMessageVO>>(`/user/ai/sessions/${id}/messages`, params),
 
   /**
    * 3.6 发送消息

@@ -9,7 +9,7 @@
       <div class="channel-header">
         <div class="channel-header-left">
           <h2 class="channel-name"># {{ store.currentConversation.name ?? '未命名频道' }}</h2>
-          <span class="channel-meta">
+          <span class="channel-meta member-toggle" @click="openMemberDrawer">
             {{ store.currentConversation.memberCount ?? 0 }} 成员
           </span>
         </div>
@@ -104,6 +104,32 @@
           加入频道
         </el-button>
       </div>
+
+      <!-- 成员抽屉 -->
+      <el-drawer v-model="memberDrawerVisible" title="频道成员" direction="rtl" size="320px">
+        <div v-if="memberLoading" style="text-align: center; padding: 20px 0">
+          <el-icon class="is-loading" :size="20"><Loading /></el-icon>
+        </div>
+        <div v-else-if="members.length" class="member-list">
+          <div v-for="m in members" :key="m.userId" class="member-item">
+            <el-avatar :size="32" :src="m.avatar ?? undefined">
+              {{ m.nickname?.charAt(0) ?? m.username?.charAt(0) ?? '?' }}
+            </el-avatar>
+            <div class="member-info">
+              <span class="member-name">{{ m.nickname ?? m.username ?? '未知用户' }}</span>
+              <el-tag
+                v-if="m.role"
+                :type="roleTagType(m.role)"
+                size="small"
+                class="member-role"
+              >
+                {{ formatRole(m.role) }}
+              </el-tag>
+            </div>
+          </div>
+        </div>
+        <el-empty v-else description="暂无成员" />
+      </el-drawer>
     </template>
 
     <el-empty v-else description="频道不存在或无权访问" />
@@ -114,8 +140,10 @@
 import { ref, computed, watch, onMounted, nextTick } from 'vue'
 import { useRoute } from 'vue-router'
 import { ElMessage } from 'element-plus'
-import { InfoFilled } from '@element-plus/icons-vue'
+import { InfoFilled, Loading } from '@element-plus/icons-vue'
 import { useUserChatStore } from '@/stores'
+import { UserChatApi } from '@/api/user/chat'
+import type { ChatGroupMemberVO } from '@/types/api-types'
 
 const route = useRoute()
 const store = useUserChatStore()
@@ -124,6 +152,10 @@ const inputText = ref('')
 const joinLoading = ref(false)
 const loadingMore = ref(false)
 const messageListRef = ref<HTMLElement | null>(null)
+
+const memberDrawerVisible = ref(false)
+const memberLoading = ref(false)
+const members = ref<ChatGroupMemberVO[]>([])
 
 const conversationId = computed(() => Number(route.params.id))
 
@@ -158,6 +190,30 @@ function formatTime(dateStr: string): string {
     hour: '2-digit',
     minute: '2-digit',
   })
+}
+
+function formatRole(role: string): string {
+  const map: Record<string, string> = { owner: '群主', admin: '管理员', member: '成员' }
+  return map[role] ?? role
+}
+
+function roleTagType(role: string): 'primary' | 'success' | 'warning' | 'info' | 'danger' {
+  if (role === 'owner') return 'danger'
+  if (role === 'admin') return 'warning'
+  return 'info'
+}
+
+async function openMemberDrawer(): Promise<void> {
+  memberDrawerVisible.value = true
+  memberLoading.value = true
+  try {
+    const res = await UserChatApi.getGroupMembers(conversationId.value)
+    members.value = res.data.data ?? []
+  } catch {
+    members.value = []
+  } finally {
+    memberLoading.value = false
+  }
 }
 
 async function loadConversation(): Promise<void> {
@@ -298,6 +354,15 @@ onMounted(() => {
   color: var(--el-text-color-secondary);
 }
 
+.member-toggle {
+  cursor: pointer;
+  transition: color 0.2s;
+}
+
+.member-toggle:hover {
+  color: var(--el-color-primary);
+}
+
 .channel-header-right {
   display: flex;
   gap: 8px;
@@ -388,5 +453,38 @@ onMounted(() => {
 .join-prompt-text {
   font-size: 14px;
   color: var(--el-text-color-secondary);
+}
+
+/* 成员列表 */
+.member-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.member-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.member-info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+  min-width: 0;
+}
+
+.member-name {
+  font-size: 14px;
+  font-weight: 500;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.member-role {
+  flex-shrink: 0;
 }
 </style>

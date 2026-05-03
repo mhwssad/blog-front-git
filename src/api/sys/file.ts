@@ -1,6 +1,6 @@
 /**
  * 文件管理模块 API
- * 基于 auth-api.md 文档
+ * 基于 file-api.md 文档
  */
 
 import { http } from '../request'

@@ -25,7 +25,7 @@ export const aiSysApi = {
     current?: number
     size?: number
   }) =>
-    http.get<PageResult<AiChannelConfigVO>>('/sys/ai/channels', { params }),
+    http.get<PageResult<AiChannelConfigVO>>('/sys/ai/channels', params),
 
   /**
    * 4.1.3 查询渠道配置详情
@@ -75,7 +75,7 @@ export const aiSysApi = {
     current?: number
     size?: number
   }) =>
-    http.get<PageResult<AiSessionAdminVO>>('/sys/ai/sessions', { params }),
+    http.get<PageResult<AiSessionAdminVO>>('/sys/ai/sessions', params),
 
   /**
    * 4.2.3 查询会话详情
@@ -97,7 +97,7 @@ export const aiSysApi = {
     current?: number
     size?: number
   }) =>
-    http.get<PageResult<AiUsageLogVO>>('/sys/ai/usage-logs', { params }),
+    http.get<PageResult<AiUsageLogVO>>('/sys/ai/usage-logs', params),
 
   /**
    * 4.3.3 获取使用统计
@@ -110,5 +110,5 @@ export const aiSysApi = {
     endTime?: string
     successStatus?: number
   }) =>
-    http.get<AiUsageStatsVO>('/sys/ai/usage-logs/stats', { params }),
+    http.get<AiUsageStatsVO>('/sys/ai/usage-logs/stats', params),
 }

@@ -3,15 +3,21 @@
     <div class="sidebar-block-title">最新评论</div>
     <div v-if="comments.length" class="comment-list">
       <div v-for="comment in comments" :key="comment.id" class="comment-item">
-        <el-avatar :size="28" :src="comment.userAvatar ?? undefined">
+        <img
+          v-if="comment.userAvatar"
+          :src="comment.userAvatar"
+          class="comment-avatar"
+          alt=""
+        />
+        <div v-else class="comment-avatar comment-avatar-placeholder">
           {{ comment.userNickname?.charAt(0) }}
-        </el-avatar>
+        </div>
         <div class="comment-body">
-          <div class="comment-top">
-            <span class="comment-name">{{ comment.userNickname }}</span>
+          <div class="comment-meta">
+            <span class="comment-nickname">{{ comment.userNickname }}</span>
             <span class="comment-time">{{ formatDate(comment.createdAt) }}</span>
           </div>
-          <p class="comment-text">{{ comment.content }}</p>
+          <div class="comment-content">{{ comment.content }}</div>
         </div>
       </div>
     </div>
@@ -39,7 +45,7 @@ defineProps<{
 .comment-list {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 10px;
 }
 
 .comment-item {
@@ -47,18 +53,37 @@ defineProps<{
   gap: 10px;
 }
 
-.comment-body {
-  flex: 1;
-  min-width: 0;
+.comment-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  object-fit: cover;
+  flex-shrink: 0;
 }
 
-.comment-top {
+.comment-avatar-placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--el-fill-color);
+  color: var(--el-text-color-secondary);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.comment-body {
+  min-width: 0;
+  flex: 1;
+}
+
+.comment-meta {
   display: flex;
   align-items: center;
   gap: 6px;
+  margin-bottom: 2px;
 }
 
-.comment-name {
+.comment-nickname {
   font-size: 13px;
   font-weight: 500;
   color: var(--el-text-color-primary);
@@ -69,11 +94,9 @@ defineProps<{
   color: var(--el-text-color-placeholder);
 }
 
-.comment-text {
-  margin: 4px 0 0;
+.comment-content {
   font-size: 13px;
-  line-height: 1.5;
-  color: var(--el-text-color-secondary);
+  color: var(--el-text-color-regular);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;

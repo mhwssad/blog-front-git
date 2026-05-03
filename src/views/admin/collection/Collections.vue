@@ -57,17 +57,15 @@
 
       <el-tabs v-model="activeTab" class="collection-tabs" @tab-change="handleTabChange">
         <el-tab-pane label="收藏记录" name="records">
-          <div ref="recordTableWrapperRef" class="table-wrapper">
-            <el-table
-              v-loading="collectionStore.loading"
-              :data="collectionStore.collections"
-              :height="recordTableHeight"
-              :size="recordCompact ? 'small' : 'default'"
-              table-layout="auto"
-              class="collection-table"
-              border
-              stripe
-            >
+          <el-table
+            v-loading="collectionStore.loading"
+            :data="collectionStore.collections"
+            :size="recordCompact ? 'small' : 'default'"
+            table-layout="auto"
+            class="collection-table"
+            border
+            stripe
+          >
               <el-table-column prop="id" label="记录 ID" min-width="100" align="center" />
               <el-table-column prop="userId" label="用户 ID" min-width="100" align="center" />
               <el-table-column prop="folderId" label="收藏夹 ID" min-width="110" align="center" />
@@ -114,9 +112,8 @@
                 </template>
               </el-table-column>
             </el-table>
-          </div>
 
-          <div ref="recordPaginationRef" class="pagination">
+          <div class="pagination">
             <el-pagination
               v-model:current-page="recordPagination.current"
               v-model:page-size="recordPagination.size"
@@ -131,17 +128,15 @@
         </el-tab-pane>
 
         <el-tab-pane label="收藏夹" name="folders">
-          <div ref="folderTableWrapperRef" class="table-wrapper">
-            <el-table
-              v-loading="collectionStore.loading"
-              :data="collectionStore.folders"
-              :height="folderTableHeight"
-              :size="folderCompact ? 'small' : 'default'"
-              table-layout="auto"
-              class="collection-table"
-              border
-              stripe
-            >
+          <el-table
+            v-loading="collectionStore.loading"
+            :data="collectionStore.folders"
+            :size="folderCompact ? 'small' : 'default'"
+            table-layout="auto"
+            class="collection-table"
+            border
+            stripe
+          >
               <el-table-column prop="id" label="收藏夹 ID" min-width="110" align="center" />
               <el-table-column prop="userId" label="用户 ID" min-width="100" align="center" />
               <el-table-column prop="folderName" label="收藏夹名称" min-width="220" align="center" show-overflow-tooltip />
@@ -172,9 +167,8 @@
                 </template>
               </el-table-column>
             </el-table>
-          </div>
 
-          <div ref="folderPaginationRef" class="pagination">
+          <div class="pagination">
             <el-pagination
               v-model:current-page="folderPagination.current"
               v-model:page-size="folderPagination.size"
@@ -193,7 +187,7 @@
 </template>
 
 <script lang="ts" setup>
-import { nextTick, onMounted, reactive, ref } from 'vue'
+import { onMounted, reactive, ref } from 'vue'
 import { ElMessage, ElMessageBox, type TabPaneName } from 'element-plus'
 import { useContentAdmin } from '@/composables/useContentAdmin'
 import { useCollectionStore } from '@/stores'
@@ -229,26 +223,8 @@ const folderPagination = reactive({
   size: 10,
 })
 
-const recordTable = useContentAdmin({ minHeight: 340, bottomOffset: 24 })
-const folderTable = useContentAdmin({ minHeight: 320, bottomOffset: 24 })
-
-const {
-  tableWrapperRef: recordTableWrapperRef,
-  paginationRef: recordPaginationRef,
-  tableHeight: recordTableHeight,
-  isCompactTable: recordCompact,
-  paginationLayout: recordPaginationLayout,
-  updateViewportState: updateRecordViewport,
-} = recordTable
-
-const {
-  tableWrapperRef: folderTableWrapperRef,
-  paginationRef: folderPaginationRef,
-  tableHeight: folderTableHeight,
-  isCompactTable: folderCompact,
-  paginationLayout: folderPaginationLayout,
-  updateViewportState: updateFolderViewport,
-} = folderTable
+const { isCompactTable: recordCompact, paginationLayout: recordPaginationLayout } = useContentAdmin()
+const { isCompactTable: folderCompact, paginationLayout: folderPaginationLayout } = useContentAdmin()
 
 function buildParams() {
   return {
@@ -318,13 +294,6 @@ function handleFolderPageChange(current: number): void {
 
 function handleTabChange(name: TabPaneName): void {
   activeTab.value = name === 'folders' ? 'folders' : 'records'
-  void nextTick(() => {
-    if (activeTab.value === 'records') {
-      updateRecordViewport()
-      return
-    }
-    updateFolderViewport()
-  })
 }
 
 function refreshActiveTab(): Promise<void> {
@@ -397,10 +366,6 @@ onMounted(() => {
   margin-right: 0;
 }
 
-.table-card {
-  min-height: 0;
-}
-
 .card-header {
   display: flex;
   justify-content: space-between;
@@ -411,10 +376,6 @@ onMounted(() => {
 
 .collection-tabs :deep(.el-tabs__content) {
   overflow: visible;
-}
-
-.table-wrapper {
-  min-height: 0;
 }
 
 .collection-table {

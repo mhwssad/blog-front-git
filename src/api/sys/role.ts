@@ -1,6 +1,6 @@
 /**
  * 角色管理模块 API
- * 基于 auth-api.md 文档 第3节
+ * 基于 auth-api.md 文档 8.2 节
  */
 
 import { http } from '../request'

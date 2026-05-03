@@ -1,6 +1,6 @@
 /**
  * 配置管理模块 API
- * 基于 auth-api.md 文档 第5节
+ * 基于 auth-api.md 文档 8.4 节
  */
 
 import { http } from '../request'

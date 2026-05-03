@@ -39,11 +39,9 @@
         </div>
       </template>
 
-      <div ref="tableWrapperRef" class="table-wrapper">
         <el-table
           v-loading="loading"
           :data="tableData"
-          :height="tableHeight"
           :size="isCompactTable ? 'small' : 'default'"
           table-layout="auto"
           class="role-table"
@@ -88,6 +86,13 @@
             <template #default="{ row }">
               <div class="table-actions">
                 <el-button
+                  link
+                  type="primary"
+                  @click="handleView(row)"
+                >
+                  查看
+                </el-button>
+                <el-button
                   v-permission="'sys:role:update'"
                   link
                   type="primary"
@@ -115,9 +120,8 @@
             </template>
           </el-table-column>
         </el-table>
-      </div>
 
-      <div ref="paginationRef" class="pagination">
+      <div class="pagination">
         <el-pagination
           v-model:current-page="pagination.current"
           v-model:page-size="pagination.size"
@@ -143,6 +147,11 @@
       :role-name="currentRoleName"
       @success="handleMenusSuccess"
     />
+
+    <RoleDetailDialog
+      v-model:visible="detailDialogVisible"
+      :role="viewingRole"
+    />
   </div>
 </template>
 
@@ -155,6 +164,7 @@ import type { RoleQueryRequest, SysRoleAdminVO } from '@/types/api-types'
 import { useContentAdmin } from '@/composables/useContentAdmin'
 import RoleFormDialog from './components/RoleFormDialog.vue'
 import AssignMenusDialog from './components/AssignMenusDialog.vue'
+import RoleDetailDialog from './components/RoleDetailDialog.vue'
 const searchForm = reactive<RoleQueryRequest>({
   current: 1,
   size: 10,
@@ -174,14 +184,13 @@ const loading = ref(false)
 
 const formDialogVisible = ref(false)
 const menusDialogVisible = ref(false)
+const detailDialogVisible = ref(false)
 const editingRoleId = ref<number | null>(null)
 const currentRoleId = ref<number>(0)
 const currentRoleName = ref('')
+const viewingRole = ref<SysRoleAdminVO | null>(null)
 
 const {
-  tableWrapperRef,
-  paginationRef,
-  tableHeight,
   paginationLayout,
   isCompactTable,
 } = useContentAdmin({
@@ -239,6 +248,11 @@ function handleCurrentChange(current: number): void {
 function handleAdd(): void {
   editingRoleId.value = null
   formDialogVisible.value = true
+}
+
+function handleView(row: SysRoleAdminVO): void {
+  viewingRole.value = row
+  detailDialogVisible.value = true
 }
 
 function handleEdit(row: SysRoleAdminVO): void {
@@ -308,19 +322,11 @@ onMounted(() => {
   margin-bottom: 0;
 }
 
-.table-card {
-  min-height: 0;
-}
-
 .card-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
   font-weight: 500;
-}
-
-.table-wrapper {
-  min-height: 0;
 }
 
 .role-table {

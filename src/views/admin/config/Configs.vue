@@ -8,6 +8,18 @@
         <el-form-item label="配置键" class="filter-item">
           <el-input v-model="searchForm.configKey" class="filter-control" clearable placeholder="请输入配置键" />
         </el-form-item>
+        <el-form-item label="创建时间" class="filter-item filter-item--range">
+          <el-date-picker
+            v-model="createTimeRange"
+            type="datetimerange"
+            class="filter-control filter-control--range"
+            start-placeholder="开始时间"
+            end-placeholder="结束时间"
+            value-format="YYYY-MM-DD HH:mm:ss"
+            format="YYYY-MM-DD HH:mm:ss"
+            range-separator="至"
+          />
+        </el-form-item>
         <el-form-item class="search-actions">
           <el-button v-permission="'sys:config:query'" type="primary" @click="handleSearch">
             查询
@@ -28,11 +40,9 @@
         </div>
       </template>
 
-      <div ref="tableWrapperRef" class="table-wrapper">
         <el-table
           v-loading="configStore.loading"
           :data="configStore.configs"
-          :height="tableHeight"
           :size="isCompactTable ? 'small' : 'default'"
           table-layout="auto"
           class="config-table"
@@ -89,9 +99,8 @@
             </template>
           </el-table-column>
         </el-table>
-      </div>
 
-      <div ref="paginationRef" class="pagination">
+      <div class="pagination">
         <el-pagination
           v-model:current-page="pagination.current"
           v-model:page-size="pagination.size"
@@ -140,6 +149,8 @@ const searchForm = reactive<ConfigQueryRequest>({
   configKey: undefined,
 })
 
+const createTimeRange = ref<[string, string] | []>([])
+
 const pagination = reactive({
   current: 1,
   size: 10,
@@ -150,11 +161,7 @@ const valueDialogVisible = ref(false)
 const editingConfigId = ref<number | null>(null)
 const previewConfigValue = ref('')
 
-const { tableWrapperRef, paginationRef, tableHeight, isCompactTable, paginationLayout } =
-  useContentAdmin({
-    minHeight: 360,
-    bottomOffset: 16,
-  })
+const { isCompactTable, paginationLayout } = useContentAdmin()
 
 function formatConfigPreview(value: string): string {
   if (!value) {
@@ -165,11 +172,15 @@ function formatConfigPreview(value: string): string {
 }
 
 async function fetchConfigs(): Promise<void> {
+  const [createTimeStart, createTimeEnd] = createTimeRange.value
+
   try {
     await configStore.fetchConfigs({
       ...searchForm,
       current: pagination.current,
       size: pagination.size,
+      createTimeStart: createTimeStart || undefined,
+      createTimeEnd: createTimeEnd || undefined,
     })
   } catch {
     ElMessage.error('获取配置列表失败')
@@ -188,6 +199,7 @@ function handleReset(): void {
     configName: undefined,
     configKey: undefined,
   })
+  createTimeRange.value = []
   pagination.current = 1
   pagination.size = 10
   void fetchConfigs()
@@ -280,17 +292,21 @@ onMounted(() => {
   margin-right: 16px;
 }
 
+.filter-item--range {
+  margin-right: 0;
+}
+
 .filter-control {
   width: 220px;
+}
+
+.filter-control--range {
+  width: 360px;
 }
 
 .search-actions {
   margin-left: 0;
   margin-right: 0;
-}
-
-.table-card {
-  min-height: 0;
 }
 
 .card-header {
@@ -299,10 +315,6 @@ onMounted(() => {
   align-items: center;
   gap: 12px;
   font-weight: 500;
-}
-
-.table-wrapper {
-  min-height: 0;
 }
 
 .config-table {
@@ -352,7 +364,8 @@ onMounted(() => {
     margin-left: 0;
   }
 
-  .filter-control {
+  .filter-control,
+  .filter-control--range {
     width: 100%;
   }
 

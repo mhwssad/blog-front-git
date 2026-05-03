@@ -129,6 +129,36 @@ function handle(req: any) {
     return ok(null)
   }
 
+  // ==================== 大厅管理 ====================
+
+  if (method === 'PUT' && /^\/api\/sys\/chats\/lobby\/settings\/?$/.test(path)) return ok(null)
+  if (method === 'GET' && /^\/api\/sys\/chats\/lobby\/messages\/pinned\/?$/.test(path)) return ok([])
+  if (method === 'POST' && path.match(/^\/api\/sys\/chats\/lobby\/messages\/(\d+)\/pin$/)) return ok(null)
+  if (method === 'DELETE' && path.match(/^\/api\/sys\/chats\/lobby\/messages\/(\d+)\/pin$/)) return ok(null)
+  if (method === 'PUT' && path.match(/^\/api\/sys\/chats\/lobby\/members\/(\d+)\/mute$/)) return ok(null)
+  if (method === 'PUT' && path.match(/^\/api\/sys\/chats\/lobby\/members\/(\d+)\/kick$/)) return ok(null)
+
+  // ==================== 话题频道 ====================
+
+  if (method === 'POST' && /^\/api\/sys\/chats\/topic-channels\/?$/.test(path)) {
+    const id = ++db.seq.conversation
+    const ch = { id, conversationType: 'channel', name: req.body.name ?? '新频道', avatar: null, notice: req.body.notice ?? null, selfRole: 'owner', ownerId: 1, memberCount: 0, unreadCount: 0, status: 1, isAllSite: 0, targetUserId: null, targetUsername: null, targetNickname: null, createdAt: now(), updatedAt: now() }
+    db.chatConversations.push(ch)
+    return ok(cp(ch))
+  }
+  if (method === 'PUT' && path.match(/^\/api\/sys\/chats\/topic-channels\/(\d+)$/)) return ok(null)
+
+  // ==================== 频道申请 ====================
+
+  if (method === 'GET' && /^\/api\/sys\/chats\/channel-applications\/?$/.test(path)) return ok(page([], req.query))
+  if (method === 'GET' && path.match(/^\/api\/sys\/chats\/channel-applications\/(\d+)$/)) return ok(null, '申请不存在', 404)
+  if (method === 'PUT' && path.match(/^\/api\/sys\/chats\/channel-applications\/(\d+)\/review$/)) return ok(null)
+
+  // ==================== 入群申请 ====================
+
+  if (method === 'GET' && /^\/api\/sys\/chats\/group-join-applications\/?$/.test(path)) return ok(page([], req.query))
+  if (method === 'PUT' && path.match(/^\/api\/sys\/chats\/group-join-applications\/(\d+)\/review$/)) return ok(null)
+
   return ok(null, '未匹配到聊天后台接口', 404)
 }
 
@@ -144,4 +174,16 @@ export default defineMock([
   { url: '/api/sys/chats/conversations/:id/members/:memberUserId/mute', method: 'PUT', body: handle },
   { url: '/api/sys/chats/conversations/:id/messages/:messageId/revoke', method: 'POST', body: handle },
   { url: '/api/sys/chats/conversations/:id/status', method: 'PUT', body: handle },
+  { url: '/api/sys/chats/lobby/settings', method: 'PUT', body: handle },
+  { url: '/api/sys/chats/lobby/messages/pinned', method: 'GET', body: handle },
+  { url: '/api/sys/chats/lobby/messages/:messageId/pin', method: ['POST', 'DELETE'], body: handle },
+  { url: '/api/sys/chats/lobby/members/:memberUserId/mute', method: 'PUT', body: handle },
+  { url: '/api/sys/chats/lobby/members/:memberUserId/kick', method: 'PUT', body: handle },
+  { url: '/api/sys/chats/topic-channels', method: 'POST', body: handle },
+  { url: '/api/sys/chats/topic-channels/:id', method: 'PUT', body: handle },
+  { url: '/api/sys/chats/channel-applications', method: 'GET', body: handle },
+  { url: '/api/sys/chats/channel-applications/:id', method: 'GET', body: handle },
+  { url: '/api/sys/chats/channel-applications/:id/review', method: 'PUT', body: handle },
+  { url: '/api/sys/chats/group-join-applications', method: 'GET', body: handle },
+  { url: '/api/sys/chats/group-join-applications/:applicationId/review', method: 'PUT', body: handle },
 ])

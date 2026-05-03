@@ -93,7 +93,7 @@ export const perms = (u: any) =>
       )
     )
   )
-    .filter(i => i.type === 'B' && i.perm)
+    .filter(i => i.perm)
     .map(i => i.perm)
 
 export const ad = (a: any) => ({
