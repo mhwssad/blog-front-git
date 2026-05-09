@@ -8,11 +8,10 @@
         <div class="user-name">
           {{ user.remark ?? user.nickname }}
           <el-tag v-if="user.remark" size="small" type="info" effect="plain">备注</el-tag>
-          <el-tag v-if="user.mutualFollow === 1" size="small" type="success" effect="plain">互关</el-tag>
-          <el-icon
-            v-if="user.isSpecialFollow === 1"
-            class="special-icon"
+          <el-tag v-if="user.mutualFollow === 1" size="small" type="success" effect="plain"
+            >互关</el-tag
           >
+          <el-icon v-if="user.isSpecialFollow === 1" class="special-icon">
             <StarFilled />
           </el-icon>
         </div>
@@ -21,16 +20,10 @@
     </div>
     <div class="user-actions">
       <template v-if="isFollowTab">
-        <el-button
-          size="small"
-          link
-          @click="emit('toggle-special', user)"
-        >
+        <el-button size="small" link @click="emit('toggle-special', user)">
           {{ user.isSpecialFollow === 1 ? '取消特别关注' : '设为特别关注' }}
         </el-button>
-        <el-button size="small" link @click="emit('edit-remark', user)">
-          编辑备注
-        </el-button>
+        <el-button size="small" link @click="emit('edit-remark', user)"> 编辑备注 </el-button>
         <el-button size="small" link type="danger" @click="emit('unfollow', user.userId)">
           取关
         </el-button>
@@ -52,6 +45,11 @@
 </template>
 
 <script lang="ts" setup>
+/**
+ * 关注/粉丝用户项组件
+ * @description 在关注列表或粉丝列表中展示单个用户，支持取关、关注、特别关注、编辑备注
+ * @module front/profile/components/FollowUserItem
+ */
 import { StarFilled } from '@element-plus/icons-vue'
 import type { UserFollowUserVO } from '@/types/api-types'
 

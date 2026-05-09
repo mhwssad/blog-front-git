@@ -2,9 +2,7 @@
   <div class="channel-list-page">
     <div class="page-header">
       <h2 class="page-title">频道列表</h2>
-      <el-button type="primary" @click="router.push('/channel/apply')">
-        申请创建频道
-      </el-button>
+      <el-button type="primary" @click="router.push('/channel/apply')"> 申请创建频道 </el-button>
     </div>
 
     <el-input
@@ -28,13 +26,7 @@
       </div>
       <el-empty v-else-if="myChannels.length === 0" description="暂无加入的频道" />
       <el-row v-else :gutter="16">
-        <el-col
-          v-for="channel in filteredMyChannels"
-          :key="channel.id"
-          :xs="24"
-          :sm="12"
-          :md="8"
-        >
+        <el-col v-for="channel in filteredMyChannels" :key="channel.id" :xs="24" :sm="12" :md="8">
           <el-card shadow="hover" class="channel-card">
             <div class="channel-name"># {{ channel.name }}</div>
             <div class="channel-meta">
@@ -85,13 +77,7 @@
               </el-tag>
             </div>
             <div>
-              <el-button
-                v-if="channel.joined"
-                size="small"
-                disabled
-              >
-                已加入
-              </el-button>
+              <el-button v-if="channel.joined" size="small" disabled> 已加入 </el-button>
               <el-button
                 v-else-if="channel.joinRule === 'free'"
                 size="small"
@@ -110,9 +96,7 @@
               >
                 申请加入
               </el-button>
-              <el-button v-else size="small" disabled>
-                仅限邀请
-              </el-button>
+              <el-button v-else size="small" disabled> 仅限邀请 </el-button>
             </div>
           </el-card>
         </el-col>
@@ -122,6 +106,12 @@
 </template>
 
 <script lang="ts" setup>
+/**
+ * 频道列表页面
+ * @description 展示我的频道和可加入的发现频道，支持搜索和加入
+ * @module front/channel/ChannelList
+ * @see ../../api/user/chat.ts
+ */
 import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
@@ -132,36 +122,38 @@ import type { ChatGroupSearchVO } from '@/types/api-types'
 const router = useRouter()
 const store = useUserChatStore()
 
+// 搜索关键词
 const keyword = ref('')
 const joiningId = ref<number | null>(null)
+// 正在申请加入的频道 ID
 const applyingId = ref<number | null>(null)
 
-// My channels: from conversations list, filtered to channels with a selfRole
+// 我的频道：从会话列表中筛选出有 selfRole 的频道类型的会话
 const myChannels = computed(() => {
   return store.conversations.filter(
-    (c) =>
+    c =>
       c.selfRole &&
       (c.conversationType === 'group' ||
         c.sceneType === 'topic_channel' ||
-        c.sceneType === 'hall_channel'),
+        c.sceneType === 'hall_channel')
   )
 })
 
 const filteredMyChannels = computed(() => {
   if (!keyword.value.trim()) return myChannels.value
   const kw = keyword.value.trim().toLowerCase()
-  return myChannels.value.filter((c) => c.name?.toLowerCase().includes(kw))
+  return myChannels.value.filter(c => c.name?.toLowerCase().includes(kw))
 })
 
-// Discover channels: search results excluding already joined ones
+// 发现频道：从搜索结果中排除已加入的频道
 const discoverChannels = computed(() => {
-  return store.searchResults.filter((c) => !c.joined)
+  return store.searchResults.filter(c => !c.joined)
 })
 
 const filteredDiscoverChannels = computed(() => {
   if (!keyword.value.trim()) return discoverChannels.value
   const kw = keyword.value.trim().toLowerCase()
-  return discoverChannels.value.filter((c) => c.name?.toLowerCase().includes(kw))
+  return discoverChannels.value.filter(c => c.name?.toLowerCase().includes(kw))
 })
 
 function roleLabel(role: string): string {
@@ -174,10 +166,7 @@ function roleLabel(role: string): string {
 }
 
 async function loadData(): Promise<void> {
-  await Promise.all([
-    store.fetchConversations({ size: 200 }),
-    store.searchGroups({ size: 200 }),
-  ])
+  await Promise.all([store.fetchConversations({ size: 200 }), store.searchGroups({ size: 200 })])
 }
 
 function handleSearch(): void {

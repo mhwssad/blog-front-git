@@ -19,26 +19,54 @@ export interface LogQueryRequest {
   size?: number
   /** 日志模块 */
   module?: string
-  /** 日志动作 */
-  action?: string
-  /** 用户名 */
-  username?: string
   /** 请求方式（如GET/POST） */
   requestMethod?: string
   /** 请求路径 */
   requestUri?: string
   /** IP地址 */
   ip?: string
-  /** 创建人ID */
-  createBy?: number
-  /** 开始时间 */
-  startTime?: string
-  /** 结束时间 */
-  endTime?: string
+  /** 创建人 */
+  createBy?: string
   /** 创建开始时间 */
   createTimeStart?: string
   /** 创建结束时间 */
   createTimeEnd?: string
+}
+
+/**
+ * 审计日志查询请求
+ * @see GET /api/sys/audit-logs - 查询参数
+ */
+export interface AuditLogQueryRequest {
+  current?: number
+  size?: number
+  operatorUserId?: number
+  targetUserId?: number
+  operationType?: string
+}
+
+/**
+ * 审计日志视图对象
+ * @see GET /api/sys/audit-logs - 响应项
+ * @see GET /api/sys/audit-logs/{id} - 响应
+ */
+export interface AuditLogVO {
+  id: number
+  operatorUserId: number
+  operatorUsername: string
+  targetUserId?: number
+  targetUsername?: string
+  operationType: string
+  operationTypeDesc?: string
+  targetTypeName?: string
+  targetId?: number
+  beforeState?: string
+  afterState?: string
+  mfaPassed?: number
+  requestIp?: string
+  userAgent?: string
+  remark?: string
+  createdAt: string
 }
 
 /**
@@ -116,12 +144,8 @@ export interface SysLogCleanRequest {
   requestUri?: string
   /** IP地址 */
   ip?: string
-  /** 创建人ID */
-  createBy?: number
-  /** 开始时间 */
-  startTime?: string
-  /** 结束时间 */
-  endTime?: string
+  /** 创建人 */
+  createBy?: string
   /** 创建开始时间 */
   createTimeStart?: string
   /** 创建结束时间 */

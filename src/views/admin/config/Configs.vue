@@ -3,10 +3,20 @@
     <el-card class="search-card" shadow="never">
       <el-form :model="searchForm" inline class="search-form">
         <el-form-item label="配置名称" class="filter-item">
-          <el-input v-model="searchForm.configName" class="filter-control" clearable placeholder="请输入配置名称" />
+          <el-input
+            v-model="searchForm.configName"
+            class="filter-control"
+            clearable
+            placeholder="请输入配置名称"
+          />
         </el-form-item>
         <el-form-item label="配置键" class="filter-item">
-          <el-input v-model="searchForm.configKey" class="filter-control" clearable placeholder="请输入配置键" />
+          <el-input
+            v-model="searchForm.configKey"
+            class="filter-control"
+            clearable
+            placeholder="请输入配置键"
+          />
         </el-form-item>
         <el-form-item label="创建时间" class="filter-item filter-item--range">
           <el-date-picker
@@ -40,65 +50,84 @@
         </div>
       </template>
 
-        <el-table
-          v-loading="configStore.loading"
-          :data="configStore.configs"
-          :size="isCompactTable ? 'small' : 'default'"
-          table-layout="auto"
-          class="config-table"
-          border
-          stripe
+      <el-table
+        v-loading="configStore.loading"
+        :data="configStore.configs"
+        :size="isCompactTable ? 'small' : 'default'"
+        table-layout="auto"
+        class="config-table"
+        border
+        stripe
+      >
+        <el-table-column prop="id" label="ID" min-width="80" align="center" />
+        <el-table-column
+          prop="configName"
+          label="配置名称"
+          min-width="160"
+          align="center"
+          show-overflow-tooltip
+        />
+        <el-table-column
+          prop="configKey"
+          label="配置键"
+          min-width="200"
+          align="center"
+          show-overflow-tooltip
+        />
+        <el-table-column
+          prop="configValue"
+          label="配置值"
+          min-width="220"
+          align="center"
+          show-overflow-tooltip
         >
-          <el-table-column prop="id" label="ID" min-width="80" align="center" />
-          <el-table-column prop="configName" label="配置名称" min-width="160" align="center" show-overflow-tooltip />
-          <el-table-column prop="configKey" label="配置键" min-width="200" align="center" show-overflow-tooltip />
-          <el-table-column prop="configValue" label="配置值" min-width="220" align="center" show-overflow-tooltip>
-            <template #default="{ row }">
-              {{ formatConfigPreview(row.configValue) }}
-            </template>
-          </el-table-column>
-          <el-table-column label="系统配置" min-width="100" align="center">
-            <template #default="{ row }">
-              {{ formatSystemFlag(row.isSystem) }}
-            </template>
-          </el-table-column>
-          <el-table-column prop="remark" label="备注" min-width="180" align="center" show-overflow-tooltip>
-            <template #default="{ row }">
-              {{ formatOptionalText(row.remark) }}
-            </template>
-          </el-table-column>
-          <el-table-column label="创建时间" min-width="180" align="center">
-            <template #default="{ row }">
-              {{ formatCreateTime(row.createTime) }}
-            </template>
-          </el-table-column>
-          <el-table-column
-            label="操作"
-            :min-width="isCompactTable ? 160 : 220"
-            :fixed="isCompactTable ? false : 'right'"
-            align="center"
-          >
-            <template #default="{ row }">
-              <div class="table-actions" :class="{ 'table-actions--compact': isCompactTable }">
-                <el-button v-permission="'sys:config:query'" link type="primary" @click="handleViewValue(row)">
-                  查看值
-                </el-button>
-                <el-button v-permission="'sys:config:update'" link type="primary" @click="handleEdit(row)">
-                  编辑
-                </el-button>
-                <el-button
-                  v-permission="'sys:config:delete'"
-                  link
-                  type="danger"
-                  :disabled="row.isSystem === 1"
-                  @click="handleDelete(row)"
-                >
-                  删除
-                </el-button>
-              </div>
-            </template>
-          </el-table-column>
-        </el-table>
+          <template #default="{ row }">
+            {{ formatConfigPreview(row.configValue) }}
+          </template>
+        </el-table-column>
+        <el-table-column label="系统配置" min-width="100" align="center">
+          <template #default="{ row }">
+            {{ formatSystemFlag(row.isSystem) }}
+          </template>
+        </el-table-column>
+        <el-table-column
+          label="操作"
+          :min-width="isCompactTable ? 160 : 220"
+          :fixed="isCompactTable ? false : 'right'"
+          class-name="action-column"
+          align="center"
+        >
+          <template #default="{ row }">
+            <div class="table-actions" :class="{ 'table-actions--compact': isCompactTable }">
+              <el-button
+                v-permission="'sys:config:query'"
+                link
+                type="primary"
+                @click="handleViewDetail(row)"
+              >
+                查看详情
+              </el-button>
+              <el-button
+                v-permission="'sys:config:update'"
+                link
+                type="primary"
+                @click="handleEdit(row)"
+              >
+                编辑
+              </el-button>
+              <el-button
+                v-permission="'sys:config:delete'"
+                link
+                type="danger"
+                :disabled="row.isSystem === 1"
+                @click="handleDelete(row)"
+              >
+                删除
+              </el-button>
+            </div>
+          </template>
+        </el-table-column>
+      </el-table>
 
       <div class="pagination">
         <el-pagination
@@ -114,18 +143,50 @@
       </div>
     </el-card>
 
-    <ConfigFormDialog v-model:visible="formDialogVisible" :config-id="editingConfigId" @success="handleFormSuccess" />
+    <ConfigFormDialog
+      v-model:visible="formDialogVisible"
+      :config-id="editingConfigId"
+      @success="handleFormSuccess"
+    />
 
     <el-dialog
       v-model="valueDialogVisible"
-      title="配置值"
-      width="600px"
-      class="config-value-dialog"
-      :close-on-click-modal="false"
+      title="配置详情"
+      width="560px"
+      class="config-detail-dialog"
+      destroy-on-close
       align-center
-      center
     >
-      <pre class="config-value-preview">{{ previewConfigValue }}</pre>
+      <template v-if="viewingConfig">
+        <el-descriptions :column="2" border size="small">
+          <el-descriptions-item label="ID">{{ viewingConfig.id }}</el-descriptions-item>
+          <el-descriptions-item label="系统配置">
+            {{ formatSystemFlag(viewingConfig.isSystem) }}
+          </el-descriptions-item>
+          <el-descriptions-item label="配置名称" :span="2">
+            {{ viewingConfig.configName }}
+          </el-descriptions-item>
+          <el-descriptions-item label="配置键" :span="2">
+            {{ viewingConfig.configKey }}
+          </el-descriptions-item>
+          <el-descriptions-item label="配置值" :span="2">
+            <pre class="config-value-preview">{{ viewingConfig.configValue || '-' }}</pre>
+          </el-descriptions-item>
+          <el-descriptions-item label="备注" :span="2">
+            {{ viewingConfig.remark || '-' }}
+          </el-descriptions-item>
+          <el-descriptions-item label="创建时间">
+            {{ viewingConfig.createTime || '-' }}
+          </el-descriptions-item>
+          <el-descriptions-item label="更新时间">
+            {{ viewingConfig.updateTime || '-' }}
+          </el-descriptions-item>
+        </el-descriptions>
+      </template>
+
+      <template #footer>
+        <el-button @click="valueDialogVisible = false">关闭</el-button>
+      </template>
     </el-dialog>
   </div>
 </template>
@@ -137,7 +198,7 @@ import { Plus } from '@element-plus/icons-vue'
 import type { ConfigQueryRequest, SysConfigAdminVO } from '@/types/api-types'
 import { useContentAdmin } from '@/composables/useContentAdmin'
 import { useConfigStore } from '@/stores'
-import { formatCreateTime, formatOptionalText, formatSystemFlag } from '@/utils'
+import { formatSystemFlag } from '@/utils'
 import ConfigFormDialog from './components/ConfigFormDialog.vue'
 
 const configStore = useConfigStore()
@@ -159,7 +220,7 @@ const pagination = reactive({
 const formDialogVisible = ref(false)
 const valueDialogVisible = ref(false)
 const editingConfigId = ref<number | null>(null)
-const previewConfigValue = ref('')
+const viewingConfig = ref<SysConfigAdminVO | null>(null)
 
 const { isCompactTable, paginationLayout } = useContentAdmin()
 
@@ -226,8 +287,8 @@ function handleEdit(row: SysConfigAdminVO): void {
   formDialogVisible.value = true
 }
 
-function handleViewValue(row: SysConfigAdminVO): void {
-  previewConfigValue.value = row.configValue || '-'
+function handleViewDetail(row: SysConfigAdminVO): void {
+  viewingConfig.value = row
   valueDialogVisible.value = true
 }
 
@@ -319,6 +380,10 @@ onMounted(() => {
 
 .config-table {
   width: 100%;
+}
+
+.config-table :deep(.action-column) {
+  border-left: 2px solid var(--el-border-color);
 }
 
 .config-table :deep(.el-table__cell .cell) {

@@ -116,6 +116,12 @@
 </template>
 
 <script lang="ts" setup>
+/**
+ * 登录页面
+ * @description 支持账号密码登录和邮箱验证码登录两种方式
+ * @module common/auth/Login
+ * @see ../../api/auth.ts
+ */
 import { ref, reactive, onBeforeUnmount } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
@@ -126,18 +132,19 @@ const router = useRouter()
 const route = useRoute()
 const authStore = useAuthStore()
 
-// 当前激活的标签页
+// 当前激活的标签页（password | email）
 const activeTab = ref('password')
 
 // 加载状态
 const loading = ref(false)
 const sendingCode = ref(false)
 
-// 记住我
+// 记住我复选框状态
 const rememberMe = ref(false)
 
-// 倒计时
+// 验证码倒计时（单位：秒）
 const countdown = ref(0)
+/** 倒计时定时器 ID */
 let countdownTimer: number | null = null
 
 // 账号密码表单
@@ -176,12 +183,21 @@ const emailRules = {
   ],
 }
 
+/**
+ * 解析登录后重定向目标
+ * @description 优先使用 URL query 中的 redirect，否则默认跳转首页
+ */
 function resolvePostLoginTarget(): string {
   const redirect = route.query.redirect
+  // 仅允许相对路径跳转，避免开放重定向漏洞
   return typeof redirect === 'string' && redirect.startsWith('/') ? redirect : '/'
 }
 
 // 账号密码登录
+/**
+ * 处理账号密码登录
+ * @description 验证表单后调用 authStore.login，完成后跳转到目标页
+ */
 async function handlePasswordLogin() {
   try {
     await passwordFormRef.value?.validate()

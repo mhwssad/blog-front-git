@@ -69,7 +69,21 @@ function handle(req: any) {
     db.collections = db.collections.filter((i: any) => i.id !== num(match(/^\/api\/sys\/collections\/(\d+)$/)![1]))
     return ok(null)
   }
-  if (m === 'GET' && path === '/api/sys/interactions') return ok(page(db.interactions, req.query))
+  if (m === 'GET' && path === '/api/sys/interactions') {
+    const rs = db.interactions.map((i: any) => {
+      const u = db.users.find((u: any) => u.id === i.userId)
+      let targetTitle = ''
+      if (i.targetType === 'article') {
+        const a = db.articles.find((a: any) => a.id === i.targetId)
+        targetTitle = a?.title ?? ''
+      } else if (i.targetType === 'comment') {
+        const c = db.comments.find((c: any) => c.id === i.targetId)
+        targetTitle = c ? c.content?.slice(0, 30) : ''
+      }
+      return { ...i, userNickname: u?.nickname ?? '', userAvatar: u?.avatar ?? '', targetTitle }
+    })
+    return ok(page(rs, req.query))
+  }
   if (match(/^\/api\/sys\/interactions\/(\d+)$/) && m === 'DELETE') {
     db.interactions = db.interactions.filter((i: any) => i.id !== num(match(/^\/api\/sys\/interactions\/(\d+)$/)![1]))
     return ok(null)

@@ -18,14 +18,6 @@
       </template>
 
       <el-form :model="settingsForm" label-width="100px" class="settings-form">
-        <el-form-item label="公告">
-          <el-input
-            v-model="settingsForm.announcement"
-            type="textarea"
-            :rows="3"
-            placeholder="大厅公告内容"
-          />
-        </el-form-item>
         <el-row :gutter="24">
           <el-col :xs="24" :sm="8">
             <el-form-item label="发言等级">
@@ -50,12 +42,12 @@
             </el-form-item>
           </el-col>
           <el-col :xs="24" :sm="8">
-            <el-form-item label="成员上限">
-              <el-input-number
-                v-model="settingsForm.memberLimit"
-                :min="0"
-                :max="10000"
-                controls-position="right"
+            <el-form-item label="游客发言">
+              <el-switch
+                v-model="settingsForm.allowGuestSpeak"
+                inline-prompt
+                active-text="允许"
+                inactive-text="禁止"
               />
             </el-form-item>
           </el-col>
@@ -72,37 +64,41 @@
         </div>
       </template>
 
-      <el-table
-        v-loading="chatStore.pinnedLoading"
-        :data="chatStore.pinnedMessages"
-        border
-        stripe
-      >
-          <el-table-column prop="id" label="ID" width="80" align="center" />
-          <el-table-column label="消息内容" min-width="200" show-overflow-tooltip>
-            <template #default="{ row }">
-              {{ row.content || row.file?.originalName || '-' }}
-            </template>
-          </el-table-column>
-          <el-table-column prop="pinByUsername" label="置顶人" width="120" align="center" />
-          <el-table-column label="置顶时间" width="170" align="center">
-            <template #default="{ row }">
-              {{ formatCreatedAt(row.pinCreatedAt) }}
-            </template>
-          </el-table-column>
-          <el-table-column label="操作" width="100" align="center">
-            <template #default="{ row }">
-              <el-button
-                v-permission="'content:chat:update'"
-                link
-                type="danger"
-                @click="handleUnpin(row.id)"
-              >
-                取消置顶
-              </el-button>
-            </template>
-          </el-table-column>
-        </el-table>
+      <el-table v-loading="chatStore.pinnedLoading" :data="chatStore.pinnedMessages" border stripe>
+        <el-table-column prop="id" label="ID" width="80" align="center" />
+        <el-table-column label="消息内容" min-width="200" show-overflow-tooltip>
+          <template #default="{ row }">
+            {{ row.message?.content || row.message?.file?.originalName || '-' }}
+          </template>
+        </el-table-column>
+        <el-table-column label="发送者" width="140" align="center">
+          <template #default="{ row }">
+            {{ row.message?.senderNickname || row.message?.senderUsername || '-' }}
+          </template>
+        </el-table-column>
+        <el-table-column label="置顶人" width="110" align="center">
+          <template #default="{ row }">
+            #{{ row.pinnedBy }}
+          </template>
+        </el-table-column>
+        <el-table-column label="置顶时间" width="170" align="center">
+          <template #default="{ row }">
+            {{ formatCreatedAt(row.pinnedAt) }}
+          </template>
+        </el-table-column>
+        <el-table-column label="操作" width="100" align="center">
+          <template #default="{ row }">
+            <el-button
+              v-permission="'content:chat:update'"
+              link
+              type="danger"
+              @click="handleUnpin(row.id)"
+            >
+              取消置顶
+            </el-button>
+          </template>
+        </el-table-column>
+      </el-table>
 
       <div class="pagination-area">
         <el-pagination
@@ -129,9 +125,26 @@
         <el-form-item label="用户 ID">
           <el-input-number v-model="memberQuery.userId" :min="1" controls-position="right" />
         </el-form-item>
+        <el-form-item label="禁言截止">
+          <el-date-picker
+            v-model="memberQuery.muteUntil"
+            type="datetime"
+            value-format="YYYY-MM-DDTHH:mm:ss"
+            format="YYYY-MM-DD HH:mm:ss"
+            placeholder="请选择截止时间"
+            style="width: 220px"
+          />
+        </el-form-item>
         <el-form-item>
-          <el-button type="primary" :disabled="!memberQuery.userId" @click="handleMute24h">
-            禁言 24h
+          <el-button
+            type="primary"
+            :disabled="!memberQuery.userId || !memberQuery.muteUntil"
+            @click="handleMute"
+          >
+            禁言
+          </el-button>
+          <el-button type="info" :disabled="!memberQuery.userId" @click="handleMute24h">
+            24h
           </el-button>
           <el-button type="warning" :disabled="!memberQuery.userId" @click="handleUnmute">
             解除禁言
@@ -150,7 +163,7 @@ import { onMounted, reactive, ref } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { useChatStore } from '@/stores'
 import { useContentAdmin } from '@/composables/useContentAdmin'
-import { formatCreatedAt } from '@/utils'
+import { DateUtils, formatCreatedAt } from '@/utils'
 
 const chatStore = useChatStore()
 
@@ -158,20 +171,18 @@ const chatStore = useChatStore()
 
 const savingSettings = ref(false)
 const settingsForm = reactive({
-  announcement: '',
   speakLevelLimit: 0,
   slowModeSeconds: 0,
-  memberLimit: 500,
+  allowGuestSpeak: false,
 })
 
 async function handleSaveSettings(): Promise<void> {
   savingSettings.value = true
   try {
     const success = await chatStore.updateLobbySettings({
-      announcement: settingsForm.announcement || undefined,
       speakLevelLimit: settingsForm.speakLevelLimit,
       slowModeSeconds: settingsForm.slowModeSeconds,
-      memberLimit: settingsForm.memberLimit,
+      allowGuestSpeak: settingsForm.allowGuestSpeak,
     })
     if (success) {
       ElMessage.success('大厅设置已保存')
@@ -223,27 +234,40 @@ function handlePinnedSizeChange(): void {
 
 // ==================== 成员管理 ====================
 
-const memberQuery = reactive({ userId: undefined as number | undefined })
+const memberQuery = reactive({
+  userId: undefined as number | undefined,
+  muteUntil: '' as string | null | undefined,
+})
+
+async function submitMute(muteUntil: string | null): Promise<void> {
+  if (!memberQuery.userId) return
+  const success = await chatStore.muteLobbyMember(memberQuery.userId, { muteUntil })
+  if (success) {
+    ElMessage.success(muteUntil ? '禁言已设置' : '禁言已解除')
+  } else {
+    ElMessage.error(muteUntil ? '禁言操作失败' : '解除禁言失败')
+  }
+}
+
+async function handleMute(): Promise<void> {
+  if (!memberQuery.muteUntil) return
+  await submitMute(memberQuery.muteUntil)
+}
 
 async function handleMute24h(): Promise<void> {
   if (!memberQuery.userId) return
-  const muteUntil = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString()
-  const success = await chatStore.muteLobbyMember(memberQuery.userId, { muteUntil })
-  if (success) {
-    ElMessage.success('已禁言 24 小时')
-  } else {
-    ElMessage.error('禁言操作失败')
-  }
+  const muteUntil = DateUtils.formatDate(
+    new Date(Date.now() + 24 * 60 * 60 * 1000),
+    "yyyy-MM-dd'T'HH:mm:ss",
+  )
+  memberQuery.muteUntil = muteUntil
+  await submitMute(muteUntil)
 }
 
 async function handleUnmute(): Promise<void> {
   if (!memberQuery.userId) return
-  const success = await chatStore.muteLobbyMember(memberQuery.userId, { muteUntil: '' })
-  if (success) {
-    ElMessage.success('禁言已解除')
-  } else {
-    ElMessage.error('解除禁言失败')
-  }
+  memberQuery.muteUntil = undefined
+  await submitMute(null)
 }
 
 async function handleKick(): Promise<void> {

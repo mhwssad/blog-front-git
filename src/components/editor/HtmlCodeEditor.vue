@@ -4,6 +4,7 @@
 
 <script lang="ts" setup>
 import { EditorView, basicSetup } from 'codemirror'
+import type { Extension } from '@codemirror/state'
 import { html } from '@codemirror/lang-html'
 import { HighlightStyle, syntaxHighlighting } from '@codemirror/language'
 import { tags } from '@lezer/highlight'
@@ -11,6 +12,7 @@ import { onBeforeUnmount, onMounted, ref, watch } from 'vue'
 
 interface Props {
   modelValue: string
+  extraExtensions?: Extension[]
 }
 
 interface Emits {
@@ -93,6 +95,7 @@ function createEditor(): void {
       html(),
       customHighlight,
       editorTheme,
+      ...(props.extraExtensions ?? []),
     ],
     parent: editorRoot.value,
     dispatchTransactions(transactions, view) {
@@ -163,9 +166,14 @@ function focus(): void {
   editorView?.focus()
 }
 
+function refresh(): void {
+  editorView?.requestMeasure()
+}
+
 defineExpose({
   focus,
   insertText,
+  refresh,
 })
 
 watch(

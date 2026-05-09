@@ -8,12 +8,7 @@
         </el-button>
         <h2 class="page-title">群设置</h2>
       </div>
-      <el-button
-        type="primary"
-        :loading="saving"
-        :disabled="!isOwnerOrAdmin"
-        @click="handleSave"
-      >
+      <el-button type="primary" :loading="saving" :disabled="!isOwnerOrAdmin" @click="handleSave">
         保存设置
       </el-button>
     </div>
@@ -59,19 +54,12 @@
       <div class="settings-section">
         <h3 class="section-title">群管理</h3>
         <div v-loading="membersLoading" class="admin-list">
-          <div
-            v-for="member in ownerAndAdmins"
-            :key="member.userId"
-            class="admin-item"
-          >
+          <div v-for="member in ownerAndAdmins" :key="member.userId" class="admin-item">
             <el-avatar :size="32" :src="member.avatar ?? undefined">
               {{ (member.nickname ?? member.username ?? '?').charAt(0) }}
             </el-avatar>
             <span class="admin-name">{{ member.nickname || member.username }}</span>
-            <el-tag
-              size="small"
-              :type="member.role === 'owner' ? 'danger' : 'warning'"
-            >
+            <el-tag size="small" :type="member.role === 'owner' ? 'danger' : 'warning'">
               {{ member.role === 'owner' ? '群主' : '管理员' }}
             </el-tag>
             <el-popconfirm
@@ -103,10 +91,7 @@
 
       <div v-if="isOwner" class="settings-section danger-section">
         <h3 class="section-title">危险操作</h3>
-        <el-popconfirm
-          title="确定要解散群聊吗？此操作不可恢复。"
-          @confirm="handleDissolve"
-        >
+        <el-popconfirm title="确定要解散群聊吗？此操作不可恢复。" @confirm="handleDissolve">
           <template #reference>
             <el-button type="danger" :loading="dissolving">解散群聊</el-button>
           </template>
@@ -117,27 +102,14 @@
     <el-empty v-else-if="!pageLoading" description="未找到群信息" />
 
     <!-- Add Admin Dialog -->
-    <el-dialog
-      v-model="addAdminDialogVisible"
-      title="添加管理员"
-      width="500px"
-      destroy-on-close
-    >
+    <el-dialog v-model="addAdminDialogVisible" title="添加管理员" width="500px" destroy-on-close>
       <div v-loading="membersLoading" class="add-admin-list">
-        <div
-          v-for="member in promotableMembers"
-          :key="member.userId"
-          class="admin-item"
-        >
+        <div v-for="member in promotableMembers" :key="member.userId" class="admin-item">
           <el-avatar :size="28" :src="member.avatar ?? undefined">
             {{ (member.nickname ?? member.username ?? '?').charAt(0) }}
           </el-avatar>
           <span class="admin-name">{{ member.nickname || member.username }}</span>
-          <el-button
-            size="small"
-            type="primary"
-            @click="handleSetAdmin(member.userId)"
-          >
+          <el-button size="small" type="primary" @click="handleSetAdmin(member.userId)">
             设为管理员
           </el-button>
         </div>
@@ -152,6 +124,12 @@
 </template>
 
 <script lang="ts" setup>
+/**
+ * 群聊设置页面
+ * @description 群主/管理员可修改群公告、设置管理员、解散群聊
+ * @module front/chat/GroupSettings
+ * @see ../../api/user/chat.ts
+ */
 import { ref, computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
@@ -178,18 +156,18 @@ const members = ref<ChatGroupMemberVO[]>([])
 const noticeText = ref('')
 
 const isOwner = computed(() => conversation.value?.selfRole === 'owner')
+// 是否为群主或管理员（有权限修改设置）
 const isOwnerOrAdmin = computed(() => {
   const role = conversation.value?.selfRole
   return role === 'owner' || role === 'admin'
 })
 
 const ownerAndAdmins = computed(() =>
-  members.value.filter((m) => m.role === 'owner' || m.role === 'admin'),
+  members.value.filter(m => m.role === 'owner' || m.role === 'admin')
 )
 
-const promotableMembers = computed(() =>
-  members.value.filter((m) => m.role === 'member'),
-)
+// 可提升为管理员的普通成员
+const promotableMembers = computed(() => members.value.filter(m => m.role === 'member'))
 
 const visibilityLabel = computed(() => {
   const map: Record<string, string> = {

@@ -43,6 +43,11 @@
 </template>
 
 <script lang="ts" setup>
+/**
+ * 收藏夹列表组件
+ * @description 展示用户的收藏夹，支持选择、新建、编辑、删除操作
+ * @module front/collection/components/FolderList
+ */
 import { Folder, MoreFilled } from '@element-plus/icons-vue'
 import type { CollectionFolderVO } from '@/types/api-types'
 
@@ -59,6 +64,7 @@ const emit = defineEmits<{
   delete: [id: number]
 }>()
 
+// 处理下拉菜单命令（edit/delete）
 function handleCommand(cmd: string, folder: CollectionFolderVO): void {
   if (cmd === 'edit') emit('edit', folder)
   else if (cmd === 'delete') emit('delete', folder.id)

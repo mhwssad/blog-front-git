@@ -13,18 +13,14 @@
             <div class="friend-name">{{ friend.name }}</div>
             <div class="friend-desc">{{ friend.desc }}</div>
           </div>
-          <el-button type="primary" text @click="visitLink(friend.url)">
-            访问
-          </el-button>
+          <el-button type="primary" text @click="visitLink(friend.url)"> 访问 </el-button>
         </div>
       </el-card>
     </div>
 
     <el-card shadow="never" class="apply-section">
       <h2 class="apply-title">申请友链</h2>
-      <p class="apply-desc">
-        如果您希望与本站交换友链，请通过以下方式联系站长：
-      </p>
+      <p class="apply-desc">如果您希望与本站交换友链，请通过以下方式联系站长：</p>
       <ul class="apply-list">
         <li>在评论区留言您的站点信息</li>
         <li>通过邮箱 admin@blog.com 联系</li>
@@ -32,24 +28,58 @@
       </ul>
       <div class="apply-require">
         <h3 class="require-title">友链要求</h3>
-        <el-tag v-for="req in requirements" :key="req" size="small" class="require-tag">{{ req }}</el-tag>
+        <el-tag v-for="req in requirements" :key="req" size="small" class="require-tag">{{
+          req
+        }}</el-tag>
       </div>
     </el-card>
   </div>
 </template>
 
 <script lang="ts" setup>
+/**
+ * 友情链接页面
+ * @description 展示精选的博客和网站链接，提供友链申请说明
+ * @module front/friends/FriendsView
+ */
 const friends = [
-  { name: '阮一峰的博客', desc: '科技爱好者周刊，分享技术与思想', url: 'https://www.ruanyifeng.com', avatar: '' },
-  { name: '张鑫旭博客', desc: '专注前端技术，CSS 大神', url: 'https://www.zhangxinxu.com', avatar: '' },
-  { name: '酷壳 CoolShell', desc: '陈皓的技术博客，编程艺术', url: 'https://coolshell.cn', avatar: '' },
-  { name: '前端早读课', desc: '前端技术分享，每日更新', url: 'https://mp.weixin.qq.com', avatar: '' },
-  { name: 'GitHub Trending', desc: '开源项目趋势，发现好项目', url: 'https://github.com/trending', avatar: '' },
+  {
+    name: '阮一峰的博客',
+    desc: '科技爱好者周刊，分享技术与思想',
+    url: 'https://www.ruanyifeng.com',
+    avatar: '',
+  },
+  {
+    name: '张鑫旭博客',
+    desc: '专注前端技术，CSS 大神',
+    url: 'https://www.zhangxinxu.com',
+    avatar: '',
+  },
+  {
+    name: '酷壳 CoolShell',
+    desc: '陈皓的技术博客，编程艺术',
+    url: 'https://coolshell.cn',
+    avatar: '',
+  },
+  {
+    name: '前端早读课',
+    desc: '前端技术分享，每日更新',
+    url: 'https://mp.weixin.qq.com',
+    avatar: '',
+  },
+  {
+    name: 'GitHub Trending',
+    desc: '开源项目趋势，发现好项目',
+    url: 'https://github.com/trending',
+    avatar: '',
+  },
   { name: 'V2EX', desc: '创意工作者社区', url: 'https://www.v2ex.com', avatar: '' },
 ]
 
+// 友链要求标签
 const requirements = ['内容优质', '持续更新', '无违法内容', '友情互链']
 
+// 打开外部链接
 function visitLink(url: string): void {
   window.open(url, '_blank')
 }

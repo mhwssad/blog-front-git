@@ -22,7 +22,12 @@
 
     <template #footer>
       <el-button @click="dialogVisible = false">取消</el-button>
-      <el-button type="primary" :loading="loading" :disabled="!form.folderName.trim()" @click="handleSubmit">
+      <el-button
+        type="primary"
+        :loading="loading"
+        :disabled="!form.folderName.trim()"
+        @click="handleSubmit"
+      >
         确定
       </el-button>
     </template>
@@ -30,6 +35,11 @@
 </template>
 
 <script lang="ts" setup>
+/**
+ * 新建/编辑收藏夹弹窗组件
+ * @description 输入收藏夹名称和描述，创建或更新收藏夹
+ * @module front/collection/components/FolderFormDialog
+ */
 import { ref, computed, watch } from 'vue'
 import type { CollectionFolderVO } from '@/types/api-types'
 
@@ -46,23 +56,24 @@ const emit = defineEmits<{
 
 const dialogVisible = computed({
   get: () => props.visible,
-  set: (val) => emit('update:visible', val),
+  set: val => emit('update:visible', val),
 })
 
 const isEdit = computed(() => !!props.editFolder)
 
+// 表单数据
 const form = ref({ folderName: '', description: '' })
 
 watch(
   () => props.visible,
-  (val) => {
+  val => {
     if (val) {
       form.value = {
         folderName: props.editFolder?.folderName ?? '',
         description: props.editFolder?.description ?? '',
       }
     }
-  },
+  }
 )
 
 function handleSubmit(): void {

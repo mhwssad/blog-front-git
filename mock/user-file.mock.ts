@@ -9,15 +9,15 @@ function handle(req: any) {
 
   if (m === 'POST' && path === '/api/user/files/upload-tasks/init') {
     const uploadId = `upl_${Date.now()}`
-    const totalChunks = req.body.totalChunks ?? 1
+    const totalChunks = req.body?.totalChunks ?? 1
     return ok({
       taskId: ++db.seq.fileTask,
       uploadId,
-      uploadMode: totalChunks > 1 ? 'chunked' : 'simple',
+      uploadMode: totalChunks > 1 ? 2 : 3,
       quickUploadAvailable: false,
       completed: false,
       totalChunks: totalChunks > 1 ? totalChunks : undefined,
-      chunkSize: req.body.chunkSize ?? undefined,
+      chunkSize: req.body?.chunkSize ?? undefined,
       taskStatus: 0,
       fileId: null,
       fileUrl: null,
@@ -30,10 +30,37 @@ function handle(req: any) {
   }
 
   if (m === 'POST' && match(/^\/api\/user\/files\/upload-tasks\/([^/]+)\/file$/)) {
+    const uploadId = match(/^\/api\/user\/files\/upload-tasks\/([^/]+)\/file$/)![1]
     const id = ++db.seq.file
-    const file = { id, fileName: `mock-file-${id}`, originalName: req.body.originalName ?? `mock-file-${id}`, filePath: `/uploads/mock/${id}`, fileUrl: `https://mock.local/files/mock-file-${id}`, storageKey: `mock/${id}`, fileSize: req.body.fileSize ?? 0, fileType: 'file', mimeType: req.body.mimeType ?? 'application/octet-stream', fileExtension: '', uploadUserId: u.id, isPublic: req.body.isPublic ?? 0, category: req.body.category ?? 'other', status: 1, referenceCount: 0, createdAt: now() }
+    const body = req.body || {}
+    const file = {
+      id,
+      fileName: `mock-file-${id}`,
+      originalName: body.originalName ?? `mock-file-${id}`,
+      filePath: `/uploads/mock/${id}`,
+      fileUrl: `https://api.dicebear.com/7.x/identicon/svg?seed=file${id}`,
+      storageKey: `mock/${id}`,
+      fileSize: body.fileSize ?? 0,
+      fileType: 'file',
+      mimeType: body.mimeType ?? 'application/octet-stream',
+      fileExtension: '',
+      uploadUserId: u.id,
+      isPublic: body.isPublic ?? 0,
+      category: body.category ?? 'other',
+      status: 1,
+      referenceCount: 0,
+      createdAt: now(),
+    }
     db.files.push(file)
-    return ok({ businessId: id, fileId: id, fileUrl: file.fileUrl })
+    return ok({
+      uploadId,
+      taskId: db.seq.fileTask,
+      fileId: id,
+      businessId: id,
+      fileUrl: file.fileUrl,
+      quickUpload: false,
+      taskStatus: 3,
+    })
   }
 
   if (m === 'POST' && match(/^\/api\/user\/files\/upload-tasks\/([^/]+)\/chunks\/(\d+)$/)) {
@@ -41,10 +68,36 @@ function handle(req: any) {
   }
 
   if (m === 'POST' && match(/^\/api\/user\/files\/upload-tasks\/([^/]+)\/complete$/)) {
+    const uploadId = match(/^\/api\/user\/files\/upload-tasks\/([^/]+)\/complete$/)![1]
     const id = ++db.seq.file
-    const file = { id, fileName: `mock-chunked-${id}`, originalName: `mock-chunked-${id}`, filePath: `/uploads/mock/${id}`, fileUrl: `https://mock.local/files/mock-chunked-${id}`, storageKey: `mock/${id}`, fileSize: 0, fileType: 'file', mimeType: 'application/octet-stream', fileExtension: '', uploadUserId: u.id, isPublic: 0, category: 'other', status: 1, referenceCount: 0, createdAt: now() }
+    const file = {
+      id,
+      fileName: `mock-chunked-${id}`,
+      originalName: `mock-chunked-${id}`,
+      filePath: `/uploads/mock/${id}`,
+      fileUrl: `https://api.dicebear.com/7.x/identicon/svg?seed=chunk${id}`,
+      storageKey: `mock/${id}`,
+      fileSize: 0,
+      fileType: 'file',
+      mimeType: 'application/octet-stream',
+      fileExtension: '',
+      uploadUserId: u.id,
+      isPublic: 0,
+      category: 'other',
+      status: 1,
+      referenceCount: 0,
+      createdAt: now(),
+    }
     db.files.push(file)
-    return ok({ businessId: id, fileId: id, fileUrl: file.fileUrl })
+    return ok({
+      uploadId,
+      taskId: db.seq.fileTask,
+      fileId: id,
+      businessId: id,
+      fileUrl: file.fileUrl,
+      quickUpload: false,
+      taskStatus: 3,
+    })
   }
 
   if (m === 'GET' && path === '/api/user/files') {

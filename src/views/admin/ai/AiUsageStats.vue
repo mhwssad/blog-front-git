@@ -1,3 +1,6 @@
+/** * AI 使用统计 * @description 展示 AI 调用次数、Token
+消耗、配额使用等统计数据，支持使用日志和会话管理 * @module admin/ai/AiUsageStats * @see
+api/sys/ai.ts (AiUsageStore, AiChannelStore) */
 <template>
   <div class="ai-usage-stats-page">
     <!-- 统计卡片 -->
@@ -40,10 +43,20 @@
         <el-tab-pane label="使用日志" name="logs">
           <el-form :model="logSearchForm" inline class="search-form">
             <el-form-item label="用户ID">
-              <el-input v-model="logSearchForm.userId" clearable placeholder="用户ID" style="width: 120px" />
+              <el-input
+                v-model="logSearchForm.userId"
+                clearable
+                placeholder="用户ID"
+                style="width: 120px"
+              />
             </el-form-item>
             <el-form-item label="渠道">
-              <el-select v-model="logSearchForm.channelConfigId" clearable placeholder="全部" style="width: 160px">
+              <el-select
+                v-model="logSearchForm.channelConfigId"
+                clearable
+                placeholder="全部"
+                style="width: 160px"
+              >
                 <el-option
                   v-for="ch in channelStore.channels"
                   :key="ch.id"
@@ -53,7 +66,12 @@
               </el-select>
             </el-form-item>
             <el-form-item label="状态">
-              <el-select v-model="logSearchForm.successStatus" clearable placeholder="全部" style="width: 100px">
+              <el-select
+                v-model="logSearchForm.successStatus"
+                clearable
+                placeholder="全部"
+                style="width: 100px"
+              >
                 <el-option
                   v-for="opt in AI_SUCCESS_STATUS_OPTIONS"
                   :key="opt.value"
@@ -103,7 +121,13 @@
                 </el-tag>
               </template>
             </el-table-column>
-            <el-table-column prop="errorCode" label="错误码" width="120" align="center" show-overflow-tooltip>
+            <el-table-column
+              prop="errorCode"
+              label="错误码"
+              width="120"
+              align="center"
+              show-overflow-tooltip
+            >
               <template #default="{ row }">
                 {{ row.errorCode || '-' }}
               </template>
@@ -132,10 +156,20 @@
         <el-tab-pane label="会话管理" name="sessions">
           <el-form :model="sessionSearchForm" inline class="search-form">
             <el-form-item label="用户ID">
-              <el-input v-model="sessionSearchForm.userId" clearable placeholder="用户ID" style="width: 120px" />
+              <el-input
+                v-model="sessionSearchForm.userId"
+                clearable
+                placeholder="用户ID"
+                style="width: 120px"
+              />
             </el-form-item>
             <el-form-item label="渠道">
-              <el-select v-model="sessionSearchForm.channelConfigId" clearable placeholder="全部" style="width: 160px">
+              <el-select
+                v-model="sessionSearchForm.channelConfigId"
+                clearable
+                placeholder="全部"
+                style="width: 160px"
+              >
                 <el-option
                   v-for="ch in channelStore.channels"
                   :key="ch.id"
@@ -145,7 +179,12 @@
               </el-select>
             </el-form-item>
             <el-form-item label="状态">
-              <el-select v-model="sessionSearchForm.status" clearable placeholder="全部" style="width: 100px">
+              <el-select
+                v-model="sessionSearchForm.status"
+                clearable
+                placeholder="全部"
+                style="width: 100px"
+              >
                 <el-option
                   v-for="opt in AI_SESSION_STATUS_OPTIONS"
                   :key="opt.value"
@@ -183,8 +222,20 @@
             <el-table-column prop="userId" label="用户ID" width="80" align="center" />
             <el-table-column prop="username" label="用户名" min-width="100" align="center" />
             <el-table-column prop="nickname" label="昵称" min-width="100" align="center" />
-            <el-table-column prop="channelName" label="渠道" min-width="140" align="center" show-overflow-tooltip />
-            <el-table-column prop="title" label="会话标题" min-width="160" align="center" show-overflow-tooltip />
+            <el-table-column
+              prop="channelName"
+              label="渠道"
+              min-width="140"
+              align="center"
+              show-overflow-tooltip
+            />
+            <el-table-column
+              prop="title"
+              label="会话标题"
+              min-width="160"
+              align="center"
+              show-overflow-tooltip
+            />
             <el-table-column prop="sceneType" label="场景" width="80" align="center" />
             <el-table-column label="状态" width="80" align="center">
               <template #default="{ row }">
@@ -233,39 +284,60 @@ import {
   formatAiSessionStatus,
 } from '@/utils'
 
+// Store 实例
 const usageStore = useAiUsageStore()
 const channelStore = useAiChannelStore()
 
+// 当前激活的 Tab 页
 const activeTab = ref('logs')
+
+// 统计数据引用（响应式更新）
 const stats = ref(usageStore.usageStats)
 
+// 日志搜索时间范围 [开始时间, 结束时间]
 const logTimeRange = ref<[string, string] | null>(null)
+// 会话搜索时间范围 [开始时间, 结束时间]
 const sessionTimeRange = ref<[string, string] | null>(null)
 
+// 日期选择器的默认时间（用于设置结束时间为当天 23:59:59）
 const defaultTime: [Date, Date] = [new Date(2000, 0, 1, 0, 0, 0), new Date(2000, 0, 1, 23, 59, 59)]
 
+// 日志搜索表单
 const logSearchForm = reactive({
   userId: undefined as number | undefined,
   channelConfigId: undefined as number | undefined,
   successStatus: undefined as number | undefined,
 })
 
+// 日志分页
 const logPagination = reactive({ current: 1, size: 20 })
 
+// 会话搜索表单
 const sessionSearchForm = reactive({
   userId: undefined as number | undefined,
   channelConfigId: undefined as number | undefined,
   status: undefined as number | undefined,
 })
 
+// 会话分页
 const sessionPagination = reactive({ current: 1, size: 20 })
 
+/**
+ * 格式化 Token 数量显示
+ * - 超过 10000 显示为 "Xw" 格式（万）
+ * - 否则使用千分位格式化
+ * @param value - Token 数量
+ */
 function formatTokenCount(value: number): string {
   if (value >= 10000) return `${(value / 10000).toFixed(1)}w`
   return value.toLocaleString()
 }
 
-// 日志相关
+// ==================== 日志相关操作 ====================
+
+/**
+ * 获取使用日志列表
+ */
 async function fetchLogs(): Promise<void> {
   await usageStore.fetchUsageLogs({
     ...logSearchForm,
@@ -276,12 +348,18 @@ async function fetchLogs(): Promise<void> {
   })
 }
 
+/**
+ * 日志搜索 - 重置到第一页并刷新数据
+ */
 function handleLogSearch(): void {
   logPagination.current = 1
   void fetchLogs()
   void fetchStats()
 }
 
+/**
+ * 重置日志搜索条件
+ */
 function handleLogReset(): void {
   logSearchForm.userId = undefined
   logSearchForm.channelConfigId = undefined
@@ -292,18 +370,30 @@ function handleLogReset(): void {
   void fetchStats()
 }
 
+/**
+ * 日志每页条数变更
+ * @param size - 新的每页条数
+ */
 function handleLogSizeChange(size: number): void {
   logPagination.size = size
   logPagination.current = 1
   void fetchLogs()
 }
 
+/**
+ * 日志页码变更
+ * @param current - 新的页码
+ */
 function handleLogPageChange(current: number): void {
   logPagination.current = current
   void fetchLogs()
 }
 
-// 会话相关
+// ==================== 会话相关操作 ====================
+
+/**
+ * 获取会话列表
+ */
 async function fetchSessions(): Promise<void> {
   await usageStore.fetchSessions({
     ...sessionSearchForm,
@@ -314,11 +404,17 @@ async function fetchSessions(): Promise<void> {
   })
 }
 
+/**
+ * 会话搜索 - 重置到第一页并刷新数据
+ */
 function handleSessionSearch(): void {
   sessionPagination.current = 1
   void fetchSessions()
 }
 
+/**
+ * 重置会话搜索条件
+ */
 function handleSessionReset(): void {
   sessionSearchForm.userId = undefined
   sessionSearchForm.channelConfigId = undefined
@@ -328,17 +424,28 @@ function handleSessionReset(): void {
   void fetchSessions()
 }
 
+/**
+ * 会话每页条数变更
+ * @param size - 新的每页条数
+ */
 function handleSessionSizeChange(size: number): void {
   sessionPagination.size = size
   sessionPagination.current = 1
   void fetchSessions()
 }
 
+/**
+ * 会话页码变更
+ * @param current - 新的页码
+ */
 function handleSessionPageChange(current: number): void {
   sessionPagination.current = current
   void fetchSessions()
 }
 
+/**
+ * 获取统计数据（总调用次数、成功/失败次数、Token 消耗等）
+ */
 async function fetchStats(): Promise<void> {
   await usageStore.fetchUsageStats({
     ...logSearchForm,
@@ -348,6 +455,10 @@ async function fetchStats(): Promise<void> {
   stats.value = usageStore.usageStats
 }
 
+/**
+ * Tab 页切换处理
+ * @param tab - 切换后的 Tab 标识
+ */
 function handleTabChange(tab: string | number): void {
   if (tab === 'logs') {
     void fetchLogs()

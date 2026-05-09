@@ -1,7 +1,7 @@
 import { defineMock } from 'vite-plugin-mock-dev-server'
 import { cp, db, has, now, num, ok, page } from './shared'
 
-const STATUS_LABELS: Record<number, string> = { 0: '待审核', 1: '已通过', 2: '已拒绝', 3: '已撤回' }
+const STATUS_LABELS: Record<number, string> = { 0: '待审核', 1: '已通过', 2: '已拒绝', 3: '待补充' }
 
 function handle(req: any) {
   const m = String(req.method).toUpperCase()
@@ -40,6 +40,7 @@ function handle(req: any) {
     if (x) {
       x.applyStatus = req.body.targetStatus ?? x.applyStatus
       x.applyStatusLabel = STATUS_LABELS[x.applyStatus] ?? '未知'
+      x.reviewComment = req.body.reviewComment ?? null
     }
     return ok(null)
   }

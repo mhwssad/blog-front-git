@@ -1,55 +1,45 @@
 # 前端代码编写规范
 
-## 目的
+## 1. 文档定位
 
-本文档用于统一当前项目的前端代码风格、目录组织和协作方式。
+本文档用于统一当前项目的前端**代码编写风格、实现模式和协作约定**。
 
-目标是减少以下问题：
+适用范围：
 
-- 同一类功能出现多种写法
-- 目录结构混乱，组件职责不清
-- 页面、接口、状态管理分层不稳定
-- 新增功能时风格与现有代码割裂
+- Vue 单文件组件编写方式
+- TypeScript 使用规范
+- API、Store、Router 等模块的代码编写约定
+- 格式化、注释、命名等编码风格
 
-本文档以**当前仓库已经采用的实现方式**为准，不额外引入一套脱离现状的规范。
+本文档专注于**代码编写规范**，不包含目录结构、文件放置、模块组织等内容。项目结构规范请参考 `docs/project-structure-convention.md`。
 
-## 适用范围
+优先级说明：
 
-- `src/` 下所有前端业务代码
-- `docs/` 下与前端实现相关的协作文档
-- 重点覆盖：
-  - Vue 单文件组件
-  - TypeScript 模块
-  - API 请求层
-  - Pinia Store
-  - Router
-  - 样式文件
+- 代码风格、组件写法、TypeScript 用法以本文档为准
+- 目录结构、文件放置、模块边界以 `docs/project-structure-convention.md` 为准
+- 仓库命令、基础开发流程以 `CLAUDE.md` 为准
 
-## 总体原则
+## 2. 总体原则
 
-- 优先遵循现有目录和命名约定，不随意创造新风格
-- 优先拆分“通用组件”和“功能专属组件”，避免职责混杂
-- 优先保持后台和前台分层清晰
-- 优先让后端菜单、前端固定路由、页面组件三者关系明确
 - 优先使用类型约束代替隐式约定
+- 优先保持前后台代码风格一致
 - 优先小步修改，避免一次性大范围重写
+- 优先使用 Element Plus 现成组件，只在无法满足需求时才自定义基础组件，并保持风格一致
+- 优先在 API 层做字段兼容和响应归一化，不在页面散落字段兜底逻辑
+- 优先拆分通用组件和功能专属组件，避免职责混杂
 
-## 技术栈约定
+## 3. 技术栈约定
 
 - 框架：Vue 3 + TypeScript
 - 构建：Vite + UnoCSS
 - UI：Element Plus + @element-plus/icons-vue
 - 状态管理：Pinia
 - 路由：Vue Router
-- 请求层：Axios（`src/api/request/`）+ 三层拦截器
-- 校验与格式化：
-  - `eslint.config.ts`
-  - `.prettierrc.json`
-  - `pnpm lint`
-  - `pnpm type-check`
+- 请求层：Axios（三层拦截器）
+- 校验与格式化：ESLint + Prettier
 - 提交规范：commitlint + commitizen + cz-git
 
-## 格式化规范
+## 4. 格式化规范
 
 当前项目以 Prettier 配置为准：
 
@@ -69,88 +59,25 @@ pnpm type-check
 pnpm lint
 ```
 
-## 目录结构规范
-
-### 前后台分层
-
-- 前台页面统一放在 `src/views/front`
-- 后台页面统一放在 `src/views/admin`
-- 通用错误页、登录注册页放在 `src/views/common`
-- 后台布局放在 `src/layouts`
-
-### 功能目录
-
-每个后台功能使用独立目录表示，不要把多个功能页面平铺在同一级目录里。
-
-推荐示例：
-
-- `src/views/admin/user`
-- `src/views/admin/role`
-- `src/views/admin/article`
-- `src/views/admin/category`
-
-### 组件目录
-
-- 全局通用组件：`src/components`
-- 功能专属组件：放在功能目录内的 `components/`
-
-推荐示例：
-
-- `src/components/admin/AdminResourceOverview.vue`
-- `src/views/admin/user/components/UserFormDialog.vue`
-- `src/views/admin/role/components/AssignMenusDialog.vue`
-
-禁止把明显只服务于单个功能的组件继续堆到全局 `src/components`。
-
-### layouts、plugins、composables、utils
-
-- `src/layouts/`：应用布局层（AdminLayouts.vue 及侧边栏/头部等组件）
-- `src/plugins/`：应用级插件注册（`permission.ts` 注册 v-permission 指令，`element-plus.ts` 注册 Element Plus 图标）
-- `src/composables/`：可复用组合式逻辑
-- `src/utils/`：无状态工具函数、格式化、存储等
-- `src/styles/`：全局样式、变量、reset
-
-## 文件命名规范
+## 5. 文件命名规范
 
 ### Vue 页面与组件
 
 - Vue 文件名使用 PascalCase
-- 列表页建议使用复数命名
-- 对话框、抽屉、详情卡片等组件按职责命名
-
-推荐示例：
-
-- `Users.vue`
-- `Roles.vue`
-- `Articles.vue`
-- `UserFormDialog.vue`
-- `AssignMenusDialog.vue`
-- `ArticleEditorPage.vue`
+- 列表页建议使用复数命名（如 `Users.vue`、`Articles.vue`）
+- 对话框、抽屉、详情卡片等组件按职责命名（如 `UserFormDialog.vue`、`AssignMenusDialog.vue`）
 
 ### TypeScript 模块
 
-- 普通工具模块使用小写或语义化名称
-- 组合式函数以 `use` 开头
-- 类型文件使用统一聚合方式维护
+- 组合式函数以 `use` 开头（如 `useTableHeight`、`usePermission`、`useContentAdmin`）
+- Store 使用 `useXxxStore` 命名
+- 普通工具模块使用语义化命名（如 `dateUtils.ts`、`storage.ts`）
 
-推荐示例：
+### 文件放置
 
-- `useTableHeight.ts` — 表格高度自适应
-- `usePermission.ts` — 权限判断
-- `useContentAdmin.ts` — 内容管理通用逻辑
-- `permission.ts` — 权限工具函数
+组件和文件的放置规则（全局组件 vs 私有组件、API 分层等）以 `docs/project-structure-convention.md` 为准，本文档不重复约束。
 
-### Composable 规范
-
-可复用交互逻辑放在 `src/composables/`，使用 `use` 前缀命名。当前已有：
-
-- `useTableHeight` — 表格高度自适应（监听 resize、自动计算）
-- `usePermission` — 权限判断封装
-- `useContentAdmin` — 内容管理 CRUD 通用逻辑
-
-只在被 2 个及以上页面复用时才抽成 composable，不要过度抽象。
-
-## Vue 单文件组件规范
+## 6. Vue 单文件组件规范
 
 推荐结构：
 
@@ -192,13 +119,13 @@ pnpm lint
 - 列表页表格列优先显式配置 `label`、`prop`、`min-width`
 - 超长文本优先使用 `show-overflow-tooltip`
 
-## TypeScript 规范
+## 7. TypeScript 规范
 
 - 能写类型时不要退回 `any`
 - 接口请求、页面数据、表单数据都应有明确类型
-- 共用类型统一放在 `src/api/types.ts`
+- 共用类型统一放在 `src/types/api-types.ts`
 - 局部类型仅在作用域非常明确时定义在当前文件
-- 异步函数优先显式写返回值，如 `Promise<void>`
+- 异步函数优先显式写返回值
 
 推荐：
 
@@ -212,7 +139,7 @@ async function fetchRoles(): Promise<void> {}
 async function fetchRoles() {}
 ```
 
-## 注释规范
+## 8. 注释规范
 
 以现有代码风格为准，简洁、聚焦于"为什么"而非"是什么"。
 
@@ -269,21 +196,7 @@ const response = await articleApi.getArticles(params)
 - 模板中不写 HTML 注释
 - 复杂交互逻辑在 `<script>` 部分可加内联注释
 
-## API 层规范
-
-### 请求架构
-
-```
-src/api/request/
-├── index.ts              # axios 实例 + http 封装 (get/post/put/delete/patch)
-├── utils.ts             # 日志、错误处理、Token 工具函数
-└── interceptors/
-    ├── request.ts       # 请求拦截器：注入 Authorization 令牌
-    ├── response.ts      # 响应拦截器：业务错误码处理、错误 Toast
-    └── refresh.ts       # Token 刷新拦截器：401 时自动刷新 + 请求队列
-```
-
-Axios 实例默认配置：`baseURL: /api`，`timeout: 15000`。
+## 9. API 编写规范
 
 ### http 封装用法
 
@@ -294,51 +207,22 @@ Axios 实例默认配置：`baseURL: /api`，`timeout: 15000`。
 - `skipAuth: true` — 跳过令牌注入（如注册接口）
 - `skipRefresh: true` — 跳过 Token 刷新（如刷新接口本身）
 
-### 目录约定
-
-- 认证相关：`src/api/auth.ts`
-- 请求基础设施：`src/api/request/`
-- 统一类型定义：`src/api/types.ts`（ApiResponse、ApiError、AuthMenuInfo 等）
-- 后台接口：`src/api/sys/*`（user、role、menu、config、notice、log、article、category、tag、comment、collection、interaction、footprint、chat、file、follow）
-- 前台用户侧接口：`src/api/user/*`（article、category、chat、collection、comment、file、follow、footprint、interaction、content）
-- 公共内容接口：`src/api/content.ts`（文章/分类/标签/评论的公开查询）
-
 ### 编写要求
 
 - 每个接口模块只负责本领域请求
 - 请求注释写明接口编号、方法、路径
 - 优先在 API 层做字段兼容和响应归一化
-- 页面不要直接到处写字段兜底逻辑
+- 页面统一使用归一化后的字段名（如 `createTime`），不在页面散落字段兜底逻辑
 
-例如：
+例如：后端返回 `createdAt` 时，API 层 normalize 为 `createTime`，页面直接使用 `createTime`。
 
-- 如果后端可能返回 `createdAt`
-- 但页面统一使用 `createTime`
-- 应优先在 `src/api/sys/*.ts` 中做 normalize 处理
+### 类型使用
 
-## Store 规范
+- 所有接口类型统一使用 `src/types/api-types.ts` 中的定义
+- API 模块通过 `import type { ... } from '@/types/api-types'` 引入
+- 非常局部、只在单一文件使用的类型才允许定义在当前文件
 
-### 目录结构
-
-```text
-src/stores/
-├── index.ts              # 统一导出所有 store
-├── auth.ts               # 认证态（登录、Token、用户信息、菜单）
-├── tabs.ts               # 后台标签页
-├── modules/              # 业务域 store
-│   ├── user.ts, role.ts, menu.ts, config.ts, notice.ts, log.ts
-│   ├── article.ts, category.ts, tag.ts, comment.ts, collection.ts, interaction.ts, footprint.ts
-│   ├── userNotice.ts     # 用户通知
-│   ├── frontContent.ts   # 前台内容
-│   ├── userContent.ts    # 用户内容
-│   └── follow.ts, file.ts, chat.ts
-```
-
-### 使用原则
-
-- 认证态、标签页、全局状态放在 `src/stores` 根级别
-- 业务领域 store 放在 `src/stores/modules`
-- 页面局部状态优先留在页面内部，不要所有数据都塞进 store
+## 10. Store 编写规范
 
 ### 编写要求
 
@@ -347,24 +231,9 @@ src/stores/
 - 不在 store 内写与视图强耦合的 DOM 逻辑
 - 请求失败返回布尔值或空结构时，要保持语义稳定
 - 登录态相关能力统一收口到 `src/stores/auth.ts`
+- 页面临时状态优先留在页面内部，不要无差别提升到 store
 
-## Router 规范
-
-当前项目采用"固定前后台路由 + 后端菜单动态路由"的组合模式。
-
-### 路由来源
-
-| 路由类型 | 来源 | 示例 |
-|---------|------|------|
-| 前台固定路由 | 前端代码维护 | `/`、`/login`、`/register` |
-| 后台固定路由 | 前端代码维护 | `/admin/dashboard` |
-| 后台动态业务路由 | 后端菜单授权 | `/admin/users`、`/admin/articles` |
-
-### 路径规范
-
-- `/admin/**` 统一视为后台，渲染 `AdminLayouts.vue`
-- 非 `/admin/**` 统一视为前台
-- 菜单 `routePath` 必须直接写最终访问路径，不支持旧路径别名（如 `/system/**`、`/content/**`）
+## 11. Router 编写规范
 
 ### 菜单类型
 
@@ -390,7 +259,7 @@ export function resolveMenuComponent(menu): ResolvedMenuComponent
 常见映射：
 
 | 后端 component | 前端页面文件 |
-|---------------|------------|
+| -------------- | ------------ |
 | `admin/user/Users` | `src/views/admin/user/Users.vue` |
 | `admin/article/Articles` | `src/views/admin/article/Articles.vue` |
 | `layouts/RouteView` | `RouterView` 容器 |
@@ -403,16 +272,14 @@ export function resolveMenuComponent(menu): ResolvedMenuComponent
 - 所有动态路由作为 `AdminLayout`（`/admin`）的子路由注册
 - `routeName` 缺失时自动生成：从路径提取 PascalCase 名称，前缀 `Admin`
 - 重复 `routeName` 时追加 `_${menuId}` 保证唯一性
-
-侧边栏菜单使用 `src/router/menu.ts` 中的 `filterVisibleMenus` 过滤：
-
-- `visible === 1` 且 `type !== 'B'` 的菜单才显示
-
-### 动态路由注册要点
-
-- `routeName` 必须全局唯一，推荐 PascalCase（如 `AdminUsers`、`AdminArticles`）
 - `keepAlive = 1` 允许页面缓存，`keepAlive = 0` 不缓存
 - `icon` 使用 Element Plus 图标别名（`Home`、`User`、`Document` 等）
+
+### 侧边栏菜单过滤
+
+使用 `src/router/menu.ts` 中的 `filterVisibleMenus` 过滤：
+
+- `visible === 1` 且 `type !== 'B'` 的菜单才显示
 
 ### 编写要求
 
@@ -424,7 +291,7 @@ export function resolveMenuComponent(menu): ResolvedMenuComponent
   - 页面组件是否在 `src/views/admin/**`
   - 后端 `component` 是否可被解析
 
-## 页面编写规范
+## 12. 页面编写规范
 
 ### 列表页
 
@@ -457,11 +324,7 @@ export function resolveMenuComponent(menu): ResolvedMenuComponent
 - 弹窗打开时再拉详情，不要默认无条件请求
 - 对话框布局优先保证居中和移动端可用
 
-## 权限控制规范
-
-### 页面级权限
-
-由路由守卫和后端菜单共同控制，详见 Router 规范。
+## 13. 权限控制规范
 
 ### 按钮级权限
 
@@ -478,8 +341,14 @@ export function resolveMenuComponent(menu): ResolvedMenuComponent
 <el-button v-permission.any="['sys:user:delete', 'sys:user:force-delete']">删除</el-button>
 
 <!-- 对象形式：可指定 mode 和 action -->
-<el-button v-permission="{ permissions: 'sys:user:delete', mode: 'any', action: 'disable' }">删除</el-button>
+<el-button
+  v-permission="{ permissions: 'sys:user:delete', mode: 'any', action: 'disable' }"
+>
+  删除
+</el-button>
 ```
+
+指令模式说明：
 
 - `v-permission`（默认）：无权限时 `display: none`
 - `v-permission.disable`：无权限时 `disabled + 0.6透明度 + pointer-events:none`，同时禁用嵌套的 button/input/select/textarea
@@ -487,7 +356,7 @@ export function resolveMenuComponent(menu): ResolvedMenuComponent
 
 不要只隐藏按钮却保留无保护的点击逻辑。
 
-## 样式规范
+## 14. 样式编写规范
 
 ### 基本原则
 
@@ -502,48 +371,28 @@ export function resolveMenuComponent(menu): ResolvedMenuComponent
 - 表格操作区：`table-actions`
 - 页面头部：`card-header`
 
-### 样式编写要求
+### 编写要求
 
 - 优先保证桌面端和移动端都可用
 - 对后台列表页，优先保证表格、分页、搜索区对齐统一
 - 对弹窗，优先保证居中显示与合理滚动
 
-## 文档同步规范
-
-当以下内容发生变化时，应同步更新文档：
-
-- 路由体系变化
-- 后端菜单与组件映射规则变化
-- 目录组织变化
-- 通用组件位置变化
-- 重要页面开发约定变化
-
-推荐同步位置：
-
-- `README.md`
-- 本文档（Router 规范章节已包含动态路由映射规则）
-
-## 提交前检查清单
+## 15. 提交前检查清单
 
 提交代码前至少确认：
 
-1. 类型检查通过
-2. Lint 可通过或已知问题未被扩大
-3. 新增页面目录符合当前结构
-4. 新增组件位置符合“通用 / 专属”划分
-5. API 字段与页面字段命名一致，必要时已做 normalize
-6. `/admin` 后台页面与前台页面边界清晰
-7. 相关文档已同步更新
+1. 类型检查通过（`pnpm type-check`）
+2. Lint 可通过或已知问题未被扩大（`pnpm lint`）
+3. API 字段与页面字段命名一致，必要时已做 normalize
+4. 新增组件命名符合 PascalCase 规范
+5. 相关文档已同步更新
 
-## 不推荐做法
+## 16. 不推荐做法
 
 - 在页面里直接拼装与领域无关的大量请求逻辑
-- 同一个功能拆出多套目录结构
+- 同一个功能出现多种写法
 - 为了临时兼容，把字段兜底逻辑散落在多个页面
-- 后台页面写到 `src/views/front`
-- 通用组件和专属组件混放
-- 在没有文档同步的情况下修改路由基础约定
-
-## 推荐阅读
-
-本文档的 Router 规范章节已覆盖动态路由映射规则，不再单独维护。
+- 退回 `any` 类型
+- 在 API 层写视图提示和页面跳转
+- 在 Store 中堆叠只服务单个页面的展示逻辑
+- 在 `utils` 中实现依赖页面上下文的业务流程

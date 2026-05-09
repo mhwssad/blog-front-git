@@ -18,12 +18,38 @@ function createApiError(response: AxiosResponse<ApiResponse>): ApiError {
   return error
 }
 
+async function normalizeResponse(
+  response: AxiosResponse<ApiResponse | Blob>
+): Promise<AxiosResponse<ApiResponse | Blob>> {
+  const expectsBlob = response.config.responseType === 'blob'
+  if (!expectsBlob || typeof Blob === 'undefined' || !(response.data instanceof Blob)) {
+    return response
+  }
+
+  const contentType = String(response.headers?.['content-type'] || response.data.type || '')
+  if (!contentType.toLowerCase().includes('json')) {
+    return response
+  }
+
+  try {
+    const text = await response.data.text()
+    return {
+      ...response,
+      data: JSON.parse(text) as ApiResponse,
+    }
+  } catch {
+    return response
+  }
+}
+
 /**
  * 设置响应拦截器
  */
 export function setupResponseInterceptor(axiosInstance: AxiosInstance, onUnauthorized?: () => void): void {
   axiosInstance.interceptors.response.use(
-    (response: AxiosResponse<ApiResponse>) => {
+    async (rawResponse: AxiosResponse<ApiResponse | Blob>) => {
+      const response = await normalizeResponse(rawResponse)
+
       // 打印响应日志
       logger.response({
         url: response.config.url,
@@ -31,12 +57,18 @@ export function setupResponseInterceptor(axiosInstance: AxiosInstance, onUnautho
         data: response.data
       })
 
+      if (response.config.responseType === 'blob' && response.data instanceof Blob) {
+        return response
+      }
+
+      const apiResponse = response as AxiosResponse<ApiResponse>
+
       // 检查业务状态码
-      const { code } = response.data
+      const { code } = apiResponse.data
 
       // code 为 200 表示成功
       if (code === 200) {
-        return response
+        return apiResponse
       }
 
       // code 为 401 表示未授权或令牌过期
@@ -44,11 +76,11 @@ export function setupResponseInterceptor(axiosInstance: AxiosInstance, onUnautho
         if (onUnauthorized) {
           onUnauthorized()
         }
-        return Promise.reject(createApiError(response))
+        return Promise.reject(createApiError(apiResponse))
       }
 
       // 其他业务错误
-      const error = createApiError(response)
+      const error = createApiError(apiResponse)
       handleApiError(error)
 
       return Promise.reject(error)

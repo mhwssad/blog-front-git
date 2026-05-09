@@ -3,7 +3,7 @@
  * 管理连接生命周期，将 WebSocket 事件分发到 userChat store
  */
 
-import { onUnmounted, ref, watch } from 'vue'
+import { onUnmounted, ref } from 'vue'
 import { useUserChatStore } from '@/stores/modules/userChat'
 import { getChatWebSocket, destroyChatWebSocket, type ChatWebSocket } from '@/api/websocket'
 import type {

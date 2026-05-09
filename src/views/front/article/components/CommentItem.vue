@@ -39,7 +39,12 @@
           maxlength="500"
           @keyup.enter="submitReply"
         />
-        <el-button size="small" type="primary" :disabled="!replyContent.trim()" @click="submitReply">
+        <el-button
+          size="small"
+          type="primary"
+          :disabled="!replyContent.trim()"
+          @click="submitReply"
+        >
           发送
         </el-button>
       </div>
@@ -61,6 +66,11 @@
 </template>
 
 <script lang="ts" setup>
+/**
+ * 评论项组件
+ * @description 展示单条评论，支持回复、点赞、删除操作，支持嵌套子评论
+ * @module front/article/components/CommentItem
+ */
 import { computed, ref } from 'vue'
 import { Star } from '@element-plus/icons-vue'
 import type { CommentVO } from '@/types/api-types'
@@ -71,7 +81,7 @@ const props = withDefaults(
     currentUserId?: number
     isReply?: boolean
   }>(),
-  { isReply: false },
+  { isReply: false }
 )
 
 const emit = defineEmits<{
@@ -81,8 +91,10 @@ const emit = defineEmits<{
 }>()
 
 const showReplyInput = ref(false)
+// 回复内容
 const replyContent = ref('')
 
+// 判断当前用户是否为评论作者
 const isOwner = computed(() => props.currentUserId === props.comment.userId)
 
 function toggleLike(): void {
@@ -94,11 +106,11 @@ function toggleReply(): void {
   replyContent.value = ''
 }
 
+/** 提交回复 */
 function submitReply(): void {
   if (!replyContent.value.trim()) return
-  const rootId = props.comment.rootId && props.comment.rootId !== 0
-    ? props.comment.rootId
-    : props.comment.id
+  const rootId =
+    props.comment.rootId && props.comment.rootId !== 0 ? props.comment.rootId : props.comment.id
   emit('reply', {
     content: replyContent.value.trim(),
     rootId,

@@ -13,11 +13,7 @@
       <div class="record-items">
         <div v-for="record in records" :key="record.id" class="record-item">
           <div class="record-info">
-            <router-link
-              v-if="record.targetUrl"
-              :to="record.targetUrl"
-              class="record-link"
-            >
+            <router-link v-if="record.targetUrl" :to="record.targetUrl" class="record-link">
               {{ record.targetTitle ?? '未知标题' }}
             </router-link>
             <span v-else class="record-title-text">{{ record.targetTitle ?? '未知标题' }}</span>
@@ -28,12 +24,7 @@
           <div v-if="record.remark" class="record-remark">{{ record.remark }}</div>
           <div class="record-footer">
             <span class="record-time">{{ record.createdAt }}</span>
-            <el-button
-              link
-              size="small"
-              type="danger"
-              @click="emit('delete', record.id)"
-            >
+            <el-button link size="small" type="danger" @click="emit('delete', record.id)">
               删除
             </el-button>
           </div>
@@ -57,6 +48,11 @@
 </template>
 
 <script lang="ts" setup>
+/**
+ * 收藏记录列表组件
+ * @description 展示某个收藏夹下的所有收藏内容，支持删除和分页
+ * @module front/collection/components/CollectionRecordList
+ */
 import { ref } from 'vue'
 import type { CollectionVO } from '@/types/api-types'
 
@@ -74,6 +70,7 @@ const emit = defineEmits<{
 }>()
 
 const currentPage = ref(1)
+// 当前页码（用于分页组件）
 </script>
 
 <style scoped>

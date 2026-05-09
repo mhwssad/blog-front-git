@@ -10,6 +10,11 @@
 </template>
 
 <script lang="ts" setup>
+/**
+ * 备注编辑弹窗组件
+ * @description 为关注的好友添加或修改备注名
+ * @module front/profile/components/RemarkEditDialog
+ */
 import { ref, computed, watch } from 'vue'
 
 const props = defineProps<{
@@ -24,18 +29,20 @@ const emit = defineEmits<{
 
 const dialogVisible = computed({
   get: () => props.visible,
-  set: (val) => emit('update:visible', val),
+  set: val => emit('update:visible', val),
 })
 
+// 当前备注内容
 const remark = ref('')
 
 watch(
   () => props.visible,
-  (val) => {
+  val => {
     if (val) remark.value = props.currentRemark ?? ''
-  },
+  }
 )
 
+/** 保存备注 */
 function handleSave(): void {
   emit('save', remark.value.trim())
   dialogVisible.value = false

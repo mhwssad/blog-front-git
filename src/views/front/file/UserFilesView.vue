@@ -61,14 +61,17 @@
 
     <el-empty v-else description="暂无文件" />
 
-    <FileUploadDialog
-      v-model:visible="uploadVisible"
-      @success="handleUploadSuccess"
-    />
+    <FileUploadDialog v-model:visible="uploadVisible" @success="handleUploadSuccess" />
   </div>
 </template>
 
 <script lang="ts" setup>
+/**
+ * 我的文件页面
+ * @description 展示用户上传的文件列表，支持搜索、上传、删除和链接复制
+ * @module front/file/UserFilesView
+ * @see ../../api/user/file.ts
+ */
 import { ref, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { useUserFileStore } from '@/stores'
@@ -76,8 +79,10 @@ import FileUploadDialog from './components/FileUploadDialog.vue'
 
 const store = useUserFileStore()
 
+// 搜索关键词
 const keyword = ref('')
 const currentPage = ref(1)
+// 上传弹窗是否显示
 const uploadVisible = ref(false)
 
 async function loadFiles(): Promise<void> {

@@ -8,6 +8,7 @@ import type {
   ReportAdminVO,
   ReportHandleRequest,
   ReportRejectRequest,
+  ReportRepairRequest,
   ReportHandleLogVO,
   PageResult,
 } from '@/types/api-types'
@@ -55,6 +56,13 @@ export const reportSysApi = {
    */
   rejectReport: (id: number, data: ReportRejectRequest) =>
     http.put<void>(`/sys/reports/${id}/reject`, data),
+
+  /**
+   * 修复举报状态
+   * PUT /api/sys/reports/{id}/repair
+   */
+  repairReport: (id: number, data: ReportRepairRequest) =>
+    http.put<void>(`/sys/reports/${id}/repair`, data),
 
   /**
    * 4.7 超管接管举报

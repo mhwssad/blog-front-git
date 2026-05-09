@@ -37,6 +37,12 @@
 </template>
 
 <script lang="ts" setup>
+/**
+ * 标签详情页面
+ * @description 展示某个标签下的文章列表，支持分页浏览
+ * @module front/tag/TagDetailView
+ * @see ../../api/content.ts
+ */
 import { ref, reactive, onMounted, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useFrontContentStore } from '@/stores'
@@ -46,7 +52,9 @@ const route = useRoute()
 const router = useRouter()
 const frontStore = useFrontContentStore()
 
+// 当前查看的标签信息
 const currentTag = ref<PublicTagVO | null>(null)
+// 分页参数
 const pagination = reactive({ current: 1, size: 10 })
 
 async function loadData(): Promise<void> {
@@ -70,11 +78,14 @@ function handlePageChange(page: number): void {
   void loadData()
 }
 
-watch(() => route.params.id, () => {
-  currentTag.value = null
-  pagination.current = 1
-  void loadData()
-})
+watch(
+  () => route.params.id,
+  () => {
+    currentTag.value = null
+    pagination.current = 1
+    void loadData()
+  }
+)
 
 onMounted(async () => {
   if (!frontStore.tags.length) {

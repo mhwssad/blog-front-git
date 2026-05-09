@@ -29,13 +29,16 @@
 </template>
 
 <script lang="ts" setup>
+/**
+ * 文件上传弹窗组件
+ * @description 支持拖拽上传，显示上传进度，支持秒传和分片上传
+ * @module front/file/components/FileUploadDialog
+ */
 import { ref, computed } from 'vue'
 import { ElMessage } from 'element-plus'
 import { UploadFilled } from '@element-plus/icons-vue'
 import type { UploadFile as ElUploadFile } from 'element-plus'
 import { useUserFileStore } from '@/stores'
-
-const store = useUserFileStore()
 
 const props = defineProps<{
   visible: boolean
@@ -46,14 +49,20 @@ const emit = defineEmits<{
   success: []
 }>()
 
+const store = useUserFileStore()
+
 const dialogVisible = computed({
   get: () => props.visible,
-  set: (val) => emit('update:visible', val),
+  set: val => emit('update:visible', val),
 })
 
+// 已选择的待上传文件
 const selectedFile = ref<File | null>(null)
+// 是否正在上传
 const uploading = ref(false)
+// 上传进度（0-100）
 const uploadProgress = ref(0)
+// 上传状态：'' | 'success' | 'exception' | 'warning'
 const uploadStatus = ref<'' | 'success' | 'exception' | 'warning'>('')
 
 function handleFileChange(file: ElUploadFile): void {
@@ -62,6 +71,7 @@ function handleFileChange(file: ElUploadFile): void {
   uploadStatus.value = ''
 }
 
+/** 处理文件上传 */
 async function handleUpload(): Promise<void> {
   if (!selectedFile.value) return
 

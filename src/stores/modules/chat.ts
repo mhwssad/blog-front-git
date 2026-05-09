@@ -13,6 +13,9 @@ import type {
   ChatLobbyPinnedMessageVO,
   ChatLobbySettingsUpdateRequest,
   ChatMessageVO,
+  ChatMuteCreateRequest,
+  ChatMuteVO,
+  ChatMuteQueryRequest,
   GroupJoinApplicationReviewRequest,
   GroupJoinApplicationVO,
   SysChannelApplicationQueryRequest,
@@ -113,6 +116,10 @@ export const useChatStore = defineStore('admin-chat', () => {
   const groupJoinApplications = ref<GroupJoinApplicationVO[]>([])
   const groupJoinAppTotal = ref(0)
   const groupJoinAppLoading = ref(false)
+
+  const mutes = ref<ChatMuteVO[]>([])
+  const muteTotal = ref(0)
+  const muteLoading = ref(false)
 
   // ==================== 操作 ====================
 
@@ -308,6 +315,8 @@ export const useChatStore = defineStore('admin-chat', () => {
     channelAppDetail.value = null
     groupJoinApplications.value = []
     groupJoinAppTotal.value = 0
+    mutes.value = []
+    muteTotal.value = 0
   }
 
   // ==================== 大厅频道管理 ====================
@@ -470,6 +479,38 @@ export const useChatStore = defineStore('admin-chat', () => {
     }
   }
 
+  // ==================== 禁言管理 ====================
+
+  async function createMute(data: ChatMuteCreateRequest): Promise<boolean> {
+    try {
+      await SysChatApi.createMute(data)
+      return true
+    } catch {
+      return false
+    }
+  }
+
+  async function fetchMutes(params?: ChatMuteQueryRequest): Promise<void> {
+    muteLoading.value = true
+    try {
+      const response = await SysChatApi.getMutes(params)
+      const data = response.data.data
+      mutes.value = data.records
+      muteTotal.value = data.total
+    } finally {
+      muteLoading.value = false
+    }
+  }
+
+  async function releaseMute(id: number): Promise<boolean> {
+    try {
+      await SysChatApi.releaseMute(id)
+      return true
+    } catch {
+      return false
+    }
+  }
+
   return {
     conversations,
     conversationTotal,
@@ -495,6 +536,9 @@ export const useChatStore = defineStore('admin-chat', () => {
     groupJoinApplications,
     groupJoinAppTotal,
     groupJoinAppLoading,
+    mutes,
+    muteTotal,
+    muteLoading,
 
     fetchConversations,
     fetchConversationDetail,
@@ -521,5 +565,8 @@ export const useChatStore = defineStore('admin-chat', () => {
     reviewChannelApplication,
     fetchGroupJoinApplications,
     reviewGroupJoinApplication,
+    createMute,
+    fetchMutes,
+    releaseMute,
   }
 })

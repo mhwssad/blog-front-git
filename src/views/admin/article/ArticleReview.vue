@@ -3,12 +3,7 @@
     <el-card class="search-card" shadow="never">
       <el-form :model="query" inline>
         <el-form-item label="审核状态">
-          <el-select
-            v-model="query.reviewStatus"
-            placeholder="全部"
-            clearable
-            style="width: 160px"
-          >
+          <el-select v-model="query.reviewStatus" placeholder="全部" clearable style="width: 160px">
             <el-option label="待审核" :value="1" />
             <el-option label="已通过" :value="2" />
             <el-option label="已拒绝" :value="3" />
@@ -41,12 +36,7 @@
         <el-table-column prop="createdAt" label="提交时间" min-width="180" align="center" />
         <el-table-column label="操作" min-width="120" align="center">
           <template #default="{ row }">
-            <el-button
-              v-if="row.reviewStatus === 1"
-              link
-              type="primary"
-              @click="handleReview(row)"
-            >
+            <el-button v-if="row.reviewStatus === 1" link type="primary" @click="handleReview(row)">
               审核
             </el-button>
             <template v-else>
@@ -69,7 +59,11 @@
       </div>
     </el-card>
 
-    <el-dialog v-model="detailVisible" :title="isReviewMode ? '文章审核' : '文章详情'" width="700px">
+    <el-dialog
+      v-model="detailVisible"
+      :title="isReviewMode ? '文章审核' : '文章详情'"
+      width="700px"
+    >
       <div v-loading="detailLoading">
         <el-descriptions v-if="detailData" :column="2" border>
           <el-descriptions-item label="标题" :span="2">
@@ -109,7 +103,10 @@
                   {{ log.fromReviewStatusLabel }} -> {{ log.toReviewStatusLabel }}
                 </span>
               </div>
-              <div v-if="log.reviewComment" style="color: var(--el-text-color-secondary); margin-top: 4px">
+              <div
+                v-if="log.reviewComment"
+                style="color: var(--el-text-color-secondary); margin-top: 4px"
+              >
                 {{ log.reviewComment }}
               </div>
             </el-timeline-item>
@@ -160,43 +157,51 @@
       </el-form>
       <template #footer>
         <el-button @click="repairVisible = false">取消</el-button>
-        <el-button type="primary" :loading="repairLoading" @click="confirmRepair">确认修复</el-button>
+        <el-button type="primary" :loading="repairLoading" @click="confirmRepair"
+          >确认修复</el-button
+        >
       </template>
     </el-dialog>
   </div>
 </template>
+
 
 <script lang="ts" setup>
 import { onMounted, reactive, ref } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { ArticleApi } from '@/api/sys/article'
 import { useArticleStore } from '@/stores'
-import type {
-  ArticleAdminVO,
-  ArticleReviewAdminDetailVO,
-} from '@/types/api-types'
+import type { ArticleAdminVO, ArticleReviewAdminDetailVO } from '@/types/api-types'
 
+// Store 实例
 const articleStore = useArticleStore()
 
+// 搜索条件
 const query = reactive({
   reviewStatus: undefined as number | undefined,
 })
 
+// 分页配置
 const pagination = reactive({
   current: 1,
   size: 10,
   total: 0,
 })
 
+// 表格数据
 const tableData = ref<ArticleAdminVO[]>([])
 const loading = ref(false)
+
+// 详情弹窗
 const detailVisible = ref(false)
 const detailLoading = ref(false)
+// 是否为审核模式（true=审核，false=仅查看）
 const isReviewMode = ref(false)
 const detailData = ref<ArticleReviewAdminDetailVO | null>(null)
 const reviewComment = ref('')
 const actionLoading = ref(false)
 
+// 修复审核状态弹窗
 const repairVisible = ref(false)
 const repairLoading = ref(false)
 const repairRow = ref<ArticleAdminVO | null>(null)
@@ -205,9 +210,11 @@ const repairForm = reactive({
   reviewComment: '',
 })
 
-function reviewStatusTagType(
-  status: number,
-): 'info' | 'warning' | 'success' | 'danger' {
+/**
+ * 根据审核状态返回对应的 Tag 类型
+ * @param status - 审核状态 0=草稿, 1=待审核, 2=已通过, 3=已拒绝
+ */
+function reviewStatusTagType(status: number): 'info' | 'warning' | 'success' | 'danger' {
   const map: Record<number, 'info' | 'warning' | 'success' | 'danger'> = {
     0: 'info',
     1: 'warning',
@@ -217,6 +224,10 @@ function reviewStatusTagType(
   return map[status] ?? 'info'
 }
 
+/**
+ * 获取审核状态标签文本
+ * @param status - 审核状态
+ */
 function reviewStatusLabel(status: number): string {
   const map: Record<number, string> = {
     0: '草稿',
@@ -227,6 +238,11 @@ function reviewStatusLabel(status: number): string {
   return map[status] ?? '未知'
 }
 
+// ==================== 查询操作 ====================
+
+/**
+ * 查询审核列表
+ */
 async function handleQuery(): Promise<void> {
   loading.value = true
   try {
@@ -245,12 +261,19 @@ async function handleQuery(): Promise<void> {
   }
 }
 
+/**
+ * 重置搜索条件
+ */
 function handleReset(): void {
   query.reviewStatus = undefined
   pagination.current = 1
   handleQuery()
 }
 
+/**
+ * 加载审核详情
+ * @param id - 文章 ID
+ */
 async function loadDetail(id: number): Promise<void> {
   detailLoading.value = true
   try {
@@ -264,6 +287,12 @@ async function loadDetail(id: number): Promise<void> {
   }
 }
 
+// ==================== 详情和审核操作 ====================
+
+/**
+ * 打开审核弹窗（待审核文章）
+ * @param row - 文章行数据
+ */
 function handleReview(row: ArticleAdminVO): void {
   isReviewMode.value = true
   reviewComment.value = ''
@@ -271,12 +300,19 @@ function handleReview(row: ArticleAdminVO): void {
   loadDetail(row.id)
 }
 
+/**
+ * 打开查看弹窗（已审核文章）
+ * @param row - 文章行数据
+ */
 function handleView(row: ArticleAdminVO): void {
   isReviewMode.value = false
   detailVisible.value = true
   loadDetail(row.id)
 }
 
+/**
+ * 审核通过
+ */
 async function handleApproveArticle(): Promise<void> {
   if (!detailData.value) return
   actionLoading.value = true
@@ -294,6 +330,9 @@ async function handleApproveArticle(): Promise<void> {
   }
 }
 
+/**
+ * 审核拒绝
+ */
 async function handleRejectArticle(): Promise<void> {
   if (!detailData.value) return
   actionLoading.value = true
@@ -311,6 +350,12 @@ async function handleRejectArticle(): Promise<void> {
   }
 }
 
+// ==================== 修复审核状态 ====================
+
+/**
+ * 打开修复审核状态弹窗
+ * @param row - 文章行数据
+ */
 function handleRepair(row: ArticleAdminVO): void {
   repairRow.value = row
   repairForm.targetReviewStatus = row.reviewStatus
@@ -318,6 +363,9 @@ function handleRepair(row: ArticleAdminVO): void {
   repairVisible.value = true
 }
 
+/**
+ * 确认修复审核状态
+ */
 async function confirmRepair(): Promise<void> {
   if (!repairRow.value) return
   try {

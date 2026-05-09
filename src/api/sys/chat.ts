@@ -11,6 +11,9 @@ import type {
   ChatLobbyPinnedMessageVO,
   ChatLobbySettingsUpdateRequest,
   ChatMessageVO,
+  ChatMuteCreateRequest,
+  ChatMuteVO,
+  ChatMuteQueryRequest,
   GroupJoinApplicationReviewRequest,
   GroupJoinApplicationVO,
   PageResult,
@@ -296,6 +299,32 @@ export class SysChatApi {
     data: GroupJoinApplicationReviewRequest,
   ) {
     return http.put<void>(`/sys/chats/group-join-applications/${applicationId}/review`, data)
+  }
+
+  // ==================== 禁言管理 ====================
+
+  /**
+   * 创建禁言记录
+   * POST /api/sys/chats/mutes
+   */
+  static createMute(data: ChatMuteCreateRequest) {
+    return http.post<void>('/sys/chats/mutes', data)
+  }
+
+  /**
+   * 分页查询禁言记录
+   * GET /api/sys/chats/mutes
+   */
+  static getMutes(params?: ChatMuteQueryRequest) {
+    return http.get<PageResult<ChatMuteVO>>('/sys/chats/mutes', params)
+  }
+
+  /**
+   * 解除禁言
+   * PUT /api/sys/chats/mutes/{id}/release
+   */
+  static releaseMute(id: number) {
+    return http.put<void>(`/sys/chats/mutes/${id}/release`)
   }
 }
 

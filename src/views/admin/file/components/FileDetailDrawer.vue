@@ -12,13 +12,27 @@
           <el-descriptions-item label="文件名">{{ detail.fileName }}</el-descriptions-item>
           <el-descriptions-item label="原始名">{{ detail.originalName }}</el-descriptions-item>
           <el-descriptions-item label="文件类型">{{ detail.fileType }}</el-descriptions-item>
-          <el-descriptions-item label="文件大小">{{ formatFileSize(detail.fileSize) }}</el-descriptions-item>
-          <el-descriptions-item label="上传用户">#{{ detail.uploadUserId ?? '-' }}</el-descriptions-item>
-          <el-descriptions-item label="公开状态">{{ formatVisibility(detail.isPublic) }}</el-descriptions-item>
-          <el-descriptions-item label="存储分类">{{ formatOptionalText(detail.category) }}</el-descriptions-item>
-          <el-descriptions-item label="状态">{{ formatFileStatus(detail.status) }}</el-descriptions-item>
-          <el-descriptions-item label="引用数">{{ detail.referenceCount ?? 0 }}</el-descriptions-item>
-          <el-descriptions-item label="创建时间">{{ formatCreatedAt(detail.createdAt) }}</el-descriptions-item>
+          <el-descriptions-item label="文件大小">{{
+            formatFileSize(detail.fileSize)
+          }}</el-descriptions-item>
+          <el-descriptions-item label="上传用户"
+            >#{{ detail.uploadUserId ?? '-' }}</el-descriptions-item
+          >
+          <el-descriptions-item label="公开状态">{{
+            formatVisibility(detail.isPublic)
+          }}</el-descriptions-item>
+          <el-descriptions-item label="存储分类">{{
+            formatOptionalText(detail.category)
+          }}</el-descriptions-item>
+          <el-descriptions-item label="状态">{{
+            formatFileStatus(detail.status)
+          }}</el-descriptions-item>
+          <el-descriptions-item label="引用数">{{
+            detail.referenceCount ?? 0
+          }}</el-descriptions-item>
+          <el-descriptions-item label="创建时间">{{
+            formatCreatedAt(detail.createdAt)
+          }}</el-descriptions-item>
           <el-descriptions-item label="文件地址" :span="2">
             <el-link :href="detail.fileUrl" target="_blank" type="primary">
               {{ detail.fileUrl }}
@@ -46,7 +60,13 @@
                 {{ formatOptionalText(row.category) }}
               </template>
             </el-table-column>
-            <el-table-column prop="remark" label="备注" min-width="160" align="center" show-overflow-tooltip>
+            <el-table-column
+              prop="remark"
+              label="备注"
+              min-width="160"
+              align="center"
+              show-overflow-tooltip
+            >
               <template #default="{ row }">
                 {{ formatOptionalText(row.remark) }}
               </template>
@@ -63,8 +83,20 @@
           <div class="section-header">上传任务</div>
           <el-table :data="detail.tasks ?? []" border size="small" table-layout="auto">
             <el-table-column prop="id" label="任务 ID" min-width="90" align="center" />
-            <el-table-column prop="uploadId" label="上传 ID" min-width="180" align="center" show-overflow-tooltip />
-            <el-table-column prop="originalName" label="原始文件名" min-width="140" align="center" show-overflow-tooltip />
+            <el-table-column
+              prop="uploadId"
+              label="上传 ID"
+              min-width="180"
+              align="center"
+              show-overflow-tooltip
+            />
+            <el-table-column
+              prop="originalName"
+              label="原始文件名"
+              min-width="140"
+              align="center"
+              show-overflow-tooltip
+            />
             <el-table-column label="文件大小" min-width="100" align="center">
               <template #default="{ row }">
                 {{ row.fileSize ? formatFileSize(row.fileSize) : '-' }}
@@ -90,7 +122,13 @@
                 {{ formatCreatedAt(row.completeTime) }}
               </template>
             </el-table-column>
-            <el-table-column prop="errorMessage" label="错误信息" min-width="180" align="center" show-overflow-tooltip>
+            <el-table-column
+              prop="errorMessage"
+              label="错误信息"
+              min-width="180"
+              align="center"
+              show-overflow-tooltip
+            >
               <template #default="{ row }">
                 {{ formatOptionalText(row.errorMessage) }}
               </template>
@@ -102,6 +140,8 @@
   </el-drawer>
 </template>
 
+/** * 文件详情抽屉 * @description 展示文件的完整详情，包括文件信息、引用信息、上传任务等 * @module
+admin/file/components/FileDetailDrawer * @see api/sys/file.ts */
 <script lang="ts" setup>
 import type { FileDetailVO } from '@/types/api-types'
 import { FormatUtils } from '@/utils'

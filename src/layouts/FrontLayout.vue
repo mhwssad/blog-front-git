@@ -11,6 +11,7 @@
         <nav class="nav-links">
           <router-link to="/" class="nav-item" exact-active-class="nav-item--active">首页</router-link>
           <router-link to="/hall" class="nav-item" exact-active-class="nav-item--active">大厅</router-link>
+          <router-link to="/forum" class="nav-item" exact-active-class="nav-item--active">论坛</router-link>
           <router-link to="/channels" class="nav-item" exact-active-class="nav-item--active">频道</router-link>
           <router-link to="/ai" class="nav-item" exact-active-class="nav-item--active">AI 助手</router-link>
         </nav>
@@ -41,6 +42,7 @@
                 >
                 <el-dropdown-item @click="router.push('/user/files')">我的文件</el-dropdown-item>
                 <el-dropdown-item @click="router.push('/user/series')">我的系列</el-dropdown-item>
+                <el-dropdown-item @click="router.push('/user/forum/posts')">我的帖子</el-dropdown-item>
                 <el-dropdown-item @click="router.push('/chat')">消息</el-dropdown-item>
                 <el-dropdown-item divided @click="handleLogout">退出登录</el-dropdown-item>
               </el-dropdown-menu>
@@ -65,6 +67,7 @@
             <h4 class="footer-col-title">导航</h4>
             <nav class="footer-links">
               <router-link to="/">首页</router-link>
+              <router-link to="/forum">论坛</router-link>
               <router-link to="/categories">分类</router-link>
               <router-link to="/tags">标签</router-link>
               <router-link to="/about">关于</router-link>

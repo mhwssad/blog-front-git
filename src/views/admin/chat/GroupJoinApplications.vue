@@ -3,12 +3,7 @@
     <el-card class="search-card" shadow="never">
       <el-form :model="query" inline>
         <el-form-item label="会话ID">
-          <el-input
-            v-model="query.conversationId"
-            placeholder="会话ID"
-            clearable
-            style="width: 140px"
-          />
+          <el-input-number v-model="query.conversationId" :min="1" controls-position="right" />
         </el-form-item>
         <el-form-item label="状态">
           <el-select v-model="query.applyStatus" placeholder="全部" clearable style="width: 140px">
@@ -45,6 +40,7 @@
           stripe
         >
           <el-table-column prop="id" label="ID" width="80" align="center" />
+          <el-table-column prop="userId" label="用户ID" width="90" align="center" />
           <el-table-column prop="conversationId" label="会话ID" width="100" align="center" />
           <el-table-column prop="username" label="申请人" min-width="120" align="center" />
           <el-table-column prop="nickname" label="昵称" min-width="120" align="center" />
@@ -56,12 +52,29 @@
           />
           <el-table-column prop="applyStatus" label="状态" width="100" align="center">
             <template #default="{ row }">
-              <el-tag :type="statusTagType(row.applyStatus)">{{ statusLabel(row.applyStatus) }}</el-tag>
+              <el-tag :type="statusTagType(row.applyStatus)">{{
+                statusLabel(row.applyStatus)
+              }}</el-tag>
+            </template>
+          </el-table-column>
+          <el-table-column
+            prop="reviewComment"
+            label="审核备注"
+            min-width="180"
+            show-overflow-tooltip
+          >
+            <template #default="{ row }">
+              {{ row.reviewComment || '—' }}
             </template>
           </el-table-column>
           <el-table-column prop="createdAt" label="申请时间" min-width="180" align="center">
             <template #default="{ row }">
-              {{ formatAiDate(row.createdAt) }}
+              {{ formatCreatedAt(row.createdAt) }}
+            </template>
+          </el-table-column>
+          <el-table-column prop="reviewedAt" label="审核时间" min-width="180" align="center">
+            <template #default="{ row }">
+              {{ formatCreatedAt(row.reviewedAt) }}
             </template>
           </el-table-column>
           <el-table-column label="操作" width="140" align="center">
@@ -93,16 +106,25 @@
     <el-dialog v-model="detailVisible" title="申请详情" width="500px">
       <el-descriptions :column="1" border>
         <el-descriptions-item label="申请ID">{{ currentRow.id }}</el-descriptions-item>
+        <el-descriptions-item label="用户ID">{{ currentRow.userId }}</el-descriptions-item>
         <el-descriptions-item label="会话ID">{{ currentRow.conversationId }}</el-descriptions-item>
-        <el-descriptions-item label="申请人">{{ currentRow.username }} ({{ currentRow.nickname }})</el-descriptions-item>
-        <el-descriptions-item label="申请留言">{{ currentRow.applyMessage || '无' }}</el-descriptions-item>
-        <el-descriptions-item label="状态">{{ statusLabel(currentRow.applyStatus) }}</el-descriptions-item>
+        <el-descriptions-item label="申请人"
+          >{{ currentRow.username }} ({{ currentRow.nickname }})</el-descriptions-item
+        >
+        <el-descriptions-item label="申请留言">{{
+          currentRow.applyMessage || '无'
+        }}</el-descriptions-item>
+        <el-descriptions-item label="状态">{{
+          statusLabel(currentRow.applyStatus)
+        }}</el-descriptions-item>
         <el-descriptions-item v-if="currentRow.reviewComment" label="审核备注">
           {{ currentRow.reviewComment }}
         </el-descriptions-item>
-        <el-descriptions-item label="申请时间">{{ formatAiDate(currentRow.createdAt) }}</el-descriptions-item>
+        <el-descriptions-item label="申请时间">{{
+          formatCreatedAt(currentRow.createdAt)
+        }}</el-descriptions-item>
         <el-descriptions-item v-if="currentRow.reviewedAt" label="审核时间">
-          {{ formatAiDate(currentRow.reviewedAt) }}
+          {{ formatCreatedAt(currentRow.reviewedAt) }}
         </el-descriptions-item>
       </el-descriptions>
       <template #footer>
@@ -117,11 +139,11 @@ import { onMounted, reactive, ref } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { SysChatApi } from '@/api/sys/chat'
 import { useContentAdmin } from '@/composables/useContentAdmin'
-import { formatAiDate } from '@/utils'
+import { formatCreatedAt } from '@/utils'
 import type { GroupJoinApplicationVO } from '@/types/api-types'
 
 const query = reactive({
-  conversationId: '' as string,
+  conversationId: undefined as number | undefined,
   applyStatus: undefined as number | undefined,
   keyword: '',
 })
@@ -160,12 +182,13 @@ async function fetchList() {
       current: pagination.current,
       size: pagination.size,
     }
-    if (query.conversationId) params.conversationId = Number(query.conversationId)
-    if (query.applyStatus !== undefined && query.applyStatus !== null) params.applyStatus = query.applyStatus
+    if (query.conversationId) params.conversationId = query.conversationId
+    if (query.applyStatus !== undefined && query.applyStatus !== null)
+      params.applyStatus = query.applyStatus
     if (query.keyword) params.keyword = query.keyword
 
     const res = await SysChatApi.getGroupJoinApplications(
-      params as Parameters<typeof SysChatApi.getGroupJoinApplications>[0],
+      params as Parameters<typeof SysChatApi.getGroupJoinApplications>[0]
     )
     const page = res.data.data
     tableData.value = page?.records ?? []
@@ -183,7 +206,7 @@ function handleQuery() {
 }
 
 function handleReset() {
-  query.conversationId = ''
+  query.conversationId = undefined
   query.applyStatus = undefined
   query.keyword = ''
   pagination.current = 1

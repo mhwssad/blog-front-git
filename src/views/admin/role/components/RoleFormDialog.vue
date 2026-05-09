@@ -39,13 +39,21 @@
 
     <template #footer>
       <el-button @click="handleClose">取消</el-button>
-      <el-button v-permission="submitPermission" type="primary" :loading="submitting" @click="handleSubmit">
+      <el-button
+        v-permission="submitPermission"
+        type="primary"
+        :loading="submitting"
+        @click="handleSubmit"
+      >
         {{ isEdit ? '保存' : '创建' }}
       </el-button>
     </template>
   </el-dialog>
 </template>
 
+/** * 角色表单对话框 * @description
+新增/编辑角色的弹窗表单，包含角色名称、编码、排序、状态、备注等配置 * @module
+admin/role/components/RoleFormDialog * @see api/sys/role.ts */
 <script lang="ts" setup>
 import { computed, reactive, ref, watch } from 'vue'
 import { ElMessage, type FormInstance } from 'element-plus'

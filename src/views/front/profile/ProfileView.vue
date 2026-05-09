@@ -5,9 +5,7 @@
     <div class="profile-tabs">
       <el-tabs v-model="activeTab">
         <el-tab-pane label="关注" name="follow">
-          <template #label>
-            关注 ({{ store.followCount.followingCount }})
-          </template>
+          <template #label> 关注 ({{ store.followCount.followingCount }}) </template>
           <div class="tab-toolbar">
             <el-checkbox v-model="specialOnly" label="只看特别关注" @change="loadFollows" />
           </div>
@@ -39,9 +37,7 @@
         </el-tab-pane>
 
         <el-tab-pane label="粉丝" name="fan">
-          <template #label>
-            粉丝 ({{ store.followCount.fanCount }})
-          </template>
+          <template #label> 粉丝 ({{ store.followCount.fanCount }}) </template>
           <div v-if="store.loading" class="loading-area">
             <el-skeleton :rows="4" animated />
           </div>
@@ -78,6 +74,12 @@
 </template>
 
 <script lang="ts" setup>
+/**
+ * 个人资料页面（我关注的 / 粉丝）
+ * @description 展示当前用户的关注和粉丝列表，支持特别关注、备注等操作
+ * @module front/profile/ProfileView
+ * @see ../../api/follow.ts
+ */
 import { ref, onMounted, watch } from 'vue'
 import { ElMessage } from 'element-plus'
 import { useAuthStore, useUserFollowStore } from '@/stores'
@@ -94,7 +96,9 @@ const specialOnly = ref(false)
 const followPage = ref(1)
 const fanPage = ref(1)
 
+// 备注编辑弹窗是否显示
 const remarkVisible = ref(false)
+// 当前编辑备注的用户
 const remarkUser = ref<UserFollowUserVO | null>(null)
 
 async function loadFollows(): Promise<void> {
@@ -146,7 +150,7 @@ async function handleSaveRemark(remark: string): Promise<void> {
   }
 }
 
-watch(activeTab, (tab) => {
+watch(activeTab, tab => {
   if (tab === 'follow') loadFollows()
   else loadFans()
 })

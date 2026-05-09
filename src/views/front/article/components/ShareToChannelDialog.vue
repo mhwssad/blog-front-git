@@ -27,12 +27,7 @@
             filterable
             style="width: 100%"
           >
-            <el-option
-              v-for="ch in channels"
-              :key="ch.id"
-              :label="'# ' + ch.name"
-              :value="ch.id"
-            >
+            <el-option v-for="ch in channels" :key="ch.id" :label="'# ' + ch.name" :value="ch.id">
               <div class="channel-option">
                 <span># {{ ch.name }}</span>
                 <span class="channel-members">{{ ch.memberCount }} 人</span>
@@ -58,6 +53,11 @@
 </template>
 
 <script lang="ts" setup>
+/**
+ * 分享到频道弹窗组件
+ * @description 将文章分享/挂接到某个频道，一个文章只能挂接一个频道
+ * @module front/article/components/ShareToChannelDialog
+ */
 import { ref } from 'vue'
 import { ElMessage } from 'element-plus'
 import type { ChannelPickOption as Channel } from '@/types/ui'
@@ -73,8 +73,10 @@ const emit = defineEmits<{
   unbind: []
 }>()
 
+// 选中的目标频道 ID
 const selectedChannelId = ref<number | undefined>(undefined)
 
+// 模拟频道数据（实际应从 API 获取）
 const channels = ref<Channel[]>([
   { id: 1, name: '前端交流', memberCount: 200 },
   { id: 2, name: '后端交流', memberCount: 150 },
@@ -82,6 +84,7 @@ const channels = ref<Channel[]>([
   { id: 4, name: '资源共享', memberCount: 80 },
 ])
 
+/** 确认分享到选中的频道 */
 function handleShare(): void {
   if (!selectedChannelId.value) return
   emit('share', selectedChannelId.value)
@@ -90,6 +93,7 @@ function handleShare(): void {
   selectedChannelId.value = undefined
 }
 
+/** 取消文章与频道的挂接关系 */
 function handleUnbind(): void {
   emit('unbind')
   ElMessage.success('已取消挂接')

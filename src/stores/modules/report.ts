@@ -11,6 +11,7 @@ import type {
   ReportHandleLogVO,
   ReportHandleRequest,
   ReportRejectRequest,
+  ReportRepairRequest,
 } from '@/types/api-types'
 
 export const useReportStore = defineStore('report', () => {
@@ -87,6 +88,15 @@ export const useReportStore = defineStore('report', () => {
     }
   }
 
+  async function repairReport(id: number, data: ReportRepairRequest): Promise<boolean> {
+    try {
+      await reportSysApi.repairReport(id, data)
+      return true
+    } catch {
+      return false
+    }
+  }
+
   async function overrideReport(id: number): Promise<boolean> {
     try {
       await reportSysApi.overrideReport(id)
@@ -115,6 +125,7 @@ export const useReportStore = defineStore('report', () => {
     rejectReport,
     getReportLogs,
     overrideReport,
+    repairReport,
     clearReports,
   }
 })

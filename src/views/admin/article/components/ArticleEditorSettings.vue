@@ -30,7 +30,12 @@
 
       <el-form-item label="访问级别" prop="accessLevel">
         <el-select v-model="formData.accessLevel" placeholder="请选择">
-          <el-option v-for="o in ACCESS_LEVEL_OPTIONS" :key="o.value" :label="o.label" :value="o.value" />
+          <el-option
+            v-for="o in ACCESS_LEVEL_OPTIONS"
+            :key="o.value"
+            :label="o.label"
+            :value="o.value"
+          />
         </el-select>
       </el-form-item>
 
@@ -62,13 +67,30 @@
       <template #header><span>内容归类</span></template>
 
       <el-form-item label="文章分类" prop="categoryIds">
-        <el-select v-model="formData.categoryIds" multiple collapse-tags collapse-tags-tooltip placeholder="请选择分类">
-          <el-option v-for="item in categoryOptions" :key="item.id" :label="item.label" :value="item.id" />
+        <el-select
+          v-model="formData.categoryIds"
+          multiple
+          collapse-tags
+          collapse-tags-tooltip
+          placeholder="请选择分类"
+        >
+          <el-option
+            v-for="item in categoryOptions"
+            :key="item.id"
+            :label="item.label"
+            :value="item.id"
+          />
         </el-select>
       </el-form-item>
 
       <el-form-item label="文章标签" prop="tagIds">
-        <el-select v-model="formData.tagIds" multiple collapse-tags collapse-tags-tooltip placeholder="请选择标签">
+        <el-select
+          v-model="formData.tagIds"
+          multiple
+          collapse-tags
+          collapse-tags-tooltip
+          placeholder="请选择标签"
+        >
           <el-option v-for="tag in tags" :key="tag.id" :label="tag.name" :value="tag.id" />
         </el-select>
       </el-form-item>
@@ -95,6 +117,12 @@
   </div>
 </template>
 
+/** * 文章编辑器设置面板 * @description
+文章编辑器的侧边设置面板，包含作者选择、发布状态、可见范围、分类标签、封面图片、SEO信息、定时发布等功能
+* @module admin/article/components/ArticleEditorSettings * @see api/sys/article.ts */ /** *
+文章编辑器设置面板 * @description
+文章编辑器的侧边设置面板，包含作者选择、发布状态、可见范围、分类标签、封面图片、SEO信息、定时发布等功能
+* @module admin/article/components/ArticleEditorSettings * @see api/sys/article.ts */
 <script lang="ts" setup>
 import type { ArticleSaveRequest, CategoryAdminVO, TagVO } from '@/types/api-types'
 import { ACCESS_LEVEL_OPTIONS, ARTICLE_STATUS_OPTIONS } from '@/utils'

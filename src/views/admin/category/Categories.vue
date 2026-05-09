@@ -42,7 +42,12 @@
           table-layout="auto"
           class="category-table"
         >
-          <el-table-column label="分类名称" min-width="220" align="left" class-name="category-text-column">
+          <el-table-column
+            label="分类名称"
+            min-width="220"
+            align="left"
+            class-name="category-text-column"
+          >
             <template #default="{ row }">
               <div class="category-name-cell">
                 <span v-if="row.icon" class="category-icon">{{ row.icon }}</span>
@@ -64,8 +69,6 @@
             </template>
           </el-table-column>
 
-          <el-table-column prop="sortOrder" label="排序" width="110" align="center" />
-
           <el-table-column label="状态" width="150" align="center">
             <template #default="{ row }">
               <el-switch
@@ -82,50 +85,36 @@
           </el-table-column>
 
           <el-table-column
-            prop="icon"
-            label="图标"
-            min-width="120"
-            align="left"
-            class-name="category-text-column"
-          >
-            <template #default="{ row }">
-              {{ formatOptionalText(row.icon) }}
-            </template>
-          </el-table-column>
-
-          <el-table-column
-            prop="description"
-            label="描述"
-            min-width="240"
-            align="left"
-            class-name="category-text-column"
-          >
-            <template #default="{ row }">
-              {{ formatOptionalText(row.description) }}
-            </template>
-          </el-table-column>
-
-          <el-table-column label="更新时间" min-width="180" align="left" class-name="category-text-column">
-            <template #default="{ row }">
-              {{ formatDate(row.updatedAt || row.createdAt) }}
-            </template>
-          </el-table-column>
-
-          <el-table-column
             label="操作"
-            :min-width="isCompactTable ? 140 : 220"
-            :fixed="isCompactTable ? false : 'right'"
+            width="240"
+            fixed="right"
             align="center"
           >
             <template #default="{ row }">
-              <div class="table-actions" :class="{ 'table-actions--compact': isCompactTable }">
-                <el-button v-permission="'content:category:create'" link type="primary" @click="handleAddChild(row)">
+              <div class="table-actions">
+                <el-button link type="primary" @click="handleDetail(row)">详情</el-button>
+                <el-button
+                  v-permission="'content:category:create'"
+                  link
+                  type="primary"
+                  @click="handleAddChild(row)"
+                >
                   新增子分类
                 </el-button>
-                <el-button v-permission="'content:category:update'" link type="primary" @click="handleEdit(row)">
+                <el-button
+                  v-permission="'content:category:update'"
+                  link
+                  type="primary"
+                  @click="handleEdit(row)"
+                >
                   编辑
                 </el-button>
-                <el-button v-permission="'content:category:delete'" link type="danger" @click="handleDelete(row)">
+                <el-button
+                  v-permission="'content:category:delete'"
+                  link
+                  type="danger"
+                  @click="handleDelete(row)"
+                >
                   删除
                 </el-button>
               </div>
@@ -142,6 +131,12 @@
       :category-tree="categoryStore.categories"
       @success="handleDialogSuccess"
     />
+
+    <CategoryDetailDialog
+      v-model:visible="detailDialogVisible"
+      :detail="detailCategory"
+      :category-tree="categoryStore.categories"
+    />
   </div>
 </template>
 
@@ -150,10 +145,10 @@ import { computed, onMounted, ref } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { Plus, Refresh } from '@element-plus/icons-vue'
 import { useContentAdmin } from '@/composables/useContentAdmin'
-import { DateUtils } from '@/utils/dateUtils'
 import { formatOptionalText } from '@/utils'
 import { useCategoryStore } from '@/stores'
 import CategoryFormDialog from './components/CategoryFormDialog.vue'
+import CategoryDetailDialog from './components/CategoryDetailDialog.vue'
 import type { CategoryAdminVO } from '@/types/api-types'
 
 const categoryStore = useCategoryStore()
@@ -163,16 +158,13 @@ const formDialogVisible = ref(false)
 const editingCategory = ref<CategoryAdminVO | null>(null)
 const dialogParentId = ref(0)
 const dialogParentLabel = ref('根分类')
+const detailDialogVisible = ref(false)
+const detailCategory = ref<CategoryAdminVO | null>(null)
 
 const categoryCount = computed(() => countCategories(categoryStore.categories))
-const filteredCategoryTree = computed(() => filterCategoryTree(categoryStore.categories, keyword.value))
-
-function formatDate(value?: string | null): string {
-  if (!value) {
-    return '—'
-  }
-  return DateUtils.formatDate(value)
-}
+const filteredCategoryTree = computed(() =>
+  filterCategoryTree(categoryStore.categories, keyword.value)
+)
 
 function countCategories(tree: CategoryAdminVO[]): number {
   return tree.reduce((total, item) => total + 1 + countCategories(item.children ?? []), 0)
@@ -283,6 +275,11 @@ async function handleDelete(row: CategoryAdminVO): Promise<void> {
 function handleDialogSuccess(): void {
   formDialogVisible.value = false
   refreshCategories()
+}
+
+function handleDetail(row: CategoryAdminVO): void {
+  detailCategory.value = row
+  detailDialogVisible.value = true
 }
 
 onMounted(() => {

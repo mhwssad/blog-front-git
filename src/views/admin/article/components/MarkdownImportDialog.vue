@@ -31,11 +31,18 @@
 
     <template #footer>
       <el-button @click="emit('update:visible', false)">取消</el-button>
-      <el-button type="primary" :disabled="!draft.trim()" @click="emit('apply')">转换并应用</el-button>
+      <el-button type="primary" :disabled="!draft.trim()" @click="emit('apply')"
+        >转换并应用</el-button
+      >
     </template>
   </el-dialog>
 </template>
 
+/** * Markdown导入对话框 * @description
+将Markdown格式文本转换为HTML并导入到文章编辑器，支持实时预览转换结果 * @module
+admin/article/components/MarkdownImportDialog * @see utils/markdown.ts */ /** * Markdown导入对话框 *
+@description 将Markdown格式文本转换为HTML并导入到文章编辑器，支持实时预览转换结果 * @module
+admin/article/components/MarkdownImportDialog * @see utils/markdown.ts */
 <script lang="ts" setup>
 import { computed } from 'vue'
 import { markdownToHtml } from '@/utils/markdown'

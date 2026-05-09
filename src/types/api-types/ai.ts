@@ -71,6 +71,44 @@ export interface AiSessionDetailVO extends AiSessionVO {
 }
 
 /**
+ * AI消息RAG引用视图对象
+ * @description AI消息中引用的知识库条目
+ * @interface AiRagReferenceVO
+ */
+export interface AiRagReferenceVO {
+  /** 来源类型：public_article 等 */
+  sourceType: string
+  /** 来源ID */
+  sourceId: number
+  /** 条目ID */
+  entryId: number
+  /** 标题 */
+  title: string
+  /** 来源URL */
+  sourceUrl?: string
+  /** 分块索引 */
+  chunkIndex?: number
+  /** 相似度得分 */
+  score?: number
+}
+
+/**
+ * AI消息附件视图对象
+ * @description AI消息中的附件
+ * @interface AiAttachmentVO
+ */
+export interface AiAttachmentVO {
+  /** 文件ID */
+  fileId: number
+  /** 文件类型 */
+  fileType: string
+  /** MIME类型 */
+  mimeType: string
+  /** 文件访问URL */
+  fileUrl: string
+}
+
+/**
  * AI消息视图对象
  * @description AI会话中的消息记录
  * @interface AiMessageVO
@@ -90,6 +128,10 @@ export interface AiMessageVO {
   responseStatus: number
   /** 错误信息 */
   errorMessage?: string | null
+  /** RAG引用列表 */
+  ragReferences?: AiRagReferenceVO[] | null
+  /** 附件列表（发送消息时返回） */
+  attachments?: AiAttachmentVO[]
   /** 创建时间 */
   createdAt: string
 }
@@ -107,6 +149,8 @@ export interface AiMessageSendRequest {
   requestSceneType?: string
   /** 关联目标ID */
   requestTargetId?: number
+  /** 附件文件ID列表（目前仅支持图片），最多5个 */
+  attachmentFileIds?: number[]
 }
 
 /**
@@ -309,46 +353,406 @@ export interface AiUsageStatsVO {
 
 /**
  * AI使用日志查询请求
- * @description 后台分页查询AI使用日志
- * @interface AiUsageLogQueryRequest
  * @see GET /api/sys/ai/usage-logs - 查询参数
  */
 export interface AiUsageLogQueryRequest {
-  /** 页码，默认1 */
   current?: number
-  /** 每页条数，默认20 */
   size?: number
-  /** 用户ID */
   userId?: number
-  /** 渠道配置ID */
   channelConfigId?: number
-  /** 成功状态：0-失败，1-成功 */
   successStatus?: number
-  /** 开始时间 */
   startTime?: string
-  /** 结束时间 */
   endTime?: string
 }
 
 /**
  * 后台AI会话查询请求
- * @description 后台分页查询用户AI会话
- * @interface AiSessionAdminQueryRequest
  * @see GET /api/sys/ai/sessions - 查询参数
  */
 export interface AiSessionAdminQueryRequest {
-  /** 页码，默认1 */
   current?: number
-  /** 每页条数，默认20 */
   size?: number
-  /** 用户ID */
   userId?: number
-  /** 渠道配置ID */
   channelConfigId?: number
-  /** 会话状态：0-关闭，1-正常 */
   status?: number
-  /** 开始时间 */
   startTime?: string
-  /** 结束时间 */
   endTime?: string
+}
+
+// ==================== 渠道账号池 ====================
+
+export interface AiChannelAccountVO {
+  id: number
+  channelConfigId: number
+  accountName: string
+  provider: string
+  modelName: string
+  apiBaseUrl: string
+  apiKeyEncrypted?: string
+  weight: number
+  status: number
+  dailyQuota: number
+  consecutiveErrors: number
+  maxConsecutiveErrors: number
+  lastErrorAt?: string
+  lastErrorMessage?: string
+  disabledAt?: string
+  autoRecoverAt?: string
+  totalCallCount: number
+  lastUsedAt?: string
+  createdBy?: number
+  updatedBy?: number
+  createdAt: string
+  updatedAt: string
+}
+
+export interface AiChannelAccountSaveRequest {
+  accountName: string
+  provider: string
+  modelName: string
+  apiBaseUrl: string
+  apiKeyEncrypted: string
+  weight?: number
+  status?: number
+  dailyQuota?: number
+  maxConsecutiveErrors?: number
+  mfaTicket?: string
+}
+
+// ==================== 知识源配置 ====================
+
+export interface AiKnowledgeSourceConfigVO {
+  id: number
+  sourceType: string
+  enabled: number
+  syncInterval: number
+  lastSyncedAt?: string
+  lastSyncStatus?: string
+  configJson?: string
+  updatedBy?: number
+  remark?: string
+  createdAt: string
+  updatedAt: string
+}
+
+export interface AiKnowledgeSourceConfigUpdateRequest {
+  syncInterval: number
+  configJson?: string
+  remark?: string
+}
+
+// ==================== 知识条目 ====================
+
+export interface AiKnowledgeEntryVO {
+  id: number
+  sourceType: string
+  sourceId: number
+  title: string
+  summary?: string
+  sourceUrl?: string
+  authorId?: number
+  status: number
+  version: number
+  chunkCount: number
+  sourceUpdatedAt?: string
+  syncedAt?: string
+  tagJson?: string
+  createdAt: string
+  updatedAt: string
+}
+
+export interface AiKnowledgeEntryQueryRequest {
+  current?: number
+  size?: number
+  sourceType?: string
+  status?: number
+  keyword?: string
+}
+
+export interface AiKnowledgeSyncRequest {
+  sourceType: string
+  taskType?: string
+  sourceId?: number
+  remark?: string
+}
+
+export interface AiKnowledgeSyncTaskVO {
+  id: number
+  taskType: string
+  sourceType: string
+  status: number
+  totalCount: number
+  successCount: number
+  failCount: number
+  skipCount: number
+  errorMessage?: string
+  retryCount: number
+  maxRetry: number
+  startedAt?: string
+  completedAt?: string
+  triggeredBy?: string
+  operatorId?: number
+  remark?: string
+  createdAt: string
+  updatedAt: string
+}
+
+export interface AiKnowledgeSyncTaskQueryRequest {
+  current?: number
+  size?: number
+  sourceType?: string
+  status?: number
+}
+
+// ==================== Agent 定义 ====================
+
+export interface AiAgentDefinitionVO {
+  id: number
+  name: string
+  description?: string
+  systemPrompt: string
+  channelConfigId: number
+  dataScopeJson?: string
+  enabled: number
+  maxTurns: number
+  extraConfigJson?: string
+  createdBy?: number
+  updatedBy?: number
+  createdAt: string
+  updatedAt: string
+}
+
+export interface AiAgentDefinitionSaveRequest {
+  name: string
+  description?: string
+  systemPrompt: string
+  channelConfigId: number
+  dataScopeJson?: string
+  maxTurns?: number
+  extraConfigJson?: string
+}
+
+export interface AiAgentDefinitionQueryRequest {
+  current?: number
+  size?: number
+  keyword?: string
+  enabled?: number
+}
+
+// ==================== Agent 任务 ====================
+
+export interface AiAgentTaskVO {
+  id: number
+  userId?: number
+  agentId: number
+  agentName?: string
+  status: number
+  inputContent: string
+  outputContent?: string
+  errorMessage?: string
+  tokenCount?: number
+  startedAt?: string
+  completedAt?: string
+  createdAt: string
+}
+
+export interface AiAgentTaskCreateRequest {
+  agentId: number
+  inputContent: string
+}
+
+export interface AiAgentTaskQueryRequest {
+  current?: number
+  size?: number
+  agentId?: number
+  status?: number
+}
+
+// ==================== 工具管理 ====================
+
+export interface AiToolVO {
+  id: number
+  toolCode: string
+  toolName: string
+  sourceType: string
+  mcpServerId?: number
+  mcpToolName?: string
+  description?: string
+  parametersSchema?: string
+  resultSchema?: string
+  riskLevel: string
+  useScenarios?: string
+  enabled: number
+  createdBy?: number
+  updatedBy?: number
+  createdAt: string
+  updatedAt: string
+}
+
+export interface AiToolSaveRequest {
+  toolCode: string
+  toolName: string
+  sourceType: string
+  mcpServerId?: number
+  mcpToolName?: string
+  description?: string
+  parametersSchema?: string
+  resultSchema?: string
+  riskLevel: string
+  useScenarios?: string
+  enabled: number
+  mfaTicket?: string
+}
+
+export interface AiToolQueryRequest {
+  current?: number
+  size?: number
+  toolCode?: string
+  toolName?: string
+  sourceType?: string
+  enabled?: number
+}
+
+export interface AiToolExecuteRequest {
+  toolCode?: string
+  arguments?: string
+  agentId?: number
+  sessionId?: number
+  taskId?: number
+  sceneType?: string
+  dataScope?: string
+}
+
+export interface AiToolExecuteResultVO {
+  success: boolean
+  resultText?: string
+  errorMessage?: string
+  elapsedMs: number
+  callLogId?: number
+}
+
+export interface AiToolCallLogVO {
+  id: number
+  userId: number
+  agentId?: number
+  sessionId?: number
+  taskId?: number
+  toolId: number
+  toolCode: string
+  toolName: string
+  requestSceneType?: string
+  requestSummary?: string
+  responseSummary?: string
+  successStatus: number
+  elapsedMs: number
+  errorMessage?: string
+  createdAt: string
+}
+
+export interface AiToolCallLogQueryRequest {
+  current?: number
+  size?: number
+  toolId?: number
+  userId?: number
+  agentId?: number
+  taskId?: number
+  successStatus?: number
+}
+
+// ==================== 工具授权 ====================
+
+export interface AiToolAuthorizationVO {
+  id: number
+  toolId: number
+  authorizationType: string
+  authorizationKey: string
+  dataScope?: string
+  enabled: number
+  createdBy?: number
+  updatedBy?: number
+  createdAt: string
+  updatedAt: string
+}
+
+export interface AiToolAuthorizationSaveRequest {
+  toolId: number
+  authorizationType: string
+  authorizationKey: string
+  dataScope?: string
+  enabled: number
+}
+
+export interface AiToolAuthorizationQueryRequest {
+  current?: number
+  size?: number
+  toolId?: number
+  authorizationType?: string
+  authorizationKey?: string
+  enabled?: number
+}
+
+// ==================== MCP 服务 ====================
+
+export interface AiMcpServerVO {
+  id: number
+  serverName: string
+  transportType: string
+  connectionConfigJson: string
+  timeoutSeconds: number
+  enabled: number
+  lastHealthStatus?: string
+  lastDiscoveredAt?: string
+  lastErrorSummary?: string
+  createdBy?: number
+  updatedBy?: number
+  createdAt: string
+  updatedAt: string
+}
+
+export interface AiMcpServerSaveRequest {
+  serverName: string
+  transportType: string
+  connectionConfigJson: string
+  authConfigJson?: string
+  timeoutSeconds: number
+  enabled: number
+  mfaTicket?: string
+}
+
+export interface AiMcpServerQueryRequest {
+  current?: number
+  size?: number
+  serverName?: string
+  transportType?: string
+  enabled?: number
+}
+
+export interface AiMcpDiscoverResultVO {
+  discoveredCount: number
+  syncedCount: number
+}
+
+export interface AiMcpToolSnapshotVO {
+  id: number
+  mcpServerId: number
+  mcpToolName: string
+  toolCode: string
+  toolName: string
+  description?: string
+  parametersSchema?: string
+  resultSchema?: string
+  riskLevel?: string
+  useScenarios?: string
+  enabled: number
+  discoveredAt?: string
+  rawDefinitionJson?: string
+  lastErrorSummary?: string
+  createdAt: string
+  updatedAt: string
+}
+
+export interface AiMcpHealthVO {
+  healthy: boolean
+  status: string
+  errorSummary?: string
 }

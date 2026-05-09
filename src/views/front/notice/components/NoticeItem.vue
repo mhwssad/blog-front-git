@@ -12,6 +12,11 @@
 </template>
 
 <script lang="ts" setup>
+/**
+ * 通知项组件
+ * @description 展示单条通知，包含标题、时间和内容摘要，支持点击查看详情
+ * @module front/notice/components/NoticeItem
+ */
 import type { UserNoticeVO } from '@/types/api-types'
 
 defineProps<{

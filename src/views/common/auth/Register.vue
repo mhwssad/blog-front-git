@@ -110,6 +110,12 @@
 </template>
 
 <script lang="ts" setup>
+/**
+ * 用户注册页面
+ * @description 支持用户名、密码、昵称、邮箱、手机号注册，提交后跳转登录
+ * @module common/auth/Register
+ * @see ../../api/auth.ts
+ */
 import { ref, reactive } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage, type FormInstance, type FormRules } from 'element-plus'
@@ -132,7 +138,7 @@ interface RegisterFormData {
 
 const formRef = ref<FormInstance>()
 
-// 表单数据
+// 表单数据（选填字段允许空值）
 const formData = reactive<RegisterFormData>({
   username: '',
   password: '',
@@ -148,6 +154,12 @@ function isBlank(value: string): boolean {
 }
 
 // 自定义验证：用户名
+/**
+ * 验证用户名
+ * @param _rule - 规则对象（未使用）
+ * @param value - 用户名值
+ * @param callback - 回调函数
+ */
 const validateUsername = (_rule: unknown, value: string, callback: (error?: Error) => void) => {
   const normalized = value.trim()
 
@@ -165,7 +177,17 @@ const validateUsername = (_rule: unknown, value: string, callback: (error?: Erro
 }
 
 // 自定义验证：确认密码
-const validateConfirmPassword = (_rule: unknown, value: string, callback: (error?: Error) => void) => {
+/**
+ * 验证两次密码输入一致
+ * @param _rule - 规则对象（未使用）
+ * @param value - 确认密码值
+ * @param callback - 回调函数
+ */
+const validateConfirmPassword = (
+  _rule: unknown,
+  value: string,
+  callback: (error?: Error) => void
+) => {
   if (value !== formData.password) {
     callback(new Error('两次输入的密码不一致'))
   } else {
@@ -174,6 +196,12 @@ const validateConfirmPassword = (_rule: unknown, value: string, callback: (error
 }
 
 // 自定义验证：用户协议
+/**
+ * 验证用户是否勾选同意协议
+ * @param _rule - 规则对象（未使用）
+ * @param value - 复选框值
+ * @param callback - 回调函数
+ */
 const validateAgreement = (_rule: unknown, value: boolean, callback: (error?: Error) => void) => {
   if (!value) {
     callback(new Error('请阅读并同意用户协议和隐私政策'))
@@ -182,7 +210,13 @@ const validateAgreement = (_rule: unknown, value: boolean, callback: (error?: Er
   }
 }
 
-// 自定义验证：昵称
+// 自定义验证：昵称（选填，但有值时需校验长度）
+/**
+ * 验证昵称（选填字段）
+ * @param _rule - 规则对象（未使用）
+ * @param value - 昵称值
+ * @param callback - 回调函数
+ */
 const validateNickname = (_rule: unknown, value: string, callback: (error?: Error) => void) => {
   if (isBlank(value)) {
     callback()
@@ -198,7 +232,13 @@ const validateNickname = (_rule: unknown, value: string, callback: (error?: Erro
   callback()
 }
 
-// 自定义验证：邮箱
+// 自定义验证：邮箱（选填，但有值时需符合邮箱格式）
+/**
+ * 验证邮箱格式（选填字段）
+ * @param _rule - 规则对象（未使用）
+ * @param value - 邮箱值
+ * @param callback - 回调函数
+ */
 const validateEmail = (_rule: unknown, value: string, callback: (error?: Error) => void) => {
   if (isBlank(value)) {
     callback()
@@ -213,7 +253,13 @@ const validateEmail = (_rule: unknown, value: string, callback: (error?: Error) 
   callback()
 }
 
-// 自定义验证：手机号
+// 自定义验证：手机号（选填，但有值时需符合国内手机号格式）
+/**
+ * 验证手机号格式（选填字段）
+ * @param _rule - 规则对象（未使用）
+ * @param value - 手机号值
+ * @param callback - 回调函数
+ */
 const validatePhone = (_rule: unknown, value: string, callback: (error?: Error) => void) => {
   if (isBlank(value)) {
     callback()
@@ -250,6 +296,11 @@ function normalizeOptionalField(value: string): string | undefined {
   return normalized ? normalized : undefined
 }
 
+// 构建注册请求 payload，选填字段空值时置空而非传空字符串
+/**
+ * 构建注册请求参数
+ * @description 将表单数据转换为 API 所需的 RegisterRequest 类型
+ */
 function buildRegisterPayload(): RegisterRequest {
   return {
     username: formData.username.trim(),
@@ -260,7 +311,11 @@ function buildRegisterPayload(): RegisterRequest {
   }
 }
 
-// 注册
+// 注册处理函数
+/**
+ * 处理用户注册
+ * @description 验证表单后调用 authStore.register，根据结果跳转登录页或后台
+ */
 async function handleRegister() {
   try {
     const isValid = await formRef.value?.validate().catch(() => false)

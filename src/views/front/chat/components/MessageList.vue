@@ -33,8 +33,13 @@
               <span v-if="msg.content" class="msg-image-caption">{{ msg.content }}</span>
             </template>
             <!-- File message -->
-            <template v-else-if="(msg.messageType === 'file' || msg.messageType === 'voice') && msg.file">
-              <div class="msg-file" @click="downloadFile(msg.file!.fileUrl, msg.file!.originalName)">
+            <template
+              v-else-if="(msg.messageType === 'file' || msg.messageType === 'voice') && msg.file"
+            >
+              <div
+                class="msg-file"
+                @click="downloadFile(msg.file!.fileUrl, msg.file!.originalName)"
+              >
                 <el-icon size="24"><Document /></el-icon>
                 <div class="msg-file-info">
                   <span class="msg-file-name">{{ msg.file.originalName }}</span>
@@ -65,7 +70,10 @@
               >
                 编辑
               </el-dropdown-item>
-              <el-dropdown-item v-if="msg.senderId === currentUserId" @click="emit('revoke', msg.id)">
+              <el-dropdown-item
+                v-if="msg.senderId === currentUserId"
+                @click="emit('revoke', msg.id)"
+              >
                 撤回
               </el-dropdown-item>
               <el-dropdown-item @click="emit('delete', msg.id)">删除</el-dropdown-item>
@@ -81,13 +89,20 @@
       <el-input v-model="editContent" type="textarea" :rows="3" placeholder="修改消息内容..." />
       <template #footer>
         <el-button @click="editVisible = false">取消</el-button>
-        <el-button type="primary" :disabled="!editContent.trim()" @click="confirmEdit">确定</el-button>
+        <el-button type="primary" :disabled="!editContent.trim()" @click="confirmEdit"
+          >确定</el-button
+        >
       </template>
     </el-dialog>
   </div>
 </template>
 
 <script lang="ts" setup>
+/**
+ * 消息列表组件
+ * @description 渲染聊天消息，支持文本/图片/文件类型，支持撤回、删除、编辑
+ * @module front/chat/components/MessageList
+ */
 import { ref, watch, nextTick } from 'vue'
 import { MoreFilled, Document } from '@element-plus/icons-vue'
 import type { ChatMessageVO } from '@/types/api-types'
@@ -105,6 +120,7 @@ const emit = defineEmits<{
 }>()
 
 const listRef = ref<HTMLElement | null>(null)
+// 编辑弹窗相关状态
 const editVisible = ref(false)
 const editMessageId = ref(0)
 const editContent = ref('')
@@ -124,12 +140,14 @@ function formatTime(value: string | null | undefined): string {
   return `${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`
 }
 
+// 格式化文件大小（如 1.2 MB）
 function formatFileSize(bytes: number): string {
   if (bytes < 1024) return `${bytes} B`
   if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`
   return `${(bytes / (1024 * 1024)).toFixed(1)} MB`
 }
 
+// 下载文件（触发浏览器下载）
 function downloadFile(url: string, filename: string): void {
   const a = document.createElement('a')
   a.href = url
@@ -140,18 +158,21 @@ function downloadFile(url: string, filename: string): void {
   document.body.removeChild(a)
 }
 
+// 获取消息送达状态文字
 function deliveryStatus(msg: ChatMessageVO): string {
   if (msg.readByCurrentUser) return '已读'
   if (msg.deliveryStatus === 1 || msg.deliveryStatus === 2) return '已送达'
   return ''
 }
 
+// 打开编辑弹窗
 function startEdit(msg: ChatMessageVO): void {
   editMessageId.value = msg.id
   editContent.value = msg.content ?? ''
   editVisible.value = true
 }
 
+// 确认编辑消息
 function confirmEdit(): void {
   if (!editContent.value.trim()) return
   emit('edit', editMessageId.value, editContent.value.trim())

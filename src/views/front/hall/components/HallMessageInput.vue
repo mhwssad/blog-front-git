@@ -15,6 +15,11 @@
 </template>
 
 <script lang="ts" setup>
+/**
+ * 大厅消息输入组件
+ * @description 简化版输入框，回车发送消息，用于大厅聊天
+ * @module front/hall/components/HallMessageInput
+ */
 import { ref } from 'vue'
 
 defineProps<{
@@ -27,6 +32,7 @@ const emit = defineEmits<{
 
 const text = ref('')
 
+// 发送消息（清空输入框）
 function handleSend(): void {
   if (!text.value.trim()) return
   emit('send', text.value.trim())

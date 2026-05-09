@@ -36,25 +36,28 @@
 
     <template v-else-if="existingApplication">
       <div class="status-card">
-        <el-icon :size="48" :color="existingApplication.applyStatus === 2 ? 'var(--el-color-success)' : 'var(--el-color-danger)'">
+        <el-icon
+          :size="48"
+          :color="
+            existingApplication.applyStatus === 2
+              ? 'var(--el-color-success)'
+              : 'var(--el-color-danger)'
+          "
+        >
           <component :is="existingApplication.applyStatus === 2 ? 'Select' : 'CloseBold'" />
         </el-icon>
         <div class="status-info">
           <div class="status-text">{{ existingApplication.applyStatusLabel }}</div>
-          <div v-if="existingApplication.reviewComment" class="status-time">审核意见：{{ existingApplication.reviewComment }}</div>
+          <div v-if="existingApplication.reviewComment" class="status-time">
+            审核意见：{{ existingApplication.reviewComment }}
+          </div>
           <div class="status-time">提交时间：{{ existingApplication.submittedAt }}</div>
         </div>
       </div>
     </template>
 
     <template v-else>
-      <el-form
-        ref="formRef"
-        :model="form"
-        :rules="rules"
-        label-width="100px"
-        class="apply-form"
-      >
+      <el-form ref="formRef" :model="form" :rules="rules" label-width="100px" class="apply-form">
         <el-form-item label="申请说明" prop="applyReason">
           <el-input
             v-model="form.applyReason"
@@ -114,9 +117,23 @@
 </template>
 
 <script lang="ts" setup>
+/**
+ * 作者申请页面
+ * @description 用户申请成为作者，需填写申请说明和擅长方向
+ * @module front/author/AuthorApply
+ * @see ../../api/user/author.ts
+ */
 import { ref, reactive, onMounted } from 'vue'
 import { ElMessage } from 'element-plus'
-import { EditPen, FolderOpened, Medal, Unlock, Clock, Select, CloseBold } from '@element-plus/icons-vue'
+import {
+  EditPen,
+  FolderOpened,
+  Medal,
+  Unlock,
+  Clock,
+  Select,
+  CloseBold,
+} from '@element-plus/icons-vue'
 import type { FormInstance, FormRules } from 'element-plus'
 import { useUserAuthorApplicationStore } from '@/stores'
 import type { UserAuthorApplicationVO } from '@/types/api-types'
@@ -126,6 +143,7 @@ const formRef = ref<FormInstance>()
 const existingApplication = ref<UserAuthorApplicationVO | null>(null)
 const submitting = ref(false)
 
+// 表单数据
 const form = reactive({
   applyReason: '',
   contentDirection: '',
@@ -138,6 +156,7 @@ const rules = reactive<FormRules>({
   contentDirection: [{ required: true, message: '请填写擅长方向', trigger: 'blur' }],
 })
 
+/** 提交作者申请 */
 async function handleSubmit(): Promise<void> {
   const valid = await formRef.value?.validate().catch(() => false)
   if (!valid) return

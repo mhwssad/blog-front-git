@@ -30,17 +30,13 @@
         <el-descriptions-item label="角色编码" :span="2">{{ role.code }}</el-descriptions-item>
         <el-descriptions-item label="排序">{{ role.sort }}</el-descriptions-item>
         <el-descriptions-item label="数据权限">{{ dataScopeText }}</el-descriptions-item>
-        <el-descriptions-item label="创建时间" :span="2">{{ role.createTime || '-' }}</el-descriptions-item>
+        <el-descriptions-item label="创建时间" :span="2">{{
+          role.createTime || '-'
+        }}</el-descriptions-item>
       </el-descriptions>
 
       <!-- 备注 -->
-      <el-descriptions
-        v-if="role.remark"
-        :column="1"
-        border
-        size="small"
-        class="detail-section"
-      >
+      <el-descriptions v-if="role.remark" :column="1" border size="small" class="detail-section">
         <el-descriptions-item label="备注">{{ role.remark }}</el-descriptions-item>
       </el-descriptions>
 
@@ -74,6 +70,8 @@
   </el-dialog>
 </template>
 
+/** * 角色详情对话框 * @description 展示角色的完整信息，包括基本资料、已分配菜单等 * @module
+admin/role/components/RoleDetailDialog * @see api/sys/role.ts */
 <script lang="ts" setup>
 import { ref, computed, watch } from 'vue'
 import { Loading } from '@element-plus/icons-vue'
@@ -95,13 +93,19 @@ const menuNames = ref<string[]>([])
 
 const dialogVisible = computed({
   get: () => props.visible,
-  set: (val) => emit('update:visible', val),
+  set: val => emit('update:visible', val),
 })
 
 const role = computed(() => detailRole.value || props.role)
 
 const dataScopeText = computed(() => {
-  const map: Record<number, string> = { 1: '全部数据', 2: '自定义', 3: '本部门', 4: '本部门及以下', 5: '仅本人' }
+  const map: Record<number, string> = {
+    1: '全部数据',
+    2: '自定义',
+    3: '本部门',
+    4: '本部门及以下',
+    5: '仅本人',
+  }
   return map[role.value?.dataScope ?? 0] ?? '-'
 })
 
@@ -119,7 +123,7 @@ function flattenMenus(tree: SysMenuAdminVO[]): Map<number, string> {
 
 watch(
   () => props.visible,
-  async (visible) => {
+  async visible => {
     if (!visible || !props.role) return
     loading.value = true
     try {
@@ -138,7 +142,7 @@ watch(
     } finally {
       loading.value = false
     }
-  },
+  }
 )
 
 function handleClose() {

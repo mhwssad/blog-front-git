@@ -45,6 +45,11 @@
 </template>
 
 <script lang="ts" setup>
+/**
+ * 评论区域组件
+ * @description 包含评论输入、评论列表展示，支持发表评论和回复
+ * @module front/article/components/CommentSection
+ */
 import { ref } from 'vue'
 import type { PublicCommentVO } from '@/types/api-types'
 import CommentItem from './CommentItem.vue'
@@ -65,12 +70,14 @@ const emit = defineEmits<{
 
 const newComment = ref('')
 
+// 发表评论
 function handleSubmit(): void {
   if (!newComment.value.trim()) return
   emit('submit', { content: newComment.value.trim() })
   newComment.value = ''
 }
 
+// 处理回复（转发给父组件）
 function handleReply(data: { content: string; rootId: number; parentId: number }): void {
   emit('submit', data)
 }

@@ -16,12 +16,6 @@ import type {
   UserFileVO,
 } from '@/types/api-types'
 
-const multipartHeaders = {
-  headers: {
-    'Content-Type': 'multipart/form-data',
-  },
-}
-
 /**
  * 用户文件 API
  * 提供文件上传、分页查询、删除等功能
@@ -51,7 +45,6 @@ export class UserFileApi {
     return http.post<FileUploadResultVO>(
       `/user/files/upload-tasks/${uploadId}/file`,
       data,
-      multipartHeaders
     )
   }
 
@@ -63,7 +56,6 @@ export class UserFileApi {
     return http.post<ChunkUploadVO>(
       `/user/files/upload-tasks/${uploadId}/chunks/${chunkNumber}`,
       data,
-      multipartHeaders
     )
   }
 

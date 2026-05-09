@@ -35,11 +35,7 @@
     <span class="action-count">{{ article.collectCount }}</span>
 
     <el-tooltip content="回到顶部" placement="right">
-      <el-button
-        v-show="showBackTop"
-        circle
-        @click="scrollToTop"
-      >
+      <el-button v-show="showBackTop" circle @click="scrollToTop">
         <el-icon><Top /></el-icon>
       </el-button>
     </el-tooltip>
@@ -47,6 +43,11 @@
 </template>
 
 <script lang="ts" setup>
+/**
+ * 文章操作栏组件
+ * @description 悬浮在文章左侧的点赞、收藏、回到顶部操作栏
+ * @module front/article/components/ActionBar
+ */
 import { ref, onMounted, onBeforeUnmount } from 'vue'
 import { Star, StarFilled, Top } from '@element-plus/icons-vue'
 import type { PublicArticleDetailVO } from '@/types/api-types'
@@ -63,6 +64,7 @@ const emit = defineEmits<{
   uncollect: []
 }>()
 
+// 是否显示回到顶部按钮（滚动超过 400px 时显示）
 const showBackTop = ref(false)
 
 function onScroll(): void {

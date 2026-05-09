@@ -23,14 +23,22 @@
         </el-col>
         <el-col :span="12">
           <el-form-item label="渠道名称" prop="channelName">
-            <el-input v-model="formData.channelName" maxlength="64" placeholder="如 OpenAI GPT-4o" />
+            <el-input
+              v-model="formData.channelName"
+              maxlength="64"
+              placeholder="如 OpenAI GPT-4o"
+            />
           </el-form-item>
         </el-col>
       </el-row>
       <el-row :gutter="16">
         <el-col :span="12">
           <el-form-item label="提供方" prop="provider">
-            <el-input v-model="formData.provider" maxlength="64" placeholder="如 openai、deepseek" />
+            <el-input
+              v-model="formData.provider"
+              maxlength="64"
+              placeholder="如 openai、deepseek"
+            />
           </el-form-item>
         </el-col>
         <el-col :span="12">
@@ -57,37 +65,75 @@
       <el-row :gutter="16">
         <el-col :span="8">
           <el-form-item label="全局日限额" prop="dailyQuota">
-            <el-input-number v-model="formData.dailyQuota" :min="0" :max="1000000" style="width: 100%" />
+            <el-input-number
+              v-model="formData.dailyQuota"
+              :min="0"
+              :max="1000000"
+              style="width: 100%"
+            />
           </el-form-item>
         </el-col>
         <el-col :span="8">
           <el-form-item label="用户日限额" prop="userDailyQuota">
-            <el-input-number v-model="formData.userDailyQuota" :min="0" :max="100000" style="width: 100%" />
+            <el-input-number
+              v-model="formData.userDailyQuota"
+              :min="0"
+              :max="100000"
+              style="width: 100%"
+            />
           </el-form-item>
         </el-col>
         <el-col :span="8">
           <el-form-item label="上下文长度" prop="maxContextTokens">
-            <el-input-number v-model="formData.maxContextTokens" :min="0" :max="1000000" :step="1024" style="width: 100%" />
+            <el-input-number
+              v-model="formData.maxContextTokens"
+              :min="0"
+              :max="1000000"
+              :step="1024"
+              style="width: 100%"
+            />
           </el-form-item>
         </el-col>
       </el-row>
 
       <el-divider content-position="left">高级设置</el-divider>
       <el-form-item label="数据范围">
-        <el-input v-model="formData.dataScopeJson" type="textarea" :rows="3" placeholder='["public_article","public_profile"]' />
+        <el-input
+          v-model="formData.dataScopeJson"
+          type="textarea"
+          :rows="3"
+          placeholder='["public_article","public_profile"]'
+        />
       </el-form-item>
       <el-form-item label="提示词模板">
-        <el-input v-model="formData.systemPromptTemplate" type="textarea" :rows="4" placeholder="请输入系统提示词模板" />
+        <el-input
+          v-model="formData.systemPromptTemplate"
+          type="textarea"
+          :rows="4"
+          placeholder="请输入系统提示词模板"
+        />
       </el-form-item>
       <el-row :gutter="16">
         <el-col :span="12">
           <el-form-item label="状态">
-            <el-switch v-model="formData.status" :active-value="1" :inactive-value="0" active-text="启用" inactive-text="停用" />
+            <el-switch
+              v-model="formData.status"
+              :active-value="1"
+              :inactive-value="0"
+              active-text="启用"
+              inactive-text="停用"
+            />
           </el-form-item>
         </el-col>
         <el-col :span="12">
           <el-form-item label="默认渠道">
-            <el-switch v-model="formData.isDefault" :active-value="1" :inactive-value="0" active-text="是" inactive-text="否" />
+            <el-switch
+              v-model="formData.isDefault"
+              :active-value="1"
+              :inactive-value="0"
+              active-text="是"
+              inactive-text="否"
+            />
           </el-form-item>
         </el-col>
       </el-row>
@@ -95,7 +141,12 @@
 
     <template #footer>
       <el-button @click="dialogVisible = false">取消</el-button>
-      <el-button v-permission="submitPermission" type="primary" :loading="submitting" @click="handleSubmit">
+      <el-button
+        v-permission="submitPermission"
+        type="primary"
+        :loading="submitting"
+        @click="handleSubmit"
+      >
         {{ isEdit ? '保存' : '创建' }}
       </el-button>
     </template>
@@ -132,7 +183,7 @@ const dialogVisible = computed({
 
 const isEdit = computed(() => !!props.channelId)
 const submitPermission = computed(() =>
-  isEdit.value ? 'ai:channel-config:update' : 'ai:channel-config:create',
+  isEdit.value ? 'ai:channel-config:update' : 'ai:channel-config:create'
 )
 
 const formData = reactive<AiChannelConfigSaveRequest>({
@@ -253,6 +304,6 @@ watch(
     resetForm()
     if (channelId) await loadChannelDetail(channelId)
   },
-  { immediate: true },
+  { immediate: true }
 )
 </script>

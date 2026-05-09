@@ -1,19 +1,12 @@
 <template>
   <div class="message-input">
     <div class="input-actions">
-      <el-upload
-        :show-file-list="false"
-        :before-upload="handleImageUpload"
-        accept="image/*"
-      >
+      <el-upload :show-file-list="false" :before-upload="handleImageUpload" accept="image/*">
         <el-button text title="发送图片">
           <el-icon><Picture /></el-icon>
         </el-button>
       </el-upload>
-      <el-upload
-        :show-file-list="false"
-        :before-upload="handleFileUpload"
-      >
+      <el-upload :show-file-list="false" :before-upload="handleFileUpload">
         <el-button text title="发送文件">
           <el-icon><Document /></el-icon>
         </el-button>
@@ -34,6 +27,11 @@
 </template>
 
 <script lang="ts" setup>
+/**
+ * 消息输入框组件
+ * @description 支持文本消息发送、图片和文件上传
+ * @module front/chat/components/MessageInput
+ */
 import { ref } from 'vue'
 import { Picture, Document } from '@element-plus/icons-vue'
 import { ElMessage } from 'element-plus'
@@ -50,12 +48,14 @@ const emit = defineEmits<{
 
 const text = ref('')
 
+// 发送文本消息
 function handleSend(): void {
   if (!text.value.trim()) return
   emit('send', text.value.trim())
   text.value = ''
 }
 
+// 图片上传前校验（大小不超过 10MB）
 function handleImageUpload(file: UploadRawFile): boolean {
   if (file.size > 10 * 1024 * 1024) {
     ElMessage.warning('图片大小不能超过 10MB')
@@ -65,6 +65,7 @@ function handleImageUpload(file: UploadRawFile): boolean {
   return false
 }
 
+// 文件上传前校验（大小不超过 50MB）
 function handleFileUpload(file: UploadRawFile): boolean {
   if (file.size > 50 * 1024 * 1024) {
     ElMessage.warning('文件大小不能超过 50MB')

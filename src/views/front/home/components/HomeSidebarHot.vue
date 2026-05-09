@@ -20,6 +20,11 @@
 </template>
 
 <script lang="ts" setup>
+/**
+ * 侧边栏热门文章组件
+ * @description 展示浏览量最高的文章列表，带排名序号
+ * @module front/home/components/HomeSidebarHot
+ */
 import type { PublicArticleCardVO } from '@/types/api-types'
 
 defineProps<{

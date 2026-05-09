@@ -37,6 +37,12 @@
 </template>
 
 <script lang="ts" setup>
+/**
+ * 我的收藏页面
+ * @description 展示用户的收藏夹列表和收藏内容，支持创建、编辑、删除收藏夹
+ * @module front/collection/CollectionsView
+ * @see ../../api/content.ts
+ */
 import { ref, computed, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { useUserContentStore } from '@/stores'
@@ -47,18 +53,21 @@ import FolderFormDialog from './components/FolderFormDialog.vue'
 
 const store = useUserContentStore()
 
+// 当前选中的收藏夹 ID
 const selectedFolderId = ref<number | undefined>(undefined)
+// 新建/编辑收藏夹弹窗是否显示
 const folderFormVisible = ref(false)
+// 当前编辑的收藏夹（null 表示新建）
 const editingFolder = ref<CollectionFolderVO | null>(null)
 
 const selectedFolderName = computed(() => {
   if (!selectedFolderId.value) return undefined
-  return store.collectionFolders.find((f) => f.id === selectedFolderId.value)?.folderName
+  return store.collectionFolders.find(f => f.id === selectedFolderId.value)?.folderName
 })
 
 const filteredRecords = computed(() => {
   if (!selectedFolderId.value) return store.collections
-  return store.collections.filter((c) => c.folderId === selectedFolderId.value)
+  return store.collections.filter(c => c.folderId === selectedFolderId.value)
 })
 
 async function loadData(): Promise<void> {
@@ -70,7 +79,7 @@ function handleFolderSelect(id: number): void {
 }
 
 function openFolderForm(mode: 'create' | 'edit', folder?: CollectionFolderVO): void {
-  editingFolder.value = mode === 'edit' ? folder ?? null : null
+  editingFolder.value = mode === 'edit' ? (folder ?? null) : null
   folderFormVisible.value = true
 }
 

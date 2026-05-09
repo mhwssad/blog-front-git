@@ -36,7 +36,12 @@
               <el-skeleton :rows="4" animated />
             </div>
             <template v-else-if="users.length">
-              <div v-for="user in users" :key="user.userId" class="user-item" @click="router.push(`/user/${user.userId}`)">
+              <div
+                v-for="user in users"
+                :key="user.userId"
+                class="user-item"
+                @click="router.push(`/user/${user.userId}`)"
+              >
                 <div class="user-main">
                   <el-avatar :size="36" :src="user.avatar ?? undefined">
                     {{ user.nickname?.charAt(0) }}
@@ -64,7 +69,12 @@
               <el-skeleton :rows="4" animated />
             </div>
             <template v-else-if="users.length">
-              <div v-for="user in users" :key="user.userId" class="user-item" @click="router.push(`/user/${user.userId}`)">
+              <div
+                v-for="user in users"
+                :key="user.userId"
+                class="user-item"
+                @click="router.push(`/user/${user.userId}`)"
+              >
                 <div class="user-main">
                   <el-avatar :size="36" :src="user.avatar ?? undefined">
                     {{ user.nickname?.charAt(0) }}
@@ -93,6 +103,12 @@
 </template>
 
 <script lang="ts" setup>
+/**
+ * 用户个人主页
+ * @description 展示指定用户的资料、关注列表和粉丝列表，支持关注/取关操作
+ * @module front/user/UserProfileView
+ * @see ../../api/follow.ts
+ */
 import { ref, reactive, computed, onMounted, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
@@ -110,23 +126,31 @@ const followStore = useUserFollowStore()
 const userId = computed(() => Number(route.params.userId))
 const isSelf = computed(() => authStore.currentUser?.id === userId.value)
 
+// 当前页面类型（follow/fan）
 const activeTab = ref('follow')
+// 用户列表（关注或粉丝）
 const users = ref<PublicFollowUserVO[]>([])
 const currentPage = ref(1)
 const pageSize = 10
 const loading = ref(false)
+// 关注总数和粉丝总数
 const followTotal = ref(0)
 const fanTotal = ref(0)
 
+// 用户资料（昵称、用户名、头像）
 const profile = reactive({
   nickname: '',
   username: '',
   avatar: '' as string | null,
 })
+// 是否正在加载关注/粉丝数据
 const profileLoading = ref(false)
+// 当前是否已关注该用户
 const isFollowing = ref(false)
+// 是否正在执行关注/取关操作
 const followLoading = ref(false)
 
+// 从用户列表中提取第一个用户来补充 profile 信息（用于首次加载时显示头像）
 function updateProfileFromUser(user: PublicFollowUserVO | undefined): void {
   if (!user) return
   if (!profile.nickname) {

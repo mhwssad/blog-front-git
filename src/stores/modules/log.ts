@@ -12,6 +12,22 @@ import type {
   SysLogCleanRequest,
 } from '@/types/api-types'
 
+function normalizeLogRecord(log: SysLogAdminVO | null | undefined): SysLogAdminVO | null {
+  if (!log) {
+    return null
+  }
+
+  return {
+    ...log,
+    username: log.username || (log.createBy !== undefined ? String(log.createBy) : '-'),
+    location: log.location || [log.province, log.city].filter(Boolean).join(' ') || '-',
+    description: log.description || log.content || log.action || '-',
+    requestUrl: log.requestUrl || log.requestUri || '-',
+    requestUri: log.requestUri || '',
+    executeTime: log.executeTime ?? log.executionTime ?? 0,
+  }
+}
+
 export const useLogStore = defineStore('log', () => {
   // ==================== 状态 ====================
 
@@ -55,11 +71,12 @@ export const useLogStore = defineStore('log', () => {
     try {
       const response = await LogApi.getLogs(params)
       const data = response.data.data
+      const records = Array.isArray(data.records) ? data.records : []
 
-      logs.value = data.records
-      total.value = data.total
-      current.value = data.current
-      size.value = data.size
+      logs.value = records.map(normalizeLogRecord).filter((item): item is SysLogAdminVO => item !== null)
+      total.value = data.total ?? records.length
+      current.value = data.current ?? params?.current ?? 1
+      size.value = data.size ?? params?.size ?? 10
     } finally {
       loading.value = false
     }
@@ -71,7 +88,7 @@ export const useLogStore = defineStore('log', () => {
   async function fetchLogById(id: number): Promise<SysLogAdminVO | null> {
     try {
       const response = await LogApi.getLogById(id)
-      currentLog.value = response.data.data
+      currentLog.value = normalizeLogRecord(response.data.data)
       return currentLog.value
     } catch {
       return null

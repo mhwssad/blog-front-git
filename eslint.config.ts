@@ -241,6 +241,14 @@ export default [
       '@typescript-eslint/no-misused-promises': 'error',
       '@typescript-eslint/await-thenable': 'error',
       '@typescript-eslint/no-unnecessary-type-assertion': 'error',
+
+      // 关闭 unsafe 系列规则（对 response.data.data 等 API 调用模式误报严重）
+      '@typescript-eslint/no-unsafe-assignment': 'off',
+      '@typescript-eslint/no-unsafe-call': 'off',
+      '@typescript-eslint/no-unsafe-member-access': 'off',
+      '@typescript-eslint/no-unsafe-return': 'off',
+      '@typescript-eslint/no-unsafe-argument': 'off',
+      '@typescript-eslint/no-unsafe-enum-comparison': 'off',
     },
   },
 

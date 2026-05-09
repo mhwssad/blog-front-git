@@ -3,20 +3,20 @@
     <el-card class="search-card" shadow="never">
       <el-form :model="searchForm" inline class="search-form">
         <el-form-item label="通知标题" class="filter-item">
-          <el-input v-model="searchForm.title" class="filter-control" clearable placeholder="请输入通知标题" />
-        </el-form-item>
-        <el-form-item label="通知类型" class="filter-item">
-          <el-select v-model="searchForm.type" class="filter-control" clearable placeholder="请选择通知类型">
-            <el-option
-              v-for="option in NOTICE_TYPE_OPTIONS"
-              :key="option.value"
-              :label="option.label"
-              :value="option.value"
-            />
-          </el-select>
+          <el-input
+            v-model="searchForm.title"
+            class="filter-control"
+            clearable
+            placeholder="请输入通知标题"
+          />
         </el-form-item>
         <el-form-item label="通知状态" class="filter-item">
-          <el-select v-model="searchForm.publishStatus" class="filter-control" clearable placeholder="请选择通知状态">
+          <el-select
+            v-model="searchForm.publishStatus"
+            class="filter-control"
+            clearable
+            placeholder="请选择通知状态"
+          >
             <el-option
               v-for="option in NOTICE_STATUS_OPTIONS"
               :key="option.value"
@@ -25,21 +25,49 @@
             />
           </el-select>
         </el-form-item>
-        <el-form-item label="目标类型" class="filter-item">
-          <el-select v-model="searchForm.targetType" class="filter-control" clearable placeholder="请选择目标类型">
-            <el-option
-              v-for="option in NOTICE_TARGET_TYPE_OPTIONS"
-              :key="option.value"
-              :label="option.label"
-              :value="option.value"
-            />
-          </el-select>
-        </el-form-item>
+        <template v-if="searchExpanded">
+          <el-form-item label="通知类型" class="filter-item">
+            <el-select
+              v-model="searchForm.type"
+              class="filter-control"
+              clearable
+              placeholder="请选择通知类型"
+            >
+              <el-option
+                v-for="option in NOTICE_TYPE_OPTIONS"
+                :key="option.value"
+                :label="option.label"
+                :value="option.value"
+              />
+            </el-select>
+          </el-form-item>
+          <el-form-item label="目标类型" class="filter-item">
+            <el-select
+              v-model="searchForm.targetType"
+              class="filter-control"
+              clearable
+              placeholder="请选择目标类型"
+            >
+              <el-option
+                v-for="option in NOTICE_TARGET_TYPE_OPTIONS"
+                :key="option.value"
+                :label="option.label"
+                :value="option.value"
+              />
+            </el-select>
+          </el-form-item>
+        </template>
         <el-form-item class="search-actions">
           <el-button v-permission="'sys:notice:query'" type="primary" @click="handleSearch">
             查询
           </el-button>
           <el-button @click="handleReset">重置</el-button>
+          <el-button link type="primary" @click="searchExpanded = !searchExpanded">
+            {{ searchExpanded ? '收起' : '更多' }}
+            <el-icon class="expand-icon" :class="{ 'is-expanded': searchExpanded }">
+              <ArrowDown />
+            </el-icon>
+          </el-button>
         </el-form-item>
       </el-form>
     </el-card>
@@ -64,80 +92,87 @@
         border
         stripe
       >
-          <el-table-column prop="id" label="ID" min-width="80" align="center" />
-          <el-table-column prop="title" label="通知标题" min-width="220" align="center" show-overflow-tooltip />
-          <el-table-column label="通知类型" min-width="120" align="center">
-            <template #default="{ row }">
-              {{ formatNoticeType(row.type) }}
-            </template>
-          </el-table-column>
-          <el-table-column label="通知状态" min-width="120" align="center">
-            <template #default="{ row }">
-              <el-tag :type="getNoticeStatusTagType(row.status)" effect="light">
-                {{ formatNoticeStatus(row.status) }}
-              </el-tag>
-            </template>
-          </el-table-column>
-          <el-table-column prop="content" label="通知内容" min-width="260" align="center" show-overflow-tooltip>
-            <template #default="{ row }">
-              {{ formatNoticePreview(row.content) }}
-            </template>
-          </el-table-column>
-          <el-table-column label="发布时间" min-width="180" align="center">
-            <template #default="{ row }">
-              {{ formatSystemDate(row.publishTime) }}
-            </template>
-          </el-table-column>
-          <el-table-column label="创建时间" min-width="180" align="center">
-            <template #default="{ row }">
-              {{ formatCreateTime(row.createTime) }}
-            </template>
-          </el-table-column>
-          <el-table-column
-            label="操作"
-            :min-width="isCompactTable ? 180 : 280"
-            :fixed="isCompactTable ? false : 'right'"
-            align="center"
-          >
-            <template #default="{ row }">
-              <div class="table-actions" :class="{ 'table-actions--compact': isCompactTable }">
-                <el-button v-permission="'sys:notice:query'" link type="primary" @click="handleViewDetail(row)">
-                  详情
-                </el-button>
-                <el-button
-                  v-if="canEditNotice(row.status)"
-                  v-permission="'sys:notice:update'"
-                  link
-                  type="primary"
-                  @click="handleEdit(row)"
-                >
-                  编辑
-                </el-button>
-                <el-button
-                  v-if="canPublishNotice(row.status)"
-                  v-permission="'sys:notice:publish'"
-                  link
-                  type="success"
-                  @click="handlePublish(row)"
-                >
-                  发布
-                </el-button>
-                <el-button
-                  v-if="canRevokeNotice(row.status)"
-                  v-permission="'sys:notice:revoke'"
-                  link
-                  type="warning"
-                  @click="handleRevoke(row)"
-                >
-                  撤回
-                </el-button>
-                <el-button v-permission="'sys:notice:delete'" link type="danger" @click="handleDelete(row)">
-                  删除
-                </el-button>
-              </div>
-            </template>
-          </el-table-column>
-        </el-table>
+        <el-table-column prop="id" label="ID" min-width="80" align="center" />
+        <el-table-column
+          prop="title"
+          label="通知标题"
+          min-width="220"
+          align="center"
+          show-overflow-tooltip
+        />
+        <el-table-column label="通知类型" min-width="120" align="center">
+          <template #default="{ row }">
+            {{ formatNoticeType(row.type) }}
+          </template>
+        </el-table-column>
+        <el-table-column label="通知状态" min-width="120" align="center">
+          <template #default="{ row }">
+            <el-tag :type="getNoticeStatusTagType(row.status)" effect="light">
+              {{ formatNoticeStatus(row.status) }}
+            </el-tag>
+          </template>
+        </el-table-column>
+        <el-table-column label="发布时间" min-width="180" align="center">
+          <template #default="{ row }">
+            {{ formatSystemDate(row.publishTime) }}
+          </template>
+        </el-table-column>
+        <el-table-column
+          label="操作"
+          :min-width="isCompactTable ? 180 : 280"
+          :fixed="isCompactTable ? false : 'right'"
+          class-name="action-column"
+          align="center"
+        >
+          <template #default="{ row }">
+            <div class="table-actions" :class="{ 'table-actions--compact': isCompactTable }">
+              <el-button
+                v-permission="'sys:notice:query'"
+                link
+                type="primary"
+                @click="handleViewDetail(row)"
+              >
+                详情
+              </el-button>
+              <el-button
+                v-if="canEditNotice(row.status)"
+                v-permission="'sys:notice:update'"
+                link
+                type="primary"
+                @click="handleEdit(row)"
+              >
+                编辑
+              </el-button>
+              <el-button
+                v-if="canPublishNotice(row.status)"
+                v-permission="'sys:notice:publish'"
+                link
+                type="success"
+                @click="handlePublish(row)"
+              >
+                发布
+              </el-button>
+              <el-button
+                v-if="canRevokeNotice(row.status)"
+                v-permission="'sys:notice:revoke'"
+                link
+                type="warning"
+                @click="handleRevoke(row)"
+              >
+                撤回
+              </el-button>
+              <el-button
+                v-permission="'sys:notice:delete'"
+                link
+                type="danger"
+                @click="handleDelete(row)"
+              >
+                删除
+              </el-button>
+            </div>
+          </template>
+        </el-table-column>
+      </el-table>
 
       <div class="pagination">
         <el-pagination
@@ -153,16 +188,23 @@
       </div>
     </el-card>
 
-    <NoticeFormDialog v-model:visible="formDialogVisible" :notice-id="editingNoticeId" @success="handleFormSuccess" />
+    <NoticeFormDialog
+      v-model:visible="formDialogVisible"
+      :notice-id="editingNoticeId"
+      @success="handleFormSuccess"
+    />
 
     <NoticeDetailDialog v-model:visible="detailDialogVisible" :notice="currentNotice" />
   </div>
 </template>
 
+/** * 通知管理页面（后台） * @description
+后台通知管理，支持通知的增删改查、发布、撤回、删除等完整生命周期管理 * @module admin/notice/Notices
+* @see api/sys/notice.ts */
 <script lang="ts" setup>
 import { onMounted, reactive, ref } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
-import { Plus } from '@element-plus/icons-vue'
+import { ArrowDown, Plus } from '@element-plus/icons-vue'
 import type { NoticeQueryRequest, SysNoticeAdminVO } from '@/types/api-types'
 import { useContentAdmin } from '@/composables/useContentAdmin'
 import { useNoticeStore } from '@/stores'
@@ -170,7 +212,6 @@ import {
   NOTICE_STATUS_OPTIONS,
   NOTICE_TARGET_TYPE_OPTIONS,
   NOTICE_TYPE_OPTIONS,
-  formatCreateTime,
   formatNoticeStatus,
   formatNoticeType,
   formatSystemDate,
@@ -193,6 +234,7 @@ const pagination = reactive({
   size: 10,
 })
 
+const searchExpanded = ref(false)
 const formDialogVisible = ref(false)
 const detailDialogVisible = ref(false)
 const editingNoticeId = ref<number | null>(null)
@@ -231,14 +273,6 @@ function canPublishNotice(status: number | string | null | undefined): boolean {
 
 function canRevokeNotice(status: number | string | null | undefined): boolean {
   return normalizeNoticeStatus(status) === 1
-}
-
-function formatNoticePreview(value: string): string {
-  if (!value) {
-    return '-'
-  }
-
-  return value.length > 48 ? `${value.slice(0, 48)}...` : value
 }
 
 async function fetchNotices(): Promise<void> {
@@ -409,6 +443,15 @@ onMounted(() => {
   margin-right: 0;
 }
 
+.expand-icon {
+  transition: transform 0.3s;
+  margin-left: 2px;
+}
+
+.expand-icon.is-expanded {
+  transform: rotate(180deg);
+}
+
 .card-header {
   display: flex;
   justify-content: space-between;
@@ -419,6 +462,10 @@ onMounted(() => {
 
 .notice-table {
   width: 100%;
+}
+
+.notice-table :deep(.action-column) {
+  border-left: 2px solid var(--el-border-color);
 }
 
 .notice-table :deep(.el-table__cell .cell) {

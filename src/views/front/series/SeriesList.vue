@@ -70,6 +70,12 @@
 </template>
 
 <script lang="ts" setup>
+/**
+ * 我的系列页面
+ * @description 展示用户创建的所有文章系列，支持创建新系列
+ * @module front/series/SeriesList
+ * @see ../../api/content.ts
+ */
 import { ref, reactive, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
@@ -81,9 +87,11 @@ import type { ArticleSeriesSaveRequest } from '@/types/api-types'
 const router = useRouter()
 const store = useUserContentStore()
 
+// 创建系列弹窗是否显示
 const dialogVisible = ref(false)
 const dialogFormRef = ref<FormInstance>()
 
+// 创建系列的表单数据
 const dialogForm = reactive<ArticleSeriesSaveRequest>({
   title: '',
   description: '',
@@ -91,10 +99,12 @@ const dialogForm = reactive<ArticleSeriesSaveRequest>({
   visibilityScope: 0,
 })
 
+// 表单验证规则：系列名称必填
 const dialogRules = reactive<FormRules>({
   title: [{ required: true, message: '请输入系列名称', trigger: 'blur' }],
 })
 
+// 打开创建系列弹窗（重置表单）
 function openCreateDialog(): void {
   dialogForm.title = ''
   dialogForm.description = ''
@@ -103,6 +113,7 @@ function openCreateDialog(): void {
   dialogVisible.value = true
 }
 
+/** 确认创建系列 */
 async function handleCreate(): Promise<void> {
   const valid = await dialogFormRef.value?.validate().catch(() => false)
   if (!valid) return

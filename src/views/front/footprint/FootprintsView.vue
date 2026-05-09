@@ -3,7 +3,13 @@
     <div class="page-header">
       <h1 class="page-title">我的足迹</h1>
       <div class="header-actions">
-        <el-select v-model="filterType" placeholder="类型筛选" clearable size="small" style="width: 140px">
+        <el-select
+          v-model="filterType"
+          placeholder="类型筛选"
+          clearable
+          size="small"
+          style="width: 140px"
+        >
           <el-option label="文章" value="article" />
           <el-option label="其他" value="other" />
         </el-select>
@@ -23,20 +29,12 @@
 
     <template v-else-if="store.footprints.length">
       <div class="timeline">
-        <div
-          v-for="(group, date) in groupedFootprints"
-          :key="date"
-          class="timeline-group"
-        >
+        <div v-for="(group, date) in groupedFootprints" :key="date" class="timeline-group">
           <div class="timeline-date">{{ date }}</div>
           <div class="timeline-items">
             <div v-for="fp in group" :key="fp.id" class="timeline-item">
               <div class="item-main">
-                <router-link
-                  v-if="fp.targetUrl"
-                  :to="fp.targetUrl"
-                  class="item-link"
-                >
+                <router-link v-if="fp.targetUrl" :to="fp.targetUrl" class="item-link">
                   {{ fp.targetTitle ?? '未知' }}
                 </router-link>
                 <span v-else class="item-title">{{ fp.targetTitle ?? '未知' }}</span>
@@ -69,15 +67,23 @@
 </template>
 
 <script lang="ts" setup>
+/**
+ * 我的足迹页面
+ * @description 展示用户的浏览历史，按日期分组，支持筛选和清空
+ * @module front/footprint/FootprintsView
+ * @see ../../api/content.ts
+ */
 import { ref, computed, onMounted, watch } from 'vue'
 import { ElMessage } from 'element-plus'
 import { useUserContentStore } from '@/stores'
 
 const store = useUserContentStore()
 
+// 类型筛选（article/other）
 const filterType = ref<string | undefined>(undefined)
 const currentPage = ref(1)
 
+// 按日期分组的足迹数据
 const groupedFootprints = computed(() => {
   const groups: Record<string, typeof store.footprints> = {}
   for (const fp of store.footprints) {

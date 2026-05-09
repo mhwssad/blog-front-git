@@ -1,6 +1,11 @@
 <template>
   <el-form-item label="文章标题" prop="title">
-    <el-input v-model="formData.title" maxlength="128" show-word-limit placeholder="请输入文章标题" />
+    <el-input
+      v-model="formData.title"
+      maxlength="128"
+      show-word-limit
+      placeholder="请输入文章标题"
+    />
   </el-form-item>
 
   <el-form-item label="文章摘要" prop="summary">
@@ -19,54 +24,87 @@
     <div class="content-editor">
       <div class="toolbar">
         <el-button-group size="small">
-          <el-tooltip content="加粗"><el-button @click="insert(SNIPPETS.bold)"><strong>B</strong></el-button></el-tooltip>
-          <el-tooltip content="斜体"><el-button @click="insert(SNIPPETS.italic)"><em>I</em></el-button></el-tooltip>
-          <el-tooltip content="标题"><el-button @click="insert(SNIPPETS.heading)">H</el-button></el-tooltip>
+          <el-tooltip content="加粗"
+            ><el-button @click="insertTag('bold')"><strong>B</strong></el-button></el-tooltip
+          >
+          <el-tooltip content="斜体"
+            ><el-button @click="insertTag('italic')"><em>I</em></el-button></el-tooltip
+          >
+          <el-tooltip content="标题"
+            ><el-button @click="insertTag('heading')">H</el-button></el-tooltip
+          >
         </el-button-group>
         <el-button-group size="small">
-          <el-tooltip content="链接"><el-button @click="insert(SNIPPETS.link)"><el-icon><Link /></el-icon></el-button></el-tooltip>
-          <el-tooltip content="图片"><el-button @click="insert(SNIPPETS.image)"><el-icon><Picture /></el-icon></el-button></el-tooltip>
-          <el-tooltip content="代码块"><el-button @click="insert(SNIPPETS.code)"><el-icon><Document /></el-icon></el-button></el-tooltip>
+          <el-tooltip content="链接"
+            ><el-button @click="insertTag('link')"
+              ><el-icon><Link /></el-icon></el-button
+          ></el-tooltip>
+          <el-tooltip content="图片"
+            ><el-button @click="insertTag('image')"
+              ><el-icon><Picture /></el-icon></el-button
+          ></el-tooltip>
+          <el-tooltip content="代码块"
+            ><el-button @click="insertTag('code')"
+              ><el-icon><Document /></el-icon></el-button
+          ></el-tooltip>
         </el-button-group>
         <el-button-group size="small">
-          <el-tooltip content="列表"><el-button @click="insert(SNIPPETS.list)"><el-icon><List /></el-icon></el-button></el-tooltip>
-          <el-tooltip content="引用"><el-button @click="insert(SNIPPETS.quote)"><el-icon><ChatLineSquare /></el-icon></el-button></el-tooltip>
-          <el-tooltip content="分隔线"><el-button @click="insert(SNIPPETS.hr)">—</el-button></el-tooltip>
+          <el-tooltip content="列表"
+            ><el-button @click="insertTag('list')"
+              ><el-icon><List /></el-icon></el-button
+          ></el-tooltip>
+          <el-tooltip content="引用"
+            ><el-button @click="insertTag('quote')"
+              ><el-icon><ChatLineSquare /></el-icon></el-button
+          ></el-tooltip>
+          <el-tooltip content="分隔线"
+            ><el-button @click="insertTag('hr')">—</el-button></el-tooltip
+          >
         </el-button-group>
         <div class="toolbar-spacer" />
-        <el-button size="small" @click="emit('import-markdown')">导入 Markdown</el-button>
-        <el-button size="small" @click="emit('update:htmlSource', formatHtml(htmlSource))">格式化</el-button>
+        <el-button size="small" @click="emit('importMarkdown')">导入 Markdown</el-button>
+        <el-button size="small" @click="emit('update:htmlSource', formatHtml(htmlSource))">
+          格式化
+        </el-button>
+        <el-radio-group v-model="mode" size="small" class="mode-toggle">
+          <el-radio-button value="source">源码</el-radio-button>
+          <el-radio-button value="visual">可视化</el-radio-button>
+        </el-radio-group>
       </div>
 
-      <div class="split-pane">
-        <div class="pane-editor">
-          <div class="pane-label">源码</div>
-          <HtmlCodeEditor
-            ref="editorRef"
-            :model-value="htmlSource"
-            class="pane-code"
-            @update:model-value="emit('update:htmlSource', $event)"
-          />
-        </div>
-        <div class="pane-divider" />
-        <div class="pane-preview">
-          <div class="pane-label">预览</div>
-          <div class="preview-scroll">
-            <article v-if="previewHtml" class="article-body" v-html="previewHtml" />
-            <el-empty v-else description="暂无正文内容" :image-size="64" />
-          </div>
-        </div>
+      <div class="editor-body">
+        <!-- 源码模式 -->
+        <HtmlCodeEditor
+          v-show="mode === 'source'"
+          ref="codeEditorRef"
+          :model-value="htmlSource"
+          :extra-extensions="mdShortcuts"
+          class="editor-pane"
+          @update:model-value="emit('update:htmlSource', $event)"
+        />
+        <!-- 可视化模式：contenteditable -->
+        <div
+          v-show="mode === 'visual'"
+          ref="visualRef"
+          class="editor-pane editor-visual article-body"
+          contenteditable="true"
+          @input="onVisualInput"
+        />
       </div>
 
       <div class="status-bar">
-        <span>{{ charCount }} 字符</span>
+        <span>{{ htmlSource.length }} 字符</span>
+        <span v-if="mode === 'source'" class="status-bar__hint">Markdown 快捷输入已启用</span>
       </div>
     </div>
   </el-form-item>
 </template>
 
 <script lang="ts" setup>
-import { computed, ref } from 'vue'
+import { nextTick, ref, watch } from 'vue'
+import { EditorView, keymap } from '@codemirror/view'
+import type { Extension } from '@codemirror/state'
+import { Prec } from '@codemirror/state'
 import { Link, Picture, Document, List, ChatLineSquare } from '@element-plus/icons-vue'
 import HtmlCodeEditor from '@/components/editor/HtmlCodeEditor.vue'
 import type { ArticleSaveRequest } from '@/types/api-types'
@@ -79,18 +117,41 @@ interface Props {
 
 interface Emits {
   (e: 'update:htmlSource', value: string): void
-  (e: 'import-markdown'): void
+  (e: 'importMarkdown'): void
 }
 
 const props = defineProps<Props>()
 const emit = defineEmits<Emits>()
 
-const editorRef = ref<InstanceType<typeof HtmlCodeEditor>>()
+const codeEditorRef = ref<InstanceType<typeof HtmlCodeEditor>>()
+const visualRef = ref<HTMLDivElement>()
+const mode = ref<'source' | 'visual'>('source')
+let syncingVisual = false
 
-const previewHtml = computed(() => normalizeHtml(props.htmlSource))
-const charCount = computed(() => props.htmlSource.length)
+// 切换模式时同步内容
+watch(mode, m => {
+  if (m === 'visual') {
+    nextTick(() => {
+      if (!visualRef.value) return
+      const html = normalizeHtml(props.htmlSource)
+      syncingVisual = true
+      visualRef.value.innerHTML = html || '<p style="color:#aaa">请输入正文内容…</p>'
+      syncingVisual = false
+    })
+  } else {
+    nextTick(() => codeEditorRef.value?.refresh())
+  }
+})
 
-const SNIPPETS = {
+// 可视化模式输入同步回源码
+function onVisualInput() {
+  if (syncingVisual || !visualRef.value) return
+  emit('update:htmlSource', visualRef.value.innerHTML)
+}
+
+// ==================== 工具栏插入 ====================
+
+const TAGS: Record<string, string> = {
   bold: '<strong>__SELECTION__</strong>',
   italic: '<em>__SELECTION__</em>',
   heading: '<h2>__SELECTION__</h2>',
@@ -100,11 +161,105 @@ const SNIPPETS = {
   list: '<ul>\n<li>__SELECTION__</li>\n</ul>',
   quote: '<blockquote>__SELECTION__</blockquote>',
   hr: '<hr />',
-} as const
-
-function insert(snippet: string): void {
-  editorRef.value?.insertText(snippet)
 }
+
+function insertTag(name: string) {
+  codeEditorRef.value?.insertText(TAGS[name] ?? '')
+}
+
+// ==================== Markdown 快捷输入 ====================
+
+function escAttr(v: string) {
+  return v
+    .replace(/&/g, '&amp;')
+    .replace(/"/g, '&quot;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+}
+
+function applyReplace(view: EditorView, from: number, to: number, text: string, cursor?: number) {
+  view.dispatch({
+    changes: { from, to, insert: text },
+    selection: { anchor: cursor ?? from + text.length },
+  })
+  return true
+}
+
+// 块级：Enter 触发
+function onEnter(view: EditorView): boolean {
+  const pos = view.state.selection.main.head
+  const line = view.state.doc.lineAt(pos)
+  const raw = line.text.trimEnd()
+  if (!raw || line.from >= pos) return false
+
+  const t = raw.trim()
+
+  // 标题 # ~ ######
+  const h = t.match(/^(#{1,6})\s+(.+)$/)
+  if (h) {
+    const level = h[1]?.length ?? 1
+    return applyReplace(view, line.from, pos, `<h${level}>${h[2]}</h${level}>`)
+  }
+
+  // 无序列表
+  const ul = t.match(/^[-*+]\s+(.+)$/)
+  if (ul) return applyReplace(view, line.from, pos, `<ul>\n<li>${ul[1]}</li>\n</ul>`)
+
+  // 有序列表
+  const ol = t.match(/^\d+\.\s+(.+)$/)
+  if (ol) return applyReplace(view, line.from, pos, `<ol>\n<li>${ol[1]}</li>\n</ol>`)
+
+  // 引用
+  const bq = t.match(/^>\s+(.+)$/)
+  if (bq) return applyReplace(view, line.from, pos, `<blockquote>${bq[1]}</blockquote>`)
+
+  // 代码围栏
+  if (t.startsWith('```')) {
+    const lang = escAttr(t.slice(3).trim())
+    const attr = lang ? ` class="language-${lang}"` : ''
+    const html = `<pre><code${attr}>\n</code></pre>`
+    return applyReplace(view, line.from, pos, html, line.from + html.indexOf('\n</code>'))
+  }
+
+  // 分隔线
+  if (/^[-*_]{3,}$/.test(t)) return applyReplace(view, line.from, pos, '<hr />')
+
+  return false
+}
+
+// 行内：检测闭合标记
+function onChar(view: EditorView, from: number, ch: string): boolean {
+  if (ch !== '*' && ch !== '`' && ch !== '~') return false
+  const before = view.state.sliceDoc(Math.max(0, from - 500), from)
+
+  if (ch === '*') {
+    // **bold** 闭合
+    const bold = before.match(/\*\*([^*\n]+)\*$/)
+    if (bold) return applyReplace(view, from - bold[0].length, from, `<strong>${bold[1]}</strong>`)
+    // *italic* 闭合
+    const em = before.match(/(?<!\*)\*([^*\n]+)\*$/)
+    if (em) return applyReplace(view, from - em[0].length, from, `<em>${em[1]}</em>`)
+  }
+
+  if (ch === '`') {
+    const code = before.match(/`([^`\n]+)`$/)
+    if (code) return applyReplace(view, from - code[0].length, from, `<code>${code[1]}</code>`)
+  }
+
+  if (ch === '~') {
+    const del = before.match(/~~([^~\n]+)~$/)
+    if (del) return applyReplace(view, from - del[0].length, from, `<del>${del[1]}</del>`)
+  }
+
+  return false
+}
+
+const mdShortcuts: Extension[] = [
+  Prec.highest(keymap.of([{ key: 'Enter', run: onEnter }])),
+  EditorView.inputHandler.of((view: EditorView, from: number, _to: number, text: string) => {
+    return onChar(view, from, text)
+  }),
+]
 </script>
 
 <style scoped>
@@ -130,104 +285,76 @@ function insert(snippet: string): void {
   flex: 1;
 }
 
-.split-pane {
+.mode-toggle {
+  margin-left: 4px;
+}
+
+.editor-body {
+  min-height: var(--editor-pane-height, 800px);
+  height: calc(100vh - 380px);
   display: flex;
-  height: var(--editor-pane-height, 600px);
+  flex-direction: column;
   border: 1px solid var(--color-border-light);
   border-radius: 0 0 8px 8px;
   overflow: hidden;
   background: var(--color-white);
 }
 
-.pane-editor,
-.pane-preview {
-  flex: 1;
-  min-width: 0;
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-}
-
-.pane-label {
-  padding: 4px 12px;
-  font-size: 12px;
-  color: var(--color-text-secondary);
-  border-bottom: 1px solid var(--color-border-lighter);
-  background: var(--color-gray-50);
-  flex-shrink: 0;
-}
-
-.pane-divider {
-  width: 1px;
-  background: var(--color-border-base);
-  flex-shrink: 0;
-}
-
-.pane-code {
+.editor-pane {
   flex: 1;
   min-height: 0;
 }
 
-.preview-scroll {
-  flex: 1;
-  min-height: 0;
+.editor-visual {
   overflow-y: auto;
   padding: 20px;
-}
-
-.status-bar {
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  padding: 4px 12px;
-  font-size: 12px;
-  color: var(--color-text-secondary);
-}
-
-/* 预览文章样式 */
-.article-body {
-  color: var(--color-text-primary);
+  outline: none;
   line-height: 1.9;
   word-break: break-word;
+  color: var(--color-text-primary);
 }
 
-.article-body :deep(*) {
+.editor-visual:focus {
+  background: var(--color-white);
+}
+
+.editor-visual :deep(*) {
   max-width: 100%;
 }
 
-.article-body :deep(h1),
-.article-body :deep(h2),
-.article-body :deep(h3),
-.article-body :deep(h4),
-.article-body :deep(h5),
-.article-body :deep(h6) {
+.editor-visual :deep(h1),
+.editor-visual :deep(h2),
+.editor-visual :deep(h3),
+.editor-visual :deep(h4),
+.editor-visual :deep(h5),
+.editor-visual :deep(h6) {
   margin: 1.2em 0 0.6em;
   font-weight: 700;
   line-height: 1.35;
 }
 
-.article-body :deep(p),
-.article-body :deep(ul),
-.article-body :deep(ol),
-.article-body :deep(blockquote),
-.article-body :deep(pre),
-.article-body :deep(table) {
+.editor-visual :deep(p),
+.editor-visual :deep(ul),
+.editor-visual :deep(ol),
+.editor-visual :deep(blockquote),
+.editor-visual :deep(pre),
+.editor-visual :deep(table) {
   margin: 0 0 1em;
 }
 
-.article-body :deep(ul),
-.article-body :deep(ol) {
+.editor-visual :deep(ul),
+.editor-visual :deep(ol) {
   padding-left: 1.5em;
 }
 
-.article-body :deep(blockquote) {
+.editor-visual :deep(blockquote) {
   padding: 12px 16px;
   border-left: 4px solid rgba(59, 130, 246, 0.35);
   border-radius: 0 8px 8px 0;
   background: rgba(59, 130, 246, 0.06);
 }
 
-.article-body :deep(pre) {
+.editor-visual :deep(pre) {
   overflow: auto;
   padding: 16px;
   border-radius: 8px;
@@ -235,53 +362,56 @@ function insert(snippet: string): void {
   color: #e2e8f0;
 }
 
-.article-body :deep(code) {
+.editor-visual :deep(code) {
   padding: 0.15em 0.35em;
   border-radius: 4px;
   background: rgba(15, 23, 42, 0.08);
   font-family: var(--font-family-mono);
 }
 
-.article-body :deep(pre code) {
+.editor-visual :deep(pre code) {
   padding: 0;
   background: transparent;
   color: inherit;
 }
 
-.article-body :deep(table) {
+.editor-visual :deep(table) {
   width: 100%;
   border-collapse: collapse;
 }
 
-.article-body :deep(th),
-.article-body :deep(td) {
+.editor-visual :deep(th),
+.editor-visual :deep(td) {
   padding: 10px 12px;
   border: 1px solid var(--color-border-light);
   text-align: left;
 }
 
-.article-body :deep(img) {
+.editor-visual :deep(img) {
   display: block;
   max-width: 100%;
   height: auto;
   border-radius: 8px;
 }
 
+.status-bar {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 4px 12px;
+  font-size: 12px;
+  color: var(--color-text-secondary);
+}
+
+.status-bar__hint {
+  color: var(--el-color-success);
+  font-size: 11px;
+}
+
 @media (max-width: 768px) {
-  .split-pane {
-    flex-direction: column;
-    height: auto;
-    min-height: 500px;
-  }
-
-  .pane-editor,
-  .pane-preview {
-    min-height: 300px;
-  }
-
-  .pane-divider {
-    width: auto;
-    height: 1px;
+  .toolbar {
+    padding: 6px 8px;
+    gap: 4px;
   }
 }
 </style>

@@ -25,6 +25,11 @@
 </template>
 
 <script lang="ts" setup>
+/**
+ * 文章密码验证弹窗组件
+ * @description 用于访问受密码保护的文章，输入正确密码后访问
+ * @module front/article/components/PasswordModal
+ */
 import { ref, computed } from 'vue'
 
 const props = defineProps<{
@@ -38,11 +43,13 @@ const emit = defineEmits<{
 
 const dialogVisible = computed({
   get: () => props.visible,
-  set: (val) => emit('update:visible', val),
+  set: val => emit('update:visible', val),
 })
 
+// 用户输入的访问密码
 const password = ref('')
 
+/** 验证密码 */
 function handleVerify(): void {
   if (!password.value.trim()) return
   emit('verify')

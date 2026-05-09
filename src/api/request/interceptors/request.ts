@@ -36,6 +36,11 @@ export function setupRequestInterceptor(axiosInstance: AxiosInstance): void {
       const headers = AxiosHeaders.from(config.headers)
       headers.set('X-Request-ID', generateRequestId())
 
+      // FormData 请求移除默认 Content-Type，让浏览器自动设置带 boundary 的 multipart/form-data
+      if (config.data instanceof FormData) {
+        headers.delete('Content-Type')
+      }
+
       // 注入令牌
       if (!config.skipAuth) {
         const token = getAccessToken()

@@ -20,15 +20,26 @@
       </p>
 
       <div class="article-meta">
-        <span><el-icon><View /></el-icon>{{ article.viewCount }}</span>
-        <span><el-icon><Star /></el-icon>{{ article.likeCount }}</span>
-        <span><el-icon><ChatDotRound /></el-icon>{{ article.commentCount }}</span>
+        <span
+          ><el-icon><View /></el-icon>{{ article.viewCount }}</span
+        >
+        <span
+          ><el-icon><Star /></el-icon>{{ article.likeCount }}</span
+        >
+        <span
+          ><el-icon><ChatDotRound /></el-icon>{{ article.commentCount }}</span
+        >
       </div>
     </div>
   </router-link>
 </template>
 
 <script lang="ts" setup>
+/**
+ * 文章卡片组件
+ * @description 首页文章列表中的卡片样式，展示封面、标题、摘要和统计信息
+ * @module front/home/components/HomeArticleCard
+ */
 import { ChatDotRound, Star, View } from '@element-plus/icons-vue'
 import type { PublicArticleCardVO } from '@/types/api-types'
 
@@ -69,7 +80,11 @@ defineProps<{
 .cover-placeholder {
   width: 100%;
   height: 100%;
-  background: linear-gradient(135deg, var(--el-color-primary-light-7), var(--el-color-primary-light-9));
+  background: linear-gradient(
+    135deg,
+    var(--el-color-primary-light-7),
+    var(--el-color-primary-light-9)
+  );
 }
 
 .article-body {

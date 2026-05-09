@@ -11,11 +11,7 @@
     <el-empty v-else-if="applications.length === 0" description="暂无入群申请" />
 
     <div v-else class="request-list">
-      <div
-        v-for="item in applications"
-        :key="item.id"
-        class="request-item"
-      >
+      <div v-for="item in applications" :key="item.id" class="request-item">
         <div class="request-info">
           <span class="request-user">{{ item.nickname || item.username }}</span>
           <span class="request-group">申请加入「{{ item.conversationId }}」</span>
@@ -36,6 +32,12 @@
 </template>
 
 <script lang="ts" setup>
+/**
+ * 入群申请审批页面
+ * @description 群主/管理员查看并审批用户的入群申请
+ * @module front/chat/JoinRequestsView
+ * @see ../../api/user/chat.ts
+ */
 import { ref, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
@@ -48,6 +50,7 @@ const store = useUserChatStore()
 
 const groupId = Number(route.params.id)
 const loading = ref(false)
+// 入群申请列表
 const applications = ref<GroupJoinApplicationVO[]>([])
 
 async function fetchApplications(): Promise<void> {
@@ -60,14 +63,19 @@ async function fetchApplications(): Promise<void> {
   }
 }
 
+/** 审批申请（通过或拒绝） */
 async function handleReview(item: GroupJoinApplicationVO, status: 1 | 2): Promise<void> {
   const action = status === 1 ? '通过' : '拒绝'
   try {
-    await ElMessageBox.confirm(`确定${action} ${item.nickname || item.username} 的入群申请吗？`, '提示', {
-      confirmButtonText: '确定',
-      cancelButtonText: '取消',
-      type: 'warning',
-    })
+    await ElMessageBox.confirm(
+      `确定${action} ${item.nickname || item.username} 的入群申请吗？`,
+      '提示',
+      {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning',
+      }
+    )
     const success = await store.reviewJoinApplication(groupId, item.id, {
       reviewStatus: status,
     })

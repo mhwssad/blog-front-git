@@ -178,5 +178,5 @@ export interface SysAuthorApplicationRepairRequest {
   /** 目标状态：0-待审核，1-已通过，2-已拒绝，3-待补充 */
   targetStatus: 0 | 1 | 2 | 3
   /** 修正备注，最长512字符 */
-  reviewComment: string
+  reviewComment?: string
 }

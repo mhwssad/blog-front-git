@@ -11,17 +11,15 @@
 
       <template v-else>
         <div ref="messageListRef" class="hall-message-list">
-          <div
-            v-for="msg in store.messages"
-            :key="msg.id"
-            class="hall-message-item"
-          >
+          <div v-for="msg in store.messages" :key="msg.id" class="hall-message-item">
             <el-avatar :size="32" :src="msg.senderAvatar ?? undefined">
               {{ msg.senderNickname?.charAt(0) ?? '?' }}
             </el-avatar>
             <div class="message-body">
               <div class="message-header">
-                <span class="message-username">{{ msg.senderNickname || msg.senderUsername || '未知' }}</span>
+                <span class="message-username">{{
+                  msg.senderNickname || msg.senderUsername || '未知'
+                }}</span>
                 <span class="message-time">{{ formatTime(msg.createdAt) }}</span>
               </div>
               <div class="message-content">{{ msg.content }}</div>
@@ -41,7 +39,12 @@
               :disabled="store.sending"
               @keyup.enter="handleSend"
             />
-            <el-button type="primary" :disabled="!inputText.trim()" :loading="store.sending" @click="handleSend">
+            <el-button
+              type="primary"
+              :disabled="!inputText.trim()"
+              :loading="store.sending"
+              @click="handleSend"
+            >
               发送
             </el-button>
           </template>
@@ -52,6 +55,12 @@
 </template>
 
 <script lang="ts" setup>
+/**
+ * 聊天大厅页面
+ * @description 公共聊天室，所有登录用户都可以发言，支持查看公告
+ * @module front/hall/HallView
+ * @see ../../api/user/chat.ts
+ */
 import { ref, computed, onMounted, nextTick } from 'vue'
 import { useUserChatStore } from '@/stores'
 import { useAuthStore } from '@/stores'
@@ -63,9 +72,13 @@ const authStore = useAuthStore()
 
 const inputText = ref('')
 const messageListRef = ref<HTMLElement | null>(null)
+// 大厅会话 ID
 const hallConversationId = ref<number | null>(null)
 
-const hallNotice = computed(() => store.currentConversation?.notice ?? '欢迎来到聊天大厅，请文明发言，遵守社区规范。')
+// 大厅公告文本（优先使用会话公告，否则显示默认欢迎语）
+const hallNotice = computed(
+  () => store.currentConversation?.notice ?? '欢迎来到聊天大厅，请文明发言，遵守社区规范。'
+)
 
 function formatTime(dateStr: string): string {
   if (!dateStr) return ''

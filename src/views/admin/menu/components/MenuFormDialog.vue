@@ -117,7 +117,7 @@
         </el-col>
         <el-col v-if="formData.type !== 'B'" :xs="24" :md="12">
           <el-form-item label="图标" prop="icon">
-            <el-input v-model="formData.icon" maxlength="64" placeholder="请输入图标名称" />
+            <IconPicker v-model="formData.icon" />
           </el-form-item>
         </el-col>
       </el-row>
@@ -168,10 +168,14 @@
   </el-dialog>
 </template>
 
+/** * 菜单表单对话框 * @description
+新增/编辑菜单的弹窗表单，支持目录/菜单/按钮三种类型，包含路由配置、权限标识、图标、路由参数等 *
+@module admin/menu/components/MenuFormDialog * @see api/sys/menu.ts */
 <script lang="ts" setup>
 import { computed, reactive, ref, watch } from 'vue'
 import { ElMessage, type FormInstance, type FormRules } from 'element-plus'
 import { MenuApi } from '@/api/sys/menu'
+import IconPicker from '@/components/common/IconPicker.vue'
 import type { SysMenuAdminVO, SysMenuSaveRequest } from '@/types/api-types'
 import { MENU_TYPE_OPTIONS } from '@/utils'
 

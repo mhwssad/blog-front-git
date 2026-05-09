@@ -180,12 +180,24 @@ export interface UserExperienceSummaryVO {
   nickname: string
   /** 当前等级 */
   level: number
+  /** 等级称号 */
+  title?: string
   /** 当前经验值 */
-  currentExperience: number
-  /** 下一级所需经验值 */
-  nextLevelExperience: number
-  /** 今日各来源经验汇总 */
-  dailySummary: Record<string, unknown>
+  experiencePoints: number
+  /** 今日已获得经验 */
+  todayXp?: number
+  /** 登录经验总计 */
+  dailyLoginXp?: number
+  /** 发文经验总计 */
+  articlePublishXp?: number
+  /** 评论经验总计 */
+  commentCreateXp?: number
+  /** 点赞经验总计 */
+  likeGivenXp?: number
+  /** 被点赞经验总计 */
+  likeReceivedXp?: number
+  /** 聊天经验总计 */
+  chatMessageXp?: number
 }
 
 /**

@@ -26,6 +26,25 @@
     "authorApplication": 3,
     "folder": 1,
     "collection": 1,
-    "interaction": 1
+    "interaction": 1,
+    "auditLog": 3,
+    "friendLink": 3,
+    "migrationTask": 3,
+    "migrationRecord": 5,
+    "forumSection": 3,
+    "forumPost": 5,
+    "forumReply": 5,
+    "aiChannelAccount": 3,
+    "aiKnowledgeSource": 3,
+    "aiKnowledgeEntry": 5,
+    "aiSyncTask": 3,
+    "aiAgentDef": 3,
+    "aiAgentTask": 3,
+    "aiTool": 3,
+    "aiToolAuth": 3,
+    "aiMcpServer": 3,
+    "chatMute": 3,
+    "experienceLog": 8,
+    "notificationSetting": 1
   }
 }

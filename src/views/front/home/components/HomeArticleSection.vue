@@ -74,6 +74,11 @@
 </template>
 
 <script lang="ts" setup>
+/**
+ * 文章列表区块组件
+ * @description 包含分类侧边栏和文章列表，支持分类筛选和排序
+ * @module front/home/components/HomeArticleSection
+ */
 import { ArrowRight } from '@element-plus/icons-vue'
 import HomeArticleCard from './HomeArticleCard.vue'
 import type { PublicArticleCardVO, PublicCategoryTreeVO } from '@/types/api-types'

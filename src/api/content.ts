@@ -19,6 +19,7 @@ import type {
   PublicTagQueryRequest,
   PublicTagVO,
   ChatLobbyMessageVO,
+  FriendLinkVO,
 } from '@/types/api-types'
 
 /**
@@ -112,6 +113,14 @@ export class ContentApi {
    */
   static getPublicFile(fileId: number) {
     return http.get<string>(`/public/files/${fileId}`)
+  }
+
+  /**
+   * 查询启用的友情链接（公开）
+   * GET /api/public/friend-links
+   */
+  static getFriendLinks() {
+    return http.get<FriendLinkVO[]>('/public/friend-links')
   }
 }
 

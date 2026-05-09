@@ -29,11 +29,7 @@
         <el-row :gutter="20">
           <el-col :span="12">
             <el-form-item label="用户名" prop="username">
-              <el-input
-                v-model="formData.username"
-                placeholder="请输入用户名"
-                :disabled="isEdit"
-              />
+              <el-input v-model="formData.username" placeholder="请输入用户名" :disabled="isEdit" />
             </el-form-item>
           </el-col>
           <el-col :span="12">
@@ -171,13 +167,15 @@ interface Emits {
 const props = defineProps<Props>()
 const emit = defineEmits<Emits>()
 
+const LOG_PREFIX = '[UserFormDialog]'
+
 const formRef = ref()
 const submitting = ref(false)
 const detailLoading = ref(false)
 
 const dialogVisible = computed({
   get: () => props.visible,
-  set: (val) => emit('update:visible', val)
+  set: val => emit('update:visible', val),
 })
 
 const isEdit = computed(() => !!props.userId)
@@ -193,22 +191,23 @@ const defaultFormData = (): SysUserSaveRequest => ({
   gender: 0,
   birthday: '',
   status: 1,
-  remark: ''
+  remark: '',
 })
 
 const formData = reactive<SysUserSaveRequest>(defaultFormData())
 
+// 表单验证规则
 const formRules = {
   username: [
     { required: true, message: '请输入用户名', trigger: 'blur' },
-    { min: 3, max: 20, message: '用户名长度在 3 到 20 个字符', trigger: 'blur' }
+    { min: 3, max: 20, message: '用户名长度在 3 到 20 个字符', trigger: 'blur' },
   ],
   password: [
     { required: true, message: '请输入密码', trigger: 'blur' },
-    { min: 6, max: 20, message: '密码长度在 6 到 20 个字符', trigger: 'blur' }
+    { min: 6, max: 20, message: '密码长度在 6 到 20 个字符', trigger: 'blur' },
   ],
   email: [{ type: 'email', message: '请输入正确的邮箱地址', trigger: 'blur' }],
-  phone: [{ pattern: /^1[3-9]\d{9}$/, message: '请输入正确的手机号', trigger: 'blur' }]
+  phone: [{ pattern: /^1[3-9]\d{9}$/, message: '请输入正确的手机号', trigger: 'blur' }],
 }
 
 // 监听 userId 变化，获取用户详情
@@ -216,8 +215,10 @@ watch(
   () => [props.visible, props.userId] as const,
   async ([visible, id]) => {
     if (!visible) return
+    console.log(`${LOG_PREFIX} Dialog visibility changed: visible=${visible}, userId=${id}`)
     if (id) {
       detailLoading.value = true
+      console.log(`${LOG_PREFIX} Loading user details for id: ${id}`)
       try {
         const response = await UserApi.getUserById(id)
         const user = response.data.data
@@ -230,14 +231,17 @@ watch(
           gender: user.gender ?? 0,
           birthday: user.birthday ?? '',
           status: user.status,
-          remark: user.remark ?? ''
+          remark: user.remark ?? '',
         })
-      } catch {
+        console.log(`${LOG_PREFIX} User details loaded successfully`)
+      } catch (error) {
+        console.error(`${LOG_PREFIX} Failed to load user details:`, error)
         ElMessage.error('获取用户详情失败')
       } finally {
         detailLoading.value = false
       }
     } else {
+      console.log(`${LOG_PREFIX} Resetting form for new user`)
       resetForm()
     }
   }
@@ -249,21 +253,25 @@ function resetForm() {
 }
 
 async function handleSubmit() {
+  console.log(`${LOG_PREFIX} Submit form, isEdit=${isEdit.value}`)
   try {
     await formRef.value?.validate()
     submitting.value = true
 
     if (isEdit.value && props.userId) {
+      console.log(`${LOG_PREFIX} Updating user id: ${props.userId}`)
       await UserApi.updateUser(props.userId, formData)
       ElMessage.success('更新成功')
     } else {
+      console.log(`${LOG_PREFIX} Creating new user`)
       await UserApi.createUser(formData)
       ElMessage.success('创建成功')
     }
 
     emit('success')
     handleClose()
-  } catch {
+  } catch (error) {
+    console.error(`${LOG_PREFIX} Submit failed:`, error)
     // 验证失败或请求失败
   } finally {
     submitting.value = false
@@ -271,6 +279,7 @@ async function handleSubmit() {
 }
 
 function handleClose() {
+  console.log(`${LOG_PREFIX} Dialog closing, resetting form`)
   resetForm()
   emit('update:visible', false)
 }

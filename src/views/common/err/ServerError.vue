@@ -7,9 +7,7 @@
       <section class="error-copy">
         <p class="error-code">500</p>
         <h1 class="error-heading">服务器开小差了</h1>
-        <p class="error-text">
-          服务器遇到了内部错误，无法完成您的请求。请稍后重试，或联系管理员。
-        </p>
+        <p class="error-text">服务器遇到了内部错误，无法完成您的请求。请稍后重试，或联系管理员。</p>
         <div class="error-actions">
           <button class="action-primary" @click="router.push('/')">返回首页</button>
           <button class="action-secondary" @click="router.back()">返回上页</button>
@@ -42,14 +40,22 @@
 </template>
 
 <script lang="ts" setup>
+/**
+ * 500 服务器错误页面
+ * @description 服务器发生内部错误时显示，提供返回首页和上一页操作
+ * @module common/err/ServerError
+ */
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 
 const router = useRouter()
+// 错误发生时间（格式：HH:mm）
 const time = ref('')
 
+// 挂载时记录当前时间
 onMounted(() => {
   const now = new Date()
+  // 补零格式化小时和分钟
   time.value = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`
 })
 </script>
@@ -144,7 +150,9 @@ onMounted(() => {
   border: none;
   border-radius: 14px;
   cursor: pointer;
-  transition: transform 0.2s, box-shadow 0.2s;
+  transition:
+    transform 0.2s,
+    box-shadow 0.2s;
 }
 
 .action-primary:hover {

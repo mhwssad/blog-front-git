@@ -1,7 +1,11 @@
 <template>
   <div class="file-page">
     <el-card class="search-card" shadow="never">
-      <el-form :model="activeTab === 'files' ? fileSearchForm : taskSearchForm" inline class="search-form">
+      <el-form
+        :model="activeTab === 'files' ? fileSearchForm : taskSearchForm"
+        inline
+        class="search-form"
+      >
         <template v-if="activeTab === 'files'">
           <el-form-item label="关键词">
             <el-input
@@ -12,10 +16,19 @@
             />
           </el-form-item>
           <el-form-item label="上传用户">
-            <el-input-number v-model="fileSearchForm.uploadUserId" :min="1" class="filter-control" />
+            <el-input-number
+              v-model="fileSearchForm.uploadUserId"
+              :min="1"
+              class="filter-control"
+            />
           </el-form-item>
           <el-form-item label="文件状态">
-            <el-select v-model="fileSearchForm.status" clearable class="filter-control" placeholder="全部">
+            <el-select
+              v-model="fileSearchForm.status"
+              clearable
+              class="filter-control"
+              placeholder="全部"
+            >
               <el-option
                 v-for="option in FILE_STATUS_OPTIONS"
                 :key="option.value"
@@ -25,7 +38,12 @@
             </el-select>
           </el-form-item>
           <el-form-item label="文件分类">
-            <el-select v-model="fileSearchForm.category" clearable class="filter-control" placeholder="全部">
+            <el-select
+              v-model="fileSearchForm.category"
+              clearable
+              class="filter-control"
+              placeholder="全部"
+            >
               <el-option
                 v-for="option in fileCategoryOptions"
                 :key="option.value"
@@ -35,7 +53,12 @@
             </el-select>
           </el-form-item>
           <el-form-item label="引用类型">
-            <el-select v-model="fileSearchForm.referenceType" clearable class="filter-control" placeholder="全部">
+            <el-select
+              v-model="fileSearchForm.referenceType"
+              clearable
+              class="filter-control"
+              placeholder="全部"
+            >
               <el-option
                 v-for="option in referenceTypeOptions"
                 :key="option.value"
@@ -45,7 +68,12 @@
             </el-select>
           </el-form-item>
           <el-form-item label="公开状态">
-            <el-select v-model="fileSearchForm.isPublic" clearable class="filter-control" placeholder="全部">
+            <el-select
+              v-model="fileSearchForm.isPublic"
+              clearable
+              class="filter-control"
+              placeholder="全部"
+            >
               <el-option
                 v-for="option in VISIBILITY_OPTIONS"
                 :key="option.value"
@@ -58,10 +86,19 @@
 
         <template v-else>
           <el-form-item label="上传用户">
-            <el-input-number v-model="taskSearchForm.uploadUserId" :min="1" class="filter-control" />
+            <el-input-number
+              v-model="taskSearchForm.uploadUserId"
+              :min="1"
+              class="filter-control"
+            />
           </el-form-item>
           <el-form-item label="任务状态">
-            <el-select v-model="taskSearchForm.taskStatus" clearable class="filter-control" placeholder="全部">
+            <el-select
+              v-model="taskSearchForm.taskStatus"
+              clearable
+              class="filter-control"
+              placeholder="全部"
+            >
               <el-option
                 v-for="option in FILE_TASK_STATUS_OPTIONS"
                 :key="option.value"
@@ -71,7 +108,12 @@
             </el-select>
           </el-form-item>
           <el-form-item label="秒传">
-            <el-select v-model="taskSearchForm.isQuickUpload" clearable class="filter-control" placeholder="全部">
+            <el-select
+              v-model="taskSearchForm.isQuickUpload"
+              clearable
+              class="filter-control"
+              placeholder="全部"
+            >
               <el-option
                 v-for="option in BOOLEAN_TEXT_OPTIONS"
                 :key="option.value"
@@ -81,7 +123,12 @@
             </el-select>
           </el-form-item>
           <el-form-item label="分片上传">
-            <el-select v-model="taskSearchForm.isChunked" clearable class="filter-control" placeholder="全部">
+            <el-select
+              v-model="taskSearchForm.isChunked"
+              clearable
+              class="filter-control"
+              placeholder="全部"
+            >
               <el-option
                 v-for="option in BOOLEAN_TEXT_OPTIONS"
                 :key="option.value"
@@ -93,7 +140,9 @@
         </template>
 
         <el-form-item class="search-actions">
-          <el-button v-permission="'content:file:query'" type="primary" @click="handleSearch">查询</el-button>
+          <el-button v-permission="'content:file:query'" type="primary" @click="handleSearch"
+            >查询</el-button
+          >
           <el-button @click="handleReset">重置</el-button>
         </el-form-item>
       </el-form>
@@ -103,7 +152,12 @@
       <template #header>
         <div class="card-header">
           <span>文件管理</span>
-          <el-button v-permission="'content:file:query'" link type="primary" @click="refreshActiveTab">
+          <el-button
+            v-permission="'content:file:query'"
+            link
+            type="primary"
+            @click="refreshActiveTab"
+          >
             刷新
           </el-button>
         </div>
@@ -119,73 +173,77 @@
             stripe
             table-layout="auto"
           >
-              <el-table-column prop="id" label="文件 ID" min-width="90" align="center" />
-              <el-table-column prop="originalName" label="原始文件名" min-width="220" align="center" show-overflow-tooltip />
-              <el-table-column prop="fileType" label="文件类型" min-width="100" align="center" />
-              <el-table-column label="文件大小" min-width="110" align="center">
-                <template #default="{ row }">
-                  {{ formatFileSize(row.fileSize) }}
-                </template>
-              </el-table-column>
-              <el-table-column label="上传用户" min-width="96" align="center">
-                <template #default="{ row }">
-                  #{{ row.uploadUserId ?? '-' }}
-                </template>
-              </el-table-column>
-              <el-table-column label="公开" min-width="90" align="center">
-                <template #default="{ row }">
-                  <el-tag :type="row.isPublic === 1 ? 'success' : 'info'">
-                    {{ formatVisibility(row.isPublic) }}
-                  </el-tag>
-                </template>
-              </el-table-column>
-              <el-table-column label="分类" min-width="120" align="center">
-                <template #default="{ row }">
-                  {{ formatOptionalText(row.category) }}
-                </template>
-              </el-table-column>
-              <el-table-column label="状态" min-width="110" align="center">
-                <template #default="{ row }">
-                  <el-tag :type="getFileStatusTagType(row.status)">
-                    {{ formatFileStatus(row.status) }}
-                  </el-tag>
-                </template>
-              </el-table-column>
-              <el-table-column prop="referenceCount" label="引用数" min-width="90" align="center" />
-              <el-table-column label="创建时间" min-width="168" align="center">
-                <template #default="{ row }">
-                  {{ formatCreatedAt(row.createdAt) }}
-                </template>
-              </el-table-column>
-              <el-table-column
-                label="操作"
-                :fixed="fileCompact ? false : 'right'"
-                :min-width="fileCompact ? 200 : 220"
-                align="center"
-              >
-                <template #default="{ row }">
-                  <div class="table-actions">
-                    <el-button link type="primary" @click="handleViewDetail(row.id)">详情</el-button>
-                    <el-button
-                      v-permission="'content:file:update'"
-                      link
-                      :type="row.status === 1 ? 'warning' : 'success'"
-                      @click="handleToggleStatus(row.id, row.status)"
-                    >
-                      {{ row.status === 1 ? '禁用' : '启用' }}
-                    </el-button>
-                    <el-button
-                      v-permission="'content:file:delete'"
-                      link
-                      type="danger"
-                      @click="handleDelete(row.id)"
-                    >
-                      删除
-                    </el-button>
-                  </div>
-                </template>
-              </el-table-column>
-            </el-table>
+            <el-table-column prop="id" label="文件 ID" min-width="90" align="center" />
+            <el-table-column
+              prop="originalName"
+              label="原始文件名"
+              min-width="220"
+              align="center"
+              show-overflow-tooltip
+            />
+            <el-table-column prop="fileType" label="文件类型" min-width="100" align="center" />
+            <el-table-column label="文件大小" min-width="110" align="center">
+              <template #default="{ row }">
+                {{ formatFileSize(row.fileSize) }}
+              </template>
+            </el-table-column>
+            <el-table-column label="上传用户" min-width="96" align="center">
+              <template #default="{ row }"> #{{ row.uploadUserId ?? '-' }} </template>
+            </el-table-column>
+            <el-table-column label="公开" min-width="90" align="center">
+              <template #default="{ row }">
+                <el-tag :type="row.isPublic === 1 ? 'success' : 'info'">
+                  {{ formatVisibility(row.isPublic) }}
+                </el-tag>
+              </template>
+            </el-table-column>
+            <el-table-column label="分类" min-width="120" align="center">
+              <template #default="{ row }">
+                {{ formatOptionalText(row.category) }}
+              </template>
+            </el-table-column>
+            <el-table-column label="状态" min-width="110" align="center">
+              <template #default="{ row }">
+                <el-tag :type="getFileStatusTagType(row.status)">
+                  {{ formatFileStatus(row.status) }}
+                </el-tag>
+              </template>
+            </el-table-column>
+            <el-table-column prop="referenceCount" label="引用数" min-width="90" align="center" />
+            <el-table-column label="创建时间" min-width="168" align="center">
+              <template #default="{ row }">
+                {{ formatCreatedAt(row.createdAt) }}
+              </template>
+            </el-table-column>
+            <el-table-column
+              label="操作"
+              :fixed="fileCompact ? false : 'right'"
+              :min-width="fileCompact ? 200 : 220"
+              align="center"
+            >
+              <template #default="{ row }">
+                <div class="table-actions">
+                  <el-button link type="primary" @click="handleViewDetail(row.id)">详情</el-button>
+                  <el-button
+                    v-permission="'content:file:update'"
+                    link
+                    :type="row.status === 1 ? 'warning' : 'success'"
+                    @click="handleToggleStatus(row.id, row.status)"
+                  >
+                    {{ row.status === 1 ? '禁用' : '启用' }}
+                  </el-button>
+                  <el-button
+                    v-permission="'content:file:delete'"
+                    link
+                    type="danger"
+                    @click="handleDelete(row.id)"
+                  >
+                    删除
+                  </el-button>
+                </div>
+              </template>
+            </el-table-column>
+          </el-table>
 
           <div class="pagination">
             <el-pagination
@@ -210,52 +268,68 @@
             stripe
             table-layout="auto"
           >
-              <el-table-column prop="id" label="任务 ID" min-width="90" align="center" />
-              <el-table-column prop="uploadId" label="上传 ID" min-width="200" align="center" show-overflow-tooltip />
-              <el-table-column prop="originalName" label="原始文件名" min-width="200" align="center" show-overflow-tooltip />
-              <el-table-column label="文件大小" min-width="110" align="center">
-                <template #default="{ row }">
-                  {{ formatFileSize(row.fileSize) }}
-                </template>
-              </el-table-column>
-              <el-table-column label="上传用户" min-width="96" align="center">
-                <template #default="{ row }">
-                  #{{ row.uploadUserId ?? '-' }}
-                </template>
-              </el-table-column>
-              <el-table-column label="秒传" min-width="90" align="center">
-                <template #default="{ row }">
-                  {{ formatBooleanText(row.isQuickUpload) }}
-                </template>
-              </el-table-column>
-              <el-table-column label="分片" min-width="90" align="center">
-                <template #default="{ row }">
-                  {{ formatBooleanText(row.isChunked) }}
-                </template>
-              </el-table-column>
-              <el-table-column label="进度" min-width="120" align="center">
-                <template #default="{ row }">
-                  {{ row.uploadedChunks ?? 0 }}/{{ row.totalChunks ?? 0 }}
-                </template>
-              </el-table-column>
-              <el-table-column label="状态" min-width="110" align="center">
-                <template #default="{ row }">
-                  <el-tag :type="getTaskStatusTagType(row.taskStatus)">
-                    {{ formatFileTaskStatus(row.taskStatus) }}
-                  </el-tag>
-                </template>
-              </el-table-column>
-              <el-table-column label="完成时间" min-width="168" align="center">
-                <template #default="{ row }">
-                  {{ formatCreatedAt(row.completeTime) }}
-                </template>
-              </el-table-column>
-              <el-table-column prop="errorMessage" label="错误信息" min-width="180" align="center" show-overflow-tooltip>
-                <template #default="{ row }">
-                  {{ formatOptionalText(row.errorMessage) }}
-                </template>
-              </el-table-column>
-            </el-table>
+            <el-table-column prop="id" label="任务 ID" min-width="90" align="center" />
+            <el-table-column
+              prop="uploadId"
+              label="上传 ID"
+              min-width="200"
+              align="center"
+              show-overflow-tooltip
+            />
+            <el-table-column
+              prop="originalName"
+              label="原始文件名"
+              min-width="200"
+              align="center"
+              show-overflow-tooltip
+            />
+            <el-table-column label="文件大小" min-width="110" align="center">
+              <template #default="{ row }">
+                {{ formatFileSize(row.fileSize) }}
+              </template>
+            </el-table-column>
+            <el-table-column label="上传用户" min-width="96" align="center">
+              <template #default="{ row }"> #{{ row.uploadUserId ?? '-' }} </template>
+            </el-table-column>
+            <el-table-column label="秒传" min-width="90" align="center">
+              <template #default="{ row }">
+                {{ formatBooleanText(row.isQuickUpload) }}
+              </template>
+            </el-table-column>
+            <el-table-column label="分片" min-width="90" align="center">
+              <template #default="{ row }">
+                {{ formatBooleanText(row.isChunked) }}
+              </template>
+            </el-table-column>
+            <el-table-column label="进度" min-width="120" align="center">
+              <template #default="{ row }">
+                {{ row.uploadedChunks ?? 0 }}/{{ row.totalChunks ?? 0 }}
+              </template>
+            </el-table-column>
+            <el-table-column label="状态" min-width="110" align="center">
+              <template #default="{ row }">
+                <el-tag :type="getTaskStatusTagType(row.taskStatus)">
+                  {{ formatFileTaskStatus(row.taskStatus) }}
+                </el-tag>
+              </template>
+            </el-table-column>
+            <el-table-column label="完成时间" min-width="168" align="center">
+              <template #default="{ row }">
+                {{ formatCreatedAt(row.completeTime) }}
+              </template>
+            </el-table-column>
+            <el-table-column
+              prop="errorMessage"
+              label="错误信息"
+              min-width="180"
+              align="center"
+              show-overflow-tooltip
+            >
+              <template #default="{ row }">
+                {{ formatOptionalText(row.errorMessage) }}
+              </template>
+            </el-table-column>
+          </el-table>
 
           <div class="pagination">
             <el-pagination
@@ -281,6 +355,9 @@
   </div>
 </template>
 
+/** * 文件管理页面（后台） * @description
+后台文件库和上传任务管理，支持文件搜索、状态切换、详情查看、删除等 * @module admin/file/Files * @see
+api/sys/file.ts */
 <script lang="ts" setup>
 import { onMounted, reactive, ref } from 'vue'
 import { ElMessage, ElMessageBox, type TabPaneName } from 'element-plus'

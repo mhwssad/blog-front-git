@@ -22,7 +22,12 @@
       <el-table :data="formData.accessList" border stripe table-layout="auto" class="access-table">
         <el-table-column label="用户 ID" min-width="140" align="center">
           <template #default="{ row }">
-            <el-input-number v-model="row.userId" :min="1" controls-position="right" style="width: 100%" />
+            <el-input-number
+              v-model="row.userId"
+              :min="1"
+              controls-position="right"
+              style="width: 100%"
+            />
           </template>
         </el-table-column>
         <el-table-column label="名单类型" min-width="140" align="center">
@@ -64,12 +69,18 @@
 
     <template #footer>
       <el-button @click="dialogVisible = false">取消</el-button>
-      <el-button v-permission="'content:article:access'" type="primary" :loading="submitting" @click="handleSubmit">
+      <el-button
+        v-permission="'content:article:access'"
+        type="primary"
+        :loading="submitting"
+        @click="handleSubmit"
+      >
         保存
       </el-button>
     </template>
   </el-dialog>
 </template>
+
 
 <script lang="ts" setup>
 import { computed, reactive, ref, watch } from 'vue'
@@ -92,18 +103,25 @@ interface Emits {
 const props = defineProps<Props>()
 const emit = defineEmits<Emits>()
 
+// 加载状态
 const loading = ref(false)
+// 提交状态
 const submitting = ref(false)
 
+// 双向绑定弹窗显示状态
 const dialogVisible = computed({
   get: () => props.visible,
   set: value => emit('update:visible', value),
 })
 
+// 访问名单表单数据
 const formData = reactive<ArticleAccessSaveRequest>({
   accessList: [],
 })
 
+/**
+ * 创建新的名单项
+ */
 function createRow(): ArticleAccessItem {
   return {
     userId: 1,
@@ -113,10 +131,16 @@ function createRow(): ArticleAccessItem {
   }
 }
 
+/**
+ * 重置表单数据
+ */
 function resetForm(): void {
   formData.accessList = []
 }
 
+/**
+ * 加载文章的访问名单
+ */
 async function loadAccessList(): Promise<void> {
   if (!props.articleId) {
     return
@@ -139,15 +163,30 @@ async function loadAccessList(): Promise<void> {
   }
 }
 
+// ==================== 表格操作 ====================
+
+/**
+ * 新增名单项
+ */
 function handleAddRow(): void {
   formData.accessList.push(createRow())
 }
 
+/**
+ * 删除名单项
+ * @param index - 要删除的行索引
+ */
 function handleRemoveRow(index: number): void {
   formData.accessList.splice(index, 1)
 }
 
+// ==================== 提交保存 ====================
+
+/**
+ * 提交访问名单
+ */
 async function handleSubmit(): Promise<void> {
+  // 校验必填项
   const invalidRow = formData.accessList.some(item => !item.userId || !item.accessType)
   if (invalidRow) {
     ElMessage.warning('请完善名单项中的用户 ID 和名单类型')
@@ -174,10 +213,14 @@ async function handleSubmit(): Promise<void> {
   }
 }
 
+/**
+ * 弹窗关闭回调 - 重置表单
+ */
 function handleClosed(): void {
   resetForm()
 }
 
+// 监听 visible 变化，弹窗打开时加载数据
 watch(
   () => props.visible,
   async visible => {

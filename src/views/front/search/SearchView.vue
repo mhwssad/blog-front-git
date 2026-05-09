@@ -64,6 +64,12 @@
 </template>
 
 <script lang="ts" setup>
+/**
+ * 搜索页面
+ * @description 支持搜索文章和标签，关键字高亮显示
+ * @module front/search/SearchView
+ * @see ../../api/content.ts
+ */
 import { ref, onMounted, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { Loading } from '@element-plus/icons-vue'
@@ -73,10 +79,13 @@ const route = useRoute()
 const router = useRouter()
 const frontContentStore = useFrontContentStore()
 
+// 搜索关键词
 const keyword = ref('')
+// 当前激活的标签页（article/tag）
 const activeTab = ref('article')
 const currentPage = ref(1)
 
+// 高亮搜索关键词（用于在结果中标记匹配文本）
 function highlight(text: string | null | undefined): string {
   if (!text) return ''
   const kw = keyword.value.trim()
@@ -106,11 +115,11 @@ onMounted(() => {
 
 watch(
   () => route.query.keyword,
-  (val) => {
+  val => {
     keyword.value = (val as string) || ''
     currentPage.value = 1
     doSearch()
-  },
+  }
 )
 
 watch(activeTab, () => {

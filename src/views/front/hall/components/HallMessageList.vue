@@ -28,6 +28,11 @@
 </template>
 
 <script lang="ts" setup>
+/**
+ * 大厅消息列表组件
+ * @description 渲染大厅聊天消息，支持系统消息和普通用户消息
+ * @module front/hall/components/HallMessageList
+ */
 import { ref, watch, nextTick } from 'vue'
 import type { HallMessage } from '@/types/ui'
 
@@ -37,6 +42,7 @@ const props = defineProps<{
 
 const listRef = ref<HTMLElement | null>(null)
 
+// 滚动到底部
 function scrollToBottom(): void {
   nextTick(() => {
     if (listRef.value) listRef.value.scrollTop = listRef.value.scrollHeight

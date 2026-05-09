@@ -39,87 +39,81 @@
         </div>
       </template>
 
-        <el-table
-          v-loading="loading"
-          :data="tableData"
-          :size="isCompactTable ? 'small' : 'default'"
-          table-layout="auto"
-          class="role-table"
-          border
-          stripe
-        >
-          <el-table-column prop="id" label="ID" min-width="80" align="center" />
-          <el-table-column
-            prop="name"
-            label="角色名称"
-            min-width="160"
-            align="center"
-            show-overflow-tooltip
-          />
-          <el-table-column
-            prop="code"
-            label="角色编码"
-            min-width="180"
-            align="center"
-            show-overflow-tooltip
-          />
-          <el-table-column prop="sort" label="排序" min-width="90" align="center" />
-          <el-table-column label="状态" min-width="100" align="center">
-            <template #default="{ row }">
-              <el-switch
-                v-permission.disable="'sys:role:update'"
-                v-model="row.status"
-                :active-value="1"
-                :inactive-value="0"
-                @change="handleStatusChange(row)"
-              />
-            </template>
-          </el-table-column>
-          <el-table-column
-            prop="remark"
-            label="备注"
-            min-width="220"
-            align="center"
-            show-overflow-tooltip
-          />
-          <el-table-column label="操作" min-width="250" fixed="right" align="center">
-            <template #default="{ row }">
-              <div class="table-actions">
-                <el-button
-                  link
-                  type="primary"
-                  @click="handleView(row)"
-                >
-                  查看
-                </el-button>
-                <el-button
-                  v-permission="'sys:role:update'"
-                  link
-                  type="primary"
-                  @click="handleEdit(row)"
-                >
-                  编辑
-                </el-button>
-                <el-button
-                  v-permission="'sys:role:assign-menu'"
-                  link
-                  type="primary"
-                  @click="handleAssignMenus(row)"
-                >
-                  分配菜单
-                </el-button>
-                <el-button
-                  v-permission="'sys:role:delete'"
-                  link
-                  type="danger"
-                  @click="handleDelete(row)"
-                >
-                  删除
-                </el-button>
-              </div>
-            </template>
-          </el-table-column>
-        </el-table>
+      <el-table
+        v-loading="loading"
+        :data="tableData"
+        :size="isCompactTable ? 'small' : 'default'"
+        table-layout="auto"
+        class="role-table"
+        border
+        stripe
+      >
+        <el-table-column prop="id" label="ID" min-width="80" align="center" />
+        <el-table-column
+          prop="name"
+          label="角色名称"
+          min-width="160"
+          align="center"
+          show-overflow-tooltip
+        />
+        <el-table-column
+          prop="code"
+          label="角色编码"
+          min-width="180"
+          align="center"
+          show-overflow-tooltip
+        />
+        <el-table-column prop="sort" label="排序" min-width="90" align="center" />
+        <el-table-column label="状态" min-width="100" align="center">
+          <template #default="{ row }">
+            <el-switch
+              v-permission.disable="'sys:role:update'"
+              v-model="row.status"
+              :active-value="1"
+              :inactive-value="0"
+              @change="handleStatusChange(row)"
+            />
+          </template>
+        </el-table-column>
+        <el-table-column
+          prop="remark"
+          label="备注"
+          min-width="220"
+          align="center"
+          show-overflow-tooltip
+        />
+        <el-table-column label="操作" min-width="250" fixed="right" align="center">
+          <template #default="{ row }">
+            <div class="table-actions">
+              <el-button link type="primary" @click="handleView(row)"> 查看 </el-button>
+              <el-button
+                v-permission="'sys:role:update'"
+                link
+                type="primary"
+                @click="handleEdit(row)"
+              >
+                编辑
+              </el-button>
+              <el-button
+                v-permission="'sys:role:assign-menu'"
+                link
+                type="primary"
+                @click="handleAssignMenus(row)"
+              >
+                分配菜单
+              </el-button>
+              <el-button
+                v-permission="'sys:role:delete'"
+                link
+                type="danger"
+                @click="handleDelete(row)"
+              >
+                删除
+              </el-button>
+            </div>
+          </template>
+        </el-table-column>
+      </el-table>
 
       <div class="pagination">
         <el-pagination
@@ -148,13 +142,13 @@
       @success="handleMenusSuccess"
     />
 
-    <RoleDetailDialog
-      v-model:visible="detailDialogVisible"
-      :role="viewingRole"
-    />
+    <RoleDetailDialog v-model:visible="detailDialogVisible" :role="viewingRole" />
   </div>
 </template>
 
+/** * 角色管理页面（后台） * @description
+后台角色管理，支持角色的增删改查、状态切换、菜单分配、查看详情 * @module admin/role/Roles * @see
+api/sys/role.ts */
 <script lang="ts" setup>
 import { onMounted, reactive, ref } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
@@ -190,10 +184,7 @@ const currentRoleId = ref<number>(0)
 const currentRoleName = ref('')
 const viewingRole = ref<SysRoleAdminVO | null>(null)
 
-const {
-  paginationLayout,
-  isCompactTable,
-} = useContentAdmin({
+const { paginationLayout, isCompactTable } = useContentAdmin({
   minHeight: 280,
   bottomOffset: 32,
 })

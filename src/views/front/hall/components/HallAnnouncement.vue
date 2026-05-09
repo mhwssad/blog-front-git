@@ -6,6 +6,11 @@
 </template>
 
 <script lang="ts" setup>
+/**
+ * 大厅公告组件
+ * @description 展示聊天大厅的公告信息，带通知图标
+ * @module front/hall/components/HallAnnouncement
+ */
 import { Notification } from '@element-plus/icons-vue'
 
 defineProps<{

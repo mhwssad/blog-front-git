@@ -1,57 +1,67 @@
 <template>
   <div class="interaction-management-page">
     <el-card class="search-card" shadow="never">
-      <div class="card-header">
-        <span>互动管理</span>
-      </div>
-      <el-form
-        :model="searchForm"
-        label-width="80px"
-        label-position="top"
-        class="search-form"
-      >
-        <el-row :gutter="16">
-          <el-col :span="6">
-            <el-form-item label="用户ID">
-              <el-input-number v-model="searchForm.userId" :min="0" size="small" :precision="0" class="full-width" />
-            </el-form-item>
-          </el-col>
-          <el-col :span="6">
-            <el-form-item label="目标ID">
-              <el-input-number v-model="searchForm.targetId" :min="0" size="small" :precision="0" class="full-width" />
-            </el-form-item>
-          </el-col>
-          <el-col :span="6">
-            <el-form-item label="目标类型">
-              <el-select v-model="searchForm.targetType" placeholder="请选择" size="small" class="full-width" clearable>
-                <el-option
-                  v-for="option in targetTypeOptions"
-                  :key="option.value"
-                  :label="option.label"
-                  :value="option.value"
-                />
-              </el-select>
-            </el-form-item>
-          </el-col>
-          <el-col :span="6">
-            <el-form-item label="互动类型">
-              <el-select v-model="searchForm.actionType" placeholder="请选择" size="small" class="full-width" clearable>
-                <el-option
-                  v-for="option in interactionTypeOptions"
-                  :key="option.value"
-                  :label="option.label"
-                  :value="option.value"
-                />
-              </el-select>
-            </el-form-item>
-          </el-col>
-        </el-row>
-        <div class="form-actions">
-          <el-button v-permission="'content:interaction:query'" type="primary" size="small" @click="handleSearch">
+      <el-form :model="searchForm" inline class="search-form">
+        <el-form-item label="目标类型" class="filter-item">
+          <el-select
+            v-model="searchForm.targetType"
+            class="filter-control"
+            placeholder="请选择"
+            clearable
+          >
+            <el-option
+              v-for="option in targetTypeOptions"
+              :key="option.value"
+              :label="option.label"
+              :value="option.value"
+            />
+          </el-select>
+        </el-form-item>
+        <el-form-item label="互动类型" class="filter-item">
+          <el-select
+            v-model="searchForm.actionType"
+            class="filter-control"
+            placeholder="请选择"
+            clearable
+          >
+            <el-option
+              v-for="option in interactionTypeOptions"
+              :key="option.value"
+              :label="option.label"
+              :value="option.value"
+            />
+          </el-select>
+        </el-form-item>
+        <template v-if="searchExpanded">
+          <el-form-item label="用户 ID" class="filter-item">
+            <el-input-number
+              v-model="searchForm.userId"
+              :min="0"
+              class="filter-control"
+              controls-position="right"
+            />
+          </el-form-item>
+          <el-form-item label="目标 ID" class="filter-item">
+            <el-input-number
+              v-model="searchForm.targetId"
+              :min="0"
+              class="filter-control"
+              controls-position="right"
+            />
+          </el-form-item>
+        </template>
+        <el-form-item class="search-actions">
+          <el-button v-permission="'content:interaction:query'" type="primary" @click="handleSearch">
             查询
           </el-button>
-          <el-button size="small" @click="handleReset">重置</el-button>
-        </div>
+          <el-button @click="handleReset">重置</el-button>
+          <el-button link type="primary" @click="searchExpanded = !searchExpanded">
+            {{ searchExpanded ? '收起' : '更多' }}
+            <el-icon class="expand-icon" :class="{ 'is-expanded': searchExpanded }">
+              <ArrowDown />
+            </el-icon>
+          </el-button>
+        </el-form-item>
       </el-form>
     </el-card>
 
@@ -59,12 +69,8 @@
       <template #header>
         <div class="card-header">
           <span>互动记录</span>
-          <el-button
-            v-permission="'content:interaction:query'"
-            type="text"
-            size="small"
-            @click="() => fetchInteractions()"
-          >
+          <el-button v-permission="'content:interaction:query'" @click="fetchInteractions">
+            <el-icon><Refresh /></el-icon>
             刷新
           </el-button>
         </div>
@@ -76,71 +82,48 @@
         stripe
         border
         table-layout="auto"
-        size="small"
         class="behaviors-table"
       >
-          <el-table-column prop="id" label="ID" width="80" align="center" />
-          <el-table-column
-            prop="userId"
-            label="用户ID"
-            width="120"
-            align="center"
-          />
-          <el-table-column
-            prop="targetId"
-            label="目标ID"
-            width="120"
-            align="center"
-          />
-          <el-table-column
-            prop="targetType"
-            label="目标类型"
-            min-width="140"
-            align="center"
-          >
-            <template #default="{ row }">
-              {{ formatTargetType(row.targetType) }}
-            </template>
-          </el-table-column>
-          <el-table-column
-            prop="actionType"
-            label="互动类型"
-            min-width="140"
-            align="center"
-          >
-            <template #default="{ row }">
-              {{ formatInteractionType(row.actionType) }}
-            </template>
-          </el-table-column>
-          <el-table-column
-            prop="createdAt"
-            label="创建时间"
-            min-width="180"
-            align="center"
-          >
-            <template #default="{ row }">
-              {{ formatContentDate(row.createdAt) }}
-            </template>
-          </el-table-column>
-          <el-table-column
-            label="操作"
-            min-width="140"
-            align="center"
-            fixed="right"
-          >
-            <template #default="{ row }">
+        <el-table-column label="用户" min-width="150" align="center">
+          <template #default="{ row }">
+            <div class="user-cell">
+              <el-avatar v-if="row.userAvatar" :src="row.userAvatar" :size="24" />
+              <span>{{ row.userNickname || `用户 ${row.userId}` }}</span>
+            </div>
+          </template>
+        </el-table-column>
+        <el-table-column label="目标" min-width="200" align="left" show-overflow-tooltip>
+          <template #default="{ row }">
+            <el-tag size="small" effect="plain">{{ formatTargetType(row.targetType) }}</el-tag>
+            <span style="margin-left: 6px">{{ row.targetTitle || `ID: ${row.targetId}` }}</span>
+          </template>
+        </el-table-column>
+        <el-table-column label="互动类型" min-width="100" align="center">
+          <template #default="{ row }">
+            {{ formatInteractionType(row.actionType) }}
+          </template>
+        </el-table-column>
+        <el-table-column label="互动时间" min-width="170" align="center">
+          <template #default="{ row }">
+            {{ formatContentDate(row.createdAt) }}
+          </template>
+        </el-table-column>
+        <el-table-column label="操作" width="150" align="center" fixed="right">
+          <template #default="{ row }">
+            <div class="table-actions">
+              <el-button link type="primary" @click="openDetail(row)">详情</el-button>
               <el-button
                 v-permission="'content:interaction:delete'"
-                type="danger"
-                size="small"
                 link
+                type="danger"
                 @click="handleDeleteInteraction(row.id)"
               >
                 删除
               </el-button>
-            </template>
-          </el-table-column>
-        </el-table>
+            </div>
+          </template>
+        </el-table-column>
+      </el-table>
 
       <div class="pagination">
         <el-pagination
@@ -149,18 +132,25 @@
           :total="interactionStore.total"
           :page-sizes="[10, 20, 50, 100]"
           :layout="paginationLayout"
-          :small="isCompactTable"
+          background
+          small
           @size-change="handleSizeChange"
           @current-change="handleCurrentChange"
         />
       </div>
     </el-card>
+
+    <InteractionDetailDialog
+      v-model:visible="detailVisible"
+      :detail="detailRecord"
+    />
   </div>
 </template>
 
 <script lang="ts" setup>
-import { reactive, onMounted } from 'vue'
+import { onMounted, reactive, ref } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
+import { Refresh, ArrowDown } from '@element-plus/icons-vue'
 import { useInteractionStore } from '@/stores'
 import { useContentAdmin } from '@/composables/useContentAdmin'
 import {
@@ -170,8 +160,11 @@ import {
   TARGET_TYPE_OPTIONS,
   INTERACTION_TYPE_OPTIONS,
 } from '@/utils'
+import InteractionDetailDialog from './components/InteractionDetailDialog.vue'
+import type { InteractionVO } from '@/types/api-types'
 
 const interactionStore = useInteractionStore()
+const searchExpanded = ref(false)
 const searchForm = reactive({
   userId: undefined as number | undefined,
   targetId: undefined as number | undefined,
@@ -179,15 +172,13 @@ const searchForm = reactive({
   actionType: '' as string | undefined,
 })
 
-const pagination = reactive({
-  current: 1,
-  size: 10,
-})
-
-const { paginationLayout, isCompactTable } = useContentAdmin()
-
+const pagination = reactive({ current: 1, size: 10 })
+const { paginationLayout } = useContentAdmin()
 const targetTypeOptions = TARGET_TYPE_OPTIONS
 const interactionTypeOptions = INTERACTION_TYPE_OPTIONS
+
+const detailVisible = ref(false)
+const detailRecord = ref<InteractionVO | null>(null)
 
 async function fetchInteractions(): Promise<void> {
   await interactionStore.fetchInteractions({
@@ -225,6 +216,11 @@ function handleCurrentChange(current: number): void {
   void fetchInteractions()
 }
 
+function openDetail(row: InteractionVO): void {
+  detailRecord.value = row
+  detailVisible.value = true
+}
+
 async function handleDeleteInteraction(id: number): Promise<void> {
   try {
     await ElMessageBox.confirm('确定要删除该互动记录吗？', '提示', {
@@ -240,7 +236,7 @@ async function handleDeleteInteraction(id: number): Promise<void> {
       ElMessage.error('删除失败')
     }
   } catch {
-    // 取消或失败
+    // user cancelled
   }
 }
 
@@ -258,39 +254,69 @@ onMounted(() => {
   margin: 0 auto;
 }
 
+.search-card :deep(.el-form-item) {
+  margin-bottom: 0;
+}
+
+.search-form {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px 16px;
+}
+
+.filter-item {
+  margin-bottom: 0;
+}
+
+.filter-control {
+  width: 180px;
+}
+
+.expand-icon {
+  transition: transform 0.2s;
+}
+
+.expand-icon.is-expanded {
+  transform: rotate(180deg);
+}
+
+.search-actions {
+  margin-left: auto;
+}
+
 .card-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
   font-weight: 500;
-  gap: 12px;
-}
-
-.search-form {
-  margin-top: 16px;
-}
-
-.search-form :deep(.el-form-item__content) {
-  width: 100%;
-}
-
-.full-width {
-  width: 100%;
-}
-
-.form-actions {
-  margin-top: 8px;
-  display: flex;
-  gap: 8px;
 }
 
 .behaviors-table {
   width: 100%;
 }
 
+.user-cell {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.table-actions {
+  display: inline-flex;
+  justify-content: center;
+  gap: 4px 8px;
+}
+
 .pagination {
   display: flex;
   justify-content: center;
   margin-top: 16px;
+}
+
+@media (max-width: 768px) {
+  .filter-control {
+    width: 160px;
+  }
 }
 </style>

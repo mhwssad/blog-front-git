@@ -362,6 +362,14 @@
       "tokenCount": 12,
       "responseStatus": 1,
       "errorMessage": null,
+      "attachments": [
+        {
+          "fileId": 101,
+          "fileType": "image",
+          "mimeType": "image/png",
+          "fileUrl": "https://api.dicebear.com/7.x/identicon/svg?seed=ai-101"
+        }
+      ],
       "createdAt": "2026-04-28 09:25:00"
     },
     {
@@ -373,6 +381,17 @@
       "tokenCount": 180,
       "responseStatus": 1,
       "errorMessage": null,
+      "ragReferences": [
+        {
+          "sourceType": "public_article",
+          "sourceId": 2101,
+          "entryId": 9101,
+          "title": "前端 AI 请求页标准布局",
+          "sourceUrl": "/articles/2101",
+          "chunkIndex": 0,
+          "score": 0.9132
+        }
+      ],
       "createdAt": "2026-04-28 09:25:08"
     },
     {
@@ -440,6 +459,276 @@
       "responseStatus": 1,
       "errorMessage": null,
       "createdAt": "2026-04-27 15:00:03"
+    }
+  ],
+  "aiChannelAccounts": [
+    {
+      "id": 1,
+      "channelId": 1,
+      "accountName": "OpenAI 主账号",
+      "apiKeyEncrypted": "sk-****main",
+      "weight": 10,
+      "status": 1,
+      "dailyUsedTokens": 1500,
+      "dailyLimit": 50000,
+      "lastUsedAt": "2026-04-28 09:30:00",
+      "createdBy": 1,
+      "createdAt": "2026-03-15 10:00:00",
+      "updatedAt": "2026-04-28 09:30:00"
+    },
+    {
+      "id": 2,
+      "channelId": 1,
+      "accountName": "OpenAI 备用账号",
+      "apiKeyEncrypted": "sk-****backup",
+      "weight": 5,
+      "status": 0,
+      "dailyUsedTokens": 0,
+      "dailyLimit": 30000,
+      "lastUsedAt": null,
+      "createdBy": 1,
+      "createdAt": "2026-04-01 08:00:00",
+      "updatedAt": "2026-04-01 08:00:00"
+    }
+  ],
+  "aiKnowledgeSources": [
+    {
+      "id": 1,
+      "sourceName": "公开文章库",
+      "sourceType": "database",
+      "description": "所有已发布文章作为知识来源",
+      "configJson": "{\"scope\":\"published_articles\"}",
+      "status": 1,
+      "entryCount": 7,
+      "lastSyncAt": "2026-04-28 00:00:00",
+      "createdBy": 1,
+      "createdAt": "2026-03-20 10:00:00",
+      "updatedAt": "2026-04-28 00:00:00"
+    },
+    {
+      "id": 2,
+      "sourceName": "技术文档",
+      "sourceType": "file",
+      "description": "上传的技术文档资料",
+      "configJson": "{\"format\":\"markdown\"}",
+      "status": 0,
+      "entryCount": 0,
+      "lastSyncAt": null,
+      "createdBy": 1,
+      "createdAt": "2026-04-10 14:00:00",
+      "updatedAt": "2026-04-10 14:00:00"
+    }
+  ],
+  "aiKnowledgeEntries": [
+    {
+      "id": 1,
+      "sourceConfigId": 1,
+      "title": "用 Vite 为中后台建立可维护的模块边界",
+      "contentType": "article",
+      "content": "文章内容摘要...",
+      "chunkHash": "abc123",
+      "status": "active",
+      "tokenCount": 500,
+      "createdAt": "2026-04-28 00:00:00",
+      "updatedAt": "2026-04-28 00:00:00"
+    },
+    {
+      "id": 2,
+      "sourceConfigId": 1,
+      "title": "Vue 3 组合式函数设计实践",
+      "contentType": "article",
+      "content": "文章内容摘要...",
+      "chunkHash": "def456",
+      "status": "active",
+      "tokenCount": 450,
+      "createdAt": "2026-04-28 00:00:00",
+      "updatedAt": "2026-04-28 00:00:00"
+    },
+    {
+      "id": 3,
+      "sourceConfigId": 1,
+      "title": "TypeScript 类型体操入门",
+      "contentType": "article",
+      "content": "文章内容摘要...",
+      "chunkHash": "ghi789",
+      "status": "active",
+      "tokenCount": 380,
+      "createdAt": "2026-04-28 00:00:00",
+      "updatedAt": "2026-04-28 00:00:00"
+    },
+    {
+      "id": 4,
+      "sourceConfigId": 2,
+      "title": "上传文档 1",
+      "contentType": "file",
+      "content": "文档内容...",
+      "chunkHash": "jkl012",
+      "status": "pending",
+      "tokenCount": 0,
+      "createdAt": "2026-04-10 14:00:00",
+      "updatedAt": "2026-04-10 14:00:00"
+    }
+  ],
+  "aiSyncTasks": [
+    {
+      "id": 1,
+      "sourceConfigId": 1,
+      "triggerType": "scheduled",
+      "status": "completed",
+      "totalEntries": 7,
+      "successCount": 7,
+      "failCount": 0,
+      "startedAt": "2026-04-28 00:00:00",
+      "finishedAt": "2026-04-28 00:05:00",
+      "createdBy": 1,
+      "createdAt": "2026-04-28 00:00:00"
+    },
+    {
+      "id": 2,
+      "sourceConfigId": 2,
+      "triggerType": "manual",
+      "status": "pending",
+      "totalEntries": 0,
+      "successCount": 0,
+      "failCount": 0,
+      "startedAt": null,
+      "finishedAt": null,
+      "createdBy": 1,
+      "createdAt": "2026-04-15 10:00:00"
+    }
+  ],
+  "aiAgentDefinitions": [
+    {
+      "id": 1,
+      "agentName": "文章审查助手",
+      "description": "自动审查文章内容质量和规范性",
+      "agentType": "article_review",
+      "systemPrompt": "你是一个文章审查助手，负责检查文章内容的质量、格式和规范性。",
+      "modelConfig": "{\"temperature\":0.3,\"maxTokens\":2000}",
+      "tools": "[\"knowledge_search\",\"article_read\"]",
+      "status": 1,
+      "createdBy": 1,
+      "createdAt": "2026-04-01 10:00:00",
+      "updatedAt": "2026-04-20 14:00:00"
+    },
+    {
+      "id": 2,
+      "agentName": "社区运营助手",
+      "description": "辅助社区内容管理和用户互动",
+      "agentType": "community",
+      "systemPrompt": "你是一个社区运营助手，负责内容推荐和用户问题解答。",
+      "modelConfig": "{\"temperature\":0.7,\"maxTokens\":4000}",
+      "tools": "[\"knowledge_search\",\"user_profile\"]",
+      "status": 1,
+      "createdBy": 1,
+      "createdAt": "2026-04-10 09:00:00",
+      "updatedAt": "2026-04-10 09:00:00"
+    }
+  ],
+  "aiAgentTasks": [
+    {
+      "id": 1,
+      "agentDefId": 1,
+      "triggerType": "manual",
+      "inputParams": "{\"articleId\":2}",
+      "status": "completed",
+      "result": "{\"score\":85,\"suggestions\":[\"建议增加代码示例\"]}",
+      "startedAt": "2026-04-20 14:00:00",
+      "finishedAt": "2026-04-20 14:01:00",
+      "createdBy": 1,
+      "createdAt": "2026-04-20 14:00:00"
+    },
+    {
+      "id": 2,
+      "agentDefId": 2,
+      "triggerType": "manual",
+      "inputParams": "{\"query\":\"推荐热门文章\"}",
+      "status": "running",
+      "result": null,
+      "startedAt": "2026-04-28 10:00:00",
+      "finishedAt": null,
+      "createdBy": 1,
+      "createdAt": "2026-04-28 10:00:00"
+    }
+  ],
+  "aiTools": [
+    {
+      "id": 1,
+      "toolName": "knowledge_search",
+      "toolKey": "knowledge_search",
+      "description": "搜索知识库内容",
+      "toolType": "builtin",
+      "inputSchema": "{\"type\":\"object\",\"properties\":{\"query\":{\"type\":\"string\"}}}",
+      "status": 1,
+      "callCount": 150,
+      "lastCalledAt": "2026-04-28 09:30:00",
+      "createdBy": 1,
+      "createdAt": "2026-03-15 10:00:00",
+      "updatedAt": "2026-04-28 09:30:00"
+    },
+    {
+      "id": 2,
+      "toolName": "article_read",
+      "toolKey": "article_read",
+      "description": "读取文章内容",
+      "toolType": "builtin",
+      "inputSchema": "{\"type\":\"object\",\"properties\":{\"articleId\":{\"type\":\"number\"}}}",
+      "status": 1,
+      "callCount": 80,
+      "lastCalledAt": "2026-04-20 14:01:00",
+      "createdBy": 1,
+      "createdAt": "2026-03-15 10:00:00",
+      "updatedAt": "2026-04-20 14:01:00"
+    }
+  ],
+  "aiToolAuthorizations": [
+    {
+      "id": 1,
+      "agentDefId": 1,
+      "toolId": 1,
+      "grantedBy": 1,
+      "grantedAt": "2026-04-01 10:00:00",
+      "status": 1,
+      "createdAt": "2026-04-01 10:00:00"
+    },
+    {
+      "id": 2,
+      "agentDefId": 1,
+      "toolId": 2,
+      "grantedBy": 1,
+      "grantedAt": "2026-04-01 10:00:00",
+      "status": 1,
+      "createdAt": "2026-04-01 10:00:00"
+    }
+  ],
+  "aiMcpServers": [
+    {
+      "id": 1,
+      "serverName": "文件系统 MCP",
+      "serverUrl": "http://localhost:3001/mcp",
+      "description": "提供文件读写能力",
+      "transportType": "sse",
+      "status": 1,
+      "toolCount": 5,
+      "lastHealthCheck": "2026-04-28 09:00:00",
+      "healthStatus": "healthy",
+      "createdBy": 1,
+      "createdAt": "2026-04-01 08:00:00",
+      "updatedAt": "2026-04-28 09:00:00"
+    },
+    {
+      "id": 2,
+      "serverName": "数据库查询 MCP",
+      "serverUrl": "http://localhost:3002/mcp",
+      "description": "提供数据库查询能力",
+      "transportType": "stdio",
+      "status": 0,
+      "toolCount": 0,
+      "lastHealthCheck": null,
+      "healthStatus": "unknown",
+      "createdBy": 1,
+      "createdAt": "2026-04-10 14:00:00",
+      "updatedAt": "2026-04-10 14:00:00"
     }
   ]
 }

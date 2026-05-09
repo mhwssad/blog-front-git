@@ -6,10 +6,16 @@
 </template>
 
 <script lang="ts" setup>
+/**
+ * 文章内容渲染组件
+ * @description 渲染 Markdown 内容并提取目录结构（h2/h3/h4）
+ * @module front/article/components/ArticleContent
+ */
 import { onMounted, onUpdated, ref, watch } from 'vue'
 import type { TocHeading } from '@/types/ui'
 
 const props = defineProps<{
+  /** 文章 HTML 内容 */
   content?: string | null
 }>()
 
@@ -35,9 +41,12 @@ function extractHeadings(): void {
   emit('headingsExtracted', headings)
 }
 
-watch(() => props.content, () => {
-  onUpdated(() => extractHeadings())
-})
+watch(
+  () => props.content,
+  () => {
+    onUpdated(() => extractHeadings())
+  }
+)
 
 onMounted(() => {
   extractHeadings()

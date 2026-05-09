@@ -1,20 +1,31 @@
 <template>
   <el-dialog
-    v-model:visible="modalVisible"
+    v-model="modalVisible"
     :title="dialogTitle"
     width="480px"
-    :destroy-on-close="true"
+    destroy-on-close
     :close-on-click-modal="false"
     center
   >
-    <ElForm ref="formRef" class="tag-form" :model="formState" :rules="formRules" label-width="120px">
+    <ElForm
+      ref="formRef"
+      class="tag-form"
+      :model="formState"
+      :rules="formRules"
+      label-width="120px"
+    >
       <el-form-item label="标签名称" prop="name">
-        <el-input v-model="formState.name" placeholder="请输入标签名称" maxlength="64" show-word-limit />
+        <el-input
+          v-model="formState.name"
+          placeholder="请输入标签名称"
+          maxlength="64"
+          show-word-limit
+        />
       </el-form-item>
       <el-form-item label="颜色" prop="color">
         <div class="color-input">
-          <el-input v-model="formState.color" placeholder="示例：#FFFFFF 或 red" maxlength="32" />
-          <span class="color-preview" :style="{ backgroundColor: previewColor }" />
+          <el-input v-model="formState.color" placeholder="#409EFF" maxlength="32" />
+          <el-color-picker v-model="formState.color" show-alpha />
         </div>
       </el-form-item>
     </ElForm>
@@ -67,13 +78,13 @@ const formRules = {
 
 const isEdit = computed(() => Boolean(props.tag?.id))
 const dialogTitle = computed(() => (isEdit.value ? '编辑标签' : '新增标签'))
-const submitPermission = computed(() => (isEdit.value ? 'content:tag:update' : 'content:tag:create'))
+const submitPermission = computed(() =>
+  isEdit.value ? 'content:tag:update' : 'content:tag:create'
+)
 const modalVisible = computed({
   get: () => props.visible,
   set: value => emit('update:visible', value),
 })
-
-const previewColor = computed(() => formState.color || '#f5f5f5')
 
 function resetFormState(): void {
   formState.name = props.tag?.name ?? ''

@@ -94,6 +94,42 @@ export const FRONT_ROUTES: RouteRecordRaw[] = [
         meta: { title: '大厅' },
       },
       {
+        path: 'forum',
+        name: 'ForumHome',
+        component: () => import('@/views/front/forum/ForumHome.vue'),
+        meta: { title: '论坛' },
+      },
+      {
+        path: 'forum/sections/:sectionId',
+        name: 'ForumSection',
+        component: () => import('@/views/front/forum/ForumSection.vue'),
+        meta: { title: '论坛版块' },
+      },
+      {
+        path: 'forum/posts/:postId',
+        name: 'ForumPost',
+        component: () => import('@/views/front/forum/ForumPost.vue'),
+        meta: { title: '帖子详情' },
+      },
+      {
+        path: 'forum/create',
+        name: 'ForumCreate',
+        component: () => import('@/views/front/forum/ForumCreate.vue'),
+        meta: { title: '发布帖子', requiresAuth: true },
+      },
+      {
+        path: 'forum/posts/:postId/edit',
+        name: 'ForumEdit',
+        component: () => import('@/views/front/forum/ForumEdit.vue'),
+        meta: { title: '编辑帖子', requiresAuth: true },
+      },
+      {
+        path: 'user/forum/posts',
+        name: 'MyForumPosts',
+        component: () => import('@/views/front/forum/MyForumPosts.vue'),
+        meta: { title: '我的帖子', requiresAuth: true },
+      },
+      {
         path: 'channels',
         name: 'ChannelList',
         component: () => import('@/views/front/channel/ChannelList.vue'),
@@ -191,7 +227,7 @@ export const ADMIN_FIXED_CHILD_ROUTES: RouteRecordRaw[] = [
   {
     path: 'dashboard',
     name: 'AdminDashboard',
-    component: () => import('@/views/admin/Dashboard.vue'),
+    component: () => import('@/views/admin/dashboard/index.vue'),
     meta: {
       title: '首页',
       requiresAuth: true,

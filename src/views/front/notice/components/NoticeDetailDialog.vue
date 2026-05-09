@@ -12,6 +12,11 @@
 </template>
 
 <script lang="ts" setup>
+/**
+ * 通知详情弹窗组件
+ * @description 展示通知的完整内容、发布时间和阅读状态
+ * @module front/notice/components/NoticeDetailDialog
+ */
 import { computed } from 'vue'
 import type { UserNoticeVO } from '@/types/api-types'
 
@@ -26,7 +31,7 @@ const emit = defineEmits<{
 
 const dialogVisible = computed({
   get: () => props.visible,
-  set: (val) => emit('update:visible', val),
+  set: val => emit('update:visible', val),
 })
 </script>
 

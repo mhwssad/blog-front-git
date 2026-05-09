@@ -1,5 +1,10 @@
 <template>
-  <el-dialog v-model="dialogVisible" title="收藏到收藏夹" width="420px" :close-on-click-modal="false">
+  <el-dialog
+    v-model="dialogVisible"
+    title="收藏到收藏夹"
+    width="420px"
+    :close-on-click-modal="false"
+  >
     <div v-if="loading" class="folder-loading">
       <el-skeleton :rows="3" animated />
     </div>
@@ -39,6 +44,12 @@
 </template>
 
 <script lang="ts" setup>
+/**
+ * 收藏到收藏夹弹窗组件
+ * @description 允许用户将文章收藏到已有的收藏夹，或新建收藏夹
+ * @module front/article/components/CollectionModal
+ * @see ../../api/content.ts
+ */
 import { ref, computed } from 'vue'
 import { ElMessage } from 'element-plus'
 import { Folder } from '@element-plus/icons-vue'
@@ -62,16 +73,19 @@ const userContentStore = useUserContentStore()
 
 const dialogVisible = computed({
   get: () => props.visible,
-  set: (val) => emit('update:visible', val),
+  set: val => emit('update:visible', val),
 })
 
+// 新建收藏夹表单是否显示
 const showCreateForm = ref(false)
+// 新建收藏夹名称
 const newFolderName = ref('')
 
 function handleCollect(folderId: number): void {
   emit('collect', folderId)
 }
 
+/** 创建收藏夹 */
 async function handleCreateFolder(): Promise<void> {
   if (!newFolderName.value.trim()) return
   const success = await userContentStore.createCollectionFolder({

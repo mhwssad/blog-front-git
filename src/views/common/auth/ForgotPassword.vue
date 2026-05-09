@@ -53,6 +53,12 @@
 </template>
 
 <script lang="ts" setup>
+/**
+ * 忘记密码页面
+ * @description 用户通过邮箱验证码重置密码
+ * @module common/auth/ForgotPassword
+ * @see ../../api/auth.ts
+ */
 import { ref, reactive } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
@@ -61,8 +67,10 @@ import { authApi } from '@/api/auth'
 const router = useRouter()
 const loading = ref(false)
 const sendingCode = ref(false)
+/** 验证码倒计时（单位：秒）*/
 const countdown = ref(0)
 
+// 表单数据
 const form = reactive({
   email: '',
   code: '',
@@ -72,6 +80,11 @@ const form = reactive({
 
 let timer: ReturnType<typeof setInterval> | null = null
 
+// 发送验证码
+/**
+ * 发送重置密码验证码
+ * @description 验证邮箱格式后发送验证码，启动 60s 倒计时
+ */
 async function handleSendCode(): Promise<void> {
   if (!form.email) {
     ElMessage.warning('请输入邮箱')
@@ -82,6 +95,7 @@ async function handleSendCode(): Promise<void> {
   try {
     await authApi.sendEmailCode({ email: form.email })
     ElMessage.success('验证码已发送')
+    // 启动 60 秒倒计时
     countdown.value = 60
     timer = setInterval(() => {
       countdown.value--
@@ -97,6 +111,11 @@ async function handleSendCode(): Promise<void> {
   }
 }
 
+// 重置密码
+/**
+ * 处理密码重置
+ * @description 验证表单各项后调用后端重置接口，完成后跳转登录页
+ */
 async function handleReset(): Promise<void> {
   if (!form.email) {
     ElMessage.warning('请输入邮箱')
@@ -111,6 +130,7 @@ async function handleReset(): Promise<void> {
     return
   }
   if (form.password !== form.confirmPassword) {
+    // 两次密码输入不一致时终止提交
     ElMessage.error('两次输入的密码不一致')
     return
   }
@@ -118,7 +138,8 @@ async function handleReset(): Promise<void> {
   loading.value = true
   try {
     // TODO: replace with real reset endpoint when backend adds one
-    await new Promise((r) => setTimeout(r, 1000))
+    // 占位接口，实际重置逻辑需后端提供接口后替换
+    await new Promise(r => setTimeout(r, 1000))
     ElMessage.success('密码重置成功，请重新登录')
     router.push('/login')
   } catch {

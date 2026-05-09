@@ -10,7 +10,9 @@
     <div class="assign-menus-content">
       <div class="toolbar">
         <div class="toolbar-main">
-          <p class="tips">为角色 <strong>{{ roleName }}</strong> 分配菜单权限</p>
+          <p class="tips">
+            为角色 <strong>{{ roleName }}</strong> 分配菜单权限
+          </p>
           <el-input
             v-model="filterKeyword"
             class="filter-input"
@@ -74,6 +76,9 @@
   </el-dialog>
 </template>
 
+/** * 角色菜单分配对话框 * @description
+为角色分配菜单权限，支持菜单搜索、全选/清空、父子节点联动配置 * @module
+admin/role/components/AssignMenusDialog * @see api/sys/role.ts */
 <script lang="ts" setup>
 import { computed, nextTick, ref, watch } from 'vue'
 import { ElMessage } from 'element-plus'
@@ -208,7 +213,7 @@ async function handleSubmit(): Promise<void> {
   submitting.value = true
   try {
     const checkedKeys = treeRef.value?.getCheckedKeys() ?? []
-    const halfCheckedKeys = checkStrictly.value ? [] : treeRef.value?.getHalfCheckedKeys() ?? []
+    const halfCheckedKeys = checkStrictly.value ? [] : (treeRef.value?.getHalfCheckedKeys() ?? [])
     const menuIds = [...new Set([...checkedKeys, ...halfCheckedKeys])]
 
     await RoleApi.assignRoleMenus(props.roleId, { menuIds })

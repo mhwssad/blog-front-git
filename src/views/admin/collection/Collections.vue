@@ -2,32 +2,13 @@
   <div class="collection-management-page">
     <el-card class="search-card" shadow="never">
       <el-form :model="searchForm" inline class="search-form">
-        <el-form-item label="用户 ID" class="filter-item">
-          <el-input-number
-            v-model="searchForm.userId"
-            :min="1"
-            class="filter-control"
-            controls-position="right"
-          />
-        </el-form-item>
-        <el-form-item label="收藏夹 ID" class="filter-item">
-          <el-input-number
-            v-model="searchForm.folderId"
-            :min="1"
-            class="filter-control"
-            controls-position="right"
-          />
-        </el-form-item>
-        <el-form-item label="目标 ID" class="filter-item">
-          <el-input-number
-            v-model="searchForm.targetId"
-            :min="1"
-            class="filter-control"
-            controls-position="right"
-          />
-        </el-form-item>
         <el-form-item label="目标类型" class="filter-item">
-          <el-select v-model="searchForm.targetType" class="filter-control" clearable placeholder="请选择目标类型">
+          <el-select
+            v-model="searchForm.targetType"
+            class="filter-control"
+            clearable
+            placeholder="请选择目标类型"
+          >
             <el-option
               v-for="option in TARGET_TYPE_OPTIONS"
               :key="option.value"
@@ -36,11 +17,43 @@
             />
           </el-select>
         </el-form-item>
+        <template v-if="searchExpanded">
+          <el-form-item label="用户 ID" class="filter-item">
+            <el-input-number
+              v-model="searchForm.userId"
+              :min="1"
+              class="filter-control"
+              controls-position="right"
+            />
+          </el-form-item>
+          <el-form-item label="收藏夹 ID" class="filter-item">
+            <el-input-number
+              v-model="searchForm.folderId"
+              :min="1"
+              class="filter-control"
+              controls-position="right"
+            />
+          </el-form-item>
+          <el-form-item label="目标 ID" class="filter-item">
+            <el-input-number
+              v-model="searchForm.targetId"
+              :min="1"
+              class="filter-control"
+              controls-position="right"
+            />
+          </el-form-item>
+        </template>
         <el-form-item class="search-actions">
           <el-button v-permission="'content:collection:query'" type="primary" @click="handleSearch">
             查询
           </el-button>
           <el-button @click="handleReset">重置</el-button>
+          <el-button link type="primary" @click="searchExpanded = !searchExpanded">
+            {{ searchExpanded ? '收起' : '更多' }}
+            <el-icon class="expand-icon" :class="{ 'is-expanded': searchExpanded }">
+              <ArrowDown />
+            </el-icon>
+          </el-button>
         </el-form-item>
       </el-form>
     </el-card>
@@ -49,58 +62,52 @@
       <template #header>
         <div class="card-header">
           <span>收藏管理</span>
-          <el-button v-permission="'content:collection:query'" link type="primary" @click="refreshActiveTab">
+          <el-button v-permission="'content:collection:query'" @click="refreshActiveTab">
+            <el-icon><Refresh /></el-icon>
             刷新
           </el-button>
         </div>
       </template>
 
-      <el-tabs v-model="activeTab" class="collection-tabs" @tab-change="handleTabChange">
+      <el-tabs v-model="activeTab" @tab-change="handleTabChange">
         <el-tab-pane label="收藏记录" name="records">
           <el-table
             v-loading="collectionStore.loading"
             :data="collectionStore.collections"
-            :size="recordCompact ? 'small' : 'default'"
-            table-layout="auto"
-            class="collection-table"
+            row-key="id"
             border
             stripe
+            table-layout="auto"
+            class="collection-table"
           >
-              <el-table-column prop="id" label="记录 ID" min-width="100" align="center" />
-              <el-table-column prop="userId" label="用户 ID" min-width="100" align="center" />
-              <el-table-column prop="folderId" label="收藏夹 ID" min-width="110" align="center" />
-              <el-table-column label="目标类型" min-width="120" align="center">
-                <template #default="{ row }">
-                  {{ formatTargetType(row.targetType) }}
-                </template>
-              </el-table-column>
-              <el-table-column prop="targetTitle" label="目标标题" min-width="220" align="center" show-overflow-tooltip>
-                <template #default="{ row }">
-                  {{ formatOptionalText(row.targetTitle) }}
-                </template>
-              </el-table-column>
-              <el-table-column prop="targetUrl" label="目标地址" min-width="220" align="center" show-overflow-tooltip>
-                <template #default="{ row }">
-                  {{ formatOptionalText(row.targetUrl) }}
-                </template>
-              </el-table-column>
-              <el-table-column prop="remark" label="备注" min-width="180" align="center" show-overflow-tooltip>
-                <template #default="{ row }">
-                  {{ formatOptionalText(row.remark) }}
-                </template>
-              </el-table-column>
-              <el-table-column label="创建时间" min-width="180" align="center">
-                <template #default="{ row }">
-                  {{ formatCreatedAt(row.createdAt) }}
-                </template>
-              </el-table-column>
-              <el-table-column
-                label="操作"
-                :min-width="recordCompact ? 120 : 140"
-                :fixed="recordCompact ? false : 'right'"
-                align="center"
-              >
-                <template #default="{ row }">
+            <el-table-column label="目标标题" min-width="240" align="left" show-overflow-tooltip>
+              <template #default="{ row }">
+                {{ row.targetTitle || '—' }}
+              </template>
+            </el-table-column>
+            <el-table-column label="目标类型" min-width="100" align="center">
+              <template #default="{ row }">
+                <el-tag size="small" effect="plain">{{ formatTargetType(row.targetType) }}</el-tag>
+              </template>
+            </el-table-column>
+            <el-table-column label="用户 ID" min-width="90" align="center" prop="userId" />
+            <el-table-column label="收藏时间" min-width="170" align="center">
+              <template #default="{ row }">
+                {{ formatCreatedAt(row.createdAt) }}
+              </template>
+            </el-table-column>
+            <el-table-column label="操作" width="200" align="center" fixed="right">
+              <template #default="{ row }">
+                <div class="table-actions">
+                  <el-button link type="primary" @click="openRecordDetail(row)">详情</el-button>
+                  <el-button
+                    v-if="row.targetUrl"
+                    link
+                    type="primary"
+                    @click="openTargetUrl(row.targetUrl)"
+                  >
+                    查看
+                  </el-button>
                   <el-button
                     v-permission="'content:collection:delete'"
                     link
@@ -109,9 +116,10 @@
                   >
                     删除
                   </el-button>
-                </template>
-              </el-table-column>
-            </el-table>
+                </div>
+              </template>
+            </el-table-column>
+          </el-table>
 
           <div class="pagination">
             <el-pagination
@@ -120,7 +128,8 @@
               :total="collectionStore.collectionTotal"
               :page-sizes="[10, 20, 50, 100]"
               :layout="recordPaginationLayout"
-              :small="recordCompact"
+              background
+              small
               @size-change="handleRecordSizeChange"
               @current-change="handleRecordPageChange"
             />
@@ -131,42 +140,41 @@
           <el-table
             v-loading="collectionStore.loading"
             :data="collectionStore.folders"
-            :size="folderCompact ? 'small' : 'default'"
-            table-layout="auto"
-            class="collection-table"
+            row-key="id"
             border
             stripe
+            table-layout="auto"
+            class="collection-table"
           >
-              <el-table-column prop="id" label="收藏夹 ID" min-width="110" align="center" />
-              <el-table-column prop="userId" label="用户 ID" min-width="100" align="center" />
-              <el-table-column prop="folderName" label="收藏夹名称" min-width="220" align="center" show-overflow-tooltip />
-              <el-table-column prop="folderType" label="类型" min-width="120" align="center">
-                <template #default="{ row }">
-                  {{ formatTargetType(row.folderType) }}
-                </template>
-              </el-table-column>
-              <el-table-column label="是否公开" min-width="110" align="center">
-                <template #default="{ row }">
-                  {{ formatVisibility(row.isPublic) }}
-                </template>
-              </el-table-column>
-              <el-table-column label="是否默认" min-width="110" align="center">
-                <template #default="{ row }">
-                  {{ formatDefaultFlag(row.isDefault) }}
-                </template>
-              </el-table-column>
-              <el-table-column prop="collectionCount" label="收藏数" min-width="100" align="center" />
-              <el-table-column label="创建时间" min-width="180" align="center">
-                <template #default="{ row }">
-                  {{ formatCreatedAt(row.createdAt) }}
-                </template>
-              </el-table-column>
-              <el-table-column label="更新时间" min-width="180" align="center">
-                <template #default="{ row }">
-                  {{ formatUpdatedAt(row.updatedAt) }}
-                </template>
-              </el-table-column>
-            </el-table>
+            <el-table-column
+              prop="folderName"
+              label="收藏夹名称"
+              min-width="200"
+              align="left"
+              show-overflow-tooltip
+            />
+            <el-table-column label="类型" min-width="100" align="center">
+              <template #default="{ row }">
+                <el-tag size="small" effect="plain">{{ formatTargetType(row.folderType) }}</el-tag>
+              </template>
+            </el-table-column>
+            <el-table-column label="收藏数" min-width="90" align="center" prop="collectionCount" />
+            <el-table-column label="公开" min-width="80" align="center">
+              <template #default="{ row }">
+                <el-tag size="small" :type="row.isPublic === 1 ? 'success' : 'info'">
+                  {{ row.isPublic === 1 ? '公开' : '私有' }}
+                </el-tag>
+              </template>
+            </el-table-column>
+            <el-table-column label="操作" width="150" align="center" fixed="right">
+              <template #default="{ row }">
+                <div class="table-actions">
+                  <el-button link type="primary" @click="openFolderDetail(row)">详情</el-button>
+                  <el-button link type="primary" @click="goToFolderRecords(row)">查看收藏</el-button>
+                </div>
+              </template>
+            </el-table-column>
+          </el-table>
 
           <div class="pagination">
             <el-pagination
@@ -175,7 +183,8 @@
               :total="collectionStore.folderTotal"
               :page-sizes="[10, 20, 50, 100]"
               :layout="folderPaginationLayout"
-              :small="folderCompact"
+              background
+              small
               @size-change="handleFolderSizeChange"
               @current-change="handleFolderPageChange"
             />
@@ -183,28 +192,36 @@
         </el-tab-pane>
       </el-tabs>
     </el-card>
+
+    <CollectionRecordDetailDialog
+      v-model:visible="recordDetailVisible"
+      :detail="recordDetail"
+    />
+
+    <CollectionFolderDetailDialog
+      v-model:visible="folderDetailVisible"
+      :detail="folderDetail"
+      @view-records="goToFolderRecordsById"
+    />
   </div>
 </template>
 
 <script lang="ts" setup>
 import { onMounted, reactive, ref } from 'vue'
 import { ElMessage, ElMessageBox, type TabPaneName } from 'element-plus'
+import { Refresh, ArrowDown } from '@element-plus/icons-vue'
 import { useContentAdmin } from '@/composables/useContentAdmin'
 import { useCollectionStore } from '@/stores'
-import {
-  TARGET_TYPE_OPTIONS,
-  formatCreatedAt,
-  formatDefaultFlag,
-  formatOptionalText,
-  formatTargetType,
-  formatUpdatedAt,
-  formatVisibility,
-} from '@/utils'
+import { TARGET_TYPE_OPTIONS, formatCreatedAt, formatTargetType } from '@/utils'
+import CollectionRecordDetailDialog from './components/CollectionRecordDetailDialog.vue'
+import CollectionFolderDetailDialog from './components/CollectionFolderDetailDialog.vue'
+import type { CollectionVO, CollectionFolderVO } from '@/types/api-types'
 
 type CollectionTab = 'records' | 'folders'
 
 const collectionStore = useCollectionStore()
 const activeTab = ref<CollectionTab>('records')
+const searchExpanded = ref(false)
 
 const searchForm = reactive({
   userId: undefined as number | undefined,
@@ -213,18 +230,15 @@ const searchForm = reactive({
   targetType: undefined as string | undefined,
 })
 
-const recordPagination = reactive({
-  current: 1,
-  size: 10,
-})
+const recordPagination = reactive({ current: 1, size: 10 })
+const folderPagination = reactive({ current: 1, size: 10 })
+const { paginationLayout: recordPaginationLayout } = useContentAdmin()
+const { paginationLayout: folderPaginationLayout } = useContentAdmin()
 
-const folderPagination = reactive({
-  current: 1,
-  size: 10,
-})
-
-const { isCompactTable: recordCompact, paginationLayout: recordPaginationLayout } = useContentAdmin()
-const { isCompactTable: folderCompact, paginationLayout: folderPaginationLayout } = useContentAdmin()
+const recordDetailVisible = ref(false)
+const recordDetail = ref<CollectionVO | null>(null)
+const folderDetailVisible = ref(false)
+const folderDetail = ref<CollectionFolderVO | null>(null)
 
 function buildParams() {
   return {
@@ -255,11 +269,10 @@ function handleSearch(): void {
   if (activeTab.value === 'records') {
     recordPagination.current = 1
     void fetchCollections()
-    return
+  } else {
+    folderPagination.current = 1
+    void fetchFolders()
   }
-
-  folderPagination.current = 1
-  void fetchFolders()
 }
 
 function handleReset(): void {
@@ -297,11 +310,32 @@ function handleTabChange(name: TabPaneName): void {
 }
 
 function refreshActiveTab(): Promise<void> {
-  if (activeTab.value === 'records') {
-    return fetchCollections()
-  }
+  return activeTab.value === 'records' ? fetchCollections() : fetchFolders()
+}
 
-  return fetchFolders()
+function openRecordDetail(row: CollectionVO): void {
+  recordDetail.value = row
+  recordDetailVisible.value = true
+}
+
+function openFolderDetail(row: CollectionFolderVO): void {
+  folderDetail.value = row
+  folderDetailVisible.value = true
+}
+
+function goToFolderRecords(row: CollectionFolderVO): void {
+  goToFolderRecordsById(row.id)
+}
+
+function goToFolderRecordsById(folderId: number): void {
+  searchForm.folderId = folderId
+  activeTab.value = 'records'
+  recordPagination.current = 1
+  void fetchCollections()
+}
+
+function openTargetUrl(url: string): void {
+  window.open(url, '_blank', 'noopener')
 }
 
 async function handleDeleteCollection(id: number): Promise<void> {
@@ -313,14 +347,12 @@ async function handleDeleteCollection(id: number): Promise<void> {
     })
 
     const success = await collectionStore.deleteCollection(id)
-    if (!success) {
-      throw new Error('delete failed')
-    }
+    if (!success) throw new Error('delete failed')
 
     ElMessage.success('删除成功')
     void fetchCollections()
   } catch {
-    // 用户取消或删除失败
+    // user cancelled or delete failed
   }
 }
 
@@ -345,32 +377,33 @@ onMounted(() => {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  justify-content: center;
-  gap: 12px 0;
-}
-
-.search-card :deep(.el-form-item) {
-  margin-bottom: 0;
+  gap: 12px 16px;
 }
 
 .filter-item {
-  margin-right: 16px;
+  margin-bottom: 0;
 }
 
 .filter-control {
-  width: 220px;
+  width: 180px;
+}
+
+.expand-icon {
+  transition: transform 0.2s;
+}
+
+.expand-icon.is-expanded {
+  transform: rotate(180deg);
 }
 
 .search-actions {
-  margin-left: 0;
-  margin-right: 0;
+  margin-left: auto;
 }
 
 .card-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  gap: 12px;
   font-weight: 500;
 }
 
@@ -382,8 +415,10 @@ onMounted(() => {
   width: 100%;
 }
 
-.collection-table :deep(.el-table__cell .cell) {
-  text-align: center;
+.table-actions {
+  display: inline-flex;
+  justify-content: center;
+  gap: 4px 8px;
 }
 
 .pagination {
@@ -393,20 +428,8 @@ onMounted(() => {
 }
 
 @media (max-width: 768px) {
-  .filter-item,
-  .search-actions {
-    width: 100%;
-    margin-right: 0;
-    margin-left: 0;
-  }
-
   .filter-control {
-    width: 100%;
-  }
-
-  .search-actions :deep(.el-form-item__content) {
-    width: 100%;
-    justify-content: center;
+    width: 160px;
   }
 }
 </style>

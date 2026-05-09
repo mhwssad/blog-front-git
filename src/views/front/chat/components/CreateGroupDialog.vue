@@ -16,6 +16,11 @@
 </template>
 
 <script lang="ts" setup>
+/**
+ * 创建群聊弹窗组件
+ * @description 输入群名称后创建新的群聊会话
+ * @module front/chat/components/CreateGroupDialog
+ */
 import { computed, ref, watch } from 'vue'
 
 const props = defineProps<{
@@ -29,16 +34,17 @@ const emit = defineEmits<{
 
 const dialogVisible = computed({
   get: () => props.visible,
-  set: (val) => emit('update:visible', val),
+  set: val => emit('update:visible', val),
 })
 
 const form = ref({ name: '' })
 
+// 弹窗打开时清空表单
 watch(
   () => props.visible,
-  (val) => {
+  val => {
     if (val) form.value.name = ''
-  },
+  }
 )
 
 function handleSubmit(): void {

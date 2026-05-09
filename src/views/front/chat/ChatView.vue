@@ -26,7 +26,11 @@
         <span class="chat-title">
           {{ store.currentConversation.name ?? store.currentConversation.targetNickname ?? '会话' }}
         </span>
-        <el-tag v-if="store.currentConversation.conversationType === 'group'" size="small" effect="plain">
+        <el-tag
+          v-if="store.currentConversation.conversationType === 'group'"
+          size="small"
+          effect="plain"
+        >
           群聊
         </el-tag>
         <router-link
@@ -56,21 +60,14 @@
         @edit="handleEdit"
       />
 
-      <MessageInput
-        :sending="store.sending"
-        @send="handleSend"
-        @send-file="handleSendFile"
-      />
+      <MessageInput :sending="store.sending" @send="handleSend" @send-file="handleSendFile" />
     </main>
 
     <div v-else class="chat-empty">
       <el-empty description="选择一个会话开始聊天" />
     </div>
 
-    <CreateGroupDialog
-      v-model:visible="createGroupVisible"
-      @submit="handleCreateGroup"
-    />
+    <CreateGroupDialog v-model:visible="createGroupVisible" @submit="handleCreateGroup" />
 
     <el-dialog v-model="singleChatVisible" title="发起私聊" width="400px">
       <el-form :model="singleChatForm" @submit.prevent="handleCreateSingle">
@@ -85,7 +82,11 @@
       </el-form>
       <template #footer>
         <el-button @click="singleChatVisible = false">取消</el-button>
-        <el-button type="primary" :disabled="!singleChatForm.targetUserId" @click="handleCreateSingle">
+        <el-button
+          type="primary"
+          :disabled="!singleChatForm.targetUserId"
+          @click="handleCreateSingle"
+        >
           确定
         </el-button>
       </template>
@@ -94,6 +95,12 @@
 </template>
 
 <script lang="ts" setup>
+/**
+ * 聊天页面
+ * @description 聚合私聊和群聊，支持消息发送、文件上传、群聊创建与管理
+ * @module front/chat/ChatView
+ * @see ../../api/user/chat.ts
+ */
 import { ref, reactive, computed, onMounted } from 'vue'
 import { ElMessage } from 'element-plus'
 import { Setting } from '@element-plus/icons-vue'
@@ -112,8 +119,11 @@ const authStore = useAuthStore()
 const { connectionState, connect } = useChatSocket()
 
 const currentUserId = computed(() => authStore.currentUser?.id)
+// 创建群聊弹窗是否显示
 const createGroupVisible = ref(false)
+// 私聊弹窗是否显示
 const singleChatVisible = ref(false)
+// 私聊表单
 const singleChatForm = reactive({ targetUserId: '' })
 
 async function handleSelectConv(id: number): Promise<void> {
@@ -204,7 +214,7 @@ function computeFileMD5(file: File): Promise<string> {
     const totalBlocks = Math.ceil(file.size / blockSize)
     let currentBlock = 0
 
-    reader.onload = (e) => {
+    reader.onload = e => {
       if (!e.target?.result) return
       spark.append(e.target.result as ArrayBuffer)
       currentBlock++

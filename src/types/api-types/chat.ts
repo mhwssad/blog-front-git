@@ -103,10 +103,14 @@ export interface ChatMessageVO {
   reply?: ChatReplySnapshotVO | null
   /** 客户端消息ID（用于去重） */
   clientMessageId?: string | null
+  /** 是否为当前用户发送的消息 */
+  self?: boolean
   /** 投递状态: 0=发送中, 1=已投递, 2=已读 */
   deliveryStatus?: number
   /** 当前用户是否已读 */
   readByCurrentUser?: boolean
+  /** 当前用户读到该消息的时间 */
+  readAt?: string | null
   /** 撤回状态: 0=正常, 1=已撤回 */
   revokeStatus?: number
   /** 撤回人用户ID */
@@ -517,14 +521,12 @@ export interface ChatLobbyMessageVO {
  * @description 超级管理员或厅主可更新大厅基本设置
  */
 export interface ChatLobbySettingsUpdateRequest {
-  /** 大厅公告 */
-  announcement?: string | null
   /** 发言等级限制 */
   speakLevelLimit?: number
   /** 慢模式间隔（秒） */
   slowModeSeconds?: number
-  /** 成员数量上限 */
-  memberLimit?: number
+  /** 是否允许游客发言 */
+  allowGuestSpeak?: boolean
 }
 
 /**
@@ -683,10 +685,10 @@ export interface SysChannelApplicationVO {
  * 后台审核频道申请请求
  */
 export interface SysChannelApplicationReviewRequest {
-  /** 审核状态: 1=通过, 2=拒绝, 3=驳回 */
-  reviewStatus: 1 | 2 | 3
-  /** 审核评论 */
-  reviewComment?: string
+  /** 是否通过 */
+  approved: boolean
+  /** 审核备注 */
+  reviewRemark?: string
 }
 
 /**
@@ -716,8 +718,6 @@ export interface SysTopicChannelSaveRequest {
   slowModeSeconds?: number
   /** 显示排序 */
   displaySort?: number
-  /** 群主用户ID */
-  ownerId?: number
 }
 
 /**
@@ -883,4 +883,65 @@ export interface PublicChannelDetailVO {
   speakLevelLimit: number
   /** 创建时间 */
   createdAt: string
+}
+
+// ==================== 后台禁言管理 ====================
+
+/**
+ * 创建禁言记录请求
+ * @see POST /api/sys/chats/mutes - 请求体
+ */
+export interface ChatMuteCreateRequest {
+  /** 被禁言用户ID */
+  userId: number
+  /** 会话ID */
+  conversationId: number
+  /** 禁言原因 */
+  reason?: string
+  /** 禁言截止时间 */
+  muteUntil: string
+}
+
+/**
+ * 禁言记录视图对象
+ * @see GET /api/sys/chats/mutes - 响应项
+ */
+export interface ChatMuteVO {
+  /** 禁言记录ID */
+  id: number
+  /** 被禁言用户ID */
+  userId: number
+  /** 被禁言用户名 */
+  username?: string
+  /** 被禁言昵称 */
+  nickname?: string
+  /** 会话ID */
+  conversationId: number
+  /** 会话名称 */
+  conversationName?: string
+  /** 禁言原因 */
+  reason?: string
+  /** 禁言截止时间 */
+  muteUntil: string
+  /** 是否已解除 */
+  released?: boolean
+  /** 解除时间 */
+  releasedAt?: string
+  /** 操作人ID */
+  operatedBy?: number
+  /** 创建时间 */
+  createdAt: string
+}
+
+/**
+ * 禁言记录查询请求
+ * @see GET /api/sys/chats/mutes - 查询参数
+ */
+export interface ChatMuteQueryRequest {
+  current?: number
+  size?: number
+  /** 用户ID */
+  userId?: number
+  /** 会话ID */
+  conversationId?: number
 }

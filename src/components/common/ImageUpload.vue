@@ -40,14 +40,6 @@ import { Delete, Plus, RefreshRight } from '@element-plus/icons-vue'
 import { useFileUpload, type UploadResult } from '@/composables/useFileUpload'
 import { FileUtils } from '@/utils/fileUtils'
 
-type ImageUploadMode = 'avatar' | 'cover' | 'card'
-
-const MODE_TO_REF_TYPE: Record<ImageUploadMode, string> = {
-  avatar: 'avatar',
-  cover: 'article_attachment',
-  card: 'comment_image',
-}
-
 const props = withDefaults(
   defineProps<{
     modelValue?: string | null
@@ -66,7 +58,7 @@ const props = withDefaults(
     disabled: false,
     category: 'attachment',
     referenceType: undefined,
-  },
+  }
 )
 
 const emit = defineEmits<{
@@ -75,6 +67,22 @@ const emit = defineEmits<{
   error: [err: Error]
 }>()
 
+const API_BASE = import.meta.env.VITE_API_BASE_URL || '/api'
+const isMock = import.meta.env.VITE_ENABLE_MOCK === 'true'
+
+function resolveFileUrl(result: UploadResult): string | null {
+  if (isMock) return result.fileUrl ?? null
+  return result.fileId ? `${API_BASE}/public/files/${result.fileId}` : (result.fileUrl ?? null)
+}
+
+type ImageUploadMode = 'avatar' | 'cover' | 'card'
+
+const MODE_TO_REF_TYPE: Record<ImageUploadMode, string> = {
+  avatar: 'avatar',
+  cover: 'article_attachment',
+  card: 'comment_image',
+}
+
 const { uploading, progress, upload } = useFileUpload()
 
 const previewUrl = ref<string | null>(props.modelValue)
@@ -82,9 +90,9 @@ const localPreviewUrl = ref<string | null>(null)
 
 watch(
   () => props.modelValue,
-  (url) => {
+  url => {
     previewUrl.value = url
-  },
+  }
 )
 
 const displayUrl = computed(() => {
@@ -121,7 +129,7 @@ async function handleRequest(options: UploadRequestOptions): Promise<void> {
       category: props.category,
       referenceType: props.referenceType ?? MODE_TO_REF_TYPE[props.mode],
     })
-    const url = result.fileUrl ?? null
+    const url = resolveFileUrl(result)
     previewUrl.value = url
     emit('update:modelValue', url)
     emit('success', result)
@@ -129,7 +137,7 @@ async function handleRequest(options: UploadRequestOptions): Promise<void> {
   } catch (err) {
     const error = err instanceof Error ? err : new Error('上传失败')
     emit('error', error)
-    options.onError(error)
+    options.onError(error as any)
   } finally {
     revokeLocalPreview()
   }

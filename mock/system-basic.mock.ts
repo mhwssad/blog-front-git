@@ -84,14 +84,13 @@ function handle(req: any) {
   if (m === 'GET' && path === '/api/sys/logs') {
     let rs = [...db.logs]
     if (req.query.module) rs = rs.filter((i: any) => has(i.module, req.query.module))
-    if (req.query.action) rs = rs.filter((i: any) => has(i.action, req.query.action))
-    if (req.query.username) rs = rs.filter((i: any) => has(i.username, req.query.username))
+    if (req.query.createBy) rs = rs.filter((i: any) => has(String(i.createBy ?? ''), req.query.createBy) || has(i.username, req.query.createBy))
     if (req.query.requestMethod) rs = rs.filter((i: any) => i.requestMethod === req.query.requestMethod)
     if (req.query.requestUri) rs = rs.filter((i: any) => has(i.requestUri, req.query.requestUri))
     if (req.query.ip) rs = rs.filter((i: any) => has(i.ip, req.query.ip))
     if (req.query.status !== undefined && req.query.status !== '') rs = rs.filter((i: any) => i.status === num(req.query.status))
-    if (req.query.startTime) rs = rs.filter((i: any) => String(i.createTime) >= String(req.query.startTime))
-    if (req.query.endTime) rs = rs.filter((i: any) => String(i.createTime) <= String(req.query.endTime))
+    if (req.query.createTimeStart || req.query.startTime) rs = rs.filter((i: any) => String(i.createTime) >= String(req.query.createTimeStart || req.query.startTime))
+    if (req.query.createTimeEnd || req.query.endTime) rs = rs.filter((i: any) => String(i.createTime) <= String(req.query.createTimeEnd || req.query.endTime))
     return ok(page(rs, req.query))
   }
 
@@ -111,8 +110,12 @@ function handle(req: any) {
     const q = req.body || {}
     db.logs = db.logs.filter((i: any) => {
       if (q.module && !has(i.module, q.module)) return true
-      if (q.startTime && String(i.createTime) < String(q.startTime)) return true
-      if (q.endTime && String(i.createTime) > String(q.endTime)) return true
+      if (q.createBy && !(has(String(i.createBy ?? ''), q.createBy) || has(i.username, q.createBy))) return true
+      if (q.requestMethod && i.requestMethod !== q.requestMethod) return true
+      if (q.requestUri && !has(i.requestUri, q.requestUri)) return true
+      if (q.ip && !has(i.ip, q.ip)) return true
+      if ((q.createTimeStart || q.startTime) && String(i.createTime) < String(q.createTimeStart || q.startTime)) return true
+      if ((q.createTimeEnd || q.endTime) && String(i.createTime) > String(q.createTimeEnd || q.endTime)) return true
       return false
     })
     return ok(before - db.logs.length)
@@ -282,4 +285,3 @@ export default defineMock([
   { url: '/api/sys/logs/:id', method: ['GET', 'DELETE'], body: handle },
   { url: '/api/sys/logs/clean', method: 'POST', body: handle },
 ])
-

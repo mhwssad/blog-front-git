@@ -10,7 +10,9 @@
     @close="handleClose"
   >
     <div class="role-assign-content">
-      <p class="tips">为用户 <strong>{{ username }}</strong> 分配角色</p>
+      <p class="tips">
+        为用户 <strong>{{ username }}</strong> 分配角色
+      </p>
 
       <el-checkbox-group v-model="selectedRoleIds" v-loading="loading">
         <el-checkbox
@@ -22,10 +24,7 @@
           <div class="role-item">
             <span class="role-name">{{ role.name }}</span>
             <span class="role-code">{{ role.code }}</span>
-            <el-tag
-              :type="role.status === 1 ? 'success' : 'info'"
-              size="small"
-            >
+            <el-tag :type="role.status === 1 ? 'success' : 'info'" size="small">
               {{ role.status === 1 ? '启用' : '禁用' }}
             </el-tag>
           </div>
@@ -47,6 +46,9 @@
   </el-dialog>
 </template>
 
+/** * 角色分配对话框 * 为用户分配或调整角色 * 显示所有可用角色及用户当前已分配的角色 */ /** *
+角色分配对话框 * @description 为用户分配或调整角色，显示所有可用角色及用户当前已分配的角色 * @module
+admin/user/components/AssignRolesDialog * @see api/sys/user.ts */
 <script lang="ts" setup>
 import { ref, watch, computed } from 'vue'
 import { ElMessage } from 'element-plus'
@@ -68,12 +70,14 @@ interface Emits {
 const props = defineProps<Props>()
 const emit = defineEmits<Emits>()
 
+const LOG_PREFIX = '[AssignRolesDialog]'
+
 const loading = ref(false)
 const submitting = ref(false)
 
 const dialogVisible = computed({
   get: () => props.visible,
-  set: (val) => emit('update:visible', val)
+  set: val => emit('update:visible', val),
 })
 
 // 所有角色
@@ -84,11 +88,14 @@ const selectedRoleIds = ref<number[]>([])
 
 // 获取角色列表
 async function fetchRoles() {
+  console.log(`${LOG_PREFIX} Fetching roles list`)
   loading.value = true
   try {
     const response = await RoleApi.getRoles({ size: 1000 })
     allRoles.value = response.data.data.records
-  } catch {
+    console.log(`${LOG_PREFIX} Loaded ${allRoles.value.length} roles`)
+  } catch (error) {
+    console.error(`${LOG_PREFIX} Failed to fetch roles:`, error)
     ElMessage.error('获取角色列表失败')
   } finally {
     loading.value = false
@@ -98,26 +105,34 @@ async function fetchRoles() {
 // 获取用户已分配的角色
 async function fetchUserRoles() {
   if (!props.userId) return
-
+  console.log(`${LOG_PREFIX} Fetching assigned roles for user id: ${props.userId}`)
   try {
     const response = await UserApi.getUserRoles(props.userId)
     selectedRoleIds.value = response.data.data
-  } catch {
+    console.log(`${LOG_PREFIX} User has ${selectedRoleIds.value.length} assigned roles`)
+  } catch (error) {
+    console.error(`${LOG_PREFIX} Failed to fetch user roles:`, error)
     ElMessage.error('获取用户角色失败')
   }
 }
 
 // 提交分配
 async function handleSubmit() {
+  console.log(
+    `${LOG_PREFIX} Submitting role assignment for user ${props.userId}:`,
+    selectedRoleIds.value
+  )
   submitting.value = true
   try {
     await UserApi.assignUserRoles(props.userId, {
-      roleIds: selectedRoleIds.value
+      roleIds: selectedRoleIds.value,
     })
+    console.log(`${LOG_PREFIX} Role assignment successful`)
     ElMessage.success('角色分配成功')
     emit('success')
     handleClose()
-  } catch {
+  } catch (error) {
+    console.error(`${LOG_PREFIX} Role assignment failed:`, error)
     ElMessage.error('角色分配失败')
   } finally {
     submitting.value = false
@@ -126,6 +141,7 @@ async function handleSubmit() {
 
 // 关闭对话框
 function handleClose() {
+  console.log(`${LOG_PREFIX} Dialog closing, clearing selection`)
   selectedRoleIds.value = []
   emit('update:visible', false)
 }
@@ -133,8 +149,9 @@ function handleClose() {
 // 监听对话框打开
 watch(
   () => props.visible,
-  (visible) => {
+  visible => {
     if (visible) {
+      console.log(`${LOG_PREFIX} Dialog opened for user: ${props.username} (id: ${props.userId})`)
       fetchRoles()
       fetchUserRoles()
     }

@@ -1,4 +1,4 @@
-# 前端项目结构与编写规范
+# 前端项目结构规范
 
 ## 1. 文档定位
 
@@ -12,18 +12,19 @@
 - `docs/` 协作文档目录
 - 环境变量与开发命令相关约定
 
-本文档是结构规范，不替代以下文档：
+本文档专注于**结构规范**，不包含代码编写风格、Vue/TypeScript 细节等内容。代码编写规范请参考 `docs/code-writing-convention.md`。
+
+本文档不替代以下文档：
 
 - `CLAUDE.md`：仓库级开发摘要、命令、基础协作要求
-- `docs/code-writing-convention.md`：约束代码书写风格、组件写法和分层写法
-- `docs/code-writing-convention.md` 的 Router 规范章节：约束后端菜单与前端动态路由映射
+- `docs/code-writing-convention.md`：约束代码书写风格、组件写法、命名规范等
 - `docs/api文档/*`：约束接口路由、字段和业务行为
 
 优先级说明：
 
 - 目录、文件放置、模块职责、扩展落点以本文档为准
 - 仓库命令、基础开发流程和通用工程说明以 `CLAUDE.md` 为准
-- 代码风格、Vue/TypeScript 细节以 `docs/code-writing-convention.md` 为准
+- 代码风格、Vue/TypeScript 细节、文件命名以 `docs/code-writing-convention.md` 为准
 - 接口字段和请求方式以 API 文档为准
 
 ## 2. 根目录结构规范
@@ -110,8 +111,9 @@
 | `admin/follow/` | 关注关系管理 | Follows.vue |
 | `admin/footprint/` | 足迹管理 | Footprints.vue |
 | `admin/interaction/` | 互动管理 | Interactions.vue |
+| `admin/forum/` | 论坛管理 | ForumSections.vue, ForumPosts.vue, ForumReplies.vue |
+| `admin/migration/` | 博客迁移管理 | MigrationTasks.vue |
 | `admin/report/` | 举报管理 | ReportList.vue |
-| `admin/series/` | 系列管理 | SeriesManagement.vue |
 
 #### 3.2.2 前台模块清单
 
@@ -131,6 +133,7 @@
 | `front/file/` | 用户文件 | UserFilesView.vue |
 | `front/footprint/` | 足迹 | FootprintsView.vue |
 | `front/friends/` | 好友 | FriendsView.vue |
+| `front/forum/` | 论坛 | ForumHome.vue, ForumSection.vue, ForumPost.vue, ForumCreate.vue, ForumEdit.vue, MyForumPosts.vue |
 | `front/hall/` | 大厅 | HallView.vue |
 | `front/notice/` | 通知 | NoticesView.vue |
 | `front/notification/` | 通知设置 | NotificationSettings.vue |
@@ -366,7 +369,7 @@ src/utils/
 
 ### 3.8 `router`、`plugins`、`config` 约束
 
-#### 3.8.1 路由目录
+#### 3.8.1 路由架构与目录
 
 ```text
 src/router/
@@ -376,10 +379,36 @@ src/router/
 ├── dynamic-routes.ts     # 动态路由解析和注册
 ├── component-resolver.ts # 动态路由组件解析
 └── menu.ts               # 菜单工具函数
-```text
+```
+
+路由策略采用"固定前后台路由 + 后端菜单动态路由"的组合模式：
+
+| 路由类型 | 来源 | 示例 |
+| -------- | ---- | ---- |
+| 前台固定路由 | 前端代码维护 | `/`、`/login`、`/register` |
+| 后台固定路由 | 前端代码维护 | `/admin/dashboard` |
+| 后台动态业务路由 | 后端菜单授权 | `/admin/users`、`/admin/articles` |
+
+路径规范：
+
+- `/admin/**` 统一视为后台，渲染 `AdminLayouts.vue`
+- 非 `/admin/**` 统一视为前台
+- 后台业务路由由后端 `GET /api/auth/current-user-menus` 动态返回
+- 菜单 `routePath` 必须直接写最终访问路径，不支持旧路径别名（如 `/system/**`、`/content/**`）
+
+常见组件映射：
+
+| 后端 component | 前端页面文件 |
+| -------------- | ------------ |
+| `admin/user/Users` | `src/views/admin/user/Users.vue` |
+| `admin/article/Articles` | `src/views/admin/article/Articles.vue` |
+| `layouts/RouteView` | `RouterView` 容器 |
+
+约束如下：
 
 - 路由定义、动态菜单映射、路由守卫只能放在 `src/router/`
 - 后台首页 (`/admin/dashboard`) 对应组件为 `src/views/admin/Dashboard.vue`
+- 固定路由配置集中维护在 `src/router/` 下，禁止在页面中绕过路由守卫
 
 #### 3.8.2 插件目录
 

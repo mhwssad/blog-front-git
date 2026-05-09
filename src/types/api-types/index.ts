@@ -68,3 +68,12 @@ export * from './author'
 
 // 后台数据看板
 export * from './dashboard'
+
+// 博客迁移
+export * from './migration'
+
+// 论坛模块
+export * from './forum'
+
+// 友情链接
+export * from './friendLink'

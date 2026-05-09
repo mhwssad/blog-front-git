@@ -42,7 +42,20 @@ function handle(req: any) {
 
   if (match(/^\/api\/sys\/reports\/(\d+)\/override$/) && m === 'PUT') {
     const x = db.reports.find((i: any) => i.id === num(match(/^\/api\/sys\/reports\/(\d+)\/override$/)![1]))
-    if (x) { x.status = req.body.status ?? x.status; x.punishmentType = req.body.punishmentType ?? null; x.resultType = req.body.resultType ?? 'override'; x.handlerUserId = 1; x.handlerUsername = 'admin'; x.handledAt = now() }
+    if (x) { x.status = req.body?.status ?? x.status; x.punishmentType = req.body?.punishmentType ?? null; x.resultType = req.body?.resultType ?? 'override'; x.handlerUserId = 1; x.handlerUsername = 'admin'; x.handledAt = now() }
+    return ok(null)
+  }
+
+  if (match(/^\/api\/sys\/reports\/(\d+)\/repair$/) && m === 'PUT') {
+    const x = db.reports.find((i: any) => i.id === num(match(/^\/api\/sys\/reports\/(\d+)\/repair$/)![1]))
+    if (x) {
+      x.status = req.body.targetStatus ?? x.status
+      x.resultType = null
+      x.punishmentType = null
+      x.handlerUserId = null
+      x.handlerUsername = null
+      x.handledAt = null
+    }
     return ok(null)
   }
 
@@ -62,5 +75,6 @@ export default defineMock([
   { url: '/api/sys/reports/:id/handle', method: 'PUT', body: handle },
   { url: '/api/sys/reports/:id/reject', method: 'PUT', body: handle },
   { url: '/api/sys/reports/:id/override', method: 'PUT', body: handle },
+  { url: '/api/sys/reports/:id/repair', method: 'PUT', body: handle },
   { url: '/api/sys/reports/:id/logs', method: 'GET', body: handle },
 ])

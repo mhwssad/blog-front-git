@@ -31,6 +31,8 @@
   </el-dialog>
 </template>
 
+/** * 通知详情对话框 * @description 展示通知的完整信息，包括标题、类型、状态、发布时间、内容等 *
+@module admin/notice/components/NoticeDetailDialog * @see api/sys/notice.ts */
 <script lang="ts" setup>
 import { computed } from 'vue'
 import type { SysNoticeAdminVO } from '@/types/api-types'

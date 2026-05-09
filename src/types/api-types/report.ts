@@ -121,11 +121,23 @@ export interface ReportAdminVO {
  */
 export interface ReportHandleRequest {
   /** 处理结果类型：delete_content/revoke_message/mute_user/ban_user/record_only */
-  resultType: 'delete_content' | 'revoke_message' | 'mute_user' | 'ban_user' | 'record_only' | string
+  resultType:
+    | 'delete_content'
+    | 'revoke_message'
+    | 'mute_user'
+    | 'ban_user'
+    | 'record_only'
+    | string
   /** 处罚类型 */
   punishmentType?: string
   /** 备注 */
   remark?: string
+  /** 会话ID（举报聊天消息时必填） */
+  conversationId?: number
+  /** 禁言范围：global=全局/lobby=大厅/topic_channel=主题频道/group=群组 */
+  muteScope?: 'global' | 'lobby' | 'topic_channel' | 'group'
+  /** 禁言截止时间 */
+  muteUntil?: string | null
 }
 
 /**
@@ -136,6 +148,19 @@ export interface ReportHandleRequest {
  */
 export interface ReportRejectRequest {
   /** 驳回原因备注，最大512字符 */
+  remark?: string
+}
+
+/**
+ * 修复举报状态请求
+ * @description 超级管理员修正已处理/已驳回的举报状态
+ * @interface ReportRepairRequest
+ * @see PUT /api/sys/reports/{id}/repair - 请求体
+ */
+export interface ReportRepairRequest {
+  /** 目标状态：0-待审核，1-处理中，2-已处理，3-已驳回 */
+  targetStatus: 0 | 1 | 2 | 3
+  /** 修复备注 */
   remark?: string
 }
 

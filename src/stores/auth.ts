@@ -18,9 +18,12 @@ import type {
   EmailLoginRequest,
   SendEmailCodeRequest,
   RegisterRequest,
+  PasswordResetCodeRequest,
+  PasswordResetSelfRequest,
   AuthenticationToken,
   AuthUserInfo,
-  AuthMenuInfo
+  AuthMenuInfo,
+  UserSearchVO,
 } from '@/types/api-types'
 
 export const useAuthStore = defineStore('auth', () => {
@@ -307,6 +310,42 @@ export const useAuthStore = defineStore('auth', () => {
   }
 
   /**
+   * 发送密码重置验证码
+   */
+  async function sendPasswordResetCode(data: PasswordResetCodeRequest): Promise<boolean> {
+    try {
+      await authApi.sendPasswordResetCode(data)
+      return true
+    } catch {
+      return false
+    }
+  }
+
+  /**
+   * 重置密码
+   */
+  async function resetPassword(data: PasswordResetSelfRequest): Promise<boolean> {
+    try {
+      await authApi.resetPassword(data)
+      return true
+    } catch {
+      return false
+    }
+  }
+
+  /**
+   * 搜索用户（公开接口）
+   */
+  async function searchUsers(params?: { keyword?: string; current?: number; size?: number }): Promise<UserSearchVO[]> {
+    try {
+      const response = await authApi.searchUsers(params)
+      return response.data.data?.records ?? []
+    } catch {
+      return []
+    }
+  }
+
+  /**
    * 初始化认证状态（从 localStorage 恢复）
    */
   async function initAuth(): Promise<void> {
@@ -367,6 +406,9 @@ export const useAuthStore = defineStore('auth', () => {
     hasAnyPermission,
     hasAllPermissions,
     hasRole,
-    initAuth
+    initAuth,
+    sendPasswordResetCode,
+    resetPassword,
+    searchUsers,
   }
 })

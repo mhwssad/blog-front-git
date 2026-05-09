@@ -13,11 +13,12 @@
 </template>
 
 <script lang="ts" setup>
-import type {
-  PublicArticleCardVO,
-  PublicCommentVO,
-  PublicTagVO,
-} from '@/types/api-types'
+/**
+ * 首页侧边栏组件
+ * @description 聚合热门文章、标签、最新评论三个模块
+ * @module front/home/components/HomeSidebar
+ */
+import type { PublicArticleCardVO, PublicCommentVO, PublicTagVO } from '@/types/api-types'
 import HomeSidebarComments from './HomeSidebarComments.vue'
 import HomeSidebarHot from './HomeSidebarHot.vue'
 import HomeSidebarTags from './HomeSidebarTags.vue'

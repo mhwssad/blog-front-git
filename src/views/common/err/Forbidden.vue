@@ -1,4 +1,9 @@
 <script setup lang="ts">
+/**
+ * 403 无权限页面
+ * @description 用户已登录但缺乏访问当前资源的权限时显示
+ * @module common/err/Forbidden
+ */
 import { computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores'
@@ -7,18 +12,30 @@ import { getFirstAccessibleMenuPath } from '@/router/menu'
 const router = useRouter()
 const authStore = useAuthStore()
 
+// 根据登录状态确定主导航目标
+/**
+ * 主导航目标路径
+ * @description 已登录用户跳转工作台，未登录用户跳转登录页
+ */
 const primaryTarget = computed(() => {
   if (!authStore.isLoggedIn) {
     return '/login'
   }
 
+  // 获取用户有权访问的第一个菜单路径
   return getFirstAccessibleMenuPath(authStore.userMenus) ?? '/'
 })
 
+/**
+ * 跳转到主导航目标
+ */
 function goPrimary(): void {
   void router.replace(primaryTarget.value)
 }
 
+/**
+ * 回到首页
+ */
 function goHome(): void {
   void router.replace('/')
 }
@@ -55,9 +72,7 @@ function goHome(): void {
           <button class="action-button action-primary" @click="goPrimary">
             {{ authStore.isLoggedIn ? '返回工作台' : '前往登录' }}
           </button>
-          <button class="action-button action-secondary" @click="goHome">
-            回到首页
-          </button>
+          <button class="action-button action-secondary" @click="goHome">回到首页</button>
         </div>
       </div>
     </div>

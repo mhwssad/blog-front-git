@@ -10,17 +10,61 @@
             placeholder="请输入频道名称"
           />
         </el-form-item>
-        <el-form-item label="场景类型" class="filter-item">
-          <el-select v-model="searchForm.sceneType" class="filter-control" clearable placeholder="全部">
-            <el-option label="大厅频道" value="hall_channel" />
-            <el-option label="主题频道" value="topic_channel" />
-            <el-option label="全局频道" value="global_channel" />
+        <el-form-item label="会话类型" class="filter-item">
+          <el-select
+            v-model="searchForm.conversationType"
+            class="filter-control"
+            clearable
+            placeholder="全部"
+          >
+            <el-option
+              v-for="option in CHAT_CONVERSATION_TYPE_OPTIONS"
+              :key="option.value"
+              :label="option.label"
+              :value="option.value"
+            />
           </el-select>
         </el-form-item>
         <el-form-item label="状态" class="filter-item">
-          <el-select v-model="searchForm.status" class="filter-control" clearable placeholder="全部">
+          <el-select
+            v-model="searchForm.status"
+            class="filter-control"
+            clearable
+            placeholder="全部"
+          >
             <el-option label="启用" :value="1" />
             <el-option label="禁用" :value="0" />
+          </el-select>
+        </el-form-item>
+        <el-form-item label="群主ID" class="filter-item">
+          <el-input-number
+            v-model="searchForm.ownerId"
+            class="filter-control"
+            :min="1"
+            controls-position="right"
+          />
+        </el-form-item>
+        <el-form-item label="成员ID" class="filter-item">
+          <el-input-number
+            v-model="searchForm.memberUserId"
+            class="filter-control"
+            :min="1"
+            controls-position="right"
+          />
+        </el-form-item>
+        <el-form-item label="全站" class="filter-item">
+          <el-select
+            v-model="searchForm.isAllSite"
+            class="filter-control"
+            clearable
+            placeholder="全部"
+          >
+            <el-option
+              v-for="option in BOOLEAN_TEXT_OPTIONS"
+              :key="option.value"
+              :label="option.label"
+              :value="option.value"
+            />
           </el-select>
         </el-form-item>
         <el-form-item class="search-actions">
@@ -28,7 +72,7 @@
           <el-button @click="handleReset">重置</el-button>
         </el-form-item>
       </el-form>
-    </el-card>
+      </el-card>
 
     <el-card class="table-card" shadow="never">
       <template #header>
@@ -49,55 +93,84 @@
         border
         stripe
       >
-          <el-table-column prop="id" label="ID" width="80" align="center" />
-          <el-table-column prop="name" label="频道名" min-width="160" align="center" show-overflow-tooltip />
-          <el-table-column label="场景类型" min-width="120" align="center">
-            <template #default="{ row }">
-              <el-tag :type="getSceneTagType(row.sceneType)" effect="light">
-                {{ formatSceneType(row.sceneType) }}
-              </el-tag>
-            </template>
-          </el-table-column>
-          <el-table-column prop="memberCount" label="成员数" min-width="100" align="center" />
-          <el-table-column label="加入规则" min-width="110" align="center">
-            <template #default="{ row }">
-              {{ formatJoinRule(row.joinRule) }}
-            </template>
-          </el-table-column>
-          <el-table-column label="发言等级" min-width="100" align="center">
-            <template #default="{ row }">
-              {{ row.speakLevelLimit ?? '—' }}
-            </template>
-          </el-table-column>
-          <el-table-column label="状态" min-width="100" align="center">
-            <template #default="{ row }">
-              <el-switch
-                v-model="row.status"
-                :active-value="1"
-                :inactive-value="0"
-                inline-prompt
-                active-text="启用"
-                inactive-text="禁用"
-                @change="(val: string | number | boolean) => handleStatusChange(row, Number(val))"
-              />
-            </template>
-          </el-table-column>
-          <el-table-column label="创建时间" min-width="170" align="center">
-            <template #default="{ row }">
-              {{ formatAiDate(row.createdAt) }}
-            </template>
-          </el-table-column>
-          <el-table-column
-            label="操作"
-            :min-width="isCompactTable ? 100 : 120"
-            :fixed="isCompactTable ? false : 'right'"
-            align="center"
-          >
-            <template #default="{ row }">
-              <el-button link type="primary" @click="handleEdit(row)">编辑</el-button>
-            </template>
-          </el-table-column>
-        </el-table>
+        <el-table-column prop="id" label="ID" width="80" align="center" />
+        <el-table-column label="频道信息" min-width="240" align="center">
+          <template #default="{ row }">
+            <div class="channel-info">
+              <el-avatar :size="36" :src="row.avatar || undefined">
+                {{ row.name?.slice(0, 1) || 'C' }}
+              </el-avatar>
+              <div class="channel-info__text">
+                <div class="channel-info__name">{{ row.name || '未命名频道' }}</div>
+                <div class="channel-info__sub">
+                  {{ formatOptionalText(row.notice) }}
+                </div>
+              </div>
+            </div>
+          </template>
+        </el-table-column>
+        <el-table-column label="会话类型" min-width="100" align="center">
+          <template #default="{ row }">
+            {{ formatChatConversationType(row.conversationType) }}
+          </template>
+        </el-table-column>
+        <el-table-column label="场景类型" min-width="120" align="center">
+          <template #default="{ row }">
+            <el-tag :type="getSceneTagType(row.sceneType)" effect="light">
+              {{ formatSceneType(row.sceneType) }}
+            </el-tag>
+          </template>
+        </el-table-column>
+        <el-table-column prop="memberCount" label="成员数" min-width="90" align="center" />
+        <el-table-column label="可见范围" min-width="100" align="center">
+          <template #default="{ row }">
+            {{ formatVisibilityScope(row.visibilityScope) }}
+          </template>
+        </el-table-column>
+        <el-table-column label="加入规则" min-width="100" align="center">
+          <template #default="{ row }">
+            {{ formatJoinRule(row.joinRule) }}
+          </template>
+        </el-table-column>
+        <el-table-column label="发言等级" min-width="90" align="center">
+          <template #default="{ row }">
+            {{ row.speakLevelLimit ?? '—' }}
+          </template>
+        </el-table-column>
+        <el-table-column label="慢速模式" min-width="90" align="center">
+          <template #default="{ row }">
+            {{ row.slowModeSeconds ? `${row.slowModeSeconds}s` : '关闭' }}
+          </template>
+        </el-table-column>
+        <el-table-column label="状态" min-width="100" align="center">
+          <template #default="{ row }">
+            <el-switch
+              v-model="row.status"
+              :active-value="1"
+              :inactive-value="0"
+              inline-prompt
+              active-text="启用"
+              inactive-text="禁用"
+              @change="(val: string | number | boolean) => handleStatusChange(row, Number(val))"
+            />
+          </template>
+        </el-table-column>
+        <el-table-column label="创建时间" min-width="170" align="center">
+          <template #default="{ row }">
+            {{ formatCreatedAt(row.createdAt) }}
+          </template>
+        </el-table-column>
+        <el-table-column
+          label="操作"
+          :min-width="isCompactTable ? 100 : 120"
+          :fixed="isCompactTable ? false : 'right'"
+          align="center"
+        >
+          <template #default="{ row }">
+            <el-button link type="primary" @click="handleEdit(row)">编辑</el-button>
+          </template>
+        </el-table-column>
+      </el-table>
 
       <div class="pagination">
         <el-pagination
@@ -113,16 +186,33 @@
       </div>
     </el-card>
 
-    <el-dialog v-model="formDialogVisible" :title="isEdit ? '编辑主题频道' : '新增主题频道'" width="560px">
+    <el-dialog
+      v-model="formDialogVisible"
+      :title="isEdit ? '编辑主题频道' : '新增主题频道'"
+      width="560px"
+    >
       <el-form :model="formData" label-width="90px">
         <el-form-item label="频道名称" required>
           <el-input v-model="formData.name" placeholder="请输入频道名称" />
         </el-form-item>
+        <el-form-item label="头像">
+          <el-input v-model="formData.avatar" placeholder="请输入头像 URL" />
+        </el-form-item>
         <el-form-item label="描述">
-          <el-input v-model="formData.description" type="textarea" :rows="3" placeholder="请输入频道描述" />
+          <el-input
+            v-model="formData.description"
+            type="textarea"
+            :rows="3"
+            placeholder="请输入频道描述"
+          />
         </el-form-item>
         <el-form-item label="公告">
-          <el-input v-model="formData.announcement" type="textarea" :rows="3" placeholder="请输入频道公告" />
+          <el-input
+            v-model="formData.announcement"
+            type="textarea"
+            :rows="3"
+            placeholder="请输入频道公告"
+          />
         </el-form-item>
         <el-form-item label="分类编码">
           <el-input v-model="formData.categoryCode" placeholder="请输入分类编码" />
@@ -149,9 +239,7 @@
         </el-form-item>
         <el-form-item label="慢速模式">
           <el-input-number v-model="formData.slowModeSeconds" :min="0" />
-          <template #append>
-            <span>秒</span>
-          </template>
+          <span class="unit-text">秒</span>
         </el-form-item>
         <el-form-item label="排序权重">
           <el-input-number v-model="formData.displaySort" :min="0" />
@@ -170,7 +258,16 @@ import { onMounted, reactive, ref } from 'vue'
 import { ElMessage } from 'element-plus'
 import { Plus } from '@element-plus/icons-vue'
 import { useContentAdmin } from '@/composables/useContentAdmin'
-import { formatAiDate } from '@/utils'
+import {
+  BOOLEAN_TEXT_OPTIONS,
+  CHAT_CONVERSATION_TYPE_OPTIONS,
+  formatCreatedAt,
+  formatChatConversationType,
+  formatChatJoinRule,
+  formatChatSceneType,
+  formatChatVisibilityScope,
+  formatOptionalText,
+} from '@/utils'
 import { useChatStore } from '@/stores'
 import type { ChatConversationVO, SysTopicChannelSaveRequest } from '@/types/api-types'
 
@@ -178,8 +275,11 @@ const chatStore = useChatStore()
 
 const searchForm = reactive({
   keyword: '',
-  sceneType: '' as string,
+  conversationType: '' as string,
   status: undefined as number | undefined,
+  ownerId: undefined as number | undefined,
+  memberUserId: undefined as number | undefined,
+  isAllSite: undefined as number | undefined,
 })
 
 const pagination = reactive({
@@ -187,10 +287,7 @@ const pagination = reactive({
   size: 10,
 })
 
-const {
-  isCompactTable,
-  paginationLayout,
-} = useContentAdmin()
+const { isCompactTable, paginationLayout } = useContentAdmin()
 
 const formDialogVisible = ref(false)
 const isEdit = ref(false)
@@ -199,6 +296,7 @@ const submitting = ref(false)
 
 const formData = reactive<SysTopicChannelSaveRequest>({
   name: '',
+  avatar: '',
   description: '',
   announcement: '',
   categoryCode: '',
@@ -208,36 +306,33 @@ const formData = reactive<SysTopicChannelSaveRequest>({
   memberLimit: 0,
   slowModeSeconds: 0,
   displaySort: 0,
-  ownerId: undefined,
 })
 
 // ==================== 格式化 ====================
 
 function formatSceneType(sceneType?: string): string {
-  const map: Record<string, string> = {
-    hall_channel: '大厅频道',
-    topic_channel: '主题频道',
-    global_channel: '全局频道',
-  }
-  return map[sceneType ?? ''] ?? sceneType ?? '—'
+  return formatChatSceneType(sceneType)
 }
 
 function getSceneTagType(sceneType?: string): 'primary' | 'success' | 'warning' | 'info' {
   const map: Record<string, 'primary' | 'success' | 'warning' | 'info'> = {
+    single_chat: 'info',
+    group_chat: 'primary',
+    user_group: 'primary',
     hall_channel: 'success',
     topic_channel: 'primary',
     global_channel: 'warning',
+    public_channel: 'warning',
   }
   return map[sceneType ?? ''] ?? 'info'
 }
 
 function formatJoinRule(joinRule?: string): string {
-  const map: Record<string, string> = {
-    free: '自由加入',
-    approval: '审批加入',
-    invite_only: '邀请加入',
-  }
-  return map[joinRule ?? ''] ?? joinRule ?? '—'
+  return formatChatJoinRule(joinRule)
+}
+
+function formatVisibilityScope(scope?: string): string {
+  return formatChatVisibilityScope(scope)
 }
 
 // ==================== 数据加载 ====================
@@ -247,7 +342,11 @@ async function fetchList(): Promise<void> {
     current: pagination.current,
     size: pagination.size,
     keyword: searchForm.keyword || undefined,
+    conversationType: searchForm.conversationType || undefined,
     status: searchForm.status,
+    ownerId: searchForm.ownerId,
+    memberUserId: searchForm.memberUserId,
+    isAllSite: searchForm.isAllSite,
   })
 }
 
@@ -258,8 +357,11 @@ function handleSearch(): void {
 
 function handleReset(): void {
   searchForm.keyword = ''
-  searchForm.sceneType = ''
+  searchForm.conversationType = ''
   searchForm.status = undefined
+  searchForm.ownerId = undefined
+  searchForm.memberUserId = undefined
+  searchForm.isAllSite = undefined
   pagination.current = 1
   pagination.size = 10
   void fetchList()
@@ -293,6 +395,7 @@ async function handleStatusChange(row: ChatConversationVO, value: number): Promi
 
 function resetFormData(): void {
   formData.name = ''
+  formData.avatar = ''
   formData.description = ''
   formData.announcement = ''
   formData.categoryCode = ''
@@ -302,7 +405,6 @@ function resetFormData(): void {
   formData.memberLimit = 0
   formData.slowModeSeconds = 0
   formData.displaySort = 0
-  formData.ownerId = undefined
 }
 
 function handleAdd(): void {
@@ -316,6 +418,7 @@ function handleEdit(row: ChatConversationVO): void {
   isEdit.value = true
   editingId.value = row.id
   formData.name = row.name ?? ''
+  formData.avatar = row.avatar ?? ''
   formData.description = ''
   formData.announcement = row.notice ?? ''
   formData.categoryCode = row.channelCategoryCode ?? ''
@@ -325,7 +428,6 @@ function handleEdit(row: ChatConversationVO): void {
   formData.memberLimit = row.memberLimit ?? 0
   formData.slowModeSeconds = row.slowModeSeconds ?? 0
   formData.displaySort = row.displaySort ?? 0
-  formData.ownerId = row.ownerId ?? undefined
   formDialogVisible.value = true
 }
 
@@ -404,10 +506,37 @@ onMounted(() => {
   font-weight: 500;
 }
 
+.channel-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  text-align: left;
+}
+
+.channel-info__text {
+  min-width: 0;
+}
+
+.channel-info__name {
+  font-weight: 500;
+}
+
+.channel-info__sub {
+  margin-top: 4px;
+  font-size: 12px;
+  color: var(--el-text-color-secondary);
+}
+
 .pagination {
   display: flex;
   justify-content: center;
   margin-top: 16px;
+}
+
+.unit-text {
+  margin-left: 8px;
+  font-size: 12px;
+  color: var(--el-text-color-secondary);
 }
 
 @media (max-width: 768px) {

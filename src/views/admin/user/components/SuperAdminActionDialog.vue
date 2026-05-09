@@ -36,7 +36,12 @@
       </el-form-item>
 
       <el-form-item v-if="action === 'adjust-exp'" label="调整经验">
-        <el-input-number v-model="form.experience" :min="-100000" :max="100000" style="width: 100%" />
+        <el-input-number
+          v-model="form.experience"
+          :min="-100000"
+          :max="100000"
+          style="width: 100%"
+        />
       </el-form-item>
     </el-form>
 
@@ -50,23 +55,39 @@
       >
         验证
       </el-button>
-      <el-button
-        v-else
-        type="primary"
-        :loading="submitLoading"
-        @click="handleSubmit"
-      >
+      <el-button v-else type="primary" :loading="submitLoading" @click="handleSubmit">
         确认{{ actionLabel }}
       </el-button>
     </template>
   </el-dialog>
 </template>
 
+/** * 超级操作对话框 * 用于需要 MFA 二次验证的高危操作，如封禁/解封用户、调整等级/经验 *
+操作流程：1. 发送验证码到邮箱 2. 用户输入验证码验证 3. 验证通过后填写操作表单 4. 提交执行 */
 <script lang="ts" setup>
+/**
+ * 超级操作对话框
+ * @description 用于需要 MFA 二次验证的高危操作，如封禁/解封用户、调整等级/经验，操作流程：1. 发送验证码到邮箱 2. 用户输入验证码验证 3. 验证通过后填写操作表单 4. 提交执行
+ * @module admin/user/SuperAdminActionDialog
+ * @see ../../api/sys/admin.ts
+ */
 import { computed, reactive, ref, watch } from 'vue'
 import { ElMessage } from 'element-plus'
 import { AdminApi } from '@/api/sys/admin'
 import { useUserStore } from '@/stores/modules/user'
+
+const props = defineProps<Props>()
+
+const emit = defineEmits<{
+  'update:visible': [value: boolean]
+  success: []
+}>()
+
+// 日志前缀
+const LOG_PREFIX = '[SuperAdminActionDialog]'
+
+// MFA 验证码位数
+const MFA_LENGTH = 6
 
 type ActionType = 'ban' | 'unban' | 'adjust-level' | 'adjust-exp'
 
@@ -77,23 +98,19 @@ interface Props {
   action: ActionType | null
 }
 
-const props = defineProps<Props>()
-const emit = defineEmits<{
-  'update:visible': [value: boolean]
-  success: []
-}>()
-
 const userStore = useUserStore()
 
+// 初始化状态
 const step = ref<'mfa' | 'form'>('mfa')
 const mfaTicket = ref('')
 const mfaLoading = ref(false)
 const submitLoading = ref(false)
 
-const MFA_LENGTH = 6
+// MFA 验证码输入框
 const mfaDigits = ref<string[]>(Array(MFA_LENGTH).fill(''))
 const inputRefs: (HTMLElement | null)[] = []
 
+// 操作表单数据
 const form = reactive({
   reason: '',
   level: 1,
@@ -102,10 +119,10 @@ const form = reactive({
 
 const dialogVisible = computed({
   get: () => props.visible,
-  set: (val) => emit('update:visible', val),
+  set: val => emit('update:visible', val),
 })
 
-const mfaComplete = computed(() => mfaDigits.value.every((d) => d.length === 1))
+const mfaComplete = computed(() => mfaDigits.value.every(d => d.length === 1))
 
 const title = computed(() => {
   const map: Record<ActionType, string> = {
@@ -127,10 +144,15 @@ const actionLabel = computed(() => {
   return map[props.action!] ?? '操作'
 })
 
+// 设置输入框引用
 function setInputRef(el: HTMLElement | null, index: number): void {
   inputRefs[index] = el
 }
 
+/**
+ * 处理验证码输入
+ * 自动聚焦下一个输入框
+ */
 function handleDigitInput(index: number): void {
   mfaDigits.value[index] = (mfaDigits.value[index] ?? '').replace(/\D/g, '').slice(-1)
   if (mfaDigits.value[index] && index < MFA_LENGTH - 1) {
@@ -138,6 +160,10 @@ function handleDigitInput(index: number): void {
   }
 }
 
+/**
+ * 处理退格键
+ * 如果当前输入框为空，则聚焦到上一个输入框
+ */
 function handleDigitBackspace(index: number, event: KeyboardEvent): void {
   if (!mfaDigits.value[index] && index > 0) {
     mfaDigits.value[index - 1] = ''
@@ -146,46 +172,61 @@ function handleDigitBackspace(index: number, event: KeyboardEvent): void {
   }
 }
 
+/**
+ * 验证 MFA 验证码
+ */
 async function handleVerifyMfa(): Promise<void> {
+  console.log(`${LOG_PREFIX} Verifying MFA code`)
   mfaLoading.value = true
   try {
     const code = mfaDigits.value.join('')
+    console.debug(`${LOG_PREFIX} MFA code length: ${code.length}`)
     const resp = await AdminApi.verifyMfa({ code })
     mfaTicket.value = resp.data.data.ticket
+    console.log(`${LOG_PREFIX} MFA verified successfully, ticket obtained`)
     step.value = 'form'
-  } catch {
+  } catch (error) {
+    console.error(`${LOG_PREFIX} MFA verification failed:`, error)
     ElMessage.error('验证码错误或已过期')
   } finally {
     mfaLoading.value = false
   }
 }
 
+/**
+ * 执行超级操作
+ */
 async function handleSubmit(): Promise<void> {
   if (!props.action) return
+  console.log(`${LOG_PREFIX} Submitting action: ${props.action} for user id: ${props.userId}`)
   submitLoading.value = true
 
   let ok = false
   try {
     switch (props.action) {
       case 'ban':
+        console.log(`${LOG_PREFIX} Banning user, reason: ${form.reason || '未填写'}`)
         ok = await userStore.banUser(props.userId, {
           mfaTicket: mfaTicket.value,
           banReason: form.reason || undefined,
         })
         break
       case 'unban':
+        console.log(`${LOG_PREFIX} Unbanning user, reason: ${form.reason || '未填写'}`)
         ok = await userStore.unbanUser(props.userId, {
           mfaTicket: mfaTicket.value,
           unbanReason: form.reason || undefined,
         })
         break
       case 'adjust-level':
+        console.log(`${LOG_PREFIX} Adjusting user level to: ${form.level}`)
         ok = await userStore.adjustUserLevel(props.userId, {
           level: form.level,
           mfaTicket: mfaTicket.value,
         })
         break
       case 'adjust-exp':
+        console.log(`${LOG_PREFIX} Adjusting user experience by: ${form.experience}`)
         ok = await userStore.adjustUserExperience(props.userId, {
           experience: form.experience,
           mfaTicket: mfaTicket.value,
@@ -194,10 +235,12 @@ async function handleSubmit(): Promise<void> {
     }
 
     if (ok) {
+      console.log(`${LOG_PREFIX} Action ${props.action} succeeded`)
       ElMessage.success(`${actionLabel.value}成功`)
       emit('success')
       dialogVisible.value = false
     } else {
+      console.warn(`${LOG_PREFIX} Action ${props.action} failed`)
       ElMessage.error(`${actionLabel.value}失败`)
     }
   } finally {
@@ -205,7 +248,11 @@ async function handleSubmit(): Promise<void> {
   }
 }
 
+/**
+ * 重置对话框状态
+ */
 function resetState(): void {
+  console.debug(`${LOG_PREFIX} Resetting dialog state`)
   step.value = 'mfa'
   mfaTicket.value = ''
   mfaDigits.value = Array(MFA_LENGTH).fill('')
@@ -218,17 +265,22 @@ function handleClosed(): void {
   resetState()
 }
 
+// 监听对话框打开，发送 MFA 验证码
 watch(
   () => props.visible,
-  async (visible) => {
+  async visible => {
     if (!visible || !props.action) return
+    console.log(`${LOG_PREFIX} Dialog opened, action: ${props.action}, user: ${props.username}`)
     resetState()
     try {
+      console.log(`${LOG_PREFIX} Sending MFA code...`)
       await AdminApi.sendMfaCode()
-    } catch {
+      console.log(`${LOG_PREFIX} MFA code sent`)
+    } catch (error) {
+      console.error(`${LOG_PREFIX} Failed to send MFA code:`, error)
       ElMessage.error('发送验证码失败')
     }
-  },
+  }
 )
 </script>
 

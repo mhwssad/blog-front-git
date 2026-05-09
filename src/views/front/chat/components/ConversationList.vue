@@ -1,7 +1,13 @@
 <template>
   <div class="conversation-list">
     <div class="conv-header">
-      <el-input v-model="keyword" placeholder="搜索会话" clearable size="small" @input="emit('search', keyword)" />
+      <el-input
+        v-model="keyword"
+        placeholder="搜索会话"
+        clearable
+        size="small"
+        @input="emit('search', keyword)"
+      />
     </div>
 
     <div v-if="loading" class="conv-loading">
@@ -21,7 +27,9 @@
         </el-avatar>
         <div class="conv-body">
           <div class="conv-top">
-            <span class="conv-name">{{ conv.name ?? conv.targetNickname ?? conv.targetUsername ?? '会话' }}</span>
+            <span class="conv-name">{{
+              conv.name ?? conv.targetNickname ?? conv.targetUsername ?? '会话'
+            }}</span>
             <span v-if="conv.unreadCount" class="conv-badge">{{ conv.unreadCount }}</span>
           </div>
           <div class="conv-preview">
@@ -36,6 +44,11 @@
 </template>
 
 <script lang="ts" setup>
+/**
+ * 会话列表组件
+ * @description 展示用户的所有会话（含未读数），支持搜索过滤
+ * @module front/chat/components/ConversationList
+ */
 import { ref } from 'vue'
 import type { ChatConversationVO } from '@/types/api-types'
 
@@ -50,6 +63,7 @@ const emit = defineEmits<{
   search: [keyword: string]
 }>()
 
+// 搜索关键词
 const keyword = ref('')
 </script>
 

@@ -7,7 +7,6 @@ import { ref } from 'vue'
 import { defineStore } from 'pinia'
 import { AuthorApplicationUserApi } from '@/api/user/authorApplication'
 import type {
-  PageResult,
   UserAuthorApplicationSubmitRequest,
   UserAuthorApplicationVO,
 } from '@/types/api-types'

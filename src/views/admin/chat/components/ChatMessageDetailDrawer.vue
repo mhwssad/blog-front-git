@@ -27,8 +27,10 @@
             </el-tag>
           </el-descriptions-item>
           <el-descriptions-item label="回执概览">
-            {{ message.deliveredRecipientCount ?? 0 }}/{{ message.totalRecipientCount ?? 0 }} 已送达，
-            {{ message.readRecipientCount ?? 0 }} 已读
+            {{ message.deliveredRecipientCount ?? 0 }}/{{
+              message.totalRecipientCount ?? 0
+            }}
+            已送达， {{ message.readRecipientCount ?? 0 }} 已读
           </el-descriptions-item>
         </el-descriptions>
 
@@ -37,7 +39,8 @@
           <el-card shadow="never">
             <div class="reply-summary">
               <div class="reply-meta">
-                #{{ message.reply.senderId }} / {{ message.reply.senderNickname || message.reply.senderUsername || '-' }}
+                #{{ message.reply.senderId }} /
+                {{ message.reply.senderNickname || message.reply.senderUsername || '-' }}
               </div>
               <div class="reply-content">
                 {{ formatOptionalText(message.reply.content) }}
@@ -49,8 +52,12 @@
         <section v-if="message.file" class="drawer-section">
           <div class="section-header">附件信息</div>
           <el-descriptions :column="1" border>
-            <el-descriptions-item label="文件名">{{ message.file.originalName }}</el-descriptions-item>
-            <el-descriptions-item label="文件大小">{{ formatFileSize(message.file.fileSize) }}</el-descriptions-item>
+            <el-descriptions-item label="文件名">{{
+              message.file.originalName
+            }}</el-descriptions-item>
+            <el-descriptions-item label="文件大小">{{
+              formatFileSize(message.file.fileSize)
+            }}</el-descriptions-item>
             <el-descriptions-item label="文件地址">
               <el-link :href="message.file.fileUrl" target="_blank" type="primary">
                 {{ message.file.fileUrl }}
@@ -63,6 +70,9 @@
   </el-drawer>
 </template>
 
+/** * 聊天消息详情抽屉 * @description
+展示聊天消息的完整详情，包括发送者、消息内容、引用消息、附件信息、回执概览等 * @module
+admin/chat/components/ChatMessageDetailDrawer * @see api/sys/chat.ts */
 <script lang="ts" setup>
 import type { ChatMessageVO } from '@/types/api-types'
 import { FormatUtils } from '@/utils'

@@ -18,6 +18,11 @@
 </template>
 
 <script lang="ts" setup>
+/**
+ * 侧边栏标签组件
+ * @description 展示热门标签，点击可跳转标签详情页
+ * @module front/home/components/HomeSidebarTags
+ */
 import type { PublicTagVO } from '@/types/api-types'
 
 defineProps<{

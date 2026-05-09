@@ -44,7 +44,9 @@
 
       <!-- 登录与时间 -->
       <el-descriptions :column="2" border size="small" class="detail-section">
-        <el-descriptions-item label="最后登录">{{ user.lastLoginTime || '-' }}</el-descriptions-item>
+        <el-descriptions-item label="最后登录">{{
+          user.lastLoginTime || '-'
+        }}</el-descriptions-item>
         <el-descriptions-item label="登录 IP">{{ user.lastLoginIp || '-' }}</el-descriptions-item>
         <el-descriptions-item label="注册时间">{{ user.createTime || '-' }}</el-descriptions-item>
         <el-descriptions-item label="更新时间">{{ user.updateTime || '-' }}</el-descriptions-item>
@@ -54,13 +56,7 @@
       </el-descriptions>
 
       <!-- 备注 -->
-      <el-descriptions
-        v-if="user.remark"
-        :column="1"
-        border
-        size="small"
-        class="detail-section"
-      >
+      <el-descriptions v-if="user.remark" :column="1" border size="small" class="detail-section">
         <el-descriptions-item label="备注">{{ user.remark }}</el-descriptions-item>
       </el-descriptions>
     </template>
@@ -72,6 +68,12 @@
 </template>
 
 <script lang="ts" setup>
+/**
+ * 用户详情对话框
+ * @description 展示用户的完整信息，包括账号信息、登录历史、注册时间等，支持从 props 获取基础信息，也支持从 store 动态加载完整详情
+ * @module admin/user/UserDetailDialog
+ * @see ../../stores
+ */
 import { ref, computed, watch } from 'vue'
 import { Loading, Male, Female } from '@element-plus/icons-vue'
 import { useUserStore } from '@/stores/modules/user'
@@ -90,13 +92,16 @@ interface Emits {
 const props = defineProps<Props>()
 const emit = defineEmits<Emits>()
 
+// 日志前缀
+const LOG_PREFIX = '[UserDetailDialog]'
+
 const userStore = useUserStore()
 const loading = ref(false)
 const detailUser = ref<SysUserAdminVO | null>(null)
 
 const dialogVisible = computed({
   get: () => props.visible,
-  set: (val) => emit('update:visible', val),
+  set: val => emit('update:visible', val),
 })
 
 const user = computed(() => detailUser.value || props.user)
@@ -107,23 +112,31 @@ const genderText = computed(() => {
   return map[user.value.gender ?? 0] ?? '-'
 })
 
+// 监听对话框打开，加载完整用户信息
 watch(
   () => props.visible,
-  async (visible) => {
-    if (!visible || !props.user) return
+  async visible => {
+    if (!visible || !props.user) {
+      console.debug(`${LOG_PREFIX} Dialog closed or no user to display`)
+      return
+    }
+    console.log(`${LOG_PREFIX} Loading full details for user id: ${props.user.id}`)
     loading.value = true
     try {
       const result = await userStore.fetchUserById(props.user.id)
       detailUser.value = result
-    } catch {
+      console.log(`${LOG_PREFIX} User details loaded successfully`)
+    } catch (error) {
+      console.error(`${LOG_PREFIX} Failed to load user details:`, error)
       detailUser.value = null
     } finally {
       loading.value = false
     }
-  },
+  }
 )
 
 function handleClose() {
+  console.log(`${LOG_PREFIX} Dialog closing, clearing detail data`)
   detailUser.value = null
   emit('update:visible', false)
 }

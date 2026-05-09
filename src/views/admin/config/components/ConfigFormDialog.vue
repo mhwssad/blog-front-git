@@ -20,7 +20,11 @@
         <el-input v-model="formData.configName" maxlength="64" placeholder="请输入配置名称" />
       </el-form-item>
       <el-form-item label="配置键" prop="configKey">
-        <el-input v-model="formData.configKey" maxlength="128" placeholder="请输入配置键，如 sys.name" />
+        <el-input
+          v-model="formData.configKey"
+          maxlength="128"
+          placeholder="请输入配置键，如 sys.name"
+        />
       </el-form-item>
       <el-form-item label="配置值" prop="configValue">
         <el-input
@@ -44,13 +48,21 @@
 
     <template #footer>
       <el-button @click="dialogVisible = false">取消</el-button>
-      <el-button v-permission="submitPermission" type="primary" :loading="submitting" @click="handleSubmit">
+      <el-button
+        v-permission="submitPermission"
+        type="primary"
+        :loading="submitting"
+        @click="handleSubmit"
+      >
         {{ isEdit ? '保存' : '创建' }}
       </el-button>
     </template>
   </el-dialog>
 </template>
 
+/** * 系统配置表单对话框 * @description
+新增/编辑系统配置的弹窗表单，包含配置名称、配置键、配置值、备注 * @module
+admin/config/components/ConfigFormDialog * @see api/sys/config.ts */
 <script lang="ts" setup>
 import { computed, reactive, ref, watch } from 'vue'
 import { ElMessage, type FormInstance, type FormRules } from 'element-plus'

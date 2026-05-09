@@ -1,107 +1,133 @@
 <template>
   <el-dialog
     v-model="dialogVisible"
-    width="820px"
-    :destroy-on-close="true"
-    :close-on-click-modal="false"
-    center
+    title="评论详情"
+    width="720px"
+    destroy-on-close
+    align-center
     @close="handleClose"
-    class="comment-detail-dialog"
   >
-    <template #title>评论详情</template>
-
-    <div v-if="!comment" class="dialog-empty">
-      <el-empty description="暂无评论详情" />
+    <div v-if="!comment" style="text-align: center; padding: 32px; color: var(--el-text-color-secondary)">
+      暂无数据
     </div>
 
-    <div v-else class="detail-body">
-      <div class="detail-overview">
-        <div class="detail-overview__item">
-          <span class="detail-overview__label">评论 ID</span>
-          <span class="detail-overview__value">#{{ comment.id }}</span>
+    <template v-else>
+      <div class="detail-user">
+        <el-avatar v-if="comment.userAvatar" :src="comment.userAvatar" :size="40" />
+        <div class="detail-user__info">
+          <span class="detail-user__name">{{ comment.userNickname || '匿名用户' }}</span>
+          <span class="detail-user__meta">ID {{ comment.userId }} · {{ formatCreatedAt(comment.createdAt) }}</span>
         </div>
-        <div class="detail-overview__item">
-          <span class="detail-overview__label">状态</span>
-          <el-tag size="small" :type="comment.status === 1 ? 'success' : 'info'">
-            {{ formatCommentStatus(comment.status) }}
-          </el-tag>
-        </div>
-        <div class="detail-overview__item">
-          <span class="detail-overview__label">目标</span>
-          <el-tag size="small" effect="plain">{{ formatTargetType(comment.targetType) }}</el-tag>
-        </div>
-        <div class="detail-overview__item">
-          <span class="detail-overview__label">互动</span>
-          <span class="detail-overview__value">点赞 {{ comment.likeCount }} / 回复 {{ comment.replyCount }}</span>
+        <el-tag
+          size="small"
+          :type="comment.status === 1 ? 'success' : comment.status === 2 ? 'warning' : 'info'"
+          style="margin-left: auto"
+        >
+          {{ formatCommentStatus(comment.status) }}
+        </el-tag>
+      </div>
+
+      <div v-if="parentComment" class="parent-section">
+        <div class="parent-label">回复的评论</div>
+        <div class="parent-body">
+          <div class="parent-user">
+            <el-avatar v-if="parentComment.userAvatar" :src="parentComment.userAvatar" :size="28" />
+            <span class="parent-user__name">{{ parentComment.userNickname || '匿名用户' }}</span>
+            <span class="parent-user__time">{{ formatCreatedAt(parentComment.createdAt) }}</span>
+          </div>
+          <p class="parent-content">{{ parentComment.content }}</p>
+          <div v-if="parentComment.images?.length" class="parent-images">
+            <el-image
+              v-for="(image, index) in parentComment.images"
+              :key="index"
+              class="parent-image"
+              :src="image"
+              fit="cover"
+              :preview-src-list="parentComment.images"
+            />
+          </div>
         </div>
       </div>
 
-      <el-descriptions :column="1" border size="small" label-align="right">
-        <el-descriptions-item label="评论内容">
-          <p class="comment-content">{{ comment.content }}</p>
+      <div class="detail-content">
+        <p>{{ comment.content }}</p>
+        <div v-if="comment.images?.length" class="detail-images">
+          <el-image
+            v-for="(image, index) in comment.images"
+            :key="index"
+            class="detail-image"
+            :src="image"
+            fit="cover"
+            :preview-src-list="comment.images"
+          />
+        </div>
+      </div>
+
+      <el-descriptions :column="3" border size="small">
+        <el-descriptions-item label="评论目标">
+          <el-tag size="small" effect="plain">{{ formatTargetType(comment.targetType) }}</el-tag>
+          <span style="margin-left: 6px; color: var(--el-text-color-secondary)">编号 {{ comment.targetId }}</span>
         </el-descriptions-item>
-        <el-descriptions-item v-if="comment.images?.length" label="评论图片">
-          <div class="image-tiles">
-            <el-image
-              v-for="(image, index) in comment.images"
-              :key="`img-${comment.id}-${index}`"
-              class="comment-image"
-              :src="image"
-              fit="cover"
-              :preview-src-list="comment.images"
-            />
-          </div>
-        </el-descriptions-item>
-        <el-descriptions-item label="用户信息">
-          <div class="user-info">
-            <el-avatar v-if="comment.userAvatar" :src="comment.userAvatar" size="small" />
-            <span class="user-title">
-              {{ comment.userNickname || '匿名用户' }}（ID {{ comment.userId }})
-            </span>
-          </div>
-        </el-descriptions-item>
-        <el-descriptions-item label="目标信息">
-          {{ formatTargetType(comment.targetType) }} · ID {{ comment.targetId }}
-        </el-descriptions-item>
-        <el-descriptions-item label="关联评论">
-          根评论 ID：{{ comment.rootId ?? '-' }} · 父评论 ID：{{ comment.parentId ?? '-' }}
-        </el-descriptions-item>
-        <el-descriptions-item label="统计">
-          点赞 {{ comment.likeCount }} · 回复 {{ comment.replyCount }}
+        <el-descriptions-item label="评论层级">
+          <template v-if="comment.rootId">
+            <span>属于讨论 #{{ comment.rootId }}</span>
+            <template v-if="comment.parentId && comment.parentId !== comment.rootId">
+              <el-divider direction="vertical" />
+              <span>回复 #{{ comment.parentId }}</span>
+            </template>
+          </template>
+          <span v-else>顶级评论</span>
         </el-descriptions-item>
         <el-descriptions-item label="状态">
-          {{ formatCommentStatus(comment.status) }}
+          <el-tag size="small" :type="comment.status === 1 ? 'success' : comment.status === 2 ? 'warning' : 'info'">
+            {{ formatCommentStatus(comment.status) }}
+          </el-tag>
         </el-descriptions-item>
-        <el-descriptions-item label="创建时间">
+        <el-descriptions-item label="点赞数">
+          <span class="stat-value">
+            <el-icon :size="14" style="vertical-align: middle; margin-right: 2px"><Star /></el-icon>
+            {{ comment.likeCount }}
+          </span>
+        </el-descriptions-item>
+        <el-descriptions-item label="回复数">
+          <span class="stat-value">
+            <el-icon :size="14" style="vertical-align: middle; margin-right: 2px"><ChatDotRound /></el-icon>
+            {{ comment.replyCount }}
+          </span>
+        </el-descriptions-item>
+        <el-descriptions-item label="评论编号">
+          #{{ comment.id }}
+        </el-descriptions-item>
+        <el-descriptions-item label="发表时间" :span="2">
           {{ formatCreatedAt(comment.createdAt) }}
         </el-descriptions-item>
       </el-descriptions>
 
       <div v-if="replyTree.length" class="reply-section">
-        <div class="section-title">回复层级</div>
+        <div class="section-title">回复 ({{ comment.replyCount }})</div>
         <el-tree
           class="reply-tree"
           :data="replyTree"
           :props="{ children: 'children' }"
           node-key="id"
-          :show-checkbox="false"
           default-expand-all
           :expand-on-click-node="false"
         >
           <template #default="{ data }">
             <div class="reply-node">
               <div class="reply-node__header">
-                <span class="reply-author">{{ data.userNickname || '匿名用户' }}（ID {{ data.userId }}）</span>
-                <span class="reply-meta">
-                  {{ formatCommentStatus(data.status) }} · {{ formatCreatedAt(data.createdAt) }}
-                </span>
+                <span class="reply-node__author">{{ data.userNickname || '匿名用户' }}</span>
+                <el-tag size="small" :type="data.status === 1 ? 'success' : data.status === 2 ? 'warning' : 'info'">
+                  {{ formatCommentStatus(data.status) }}
+                </el-tag>
+                <span class="reply-node__time">{{ formatCreatedAt(data.createdAt) }}</span>
               </div>
-              <p class="reply-content">{{ data.content }}</p>
+              <p class="reply-node__content">{{ data.content }}</p>
             </div>
           </template>
         </el-tree>
       </div>
-    </div>
+    </template>
 
     <template #footer>
       <el-button @click="handleClose">关闭</el-button>
@@ -111,12 +137,9 @@
 
 <script lang="ts" setup>
 import { computed, type PropType } from 'vue'
+import { Star, ChatDotRound } from '@element-plus/icons-vue'
 import type { CommentVO } from '@/types/api-types'
-import {
-  formatCommentStatus,
-  formatCreatedAt,
-  formatTargetType,
-} from '@/utils/contentAdmin'
+import { formatCommentStatus, formatCreatedAt, formatTargetType } from '@/utils/contentAdmin'
 
 const props = defineProps({
   visible: {
@@ -124,6 +147,10 @@ const props = defineProps({
     default: false,
   },
   comment: {
+    type: Object as PropType<CommentVO | null>,
+    default: null,
+  },
+  parentComment: {
     type: Object as PropType<CommentVO | null>,
     default: null,
   },
@@ -144,10 +171,7 @@ function buildReplyTree(items: CommentVO[]): CommentVO[] {
 }
 
 const replyTree = computed(() => {
-  if (!props.comment?.children?.length) {
-    return []
-  }
-
+  if (!props.comment?.children?.length) return []
   return buildReplyTree(props.comment.children)
 })
 
@@ -157,129 +181,164 @@ function handleClose(): void {
 </script>
 
 <style scoped>
-.comment-detail-dialog .detail-body {
+.detail-user {
   display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
-
-.detail-overview {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  align-items: center;
   gap: 12px;
+  margin-bottom: 16px;
 }
 
-.detail-overview__item {
+.detail-user__info {
   display: flex;
   flex-direction: column;
-  gap: 6px;
-  padding: 12px 14px;
-  border: 1px solid #ebeef5;
-  border-radius: 8px;
-  background: #f8fafc;
+  gap: 2px;
 }
 
-.detail-overview__label {
+.detail-user__name {
+  font-weight: 600;
+  font-size: 15px;
+}
+
+.detail-user__meta {
   font-size: 12px;
   color: var(--el-text-color-secondary);
 }
 
-.detail-overview__value {
-  color: var(--el-text-color-primary);
-  font-weight: 500;
+.parent-section {
+  margin-bottom: 16px;
+  border: 1px solid var(--el-border-color-lighter);
+  border-radius: 8px;
+  overflow: hidden;
 }
 
-.comment-content {
+.parent-label {
+  padding: 6px 12px;
+  font-size: 12px;
+  color: var(--el-text-color-secondary);
+  background: var(--el-fill-color-lighter);
+  border-bottom: 1px solid var(--el-border-color-lighter);
+}
+
+.parent-body {
+  padding: 10px 12px;
+}
+
+.parent-user {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+
+.parent-user__name {
+  font-weight: 500;
+  font-size: 13px;
+}
+
+.parent-user__time {
+  font-size: 11px;
+  color: var(--el-text-color-secondary);
+  margin-left: auto;
+}
+
+.parent-content {
   margin: 0;
+  font-size: 13px;
+  color: var(--el-text-color-regular);
+  white-space: pre-wrap;
+  word-break: break-word;
+  line-height: 1.6;
+}
+
+.parent-images {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 6px;
+}
+
+.parent-image {
+  width: 60px;
+  height: 60px;
+  border-radius: 4px;
+  border: 1px solid var(--el-border-color-lighter);
+}
+
+.detail-content {
+  margin-bottom: 16px;
+}
+
+.detail-content p {
+  margin: 0 0 8px;
   white-space: pre-wrap;
   word-break: break-word;
   line-height: 1.7;
 }
 
-.image-tiles {
+.detail-images {
   display: flex;
   flex-wrap: wrap;
-  gap: 10px;
+  gap: 8px;
 }
 
-.comment-image {
-  width: 96px;
-  height: 96px;
+.detail-image {
+  width: 80px;
+  height: 80px;
   border-radius: 6px;
-  border: 1px solid #ebeef5;
-}
-
-.user-info {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.user-title {
-  font-weight: 500;
+  border: 1px solid var(--el-border-color-lighter);
 }
 
 .reply-section {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
+  margin-top: 16px;
 }
 
 .section-title {
   font-weight: 500;
+  margin-bottom: 8px;
   font-size: 14px;
-  color: #2c3e50;
 }
 
 .reply-tree {
-  border: 1px solid #ebeef5;
+  border: 1px solid var(--el-border-color-lighter);
   border-radius: 6px;
-  padding: 12px;
+  padding: 8px;
 }
 
 .reply-node {
-  padding: 12px;
-  background: #f9fafc;
+  padding: 8px 12px;
+  background: var(--el-fill-color-lighter);
   border-radius: 6px;
-  border: 1px solid #f0f1f5;
-  margin-bottom: 10px;
 }
 
 .reply-node__header {
   display: flex;
-  justify-content: space-between;
-  gap: 12px;
-  flex-wrap: wrap;
-  margin-bottom: 6px;
-  font-size: 13px;
-  color: #546572;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 4px;
 }
 
-.reply-author {
+.reply-node__author {
   font-weight: 500;
-  color: #2c3e50;
+  font-size: 13px;
 }
 
-.reply-meta {
+.reply-node__time {
   font-size: 12px;
+  color: var(--el-text-color-secondary);
+  margin-left: auto;
 }
 
-.reply-content {
+.reply-node__content {
   margin: 0;
   font-size: 13px;
-  color: #2c3e50;
+  white-space: pre-wrap;
+  word-break: break-word;
 }
 
-.dialog-empty {
-  min-height: 200px;
-  display: flex;
+.stat-value {
+  display: inline-flex;
   align-items: center;
-  justify-content: center;
-}
-
-@media (max-width: 768px) {
-  .detail-overview {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
+  font-weight: 500;
+  color: var(--el-text-color-primary);
 }
 </style>

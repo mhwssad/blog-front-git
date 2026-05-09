@@ -1,6 +1,6 @@
 /**
  * 后台数据看板 API
- * 基于 auth-api.md 文档 8.6 节
+ * 基于 dashboard-api.md 文档
  */
 
 import { http } from '../request'
@@ -52,6 +52,18 @@ export class DashboardApi {
    */
   static getGovernance(params?: DashboardQueryRequest) {
     return http.get<DashboardGovernanceVO>('/sys/dashboard/governance', params)
+  }
+
+  /**
+   * 导出运营看板统计 Excel
+   * GET /api/sys/dashboard/export
+   * @param params 查询参数
+   * @returns Excel 文件流
+   */
+  static exportExcel(params?: DashboardQueryRequest) {
+    return http.get<string>('/sys/dashboard/export', params, {
+      responseType: 'blob',
+    })
   }
 }
 

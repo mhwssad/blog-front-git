@@ -3,12 +3,7 @@
     <div class="sidebar-block-title">最新评论</div>
     <div v-if="comments.length" class="comment-list">
       <div v-for="comment in comments" :key="comment.id" class="comment-item">
-        <img
-          v-if="comment.userAvatar"
-          :src="comment.userAvatar"
-          class="comment-avatar"
-          alt=""
-        />
+        <img v-if="comment.userAvatar" :src="comment.userAvatar" class="comment-avatar" alt="" />
         <div v-else class="comment-avatar comment-avatar-placeholder">
           {{ comment.userNickname?.charAt(0) }}
         </div>
@@ -26,6 +21,11 @@
 </template>
 
 <script lang="ts" setup>
+/**
+ * 侧边栏最新评论组件
+ * @description 展示最近的用户评论，支持日期格式化
+ * @module front/home/components/HomeSidebarComments
+ */
 import type { PublicCommentVO } from '@/types/api-types'
 
 defineProps<{

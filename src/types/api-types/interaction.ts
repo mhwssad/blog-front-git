@@ -47,4 +47,10 @@ export interface InteractionVO {
   actionType: string
   /** 创建时间 */
   createdAt: string
+  /** 用户昵称 */
+  userNickname?: string
+  /** 用户头像 */
+  userAvatar?: string
+  /** 目标标题 */
+  targetTitle?: string
 }

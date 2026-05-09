@@ -167,3 +167,116 @@ export interface AuthMenuInfo {
   /** 子节点 */
   children?: AuthMenuInfo[]
 }
+
+// ==================== 个人中心 ====================
+
+/**
+ * 用户个人资料视图对象
+ * @description 当前用户查看自己的个人资料
+ * @interface UserProfileVO
+ * @see GET /api/user/profile - 响应
+ */
+export interface UserProfileVO {
+  /** 用户ID */
+  id: number
+  /** 用户名 */
+  username: string
+  /** 昵称 */
+  nickname: string
+  /** 头像URL */
+  avatar: string
+  /** 个人简介 */
+  bio?: string
+  /** 个人站点 */
+  website?: string
+  /** 性别：0-未知，1-男，2-女，3-保密 */
+  gender?: number
+  /** 生日 */
+  birthday?: string
+  /** 邮箱（脱敏） */
+  email: string
+  /** 手机号（脱敏） */
+  phone: string
+  /** 用户等级 */
+  userLevel: number
+  /** 经验值 */
+  experiencePoints: number
+  /** 注册时间 */
+  createdAt: string
+}
+
+/**
+ * 更新个人资料请求
+ * @interface UserProfileUpdateRequest
+ * @see PUT /api/user/profile - 请求体
+ */
+export interface UserProfileUpdateRequest {
+  /** 昵称，最多50字符 */
+  nickname?: string
+  /** 头像URL */
+  avatar?: string
+  /** 个人简介，最多500字符 */
+  bio?: string
+  /** 个人站点 */
+  website?: string
+  /** 性别：0-未知，1-男，2-女，3-保密 */
+  gender?: number
+}
+
+/**
+ * 修改密码请求
+ * @interface PasswordChangeRequest
+ * @see PUT /api/user/profile/password - 请求体
+ */
+export interface PasswordChangeRequest {
+  /** 原密码 */
+  oldPassword: string
+  /** 新密码，8-64位 */
+  newPassword: string
+}
+
+// ==================== 密码重置（忘记密码） ====================
+
+/**
+ * 发送密码重置验证码请求
+ * @interface PasswordResetCodeRequest
+ * @see POST /api/auth/password-reset/code - 请求体
+ */
+export interface PasswordResetCodeRequest {
+  /** 邮箱地址 */
+  email: string
+}
+
+/**
+ * 密码重置请求
+ * @interface PasswordResetSelfRequest
+ * @see POST /api/auth/password-reset - 请求体
+ */
+export interface PasswordResetSelfRequest {
+  /** 邮箱地址 */
+  email: string
+  /** 验证码 */
+  code: string
+  /** 新密码，8-64位 */
+  newPassword: string
+}
+
+// ==================== 用户搜索（公开） ====================
+
+/**
+ * 用户搜索结果视图对象
+ * @interface UserSearchVO
+ * @see GET /api/users/search - 响应项
+ */
+export interface UserSearchVO {
+  /** 用户ID */
+  id: number
+  /** 用户名 */
+  username: string
+  /** 昵称 */
+  nickname: string
+  /** 头像URL */
+  avatar: string
+  /** 个人简介 */
+  bio?: string
+}

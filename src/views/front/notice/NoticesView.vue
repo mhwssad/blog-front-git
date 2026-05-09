@@ -11,11 +11,7 @@
           <el-radio-button :value="0">未读</el-radio-button>
           <el-radio-button :value="1">已读</el-radio-button>
         </el-radio-group>
-        <el-button
-          size="small"
-          :disabled="!store.hasUnread"
-          @click="handleMarkAllRead"
-        >
+        <el-button size="small" :disabled="!store.hasUnread" @click="handleMarkAllRead">
           全部已读
         </el-button>
         <router-link to="/user/notification-settings">
@@ -51,14 +47,17 @@
 
     <el-empty v-else description="暂无通知" />
 
-    <NoticeDetailDialog
-      v-model:visible="detailVisible"
-      :notice="detailNotice"
-    />
+    <NoticeDetailDialog v-model:visible="detailVisible" :notice="detailNotice" />
   </div>
 </template>
 
 <script lang="ts" setup>
+/**
+ * 通知中心页面
+ * @description 展示用户的通知列表，支持已读/未读筛选、一键已读和详情查看
+ * @module front/notice/NoticesView
+ * @see ../../api/notice.ts
+ */
 import { ref, onMounted } from 'vue'
 import { ElMessage } from 'element-plus'
 import { useUserNoticeStore } from '@/stores'
@@ -68,9 +67,12 @@ import NoticeDetailDialog from './components/NoticeDetailDialog.vue'
 
 const store = useUserNoticeStore()
 
+// 已读状态筛选（undefined-全部，0-未读，1-已读）
 const readFilter = ref<number | undefined>(undefined)
 const currentPage = ref(1)
+// 通知详情弹窗是否显示
 const detailVisible = ref(false)
+// 当前查看的通知详情
 const detailNotice = ref<UserNoticeVO | null>(null)
 
 async function loadNotices(): Promise<void> {

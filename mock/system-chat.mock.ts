@@ -1,6 +1,5 @@
 import { defineMock } from 'vite-plugin-mock-dev-server'
-import { now, num, ok, p, page } from './shared'
-import { db } from './shared'
+import { cp, db, has, now, num, ok, p, page } from './shared'
 
 function getConversation(conversationId: number) {
   return db.chatConversations.find((item: any) => item.id === conversationId)
@@ -17,6 +16,78 @@ function normalizeConversation(conversation: any) {
     ...conversation,
     lastMessage: getMessages(conversation.id)[0] ?? null,
   }
+}
+
+const channelApplications = [
+  {
+    id: 301,
+    userId: 3,
+    username: 'tester',
+    nickname: '测试同学',
+    desiredName: '前端交流频道',
+    desiredSceneType: 'topic_channel',
+    desiredCategoryCode: 'tech',
+    description: '希望创建一个聚焦前端学习和协作的主题频道。',
+    applyStatus: 0,
+    reviewComment: null,
+    reviewerId: null,
+    reviewerUsername: null,
+    reviewerNickname: null,
+    createdAt: '2026-04-22 09:30:00',
+    reviewedAt: null,
+  },
+  {
+    id: 302,
+    userId: 4,
+    username: 'fiona',
+    nickname: '菲奥娜',
+    desiredName: '设计讨论频道',
+    desiredSceneType: 'topic_channel',
+    desiredCategoryCode: 'design',
+    description: '分享视觉设计和交互经验。',
+    applyStatus: 1,
+    reviewComment: '内容方向清晰，已通过。',
+    reviewerId: 1,
+    reviewerUsername: 'admin',
+    reviewerNickname: '管理员',
+    createdAt: '2026-04-18 15:20:00',
+    reviewedAt: '2026-04-19 10:00:00',
+  },
+]
+
+const groupJoinApplications = [
+  {
+    id: 401,
+    conversationId: 2,
+    userId: 3,
+    username: 'tester',
+    nickname: '测试同学',
+    applyMessage: '希望加入群里一起跟进排期。',
+    applyStatus: 0,
+    reviewComment: null,
+    createdAt: '2026-04-28 11:20:00',
+    reviewedAt: null,
+  },
+  {
+    id: 402,
+    conversationId: 2,
+    userId: 5,
+    username: 'alex',
+    nickname: 'Alex',
+    applyMessage: '我可以协助整理素材。',
+    applyStatus: 1,
+    reviewComment: '欢迎加入。',
+    createdAt: '2026-04-26 13:40:00',
+    reviewedAt: '2026-04-27 09:00:00',
+  },
+]
+
+function findChannelApplication(id: number) {
+  return channelApplications.find((item: any) => item.id === id)
+}
+
+function findGroupJoinApplication(id: number) {
+  return groupJoinApplications.find((item: any) => item.id === id)
 }
 
 function handle(req: any) {
@@ -131,8 +202,30 @@ function handle(req: any) {
 
   // ==================== 大厅管理 ====================
 
-  if (method === 'PUT' && /^\/api\/sys\/chats\/lobby\/settings\/?$/.test(path)) return ok(null)
-  if (method === 'GET' && /^\/api\/sys\/chats\/lobby\/messages\/pinned\/?$/.test(path)) return ok([])
+  if (method === 'PUT' && /^\/api\/sys\/chats\/lobby\/settings\/?$/.test(path)) {
+    db.chatLobbySettings = {
+      speakLevelLimit: req.body.speakLevelLimit ?? 0,
+      slowModeSeconds: req.body.slowModeSeconds ?? 0,
+      allowGuestSpeak: req.body.allowGuestSpeak ?? false,
+    }
+    return ok(null)
+  }
+  if (method === 'GET' && /^\/api\/sys\/chats\/lobby\/messages\/pinned\/?$/.test(path)) {
+    const message = db.chatMessages.find((item: any) => item.id === 6)
+    return ok(
+      [
+        {
+          id: 1,
+          messageId: 6,
+          conversationId: 3,
+          pinnedBy: 1,
+          pinnedAt: '2026-03-30 18:05:00',
+          message: message ? cp(message) : null,
+        },
+      ],
+      '成功',
+    )
+  }
   if (method === 'POST' && path.match(/^\/api\/sys\/chats\/lobby\/messages\/(\d+)\/pin$/)) return ok(null)
   if (method === 'DELETE' && path.match(/^\/api\/sys\/chats\/lobby\/messages\/(\d+)\/pin$/)) return ok(null)
   if (method === 'PUT' && path.match(/^\/api\/sys\/chats\/lobby\/members\/(\d+)\/mute$/)) return ok(null)
@@ -142,22 +235,154 @@ function handle(req: any) {
 
   if (method === 'POST' && /^\/api\/sys\/chats\/topic-channels\/?$/.test(path)) {
     const id = ++db.seq.conversation
-    const ch = { id, conversationType: 'channel', name: req.body.name ?? '新频道', avatar: null, notice: req.body.notice ?? null, selfRole: 'owner', ownerId: 1, memberCount: 0, unreadCount: 0, status: 1, isAllSite: 0, targetUserId: null, targetUsername: null, targetNickname: null, createdAt: now(), updatedAt: now() }
+    const ch = {
+      id,
+      conversationType: 'group',
+      sceneType: 'topic_channel',
+      name: req.body.name ?? '新频道',
+      avatar: req.body.avatar ?? null,
+      notice: req.body.announcement ?? req.body.notice ?? null,
+      visibilityScope: req.body.visibilityScope ?? 'public',
+      joinRule: req.body.joinRule ?? 'free',
+      speakLevelLimit: req.body.speakLevelLimit ?? 0,
+      memberLimit: req.body.memberLimit ?? 0,
+      slowModeSeconds: req.body.slowModeSeconds ?? 0,
+      displaySort: req.body.displaySort ?? 0,
+      channelCategoryCode: req.body.categoryCode ?? null,
+      selfRole: 'owner',
+      ownerId: 1,
+      memberCount: 0,
+      unreadCount: 0,
+      status: 1,
+      isAllSite: 0,
+      targetUserId: null,
+      targetUsername: null,
+      targetNickname: null,
+      createdAt: now(),
+      updatedAt: now(),
+    }
     db.chatConversations.push(ch)
     return ok(cp(ch))
   }
-  if (method === 'PUT' && path.match(/^\/api\/sys\/chats\/topic-channels\/(\d+)$/)) return ok(null)
+  if (method === 'PUT' && path.match(/^\/api\/sys\/chats\/topic-channels\/(\d+)$/)) {
+    const ch = getConversation(num(path.match(/^\/api\/sys\/chats\/topic-channels\/(\d+)$/)![1]))
+    if (!ch) return ok(null, '频道不存在', 404)
+    ch.name = req.body.name ?? ch.name
+    ch.avatar = req.body.avatar ?? ch.avatar
+    ch.notice = req.body.announcement ?? req.body.notice ?? ch.notice
+    ch.visibilityScope = req.body.visibilityScope ?? ch.visibilityScope
+    ch.joinRule = req.body.joinRule ?? ch.joinRule
+    ch.speakLevelLimit = req.body.speakLevelLimit ?? ch.speakLevelLimit
+    ch.memberLimit = req.body.memberLimit ?? ch.memberLimit
+    ch.slowModeSeconds = req.body.slowModeSeconds ?? ch.slowModeSeconds
+    ch.displaySort = req.body.displaySort ?? ch.displaySort
+    ch.channelCategoryCode = req.body.categoryCode ?? ch.channelCategoryCode
+    ch.updatedAt = now()
+    return ok(cp(ch))
+  }
 
   // ==================== 频道申请 ====================
 
-  if (method === 'GET' && /^\/api\/sys\/chats\/channel-applications\/?$/.test(path)) return ok(page([], req.query))
-  if (method === 'GET' && path.match(/^\/api\/sys\/chats\/channel-applications\/(\d+)$/)) return ok(null, '申请不存在', 404)
-  if (method === 'PUT' && path.match(/^\/api\/sys\/chats\/channel-applications\/(\d+)\/review$/)) return ok(null)
+  if (method === 'GET' && /^\/api\/sys\/chats\/channel-applications\/?$/.test(path)) {
+    let rs = [...channelApplications]
+    if (req.query.applyStatus !== undefined && req.query.applyStatus !== '')
+      rs = rs.filter((i: any) => i.applyStatus === num(req.query.applyStatus))
+    if (req.query.keyword) {
+      const keyword = String(req.query.keyword).trim().toLowerCase()
+      rs = rs.filter((i: any) =>
+        [i.username, i.nickname, i.desiredName, i.desiredCategoryCode, i.description].some(
+          (field: any) => String(field ?? '').toLowerCase().includes(keyword),
+        ),
+      )
+    }
+    return ok(page(rs, req.query))
+  }
+  if (method === 'GET' && path.match(/^\/api\/sys\/chats\/channel-applications\/(\d+)$/)) {
+    const item = findChannelApplication(num(path.match(/^\/api\/sys\/chats\/channel-applications\/(\d+)$/)![1]))
+    return item ? ok(cp(item)) : ok(null, '申请不存在', 404)
+  }
+  if (method === 'PUT' && path.match(/^\/api\/sys\/chats\/channel-applications\/(\d+)\/review$/)) {
+    const item = findChannelApplication(num(path.match(/^\/api\/sys\/chats\/channel-applications\/(\d+)\/review$/)![1]))
+    if (!item) return ok(null, '申请不存在', 404)
+    item.applyStatus = req.body.approved ? 1 : 2
+    item.reviewComment = req.body.reviewRemark ?? null
+    item.reviewerId = 1
+    item.reviewerUsername = 'admin'
+    item.reviewerNickname = '管理员'
+    item.reviewedAt = now()
+    return ok(null)
+  }
 
   // ==================== 入群申请 ====================
 
-  if (method === 'GET' && /^\/api\/sys\/chats\/group-join-applications\/?$/.test(path)) return ok(page([], req.query))
-  if (method === 'PUT' && path.match(/^\/api\/sys\/chats\/group-join-applications\/(\d+)\/review$/)) return ok(null)
+  if (method === 'GET' && /^\/api\/sys\/chats\/group-join-applications\/?$/.test(path)) {
+    let rs = [...groupJoinApplications]
+    if (req.query.conversationId) rs = rs.filter((i: any) => i.conversationId === num(req.query.conversationId))
+    if (req.query.applyStatus !== undefined && req.query.applyStatus !== '')
+      rs = rs.filter((i: any) => i.applyStatus === num(req.query.applyStatus))
+    if (req.query.keyword) {
+      const keyword = String(req.query.keyword).trim().toLowerCase()
+      rs = rs.filter((i: any) =>
+        [i.username, i.nickname, i.applyMessage].some((field: any) =>
+          String(field ?? '').toLowerCase().includes(keyword),
+        ),
+      )
+    }
+    return ok(page(rs, req.query))
+  }
+  if (method === 'PUT' && path.match(/^\/api\/sys\/chats\/group-join-applications\/(\d+)\/review$/)) {
+    const item = findGroupJoinApplication(num(path.match(/^\/api\/sys\/chats\/group-join-applications\/(\d+)\/review$/)![1]))
+    if (!item) return ok(null, '申请不存在', 404)
+    item.applyStatus = req.body.reviewStatus === 1 ? 1 : 2
+    item.reviewComment = req.body.reviewComment ?? null
+    item.reviewedAt = now()
+    return ok(null)
+  }
+
+  // ==================== 禁言管理 ====================
+
+  if (method === 'GET' && path === '/api/sys/chats/mutes') {
+    let rs = [...(db.chatMutes || [])]
+    if (req.query.userId) rs = rs.filter((i: any) => i.userId === num(req.query.userId))
+    if (req.query.muteType) rs = rs.filter((i: any) => i.muteType === req.query.muteType)
+    if (req.query.isReleased !== undefined && req.query.isReleased !== '')
+      rs = rs.filter((i: any) => i.isReleased === num(req.query.isReleased))
+    return ok(page(rs, req.query))
+  }
+
+  if (method === 'POST' && path === '/api/sys/chats/mutes') {
+    const item = {
+      id: ++db.seq.chatMute,
+      userId: req.body.userId,
+      username: req.body.username ?? '',
+      nickname: req.body.nickname ?? '',
+      conversationId: req.body.conversationId ?? null,
+      muteType: req.body.muteType ?? 'global',
+      reason: req.body.reason ?? '',
+      mutedBy: 1,
+      mutedByUsername: 'admin',
+      startTime: now(),
+      endTime: req.body.endTime ?? null,
+      isReleased: 0,
+      releasedBy: null,
+      releasedAt: null,
+      createTime: now(),
+    }
+    if (!db.chatMutes) db.chatMutes = []
+    db.chatMutes.push(item)
+    return ok(cp(item))
+  }
+
+  if (method === 'PUT' && path.match(/^\/api\/sys\/chats\/mutes\/(\d+)\/release$/)) {
+    const muteId = num(path.match(/^\/api\/sys\/chats\/mutes\/(\d+)\/release$/)![1])
+    const x = (db.chatMutes || []).find((i: any) => i.id === muteId)
+    if (x) {
+      x.isReleased = 1
+      x.releasedBy = 1
+      x.releasedAt = now()
+    }
+    return ok(null)
+  }
 
   return ok(null, '未匹配到聊天后台接口', 404)
 }
@@ -186,4 +411,6 @@ export default defineMock([
   { url: '/api/sys/chats/channel-applications/:id/review', method: 'PUT', body: handle },
   { url: '/api/sys/chats/group-join-applications', method: 'GET', body: handle },
   { url: '/api/sys/chats/group-join-applications/:applicationId/review', method: 'PUT', body: handle },
+  { url: '/api/sys/chats/mutes', method: ['GET', 'POST'], body: handle },
+  { url: '/api/sys/chats/mutes/:id/release', method: 'PUT', body: handle },
 ])

@@ -4,12 +4,7 @@
       <div class="card-header">
         <span>足迹管理</span>
       </div>
-      <el-form
-        :model="searchForm"
-        label-width="80px"
-        label-position="top"
-        class="search-form"
-      >
+      <el-form :model="searchForm" label-width="80px" label-position="top" class="search-form">
         <el-row :gutter="16">
           <el-col :span="6">
             <el-form-item label="用户 ID">
@@ -78,7 +73,12 @@
         </el-row>
 
         <div class="form-actions">
-          <el-button v-permission="'content:footprint:query'" type="primary" size="small" @click="handleSearch">
+          <el-button
+            v-permission="'content:footprint:query'"
+            type="primary"
+            size="small"
+            @click="handleSearch"
+          >
             查询
           </el-button>
           <el-button size="small" @click="handleReset">重置</el-button>
@@ -119,49 +119,54 @@
         border
         table-layout="auto"
       >
-          <el-table-column prop="id" label="ID" width="80" align="center" />
-          <el-table-column prop="userId" label="用户 ID" width="100" align="center" />
-          <el-table-column prop="targetId" label="目标 ID" width="100" align="center" />
-          <el-table-column label="目标类型" min-width="110" align="center">
-            <template #default="{ row }">
-              {{ formatTargetType(row.targetType) }}
-            </template>
-          </el-table-column>
-          <el-table-column prop="targetTitle" label="目标标题" min-width="220" show-overflow-tooltip />
-          <el-table-column prop="targetUrl" label="目标链接" min-width="180" show-overflow-tooltip>
-            <template #default="{ row }">
-              {{ formatOptionalText(row.targetUrl) }}
-            </template>
-          </el-table-column>
-          <el-table-column prop="ipAddress" label="IP 地址" min-width="140" align="center">
-            <template #default="{ row }">
-              {{ formatOptionalText(row.ipAddress) }}
-            </template>
-          </el-table-column>
-          <el-table-column prop="userAgent" label="User Agent" min-width="180" show-overflow-tooltip>
-            <template #default="{ row }">
-              {{ formatOptionalText(row.userAgent) }}
-            </template>
-          </el-table-column>
-          <el-table-column label="访问时间" min-width="180" align="center">
-            <template #default="{ row }">
-              {{ formatVisitedAt(row.visitedAt) }}
-            </template>
-          </el-table-column>
-          <el-table-column label="操作" min-width="120" align="center" fixed="right">
-            <template #default="{ row }">
-              <el-button
-                v-permission="'content:footprint:delete'"
-                type="danger"
-                link
-                size="small"
-                @click="handleDelete(row.id)"
-              >
-                删除
-              </el-button>
-            </template>
-          </el-table-column>
-        </el-table>
+        <el-table-column prop="id" label="ID" width="80" align="center" />
+        <el-table-column prop="userId" label="用户 ID" width="100" align="center" />
+        <el-table-column prop="targetId" label="目标 ID" width="100" align="center" />
+        <el-table-column label="目标类型" min-width="110" align="center">
+          <template #default="{ row }">
+            {{ formatTargetType(row.targetType) }}
+          </template>
+        </el-table-column>
+        <el-table-column
+          prop="targetTitle"
+          label="目标标题"
+          min-width="220"
+          show-overflow-tooltip
+        />
+        <el-table-column prop="targetUrl" label="目标链接" min-width="180" show-overflow-tooltip>
+          <template #default="{ row }">
+            {{ formatOptionalText(row.targetUrl) }}
+          </template>
+        </el-table-column>
+        <el-table-column prop="ipAddress" label="IP 地址" min-width="140" align="center">
+          <template #default="{ row }">
+            {{ formatOptionalText(row.ipAddress) }}
+          </template>
+        </el-table-column>
+        <el-table-column prop="userAgent" label="User Agent" min-width="180" show-overflow-tooltip>
+          <template #default="{ row }">
+            {{ formatOptionalText(row.userAgent) }}
+          </template>
+        </el-table-column>
+        <el-table-column label="访问时间" min-width="180" align="center">
+          <template #default="{ row }">
+            {{ formatVisitedAt(row.visitedAt) }}
+          </template>
+        </el-table-column>
+        <el-table-column label="操作" min-width="120" align="center" fixed="right">
+          <template #default="{ row }">
+            <el-button
+              v-permission="'content:footprint:delete'"
+              type="danger"
+              link
+              size="small"
+              @click="handleDelete(row.id)"
+            >
+              删除
+            </el-button>
+          </template>
+        </el-table-column>
+      </el-table>
 
       <div class="pagination">
         <el-pagination
@@ -179,6 +184,9 @@
   </div>
 </template>
 
+/** * 足迹管理页面（后台） * @description
+后台用户足迹记录管理，支持按用户、目标类型、时间范围筛选，以及删除和清空足迹 * @module
+admin/footprint/Footprints * @see api/sys/footprint.ts */
 <script lang="ts" setup>
 import { onMounted, reactive } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
@@ -202,10 +210,7 @@ const pagination = reactive({
   size: 10,
 })
 
-const {
-  paginationLayout,
-  isCompactTable,
-} = useContentAdmin()
+const { paginationLayout, isCompactTable } = useContentAdmin()
 
 const targetTypeOptions = TARGET_TYPE_OPTIONS
 
@@ -274,11 +279,15 @@ async function handleDelete(id: number): Promise<void> {
 
 async function handleClear(): Promise<void> {
   try {
-    await ElMessageBox.confirm('确认按当前筛选条件清空足迹记录吗？未设置条件时将清空全部足迹。', '提示', {
-      confirmButtonText: '确定',
-      cancelButtonText: '取消',
-      type: 'warning',
-    })
+    await ElMessageBox.confirm(
+      '确认按当前筛选条件清空足迹记录吗？未设置条件时将清空全部足迹。',
+      '提示',
+      {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning',
+      }
+    )
     const success = await footprintStore.clearFootprints(buildQueryParams())
 
     if (success) {

@@ -20,6 +20,31 @@ export const useUserAiStore = defineStore('userAi', () => {
   const loading = ref(false)
   const sending = ref(false)
 
+  async function refreshSessionState(sessionId: number): Promise<void> {
+    const [detailResponse, msgResponse] = await Promise.all([
+      aiUserApi.getSessionById(sessionId),
+      aiUserApi.getSessionMessages(sessionId, { current: 1, size: 100 }),
+    ])
+
+    currentSession.value = detailResponse.data.data
+    const data = msgResponse.data.data
+    messages.value = data.records
+    messageTotal.value = data.total
+
+    const session = sessions.value.find(item => item.id === sessionId)
+    if (session && currentSession.value) {
+      Object.assign(session, {
+        title: currentSession.value.title,
+        channelConfigId: currentSession.value.channelConfigId,
+        sceneType: currentSession.value.sceneType,
+        status: currentSession.value.status,
+        lastMessageAt: currentSession.value.lastMessageAt,
+        createdAt: currentSession.value.createdAt,
+        updatedAt: currentSession.value.updatedAt,
+      })
+    }
+  }
+
   async function fetchSessions(params?: { current?: number; size?: number }): Promise<void> {
     loading.value = true
     try {
@@ -46,13 +71,7 @@ export const useUserAiStore = defineStore('userAi', () => {
   async function selectSession(id: number): Promise<void> {
     loading.value = true
     try {
-      const detailResponse = await aiUserApi.getSessionById(id)
-      currentSession.value = detailResponse.data.data
-
-      const msgResponse = await aiUserApi.getSessionMessages(id, { current: 1, size: 100 })
-      const msgData = msgResponse.data.data
-      messages.value = msgData.records
-      messageTotal.value = msgData.total
+      await refreshSessionState(id)
     } finally {
       loading.value = false
     }
@@ -79,9 +98,8 @@ export const useUserAiStore = defineStore('userAi', () => {
     sending.value = true
     try {
       const response = await aiUserApi.sendMessage(sessionId, data)
-      const reply = response.data.data
-      messages.value.push(reply)
-      return reply
+      await refreshSessionState(sessionId)
+      return response.data.data
     } catch {
       return null
     } finally {

@@ -3,10 +3,20 @@
     <el-card class="search-card" shadow="never">
       <el-form :model="searchForm" inline class="search-form">
         <el-form-item label="关键词">
-          <el-input v-model="searchForm.keyword" class="filter-control" clearable placeholder="会话名 / 目标用户" />
+          <el-input
+            v-model="searchForm.keyword"
+            class="filter-control"
+            clearable
+            placeholder="会话名 / 目标用户"
+          />
         </el-form-item>
         <el-form-item label="会话类型">
-          <el-select v-model="searchForm.conversationType" clearable class="filter-control" placeholder="全部">
+          <el-select
+            v-model="searchForm.conversationType"
+            clearable
+            class="filter-control"
+            placeholder="全部"
+          >
             <el-option
               v-for="option in CHAT_CONVERSATION_TYPE_OPTIONS"
               :key="option.value"
@@ -16,7 +26,12 @@
           </el-select>
         </el-form-item>
         <el-form-item label="状态">
-          <el-select v-model="searchForm.status" clearable class="filter-control" placeholder="全部">
+          <el-select
+            v-model="searchForm.status"
+            clearable
+            class="filter-control"
+            placeholder="全部"
+          >
             <el-option
               v-for="option in CHAT_CONVERSATION_STATUS_OPTIONS"
               :key="option.value"
@@ -32,7 +47,12 @@
           <el-input-number v-model="searchForm.memberUserId" :min="1" class="filter-control" />
         </el-form-item>
         <el-form-item label="全站会话">
-          <el-select v-model="searchForm.isAllSite" clearable class="filter-control" placeholder="全部">
+          <el-select
+            v-model="searchForm.isAllSite"
+            clearable
+            class="filter-control"
+            placeholder="全部"
+          >
             <el-option
               v-for="option in BOOLEAN_TEXT_OPTIONS"
               :key="option.value"
@@ -42,7 +62,9 @@
           </el-select>
         </el-form-item>
         <el-form-item class="search-actions">
-          <el-button v-permission="'content:chat:query'" type="primary" @click="handleSearch">查询</el-button>
+          <el-button v-permission="'content:chat:query'" type="primary" @click="handleSearch"
+            >查询</el-button
+          >
           <el-button @click="handleReset">重置</el-button>
         </el-form-item>
       </el-form>
@@ -52,74 +74,100 @@
       <template #header>
         <div class="card-header">
           <span>会话治理</span>
-          <el-button v-permission="'content:chat:query'" link type="primary" @click="fetchConversations">
+          <el-button
+            v-permission="'content:chat:query'"
+            link
+            type="primary"
+            @click="fetchConversations"
+          >
             刷新
           </el-button>
         </div>
       </template>
 
-        <el-table
-          v-loading="chatStore.conversationLoading"
-          :data="chatStore.conversations"
-          :size="isCompactTable ? 'small' : 'default'"
-          border
-          stripe
-          table-layout="auto"
-        >
-          <el-table-column prop="id" label="会话 ID" min-width="90" align="center" />
-          <el-table-column label="会话信息" min-width="220" align="center">
-            <template #default="{ row }">
-              <div>{{ resolveConversationName(row) }}</div>
-              <div class="sub-text">{{ formatOptionalText(row.notice) }}</div>
-            </template>
-          </el-table-column>
-          <el-table-column label="类型" min-width="96" align="center">
-            <template #default="{ row }">
-              {{ formatChatConversationType(row.conversationType) }}
-            </template>
-          </el-table-column>
-          <el-table-column label="状态" min-width="96" align="center">
-            <template #default="{ row }">
-              <el-tag :type="row.status === 1 ? 'success' : 'warning'">
-                {{ formatChatConversationStatus(row.status) }}
-              </el-tag>
-            </template>
-          </el-table-column>
-          <el-table-column prop="memberCount" label="成员数" min-width="90" align="center" />
-          <el-table-column label="群主" min-width="96" align="center">
-            <template #default="{ row }">#{{ row.ownerId ?? '-' }}</template>
-          </el-table-column>
-          <el-table-column label="最近消息" min-width="220" align="center" show-overflow-tooltip>
-            <template #default="{ row }">
-              {{ formatLastMessage(row.lastMessage) }}
-            </template>
-          </el-table-column>
-          <el-table-column label="全站" min-width="70" align="center">
-            <template #default="{ row }">
-              {{ formatBooleanText(row.isAllSite) }}
-            </template>
-          </el-table-column>
-          <el-table-column label="创建时间" min-width="168" align="center">
-            <template #default="{ row }">
-              {{ formatCreatedAt(row.createdAt) }}
-            </template>
-          </el-table-column>
-          <el-table-column label="操作" :min-width="isCompactTable ? 180 : 220" align="center">
-            <template #default="{ row }">
-              <div class="table-actions">
-                <el-button link type="primary" @click="handleSelectConversation(row.id)">进入治理</el-button>
-                <el-button
-                  v-permission="'content:chat:update'"
-                  link
-                  :type="row.status === 1 ? 'warning' : 'success'"
-                  @click="handleConversationStatusChange(row.id, row.status === 1 ? 0 : 1)"
-                >
-                  {{ row.status === 1 ? '冻结' : '启用' }}
-                </el-button>
+      <el-table
+        v-loading="chatStore.conversationLoading"
+        :data="chatStore.conversations"
+        :size="isCompactTable ? 'small' : 'default'"
+        border
+        stripe
+        table-layout="auto"
+      >
+        <el-table-column prop="id" label="会话 ID" min-width="90" align="center" />
+        <el-table-column label="会话信息" min-width="240" align="center">
+          <template #default="{ row }">
+            <div class="conversation-info">
+              <el-avatar :size="36" :src="row.avatar || undefined">
+                {{ resolveConversationName(row).slice(0, 1) }}
+              </el-avatar>
+              <div class="conversation-info__text">
+                <div>{{ resolveConversationName(row) }}</div>
+                <div class="sub-text">{{ formatLastMessage(row.lastMessage) }}</div>
               </div>
-            </template>
-          </el-table-column>
-        </el-table>
+            </div>
+          </template>
+        </el-table-column>
+        <el-table-column label="类型" min-width="96" align="center">
+          <template #default="{ row }">
+            {{ formatChatConversationType(row.conversationType) }}
+          </template>
+        </el-table-column>
+        <el-table-column label="场景" min-width="110" align="center">
+          <template #default="{ row }">
+            {{ formatChatSceneType(row.sceneType) }}
+          </template>
+        </el-table-column>
+        <el-table-column label="可见范围" min-width="110" align="center">
+          <template #default="{ row }">
+            {{ formatChatVisibilityScope(row.visibilityScope) }}
+          </template>
+        </el-table-column>
+        <el-table-column label="加入规则" min-width="100" align="center">
+          <template #default="{ row }">
+            {{ formatChatJoinRule(row.joinRule) }}
+          </template>
+        </el-table-column>
+        <el-table-column label="发言等级" min-width="90" align="center">
+          <template #default="{ row }">
+            {{ row.speakLevelLimit ?? '—' }}
+          </template>
+        </el-table-column>
+        <el-table-column label="慢速模式" min-width="90" align="center">
+          <template #default="{ row }">
+            {{ row.slowModeSeconds ? `${row.slowModeSeconds}s` : '关闭' }}
+          </template>
+        </el-table-column>
+        <el-table-column label="状态" min-width="96" align="center">
+          <template #default="{ row }">
+            <el-tag :type="row.status === 1 ? 'success' : 'warning'">
+              {{ formatChatConversationStatus(row.status) }}
+            </el-tag>
+          </template>
+        </el-table-column>
+        <el-table-column prop="memberCount" label="成员数" min-width="90" align="center" />
+        <el-table-column label="创建时间" min-width="168" align="center">
+          <template #default="{ row }">
+            {{ formatCreatedAt(row.createdAt) }}
+          </template>
+        </el-table-column>
+        <el-table-column label="操作" :min-width="isCompactTable ? 180 : 220" align="center">
+          <template #default="{ row }">
+            <div class="table-actions">
+              <el-button link type="primary" @click="handleSelectConversation(row.id)"
+                >进入治理</el-button
+              >
+              <el-button
+                v-permission="'content:chat:update'"
+                link
+                :type="row.status === 1 ? 'warning' : 'success'"
+                @click="handleConversationStatusChange(row.id, row.status === 1 ? 0 : 1)"
+              >
+                {{ row.status === 1 ? '冻结' : '启用' }}
+              </el-button>
+            </div>
+          </template>
+        </el-table-column>
+      </el-table>
 
       <div class="pagination">
         <el-pagination
@@ -149,7 +197,12 @@
           <div class="card-header">
             <span>会话详情</span>
             <div class="table-actions">
-              <el-button link type="primary" @click="handleSelectConversation(selectedConversationId)">刷新</el-button>
+              <el-button
+                link
+                type="primary"
+                @click="handleSelectConversation(selectedConversationId)"
+                >刷新</el-button
+              >
               <el-button
                 v-permission="'content:chat:update'"
                 :disabled="!selectedConversation"
@@ -167,8 +220,28 @@
           <el-descriptions-item label="会话名称">
             {{ resolveConversationName(selectedConversation) }}
           </el-descriptions-item>
+          <el-descriptions-item label="头像">
+            <el-avatar :size="28" :src="selectedConversation?.avatar || undefined">
+              {{ resolveConversationName(selectedConversation).slice(0, 1) }}
+            </el-avatar>
+          </el-descriptions-item>
           <el-descriptions-item label="会话类型">
             {{ formatChatConversationType(selectedConversation?.conversationType) }}
+          </el-descriptions-item>
+          <el-descriptions-item label="场景类型">
+            {{ formatChatSceneType(selectedConversation?.sceneType) }}
+          </el-descriptions-item>
+          <el-descriptions-item label="可见范围">
+            {{ formatChatVisibilityScope(selectedConversation?.visibilityScope) }}
+          </el-descriptions-item>
+          <el-descriptions-item label="加入规则">
+            {{ formatChatJoinRule(selectedConversation?.joinRule) }}
+          </el-descriptions-item>
+          <el-descriptions-item label="发言等级">
+            {{ selectedConversation?.speakLevelLimit ?? '—' }}
+          </el-descriptions-item>
+          <el-descriptions-item label="慢速模式">
+            {{ selectedConversation?.slowModeSeconds ? `${selectedConversation.slowModeSeconds}s` : '关闭' }}
           </el-descriptions-item>
           <el-descriptions-item label="会话状态">
             {{ formatChatConversationStatus(selectedConversation?.status) }}
@@ -176,9 +249,14 @@
           <el-descriptions-item label="成员数">
             {{ selectedConversation?.memberCount ?? 0 }}
           </el-descriptions-item>
-          <el-descriptions-item label="群主 ID">#{{ selectedConversation?.ownerId ?? '-' }}</el-descriptions-item>
+          <el-descriptions-item label="群主 ID"
+            >#{{ selectedConversation?.ownerId ?? '-' }}</el-descriptions-item
+          >
           <el-descriptions-item label="全站会话">
             {{ formatBooleanText(selectedConversation?.isAllSite) }}
+          </el-descriptions-item>
+          <el-descriptions-item label="最近消息" :span="2">
+            {{ formatLastMessage(selectedConversation?.lastMessage) }}
           </el-descriptions-item>
           <el-descriptions-item label="公告" :span="2">
             {{ formatOptionalText(selectedConversation?.notice) }}
@@ -196,7 +274,13 @@
               </div>
             </template>
 
-            <el-table v-loading="chatStore.memberLoading" :data="chatStore.members" border stripe table-layout="auto">
+            <el-table
+              v-loading="chatStore.memberLoading"
+              :data="chatStore.members"
+              border
+              stripe
+              table-layout="auto"
+            >
               <el-table-column prop="userId" label="用户 ID" min-width="90" align="center" />
               <el-table-column label="成员信息" min-width="160" align="center">
                 <template #default="{ row }">
@@ -239,7 +323,12 @@
               </el-table-column>
               <el-table-column label="操作" min-width="120" align="center">
                 <template #default="{ row }">
-                  <el-button v-permission="'content:chat:update'" link type="warning" @click="handleMemberMute(row.userId, row.muteUntil ? null : '24h')">
+                  <el-button
+                    v-permission="'content:chat:update'"
+                    link
+                    type="warning"
+                    @click="handleMemberMute(row.userId, row.muteUntil ? null : '24h')"
+                  >
                     {{ row.muteUntil ? '解除禁言' : '禁言 24h' }}
                   </el-button>
                 </template>
@@ -259,10 +348,19 @@
 
             <el-form :model="messageSearchForm" inline class="inner-search-form">
               <el-form-item label="发送者">
-                <el-input-number v-model="messageSearchForm.senderId" :min="1" class="inner-control" />
+                <el-input-number
+                  v-model="messageSearchForm.senderId"
+                  :min="1"
+                  class="inner-control"
+                />
               </el-form-item>
               <el-form-item label="类型">
-                <el-select v-model="messageSearchForm.messageType" clearable class="inner-control" placeholder="全部">
+                <el-select
+                  v-model="messageSearchForm.messageType"
+                  clearable
+                  class="inner-control"
+                  placeholder="全部"
+                >
                   <el-option
                     v-for="option in CHAT_MESSAGE_TYPE_OPTIONS"
                     :key="option.value"
@@ -272,7 +370,12 @@
                 </el-select>
               </el-form-item>
               <el-form-item label="关键词">
-                <el-input v-model="messageSearchForm.keyword" class="inner-control" clearable placeholder="消息内容" />
+                <el-input
+                  v-model="messageSearchForm.keyword"
+                  class="inner-control"
+                  clearable
+                  placeholder="消息内容"
+                />
               </el-form-item>
               <el-form-item class="search-actions">
                 <el-button type="primary" @click="handleMessageSearch">查询</el-button>
@@ -280,7 +383,13 @@
               </el-form-item>
             </el-form>
 
-            <el-table v-loading="chatStore.messageLoading" :data="chatStore.messages" border stripe table-layout="auto">
+            <el-table
+              v-loading="chatStore.messageLoading"
+              :data="chatStore.messages"
+              border
+              stripe
+              table-layout="auto"
+            >
               <el-table-column prop="id" label="消息 ID" min-width="90" align="center" />
               <el-table-column label="发送者" min-width="140" align="center">
                 <template #default="{ row }">
@@ -322,8 +431,12 @@
               <el-table-column label="操作" min-width="180" align="center">
                 <template #default="{ row }">
                   <div class="table-actions">
-                    <el-button link type="primary" @click="handleViewMessageDetail(row.id)">详情</el-button>
-                    <el-button link type="success" @click="handleViewReceipts(row.id)">回执</el-button>
+                    <el-button link type="primary" @click="handleViewMessageDetail(row.id)"
+                      >详情</el-button
+                    >
+                    <el-button link type="success" @click="handleViewReceipts(row.id)"
+                      >回执</el-button
+                    >
                     <el-button
                       v-permission="'content:chat:revoke'"
                       link
@@ -368,10 +481,19 @@
         <template v-else>
           <el-form :model="receiptSearchForm" inline class="inner-search-form">
             <el-form-item label="接收人">
-              <el-input-number v-model="receiptSearchForm.recipientUserId" :min="1" class="inner-control" />
+              <el-input-number
+                v-model="receiptSearchForm.recipientUserId"
+                :min="1"
+                class="inner-control"
+              />
             </el-form-item>
             <el-form-item label="送达状态">
-              <el-select v-model="receiptSearchForm.deliveryStatus" clearable class="inner-control" placeholder="全部">
+              <el-select
+                v-model="receiptSearchForm.deliveryStatus"
+                clearable
+                class="inner-control"
+                placeholder="全部"
+              >
                 <el-option
                   v-for="option in CHAT_DELIVERY_STATUS_OPTIONS"
                   :key="option.value"
@@ -381,7 +503,12 @@
               </el-select>
             </el-form-item>
             <el-form-item label="可见状态">
-              <el-select v-model="receiptSearchForm.visibleStatus" clearable class="inner-control" placeholder="全部">
+              <el-select
+                v-model="receiptSearchForm.visibleStatus"
+                clearable
+                class="inner-control"
+                placeholder="全部"
+              >
                 <el-option
                   v-for="option in CHAT_VISIBLE_STATUS_OPTIONS"
                   :key="option.value"
@@ -396,8 +523,19 @@
             </el-form-item>
           </el-form>
 
-          <el-table v-loading="chatStore.receiptLoading" :data="chatStore.receipts" border stripe table-layout="auto">
-            <el-table-column prop="recipientUserId" label="接收人 ID" min-width="96" align="center" />
+          <el-table
+            v-loading="chatStore.receiptLoading"
+            :data="chatStore.receipts"
+            border
+            stripe
+            table-layout="auto"
+          >
+            <el-table-column
+              prop="recipientUserId"
+              label="接收人 ID"
+              min-width="96"
+              align="center"
+            />
             <el-table-column label="接收人" min-width="160" align="center">
               <template #default="{ row }">
                 {{ row.recipientNickname || row.recipientUsername || '-' }}
@@ -454,6 +592,7 @@ import { ElMessage } from 'element-plus'
 import type { ChatConversationVO, ChatMessageVO } from '@/types/api-types'
 import { useContentAdmin } from '@/composables/useContentAdmin'
 import { useChatStore } from '@/stores'
+import { DateUtils } from '@/utils'
 import {
   BOOLEAN_TEXT_OPTIONS,
   CHAT_CONVERSATION_STATUS_OPTIONS,
@@ -466,10 +605,13 @@ import {
   formatChatConversationStatus,
   formatChatConversationType,
   formatChatDeliveryStatus,
+  formatChatJoinRule,
   formatChatMessageType,
+  formatChatSceneType,
   formatChatVisibleStatus,
   formatCreatedAt,
   formatOptionalText,
+  formatChatVisibilityScope,
 } from '@/utils'
 import ChatMessageDetailDrawer from './components/ChatMessageDetailDrawer.vue'
 
@@ -558,7 +700,11 @@ async function refreshMessages(): Promise<void> {
 
 async function refreshReceipts(): Promise<void> {
   if (selectedConversationId.value && selectedMessageId.value) {
-    await chatStore.fetchReceipts(selectedConversationId.value, selectedMessageId.value, buildReceiptQuery())
+    await chatStore.fetchReceipts(
+      selectedConversationId.value,
+      selectedMessageId.value,
+      buildReceiptQuery()
+    )
   }
 }
 
@@ -603,7 +749,10 @@ async function handleSelectConversation(conversationId: number): Promise<void> {
   ])
 }
 
-async function handleConversationStatusChange(conversationId: number, status: number): Promise<void> {
+async function handleConversationStatusChange(
+  conversationId: number,
+  status: number
+): Promise<void> {
   const success = await chatStore.updateConversationStatus(conversationId, { status })
   if (!success) {
     ElMessage.error('会话状态更新失败')
@@ -634,7 +783,9 @@ async function handleMemberRoleChange(memberUserId: number, role: string): Promi
     return
   }
 
-  const success = await chatStore.updateMemberRole(selectedConversationId.value, memberUserId, { role })
+  const success = await chatStore.updateMemberRole(selectedConversationId.value, memberUserId, {
+    role,
+  })
   if (!success) {
     ElMessage.error('成员角色更新失败')
     return
@@ -649,7 +800,9 @@ async function handleMemberStatusChange(memberUserId: number, status: number): P
     return
   }
 
-  const success = await chatStore.updateMemberStatus(selectedConversationId.value, memberUserId, { status })
+  const success = await chatStore.updateMemberStatus(selectedConversationId.value, memberUserId, {
+    status,
+  })
   if (!success) {
     ElMessage.error('成员状态更新失败')
     return
@@ -665,7 +818,9 @@ async function handleMemberMute(memberUserId: number, strategy: '24h' | null): P
   }
 
   const muteUntil =
-    strategy === '24h' ? new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString() : null
+    strategy === '24h'
+      ? DateUtils.formatDate(new Date(Date.now() + 24 * 60 * 60 * 1000), "yyyy-MM-dd'T'HH:mm:ss")
+      : null
 
   const success = await chatStore.updateMemberMute(selectedConversationId.value, memberUserId, {
     muteUntil,
@@ -787,11 +942,15 @@ function formatLastMessage(message?: ChatMessageVO | null): string {
     return '[已撤回]'
   }
 
-  return message.content || (message.file?.originalName ? `[附件] ${message.file.originalName}` : '-')
+  return (
+    message.content || (message.file?.originalName ? `[附件] ${message.file.originalName}` : '-')
+  )
 }
 
 function formatMessagePreview(message: ChatMessageVO): string {
-  return message.content || (message.file?.originalName ? `[附件] ${message.file.originalName}` : '-')
+  return (
+    message.content || (message.file?.originalName ? `[附件] ${message.file.originalName}` : '-')
+  )
 }
 
 onMounted(() => {
@@ -842,6 +1001,17 @@ onMounted(() => {
   flex-wrap: wrap;
   justify-content: center;
   gap: 8px;
+}
+
+.conversation-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  text-align: left;
+}
+
+.conversation-info__text {
+  min-width: 0;
 }
 
 .sub-text {

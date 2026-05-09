@@ -20,12 +20,18 @@
 </template>
 
 <script lang="ts" setup>
+/**
+ * 文章侧边栏组件
+ * @description 展示文章目录（TOC），点击目录项平滑滚动到对应标题
+ * @module front/article/components/ArticleSidebar
+ */
 import type { TocHeading } from '@/types/ui'
 
 defineProps<{
   headings: TocHeading[]
 }>()
 
+// 点击目录项，平滑滚动到对应标题
 function scrollTo(id: string): void {
   document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' })
 }

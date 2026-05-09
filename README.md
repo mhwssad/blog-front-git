@@ -60,8 +60,8 @@ src/
 
 ## 项目文档
 
-- [前端项目结构与编写规范](./docs/project-structure-convention.md)
-- [前端代码编写规范（含 Router 规范）](./docs/code-writing-convention.md)
+- [前端项目结构规范](./docs/project-structure-convention.md) — 目录结构、模块边界、文件放置、路由架构
+- [前端代码编写规范](./docs/code-writing-convention.md) — 代码风格、Vue/TS 细节、API/Store/Router 编写约定
 - [前端开发文档集](./docs/前端/README.md) — 页面设计、API 端点、数据模型、错误码
 - [API 接口文档](./docs/api文档/README.md)
 - [开发协作规范](./AGENTS.md)

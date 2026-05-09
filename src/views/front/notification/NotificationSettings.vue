@@ -53,6 +53,12 @@
 </template>
 
 <script lang="ts" setup>
+/**
+ * 通知设置页面
+ * @description 用户管理各类通知的开关（评论、互动、社交、系统等）
+ * @module front/notification/NotificationSettings
+ * @see ../../api/user/notification.ts
+ */
 import { computed, onMounted, ref } from 'vue'
 import { ElMessage } from 'element-plus'
 import { useNotificationSettingsStore } from '@/stores'
@@ -61,9 +67,17 @@ import type { UserNotificationSettingItemVO } from '@/types/api-types'
 const store = useNotificationSettingsStore()
 const saving = ref(false)
 
+// 互动类通知的 keys
 const interactionKeys = ['comment_article', 'like_article', 'collect_article']
+// 社交类通知的 keys
 const socialKeys = ['new_follower', 'group_mention']
-const systemKeys = ['private_message', 'channel_announcement', 'system_announcement', 'ai_task_complete']
+// 系统类通知的 keys
+const systemKeys = [
+  'private_message',
+  'channel_announcement',
+  'system_announcement',
+  'ai_task_complete',
+]
 
 const descriptions: Record<string, string> = {
   comment_article: '有人评论你发布的文章时通知你',
@@ -78,14 +92,10 @@ const descriptions: Record<string, string> = {
 }
 
 const interactionTypes = computed(() =>
-  store.settings.filter(s => interactionKeys.includes(s.type)),
+  store.settings.filter(s => interactionKeys.includes(s.type))
 )
-const socialTypes = computed(() =>
-  store.settings.filter(s => socialKeys.includes(s.type)),
-)
-const systemTypes = computed(() =>
-  store.settings.filter(s => systemKeys.includes(s.type)),
-)
+const socialTypes = computed(() => store.settings.filter(s => socialKeys.includes(s.type)))
+const systemTypes = computed(() => store.settings.filter(s => systemKeys.includes(s.type)))
 
 function findLabel(type: string): string {
   return store.settings.find(s => s.type === type)?.label ?? type
@@ -95,6 +105,7 @@ function findDesc(type: string): string {
   return descriptions[type] ?? ''
 }
 
+/** 保存通知设置 */
 async function handleSave(): Promise<void> {
   saving.value = true
   try {

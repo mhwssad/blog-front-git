@@ -85,10 +85,32 @@ export const CHAT_CONVERSATION_TYPE_OPTIONS = [
   { label: '全站', value: 'global' },
 ] as const satisfies readonly ContentOption<string>[]
 
+export const CHAT_SCENE_TYPE_OPTIONS = [
+  { label: '单聊', value: 'single_chat' },
+  { label: '群聊', value: 'group_chat' },
+  { label: '用户群', value: 'user_group' },
+  { label: '大厅频道', value: 'hall_channel' },
+  { label: '主题频道', value: 'topic_channel' },
+  { label: '公开频道', value: 'public_channel' },
+  { label: '全局频道', value: 'global_channel' },
+] as const satisfies readonly ContentOption<string>[]
+
 export const CHAT_CONVERSATION_STATUS_OPTIONS = [
   { label: '冻结', value: 0 },
   { label: '正常', value: 1 },
 ] as const satisfies readonly ContentOption<number>[]
+
+export const CHAT_VISIBILITY_SCOPE_OPTIONS = [
+  { label: '公开', value: 'public' },
+  { label: '成员可见', value: 'member' },
+  { label: '私密', value: 'private' },
+] as const satisfies readonly ContentOption<string>[]
+
+export const CHAT_JOIN_RULE_OPTIONS = [
+  { label: '自由加入', value: 'free' },
+  { label: '审批加入', value: 'approval' },
+  { label: '邀请制', value: 'invite_only' },
+] as const satisfies readonly ContentOption<string>[]
 
 export const CHAT_MESSAGE_TYPE_OPTIONS = [
   { label: '文本', value: 'text' },
@@ -232,8 +254,20 @@ export function formatChatConversationType(value: string | null | undefined): st
   return findOptionLabel(CHAT_CONVERSATION_TYPE_OPTIONS, value ?? '')
 }
 
+export function formatChatSceneType(value: string | null | undefined): string {
+  return findOptionLabel(CHAT_SCENE_TYPE_OPTIONS, value ?? '')
+}
+
 export function formatChatConversationStatus(value: NumericLike): string {
   return findOptionLabel(CHAT_CONVERSATION_STATUS_OPTIONS, value)
+}
+
+export function formatChatVisibilityScope(value: string | null | undefined): string {
+  return findOptionLabel(CHAT_VISIBILITY_SCOPE_OPTIONS, value ?? '')
+}
+
+export function formatChatJoinRule(value: string | null | undefined): string {
+  return findOptionLabel(CHAT_JOIN_RULE_OPTIONS, value ?? '')
 }
 
 export function formatChatMessageType(value: string | null | undefined): string {

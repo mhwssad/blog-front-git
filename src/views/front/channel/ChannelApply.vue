@@ -41,13 +41,7 @@
     </template>
 
     <template v-else>
-      <el-form
-        ref="formRef"
-        :model="form"
-        :rules="rules"
-        label-width="110px"
-        class="apply-form"
-      >
+      <el-form ref="formRef" :model="form" :rules="rules" label-width="110px" class="apply-form">
         <el-form-item label="频道名称" prop="desiredName">
           <el-input v-model="form.desiredName" placeholder="请输入期望的频道名称" />
         </el-form-item>
@@ -92,6 +86,12 @@
 </template>
 
 <script lang="ts" setup>
+/**
+ * 频道创建申请页面
+ * @description 用户申请创建新的频道，需填写频道名称、描述等信息
+ * @module front/channel/ChannelApply
+ * @see ../../api/user/chat.ts
+ */
 import { ref, reactive, onMounted } from 'vue'
 import { ElMessage } from 'element-plus'
 import { Clock, Select, CloseBold } from '@element-plus/icons-vue'
@@ -101,6 +101,7 @@ import type { ChannelApplicationVO } from '@/types/api-types'
 
 const store = useUserChatStore()
 const formRef = ref<FormInstance>()
+// 现有的申请记录
 const existingApplication = ref<ChannelApplicationVO | null>(null)
 const pageLoading = ref(true)
 const submitting = ref(false)
@@ -120,6 +121,7 @@ const rules = reactive<FormRules>({
   desiredCategoryCode: [{ required: true, message: '请输入分类编码', trigger: 'blur' }],
 })
 
+/** 提交频道创建申请 */
 async function handleSubmit(): Promise<void> {
   const valid = await formRef.value?.validate().catch(() => false)
   if (!valid) return

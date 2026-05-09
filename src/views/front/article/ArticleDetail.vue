@@ -59,6 +59,12 @@
 </template>
 
 <script lang="ts" setup>
+/**
+ * 文章详情页
+ * @description 展示文章内容、目录、评论，提供点赞、收藏、评论等交互功能
+ * @module front/article
+ * @see ../../api/front/article.ts
+ */
 import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
@@ -79,18 +85,31 @@ const frontContentStore = useFrontContentStore()
 const userContentStore = useUserContentStore()
 
 const articleId = computed(() => Number(route.params.id))
+// 当前文章数据
 const article = computed(() => frontContentStore.currentArticle)
+
+// 空状态提示文案（根据错误类型区分）
 const articleEmptyText = computed(() => {
   const error = frontContentStore.articleError
   if (error === 403) return '无权访问此文章（仅指定用户可见）'
   if (error === 401) return '请先登录后再查看此文章'
   return '文章不存在或已被删除'
 })
-const needPassword = ref(false)
-const showPasswordModal = ref(true)
+
+// 密码验证相关状态
+const needPassword = ref(false) // 是否需要密码
+const showPasswordModal = ref(true) // 密码弹窗是否显示
+
+// 收藏弹窗可见性
 const collectModalVisible = ref(false)
+
+// 文章目录（从正文提取的Heading）
 const tocHeadings = ref<TocHeading[]>([])
 
+/**
+ * 加载文章详情
+ * 若文章设置了访问级别（accessLevel=2），则先显示密码验证弹窗
+ */
 async function loadArticle(): Promise<void> {
   needPassword.value = false
   const result = await frontContentStore.fetchArticleById(articleId.value)
@@ -99,24 +118,37 @@ async function loadArticle(): Promise<void> {
     showPasswordModal.value = true
   }
   if (result) {
+    // 加载文章评论列表
     void frontContentStore.fetchArticleComments(articleId.value, { current: 1, size: 50 })
+    // 已登录用户加载收藏夹列表（用于收藏弹窗）
     if (authStore.isLoggedIn) {
       await userContentStore.fetchCollectionFolders()
     }
   }
 }
 
+/**
+ * 密码验证成功后关闭弹窗并显示文章内容
+ */
 function handlePasswordVerify(): void {
   needPassword.value = false
   showPasswordModal.value = false
 }
 
+/**
+ * 提取文章正文中的目录结构
+ * @param headings - 从 ArticleContent 组件提取的 Heading 列表
+ */
 function handleHeadings(headings: TocHeading[]): void {
   tocHeadings.value = headings
 }
 
+/**
+ * 处理点赞/取消点赞
+ */
 async function handleLike(): Promise<void> {
   if (!article.value || !authStore.isLoggedIn) return
+  // 根据当前点赞状态选择点赞或取消点赞
   const fn = article.value.liked ? userContentStore.unlikeArticle : userContentStore.likeArticle
   const success = await fn(article.value.id)
   if (success && article.value) {
@@ -125,10 +157,13 @@ async function handleLike(): Promise<void> {
   }
 }
 
+/**
+ * 取消收藏文章
+ */
 async function handleUncollect(): Promise<void> {
   if (!article.value) return
   const col = userContentStore.collections.find(
-    (c) => c.targetType === 'article' && c.targetId === article.value!.id,
+    c => c.targetType === 'article' && c.targetId === article.value!.id
   )
   if (col) {
     const success = await userContentStore.deleteCollection(col.id)
@@ -140,6 +175,10 @@ async function handleUncollect(): Promise<void> {
   }
 }
 
+/**
+ * 收藏文章到指定文件夹
+ * @param folderId - 目标收藏夹ID
+ */
 async function handleCollect(folderId: number): Promise<void> {
   if (!article.value) return
   const success = await userContentStore.createCollection({
@@ -155,6 +194,10 @@ async function handleCollect(folderId: number): Promise<void> {
   }
 }
 
+/**
+ * 提交评论
+ * @param data - 评论内容及回复相关参数
+ */
 async function handleCommentSubmit(data: {
   content: string
   rootId?: number
@@ -174,7 +217,7 @@ async function handleCommentSubmit(data: {
 }
 
 async function handleCommentLike(id: number): Promise<void> {
-  const comment = frontContentStore.articleComments.find((c) => c.id === id)
+  const comment = frontContentStore.articleComments.find(c => c.id === id)
   if (!comment) return
   const fn = comment.liked ? userContentStore.unlikeComment : userContentStore.likeComment
   const success = await fn(id)

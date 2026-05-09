@@ -8,8 +8,10 @@
     <el-card shadow="never" class="about-section">
       <h2 class="section-heading">博客介绍</h2>
       <p class="section-text">
-        本站是一个基于 Vue 3 + Spring Boot 构建的全栈博客平台。致力于为技术爱好者提供优质的文章分享、互动交流平台。
-        支持文章发布、分类管理、标签系统、评论互动、用户关注等核心功能，同时提供频道、AI 助手等特色功能。
+        本站是一个基于 Vue 3 + Spring Boot
+        构建的全栈博客平台。致力于为技术爱好者提供优质的文章分享、互动交流平台。
+        支持文章发布、分类管理、标签系统、评论互动、用户关注等核心功能，同时提供频道、AI
+        助手等特色功能。
       </p>
     </el-card>
 
@@ -19,7 +21,9 @@
         <el-avatar :size="64">Admin</el-avatar>
         <div class="author-info">
           <div class="author-name">博客站长</div>
-          <div class="author-desc">全栈开发者，热爱技术分享与开源。持续学习中，希望用文字记录技术成长之路。</div>
+          <div class="author-desc">
+            全栈开发者，热爱技术分享与开源。持续学习中，希望用文字记录技术成长之路。
+          </div>
         </div>
       </div>
     </el-card>
@@ -47,6 +51,11 @@
 </template>
 
 <script lang="ts" setup>
+/**
+ * 关于页面
+ * @description 展示博客平台介绍、站长信息、技术栈、联系方式等内容
+ * @module front/about
+ */
 const techStack = [
   { name: 'Vue 3', desc: '前端框架' },
   { name: 'TypeScript', desc: '类型安全' },

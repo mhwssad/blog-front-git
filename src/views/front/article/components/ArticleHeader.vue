@@ -58,6 +58,11 @@
 </template>
 
 <script lang="ts" setup>
+/**
+ * 文章头部组件
+ * @description 展示文章标题、作者、时间、浏览量、评论数等信息
+ * @module front/article/components/ArticleHeader
+ */
 import { computed } from 'vue'
 import { ChatDotRound, Clock, User, View, Share, Warning } from '@element-plus/icons-vue'
 import type { PublicArticleDetailVO } from '@/types/api-types'
@@ -67,6 +72,7 @@ const props = defineProps<{
   article: PublicArticleDetailVO
 }>()
 
+// 获取文章所属的第一个分类
 const firstCategory = computed(() => props.article.categories?.[0])
 </script>
 

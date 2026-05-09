@@ -1,5 +1,5 @@
 import { defineMock } from 'vite-plugin-mock-dev-server'
-import { db, me, menuFilter, ok, p, perms } from './shared'
+import { db, has, me, menuFilter, ok, p, page, perms } from './shared'
 
 function handle(req: any) {
   const m = String(req.method).toUpperCase()
@@ -73,6 +73,36 @@ function handle(req: any) {
     return ok(menuFilter(db.menus, new Set(u.roleIds.flatMap((id: number) => db.roles.find((r: any) => r.id === id)?.menuIds || []))))
   }
 
+  // ==================== 接管登录 ====================
+
+  if (m === 'POST' && path === '/api/auth/takeover/login') {
+    const userId = req.body.userId
+    const x = db.users.find((i: any) => i.id === userId)
+    return x
+      ? ok({ tokenType: 'Bearer', accessToken: `mock-access-token-${x.id}`, refreshToken: `mock-refresh-token-${x.id}`, expiresIn: 7200 }, '接管登录成功')
+      : ok(null, '用户不存在', 404)
+  }
+
+  // ==================== 密码重置 ====================
+
+  if (m === 'POST' && path === '/api/auth/password-reset/code') {
+    return ok(null, '验证码已发送（Mock 固定为 123456）')
+  }
+
+  if (m === 'POST' && path === '/api/auth/password-reset') {
+    const x = db.users.find((i: any) => i.email === req.body.email)
+    if (x) x.password = req.body.newPassword
+    return x ? ok(null, '密码重置成功') : ok(null, '用户不存在', 404)
+  }
+
+  // ==================== 用户搜索 ====================
+
+  if (m === 'GET' && path === '/api/users/search') {
+    let rs = [...db.users]
+    if (req.query.keyword) rs = rs.filter((i: any) => has(i.username, req.query.keyword) || has(i.nickname, req.query.keyword) || has(i.email, req.query.keyword))
+    return ok(rs.slice(0, 10).map((i: any) => ({ id: i.id, username: i.username, nickname: i.nickname, avatar: i.avatar, email: i.email })))
+  }
+
   return ok(null, '未匹配到认证接口', 404)
 }
 
@@ -85,4 +115,8 @@ export default defineMock([
   { url: '/api/auth/logout', method: ['POST', 'GET'], body: handle },
   { url: '/api/auth/current-user', method: 'GET', body: handle },
   { url: '/api/auth/current-user-menus', method: 'GET', body: handle },
+  { url: '/api/auth/takeover/login', method: 'POST', body: handle },
+  { url: '/api/auth/password-reset/code', method: 'POST', body: handle },
+  { url: '/api/auth/password-reset', method: 'POST', body: handle },
+  { url: '/api/users/search', method: 'GET', body: handle },
 ])

@@ -48,7 +48,11 @@
 
             <template v-else-if="store.articles.length">
               <div class="article-grid">
-                <HomeArticleCard v-for="article in store.articles" :key="article.id" :article="article" />
+                <HomeArticleCard
+                  v-for="article in store.articles"
+                  :key="article.id"
+                  :article="article"
+                />
               </div>
 
               <div class="section-pagination">
@@ -80,6 +84,12 @@
 </template>
 
 <script lang="ts" setup>
+/**
+ * 分类页面
+ * @description 展示某个分类下的文章列表，支持子分类切换和排序
+ * @module front/category/CategoryView
+ * @see ../../api/content.ts
+ */
 import { ref, computed, onMounted, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import { useFrontContentStore } from '@/stores'
@@ -97,10 +107,12 @@ const store = useFrontContentStore()
 
 const currentSort = ref<'latest' | 'top' | 'hot'>('latest')
 const currentPage = ref(1)
+// 每页显示条数
 const pageSize = 9
 const selectedChildId = ref<number | null>(null)
 
 const categoryId = computed(() => Number(route.params.id))
+// 获取分类名称（从分类树中查找）
 const categoryName = computed(() => {
   if (!categoryId.value) return undefined
   return findCategoryName(store.categories, categoryId.value)
@@ -166,11 +178,14 @@ watch(currentSort, () => {
   loadArticles()
 })
 
-watch(() => route.params.id, () => {
-  currentPage.value = 1
-  selectedChildId.value = null
-  loadArticles()
-})
+watch(
+  () => route.params.id,
+  () => {
+    currentPage.value = 1
+    selectedChildId.value = null
+    loadArticles()
+  }
+)
 
 onMounted(async () => {
   if (!store.categories.length) {

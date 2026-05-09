@@ -3,11 +3,17 @@
     v-model="modalVisible"
     :title="dialogTitle"
     width="540px"
-    :destroy-on-close="true"
+    destroy-on-close
     :close-on-click-modal="false"
     center
   >
-    <ElForm ref="formRef" class="category-form" :model="formState" :rules="formRules" label-width="120px">
+    <ElForm
+      ref="formRef"
+      class="category-form"
+      :model="formState"
+      :rules="formRules"
+      label-width="120px"
+    >
       <el-form-item label="上级分类">
         <el-tree-select
           v-model="formState.parentId"
@@ -22,10 +28,20 @@
         />
       </el-form-item>
       <el-form-item label="分类名称" prop="name">
-        <el-input v-model="formState.name" placeholder="请输入分类名称" maxlength="64" show-word-limit />
+        <el-input
+          v-model="formState.name"
+          placeholder="请输入分类名称"
+          maxlength="64"
+          show-word-limit
+        />
       </el-form-item>
       <el-form-item label="编码" prop="code">
-        <el-input v-model="formState.code" placeholder="请输入分类编码" maxlength="64" show-word-limit />
+        <el-input
+          v-model="formState.code"
+          placeholder="请输入分类编码"
+          maxlength="64"
+          show-word-limit
+        />
       </el-form-item>
       <el-form-item label="类型" prop="type">
         <el-input v-model="formState.type" disabled />

@@ -49,22 +49,13 @@
         <div class="articles-section">
           <div class="section-title">文章列表</div>
           <div v-if="detail?.articles?.length" class="article-list">
-            <div
-              v-for="article in detail.articles"
-              :key="article.id"
-              class="article-row"
-            >
+            <div v-for="article in detail.articles" :key="article.id" class="article-row">
               <span class="article-index">{{ article.seqNo }}</span>
               <span class="article-title" @click="goArticle(article.id)">
                 {{ article.title }}
               </span>
               <span class="article-date">{{ article.publishTime ?? '--' }}</span>
-              <el-button
-                type="primary"
-                link
-                size="small"
-                @click="goArticle(article.id)"
-              >
+              <el-button type="primary" link size="small" @click="goArticle(article.id)">
                 查看
               </el-button>
               <el-button
@@ -85,6 +76,12 @@
 </template>
 
 <script lang="ts" setup>
+/**
+ * 系列详情页面
+ * @description 展示系列的封面、描述、文章列表，支持编辑和删除
+ * @module front/series/SeriesDetail
+ * @see ../../api/content.ts
+ */
 import { computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
@@ -101,6 +98,7 @@ const seriesId = Number(route.params.id)
 const loading = computed(() => store.seriesLoading)
 const detail = computed(() => store.currentSeries)
 
+// 系列可见性标签文字
 const visibilityLabel = computed(() => {
   if (!detail.value) return ''
   const map: Record<number, string> = {
@@ -134,20 +132,13 @@ async function handleDelete(): Promise<void> {
   }
 }
 
-async function handleRemoveArticle(
-  articleId: number,
-  articleTitle: string,
-): Promise<void> {
+async function handleRemoveArticle(articleId: number, articleTitle: string): Promise<void> {
   try {
-    await ElMessageBox.confirm(
-      `确定要将文章「${articleTitle}」从系列中移除吗？`,
-      '移除确认',
-      {
-        confirmButtonText: '确定',
-        cancelButtonText: '取消',
-        type: 'warning',
-      },
-    )
+    await ElMessageBox.confirm(`确定要将文章「${articleTitle}」从系列中移除吗？`, '移除确认', {
+      confirmButtonText: '确定',
+      cancelButtonText: '取消',
+      type: 'warning',
+    })
     const ok = await store.removeArticleFromSeries(seriesId, articleId)
     if (ok) {
       ElMessage.success('已移除')

@@ -8,7 +8,6 @@ import { ref } from 'vue'
 import { defineStore } from 'pinia'
 import { ContentApi } from '@/api/content'
 import type {
-  PageResult,
   PublicArticleCardVO,
   PublicArticleDetailVO,
   PublicArticleQueryRequest,
@@ -22,6 +21,7 @@ import type {
   PublicTagQueryRequest,
   PublicTagVO,
   ChatLobbyMessageVO,
+  FriendLinkVO,
 } from '@/types/api-types'
 
 export const useFrontContentStore = defineStore('frontContent', () => {
@@ -112,6 +112,7 @@ export const useFrontContentStore = defineStore('frontContent', () => {
   const seriesLoading = ref(false)
   const lobbyLoading = ref(false)
   const channelLoading = ref(false)
+  const friendLinks = ref<FriendLinkVO[]>([])
 
   // ==================== 操作 ====================
 
@@ -335,6 +336,11 @@ export const useFrontContentStore = defineStore('frontContent', () => {
     }
   }
 
+  async function fetchFriendLinks(): Promise<void> {
+    const response = await ContentApi.getFriendLinks()
+    friendLinks.value = response.data.data ?? []
+  }
+
   return {
     loading,
     articleLoading,
@@ -362,6 +368,7 @@ export const useFrontContentStore = defineStore('frontContent', () => {
     seriesLoading,
     lobbyLoading,
     channelLoading,
+    friendLinks,
 
     fetchArticles,
     fetchArticleById,
@@ -378,5 +385,6 @@ export const useFrontContentStore = defineStore('frontContent', () => {
     fetchLobbyMessages,
     fetchPublicChannels,
     fetchPublicChannelDetail,
+    fetchFriendLinks,
   }
 })

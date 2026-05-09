@@ -20,6 +20,11 @@
 </template>
 
 <script lang="ts" setup>
+/**
+ * 个人资料卡片组件
+ * @description 展示用户头像、昵称、等级、经验值和关注/粉丝数
+ * @module front/profile/components/ProfileCard
+ */
 import { useUserFollowStore } from '@/stores'
 import UserLevelBadge from '@/components/common/UserLevelBadge.vue'
 import ExperienceBar from '@/components/common/ExperienceBar.vue'

@@ -73,6 +73,24 @@ export interface DashboardContentVO {
 }
 
 /**
+ * 热门版块信息
+ * @description 社区统计中的热门版块
+ * @interface HotSectionVO
+ */
+export interface HotSectionVO {
+  /** 版块ID */
+  sectionId: number
+  /** 版块名称 */
+  sectionName: string
+  /** 版块发帖数 */
+  postCount: number
+  /** 版块回复数 */
+  replyCount: number
+  /** 热度值（发帖数+回复数） */
+  hotValue: number
+}
+
+/**
  * 社区统计视图对象
  * @description 后台数据看板社区指标
  * @interface DashboardCommunityVO
@@ -87,6 +105,12 @@ export interface DashboardCommunityVO {
   lobbyMessageCount: number
   /** 群组数量 */
   groupCount: number
+  /** 范围内论坛发帖数（排除已删除） */
+  forumPostCount: number
+  /** 范围内论坛回复数（排除已删除） */
+  forumReplyCount: number
+  /** 热门版块 Top 5 */
+  hotSections: HotSectionVO[]
 }
 
 /**
@@ -104,6 +128,26 @@ export interface DashboardAiVO {
   aiSuccessCallCount: number
   /** 范围内AI失败调用数 */
   aiFailedCallCount: number
+  /** 范围内RAG调用次数 */
+  ragCallCount: number
+  /** 范围内Agent任务总数 */
+  agentTaskCount: number
+  /** 范围内Agent成功任务数（状态2） */
+  agentSuccessTaskCount: number
+  /** 范围内Agent失败任务数（状态3） */
+  agentFailedTaskCount: number
+}
+
+/**
+ * 处罚类型分布
+ * @description 治理统计中的处罚类型分布
+ * @interface PunishmentDistributionVO
+ */
+export interface PunishmentDistributionVO {
+  /** 处罚类型 */
+  punishmentType: string
+  /** 数量 */
+  count: number
 }
 
 /**
@@ -117,14 +161,18 @@ export interface DashboardGovernanceVO {
   range: DashboardRangeVO
   /** 范围内举报单数 */
   reportCount: number
-  /** 当前待处理举报数 */
+  /** 当前待处理举报数（全局，用于侧边栏红点） */
   pendingReportCount: number
-  /** 当前处理中举报数 */
+  /** 范围内处理中举报数 */
   processingReportCount: number
   /** 范围内已处理举报数 */
   handledReportCount: number
   /** 范围内已驳回举报数 */
   rejectedReportCount: number
+  /** 平均处理耗时（分钟） */
+  averageHandleDurationMinutes: number
+  /** 处罚类型分布 */
+  punishmentDistributions: PunishmentDistributionVO[]
 }
 
 /**

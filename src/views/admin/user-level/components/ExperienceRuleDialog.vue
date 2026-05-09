@@ -22,6 +22,12 @@
 </template>
 
 <script lang="ts" setup>
+/**
+ * 经验规则配置对话框
+ * @description 配置各类行为（如发文、评论、登录等）获取经验值的规则
+ * @module admin/user-level/ExperienceRuleDialog
+ * @see ../../stores
+ */
 import { ref, computed, watch } from 'vue'
 import { ElMessage } from 'element-plus'
 import { useExperienceStore } from '@/stores'
@@ -33,7 +39,7 @@ const experienceStore = useExperienceStore()
 
 const dialogVisible = computed({
   get: () => props.visible,
-  set: (val) => emit('update:visible', val),
+  set: val => emit('update:visible', val),
 })
 
 const saving = ref(false)
@@ -41,15 +47,15 @@ const ruleList = ref<{ configKey: string; configValue: string }[]>([])
 
 watch(
   () => props.visible,
-  async (visible) => {
+  async visible => {
     if (!visible) return
     try {
       await experienceStore.fetchConfig()
-      ruleList.value = experienceStore.configs.map((c) => ({ ...c }))
+      ruleList.value = experienceStore.configs.map(c => ({ ...c }))
     } catch {
       ElMessage.error('获取配置失败')
     }
-  },
+  }
 )
 
 async function handleSave() {

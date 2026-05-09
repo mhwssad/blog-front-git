@@ -286,7 +286,10 @@
                     <el-dropdown-item v-permission="'sys:user:adjust-level'" command="adjust-level">
                       调整等级
                     </el-dropdown-item>
-                    <el-dropdown-item v-permission="'sys:user:adjust-experience'" command="adjust-exp">
+                    <el-dropdown-item
+                      v-permission="'sys:user:adjust-experience'"
+                      command="adjust-exp"
+                    >
                       调整经验
                     </el-dropdown-item>
                   </el-dropdown-menu>
@@ -349,6 +352,11 @@
   </div>
 </template>
 
+/** * 用户管理页面 * 提供用户列表查询、状态管理、批量操作等功能 *
+支持单个用户的编辑、删除、封禁/解封、角色分配、密码重置等操作 * 支持批量启用/禁用/删除 */ /** *
+用户管理页面（后台） * @description
+后台用户管理，支持用户查询、编辑、状态切换、角色分配、密码重置、封禁/解封等完整功能 * @module
+admin/user/Users * @see api/sys/user.ts */
 <script lang="ts" setup>
 import { computed, onMounted, reactive, ref } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
@@ -363,11 +371,14 @@ import ResetPasswordDialog from './components/ResetPasswordDialog.vue'
 import UserDetailDialog from './components/UserDetailDialog.vue'
 import SuperAdminActionDialog from './components/SuperAdminActionDialog.vue'
 
+// 日志前缀
+const LOG_PREFIX = '[UserManagement]'
+
 const userStore = useUserStore()
 
 const tableRef = ref()
 
-// 搜索表单
+// 搜索表单数据
 const searchForm = reactive({
   username: '',
   nickname: '',
@@ -377,37 +388,45 @@ const searchForm = reactive({
 })
 const searchExpanded = ref(false)
 
-// 分页信息
+// 分页配置
 const pagination = reactive({
   current: 1,
   size: 10,
 })
 
-// 批量选择
+// 已选择的行（用于批量操作）
 const selectedRows = ref<SysUserAdminVO[]>([])
 
-// 对话框状态
-const formDialogVisible = ref(false)
-const rolesDialogVisible = ref(false)
-const passwordDialogVisible = ref(false)
-const detailDialogVisible = ref(false)
-const superAdminDialogVisible = ref(false)
+// 对话框显示状态
+const formDialogVisible = ref(false) // 用户表单对话框
+const rolesDialogVisible = ref(false) // 角色分配对话框
+const passwordDialogVisible = ref(false) // 密码重置对话框
+const detailDialogVisible = ref(false) // 用户详情对话框
+const superAdminDialogVisible = ref(false) // 超级操作（封禁/解封等）对话框
 const superAdminAction = ref<'ban' | 'unban' | 'adjust-level' | 'adjust-exp' | null>(null)
 
-// 当前操作的用户
+// 当前操作用户信息
 const editingUserId = ref<number | null>(null)
 const currentUserId = ref(0)
 const currentUsername = ref('')
 const viewingUser = ref<SysUserAdminVO | null>(null)
 
+// 响应式布局辅助：判断是否为紧凑表格模式
 const { isCompactTable } = useContentAdmin()
 
-// 统计
+// 计算统计数据
 const activeCount = computed(() => userStore.users.filter(u => u.status === 1).length)
 const disabledCount = computed(() => userStore.users.filter(u => u.status === 0).length)
 
-// 构建查询参数，只发送有值的筛选条件
+/**
+ * 构建查询参数
+ * 仅包含有值的筛选条件，避免传递无意义的空参数
+ */
 function buildParams(): UserQueryRequest {
+  console.debug(`${LOG_PREFIX} Building query params`, {
+    current: pagination.current,
+    size: pagination.size,
+  })
   const params: UserQueryRequest = {
     current: pagination.current,
     size: pagination.size,
@@ -417,24 +436,43 @@ function buildParams(): UserQueryRequest {
   if (searchForm.email.trim()) params.email = searchForm.email.trim()
   if (searchForm.phone.trim()) params.phone = searchForm.phone.trim()
   if (searchForm.status !== undefined) params.status = searchForm.status
+  console.debug(`${LOG_PREFIX} Final params:`, params)
   return params
 }
 
-// 获取用户列表
+/**
+ * 获取用户列表
+ * 从 store 中获取数据并同步分页状态
+ */
 async function fetchUsers() {
-  await userStore.fetchUsers(buildParams())
-  pagination.current = userStore.current
-  pagination.size = userStore.size
+  console.log(`${LOG_PREFIX} Fetching users with params:`, buildParams())
+  try {
+    await userStore.fetchUsers(buildParams())
+    pagination.current = userStore.current
+    pagination.size = userStore.size
+    console.log(`${LOG_PREFIX} Fetched ${userStore.users.length} users, total: ${userStore.total}`)
+  } catch (error) {
+    console.error(`${LOG_PREFIX} Failed to fetch users:`, error)
+    ElMessage.error('获取用户列表失败')
+  }
 }
 
-// 搜索
+/**
+ * 搜索按钮点击处理
+ * 重置到第一页后重新查询
+ */
 function handleSearch() {
+  console.log(`${LOG_PREFIX} Search triggered, resetting to page 1`)
   pagination.current = 1
   fetchUsers()
 }
 
-// 重置
+/**
+ * 重置搜索条件
+ * 清空表单并重新加载第一页数据
+ */
 function handleReset() {
+  console.log(`${LOG_PREFIX} Reset search form`)
   Object.assign(searchForm, {
     username: '',
     nickname: '',
@@ -446,65 +484,109 @@ function handleReset() {
   fetchUsers()
 }
 
-// 分页变化
+/**
+ * 每页条数变更
+ */
 function handleSizeChange(size: number) {
+  console.log(`${LOG_PREFIX} Page size changed to: ${size}`)
   pagination.size = size
   pagination.current = 1
   fetchUsers()
 }
 
+/**
+ * 当前页码变更
+ */
 function handleCurrentChange(current: number) {
+  console.log(`${LOG_PREFIX} Page changed to: ${current}`)
   pagination.current = current
   fetchUsers()
 }
 
-// 多选处理
+/**
+ * 表格选择变更
+ * @param rows 选中的行数据
+ */
 function handleSelectionChange(rows: SysUserAdminVO[]) {
+  console.debug(`${LOG_PREFIX} Selection changed, selected: ${rows.length} rows`)
   selectedRows.value = rows
 }
 
+/**
+ * 清空表格选择
+ */
 function clearSelection() {
+  console.debug(`${LOG_PREFIX} Clearing selection`)
   tableRef.value?.clearSelection()
 }
 
-// 新增用户
+/**
+ * 打开新增用户对话框
+ */
 function handleAdd() {
+  console.log(`${LOG_PREFIX} Opening add user dialog`)
   editingUserId.value = null
   formDialogVisible.value = true
 }
 
-// 查看详情
+/**
+ * 查看用户详情
+ * @param row 用户数据行
+ */
 function handleView(row: SysUserAdminVO) {
+  console.log(`${LOG_PREFIX} Viewing user detail: ${row.username} (id: ${row.id})`)
   viewingUser.value = row
   detailDialogVisible.value = true
 }
 
-// 编辑用户
+/**
+ * 打开编辑用户对话框
+ * @param row 用户数据行
+ */
 function handleEdit(row: SysUserAdminVO) {
+  console.log(`${LOG_PREFIX} Opening edit dialog for user: ${row.username} (id: ${row.id})`)
   editingUserId.value = row.id
   formDialogVisible.value = true
 }
 
-// 状态变更
+/**
+ * 用户状态变更
+ * @param row 用户数据行
+ * @param newVal 新的状态值
+ */
 async function handleStatusChange(row: SysUserAdminVO, newVal: number) {
   const oldVal = row.status
+  console.log(`${LOG_PREFIX} Status change for user ${row.id}: ${oldVal} -> ${newVal}`)
   row.status = newVal
   const ok = await userStore.updateUserStatus(row.id, { status: newVal })
   if (ok) {
+    console.log(`${LOG_PREFIX} Status updated successfully for user ${row.id}`)
     ElMessage.success('状态更新成功')
   } else {
+    console.warn(`${LOG_PREFIX} Status update failed for user ${row.id}, reverting`)
     row.status = oldVal
     ElMessage.error('状态更新失败')
   }
 }
 
-// 行样式：禁用用户置灰
+/**
+ * 获取行样式类名
+ * 禁用用户显示为灰色
+ */
 function getRowClassName({ row }: { row: SysUserAdminVO }): string {
   return row.status === 0 ? 'row-disabled' : ''
 }
 
-// 操作下拉菜单统一入口
+/**
+ * 操作下拉菜单统一入口
+ * 根据 command 分发到具体处理函数
+ * @param command 操作命令
+ * @param row 用户数据行
+ */
 function handleAction(command: string, row: SysUserAdminVO) {
+  console.log(
+    `${LOG_PREFIX} Action triggered: ${command} for user: ${row.username} (id: ${row.id})`
+  )
   switch (command) {
     case 'assign-role':
       currentUserId.value = row.id
@@ -531,55 +613,77 @@ function handleAction(command: string, row: SysUserAdminVO) {
   }
 }
 
-// 删除用户
+/**
+ * 删除用户确认
+ * @param row 用户数据行
+ */
 async function confirmDelete(row: SysUserAdminVO) {
+  console.log(`${LOG_PREFIX} Delete confirmation for user: ${row.username} (id: ${row.id})`)
   try {
     await ElMessageBox.confirm(`确定要删除用户 "${row.username}" 吗？`, '提示', {
       confirmButtonText: '确定',
       cancelButtonText: '取消',
       type: 'warning',
     })
+    console.log(`${LOG_PREFIX} Delete confirmed, proceeding...`)
     const ok = await userStore.deleteUser(row.id)
     if (ok) {
+      console.log(`${LOG_PREFIX} User deleted successfully: ${row.id}`)
       ElMessage.success('删除成功')
       fetchUsers()
     } else {
+      console.warn(`${LOG_PREFIX} User deletion failed: ${row.id}`)
       ElMessage.error('删除失败')
     }
   } catch {
+    console.debug(`${LOG_PREFIX} Delete cancelled by user`)
     // 用户取消
   }
 }
 
-// 批量状态变更
+/**
+ * 批量状态变更（启用/禁用）
+ * @param status 目标状态
+ */
 async function handleBatchStatus(status: number) {
   const label = status === 1 ? '启用' : '禁用'
   const ids = selectedRows.value.map(r => r.id)
+  console.log(`${LOG_PREFIX} Batch ${label} request for ${ids.length} users:`, ids)
   try {
     await ElMessageBox.confirm(`确定要批量${label} ${ids.length} 个用户吗？`, '提示', {
       confirmButtonText: '确定',
       cancelButtonText: '取消',
       type: 'warning',
     })
+    console.log(`${LOG_PREFIX} Batch ${label} confirmed, executing...`)
     const results = await Promise.allSettled(
       ids.map(id => userStore.updateUserStatus(id, { status }))
     )
     const failed = results.filter(r => r.status === 'fulfilled' && !r.value).length
     if (failed === 0) {
+      console.log(`${LOG_PREFIX} Batch ${label} succeeded for all ${ids.length} users`)
       ElMessage.success(`批量${label}成功`)
     } else {
+      console.warn(
+        `${LOG_PREFIX} Batch ${label} completed with ${failed} failures out of ${ids.length}`
+      )
       ElMessage.warning(`${label}完成，${failed} 个失败`)
     }
     clearSelection()
     fetchUsers()
   } catch {
+    console.debug(`${LOG_PREFIX} Batch ${label} cancelled by user`)
     // 用户取消
   }
 }
 
-// 批量删除
+/**
+ * 批量删除用户
+ * 此操作不可撤销，需二次确认
+ */
 async function handleBatchDelete() {
   const ids = selectedRows.value.map(r => r.id)
+  console.warn(`${LOG_PREFIX} Batch delete request for ${ids.length} users:`, ids)
   try {
     await ElMessageBox.confirm(
       `确定要批量删除 ${ids.length} 个用户吗？此操作不可撤销。`,
@@ -590,37 +694,59 @@ async function handleBatchDelete() {
         type: 'error',
       }
     )
+    console.log(`${LOG_PREFIX} Batch delete confirmed, executing...`)
     const results = await Promise.allSettled(ids.map(id => userStore.deleteUser(id)))
     const failed = results.filter(r => r.status === 'fulfilled' && !r.value).length
     if (failed === 0) {
+      console.log(`${LOG_PREFIX} Batch delete succeeded for all ${ids.length} users`)
       ElMessage.success('批量删除成功')
     } else {
+      console.warn(
+        `${LOG_PREFIX} Batch delete completed with ${failed} failures out of ${ids.length}`
+      )
       ElMessage.warning(`删除完成，${failed} 个失败`)
     }
     clearSelection()
     fetchUsers()
   } catch {
+    console.debug(`${LOG_PREFIX} Batch delete cancelled by user`)
     // 用户取消
   }
 }
 
-// 表单提交成功
+/**
+ * 用户表单提交成功回调
+ * 刷新列表以反映最新数据
+ */
 function handleFormSuccess() {
+  console.log(`${LOG_PREFIX} User form submitted successfully, refreshing list`)
   fetchUsers()
 }
 
-// 角色分配成功
+/**
+ * 角色分配成功回调
+ * 刷新列表以反映最新数据
+ */
 function handleRolesSuccess() {
+  console.log(`${LOG_PREFIX} Roles assigned successfully, refreshing list`)
   fetchUsers()
 }
 
-// 密码重置成功
+/**
+ * 密码重置成功回调
+ * 仅显示成功提示，无需刷新列表
+ */
 function handlePasswordSuccess() {
+  console.log(`${LOG_PREFIX} Password reset successfully for user ${currentUserId.value}`)
   ElMessage.success('密码重置成功')
 }
 
-// 初始化
+/**
+ * 页面初始化
+ * 挂载时自动加载用户列表
+ */
 onMounted(() => {
+  console.log(`${LOG_PREFIX} Component mounted, fetching initial user list`)
   fetchUsers()
 })
 </script>

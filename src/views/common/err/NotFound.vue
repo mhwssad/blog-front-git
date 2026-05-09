@@ -1,16 +1,33 @@
 <script setup lang="ts">
+/**
+ * 404 页面
+ * @description 路由未匹配到可用页面时显示，提供返回首页和上一页操作
+ * @module common/err/NotFound
+ */
 import { useRoute, useRouter } from 'vue-router'
 
 const router = useRouter()
+/** 当前路由路径，用于判断上一页是否为当前页 */
 const route = useRoute()
 
+// 返回首页
+/**
+ * 返回首页
+ */
 function goPrimary(): void {
   void router.replace('/')
 }
 
+// 返回上一页
+/**
+ * 返回上一页
+ * @description 仅在有有效上一页时返回，否则跳转首页
+ */
 function goBack(): void {
+  // 从 history.state 获取上一页路径
   const previousPath = window.history.state?.back as string | null | undefined
 
+  // 如果存在上一页路径且不是当前页，则使用 router.back()；否则跳转首页
   if (previousPath && previousPath !== route.fullPath) {
     router.back()
     return
@@ -35,12 +52,8 @@ function goBack(): void {
         </p>
 
         <div class="error-actions">
-          <button class="action-button action-primary" @click="goPrimary">
-            返回首页
-          </button>
-          <button class="action-button action-secondary" @click="goBack">
-            返回上一页
-          </button>
+          <button class="action-button action-primary" @click="goPrimary">返回首页</button>
+          <button class="action-button action-secondary" @click="goBack">返回上一页</button>
         </div>
       </div>
 

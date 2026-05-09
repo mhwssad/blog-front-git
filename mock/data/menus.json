@@ -1,6 +1,26 @@
 {
   "menus": [
     {
+      "id": 90,
+      "parentId": 0,
+      "name": "仪表盘",
+      "type": "M",
+      "sort": 0,
+      "visible": 1,
+      "status": 1,
+      "routeName": "AdminDashboard",
+      "routePath": "/admin/dashboard",
+      "component": "admin/dashboard/index",
+      "icon": "Odometer",
+      "alwaysShow": 0,
+      "keepAlive": 1,
+      "perm": "sys:dashboard:query",
+      "redirect": null,
+      "params": null,
+      "children": [],
+      "treePath": "90"
+    },
+    {
       "id": 100,
       "parentId": 0,
       "name": "系统管理",

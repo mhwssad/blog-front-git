@@ -1,7 +1,9 @@
 <template>
   <div class="editor-page">
     <div class="editor-header">
-      <el-button text @click="handleBack"><el-icon><ArrowLeft /></el-icon> 返回列表</el-button>
+      <el-button text @click="handleBack"
+        ><el-icon><ArrowLeft /></el-icon> 返回列表</el-button
+      >
       <h3 class="editor-title">{{ articleId ? '编辑文章' : '新建文章' }}</h3>
       <div class="header-actions">
         <el-button @click="handleSubmit(0)">存为草稿</el-button>
@@ -49,6 +51,12 @@
   </div>
 </template>
 
+/** * 文章编辑器页面 * @description
+后台文章发布/编辑的完整页面，包含内容编辑、分类标签选择、封面设置、SEO配置、定时发布等完整功能 *
+@module admin/article/components/ArticleEditorPage * @see api/sys/article.ts */ /** * 文章编辑器页面
+* @description
+后台文章发布/编辑的完整页面，包含内容编辑、分类标签选择、封面设置、SEO配置、定时发布等完整功能 *
+@module admin/article/components/ArticleEditorPage * @see api/sys/article.ts */
 <script lang="ts" setup>
 import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
 import { onBeforeRouteLeave } from 'vue-router'
@@ -164,11 +172,7 @@ async function loadArticle(): Promise<void> {
 async function loadDependencies(): Promise<void> {
   pageLoading.value = true
   try {
-    await Promise.all([
-      categoryStore.fetchCategoryTree(),
-      tagStore.fetchTags(),
-      loadArticle(),
-    ])
+    await Promise.all([categoryStore.fetchCategoryTree(), tagStore.fetchTags(), loadArticle()])
   } finally {
     pageLoading.value = false
   }
@@ -180,7 +184,9 @@ function handleBack(): void {
       confirmButtonText: '确认离开',
       cancelButtonText: '继续编辑',
       type: 'warning',
-    }).then(() => emit('back')).catch(() => {})
+    })
+      .then(() => emit('back'))
+      .catch(() => {})
     return
   }
   emit('back')
@@ -259,7 +265,9 @@ onBeforeRouteLeave((_to, _from, next) => {
       confirmButtonText: '确认离开',
       cancelButtonText: '继续编辑',
       type: 'warning',
-    }).then(() => next()).catch(() => next(false))
+    })
+      .then(() => next())
+      .catch(() => next(false))
   } else {
     next()
   }

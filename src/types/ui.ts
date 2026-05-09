@@ -3,6 +3,8 @@
  * 跨页面复用的组件数据类型
  */
 
+import type { Component } from 'vue'
+
 // ==================== 标签页 ====================
 
 export interface TabItem {
@@ -93,4 +95,31 @@ export interface ChannelPickOption {
   id: number
   name: string
   memberCount: number
+}
+
+// ==================== 后台数据看板 ====================
+
+export interface DashboardStat {
+  title: string
+  value: number
+  description: string
+  icon: Component
+  color: string
+  background: string
+  link?: string
+}
+
+export interface ShortcutItem {
+  title: string
+  description: string
+  path: string
+  icon: Component
+  color: string
+  background: string
+}
+
+export interface FocusItem {
+  title: string
+  description: string
+  total: number
 }

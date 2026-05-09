@@ -79,10 +79,10 @@ export class ChatWebSocket {
     }
 
     this.ws.onmessage = (event: MessageEvent) => {
-      if (event.data === 'pong') return
+      if (typeof event.data === 'string' && event.data === 'pong') return
 
       try {
-        const envelope: WsEnvelope = JSON.parse(event.data)
+        const envelope = JSON.parse(event.data)
         this.handleEnvelope(envelope)
       } catch {
         // ignore malformed messages

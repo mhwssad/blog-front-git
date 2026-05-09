@@ -42,70 +42,105 @@
         stripe
         @expand-change="handleExpandChange"
       >
-          <el-table-column label="菜单名称" min-width="200" show-overflow-tooltip>
-            <template #default="{ row }">
-              <div class="menu-name-cell">
-                <span>{{ row.name }}</span>
-                <el-tag size="small" effect="plain" :type="menuTypeTagType(row.type)">
-                  {{ formatMenuType(row.type) }}
-                </el-tag>
-              </div>
-            </template>
-          </el-table-column>
-          <el-table-column prop="perm" label="权限标识" min-width="180" align="center" show-overflow-tooltip>
-            <template #default="{ row }">
-              <span v-if="row.perm" class="mono-text">{{ row.perm }}</span>
-              <span v-else class="text-muted">-</span>
-            </template>
-          </el-table-column>
-          <el-table-column prop="routePath" label="路由路径" min-width="180" align="center" show-overflow-tooltip>
-            <template #default="{ row }">
-              <span v-if="row.routePath">{{ row.routePath }}</span>
-              <span v-else class="text-muted">-</span>
-            </template>
-          </el-table-column>
-          <el-table-column prop="component" label="组件路径" min-width="180" align="center" show-overflow-tooltip>
-            <template #default="{ row }">
-              <span v-if="row.component" class="mono-text">{{ row.component }}</span>
-              <span v-else class="text-muted">-</span>
-            </template>
-          </el-table-column>
-          <el-table-column prop="sort" label="排序" width="80" align="center" />
-          <el-table-column label="状态" min-width="160" align="center">
-            <template #default="{ row }">
-              <div class="flag-tags">
-                <el-tag v-if="row.visible === 0" size="small" type="info">隐藏</el-tag>
-                <el-tag v-if="row.alwaysShow === 1" size="small" type="warning">始终显示</el-tag>
-                <el-tag v-if="row.keepAlive === 1" size="small" type="success">缓存</el-tag>
-                <span v-if="row.visible !== 0 && row.alwaysShow !== 1 && row.keepAlive !== 1" class="text-muted">-</span>
-              </div>
-            </template>
-          </el-table-column>
-          <el-table-column
-            label="操作"
-            :min-width="isCompactTable ? 120 : 200"
-            :fixed="isCompactTable ? false : 'right'"
-            class-name="action-column"
-            align="center"
-          >
-            <template #default="{ row }">
-              <div class="table-actions" :class="{ 'table-actions--compact': isCompactTable }">
-                <el-button link type="primary" @click="handleView(row)">
-                  查看
-                </el-button>
-                <el-button v-permission="'sys:menu:create'" link type="primary" @click="handleAddChild(row)">
-                  新增
-                </el-button>
-                <el-button v-permission="'sys:menu:update'" link type="primary" @click="handleEdit(row)">
-                  编辑
-                </el-button>
-                <el-button v-permission="'sys:menu:delete'" link type="danger" @click="handleDelete(row)">
-                  删除
-                </el-button>
-              </div>
-            </template>
-          </el-table-column>
-        </el-table>
+        <el-table-column label="菜单名称" min-width="200" show-overflow-tooltip>
+          <template #default="{ row }">
+            <div class="menu-name-cell">
+              <span>{{ row.name }}</span>
+              <el-tag size="small" effect="plain" :type="menuTypeTagType(row.type)">
+                {{ formatMenuType(row.type) }}
+              </el-tag>
+            </div>
+          </template>
+        </el-table-column>
+        <el-table-column
+          prop="perm"
+          label="权限标识"
+          min-width="180"
+          align="center"
+          show-overflow-tooltip
+        >
+          <template #default="{ row }">
+            <span v-if="row.perm" class="mono-text">{{ row.perm }}</span>
+            <span v-else class="text-muted">-</span>
+          </template>
+        </el-table-column>
+        <el-table-column
+          prop="routePath"
+          label="路由路径"
+          min-width="180"
+          align="center"
+          show-overflow-tooltip
+        >
+          <template #default="{ row }">
+            <span v-if="row.routePath">{{ row.routePath }}</span>
+            <span v-else class="text-muted">-</span>
+          </template>
+        </el-table-column>
+        <el-table-column
+          prop="component"
+          label="组件路径"
+          min-width="180"
+          align="center"
+          show-overflow-tooltip
+        >
+          <template #default="{ row }">
+            <span v-if="row.component" class="mono-text">{{ row.component }}</span>
+            <span v-else class="text-muted">-</span>
+          </template>
+        </el-table-column>
+        <el-table-column prop="sort" label="排序" width="80" align="center" />
+        <el-table-column label="状态" min-width="160" align="center">
+          <template #default="{ row }">
+            <div class="flag-tags">
+              <el-tag v-if="row.visible === 0" size="small" type="info">隐藏</el-tag>
+              <el-tag v-if="row.alwaysShow === 1" size="small" type="warning">始终显示</el-tag>
+              <el-tag v-if="row.keepAlive === 1" size="small" type="success">缓存</el-tag>
+              <span
+                v-if="row.visible !== 0 && row.alwaysShow !== 1 && row.keepAlive !== 1"
+                class="text-muted"
+                >-</span
+              >
+            </div>
+          </template>
+        </el-table-column>
+        <el-table-column
+          label="操作"
+          :min-width="isCompactTable ? 120 : 200"
+          :fixed="isCompactTable ? false : 'right'"
+          class-name="action-column"
+          align="center"
+        >
+          <template #default="{ row }">
+            <div class="table-actions" :class="{ 'table-actions--compact': isCompactTable }">
+              <el-button link type="primary" @click="handleView(row)"> 查看 </el-button>
+              <el-button
+                v-permission="'sys:menu:create'"
+                link
+                type="primary"
+                @click="handleAddChild(row)"
+              >
+                新增
+              </el-button>
+              <el-button
+                v-permission="'sys:menu:update'"
+                link
+                type="primary"
+                @click="handleEdit(row)"
+              >
+                编辑
+              </el-button>
+              <el-button
+                v-permission="'sys:menu:delete'"
+                link
+                type="danger"
+                @click="handleDelete(row)"
+              >
+                删除
+              </el-button>
+            </div>
+          </template>
+        </el-table-column>
+      </el-table>
     </el-card>
 
     <MenuFormDialog
@@ -116,13 +151,13 @@
       @success="handleFormSuccess"
     />
 
-    <MenuDetailDialog
-      v-model:visible="detailDialogVisible"
-      :menu="viewingMenu"
-    />
+    <MenuDetailDialog v-model:visible="detailDialogVisible" :menu="viewingMenu" />
   </div>
 </template>
 
+/** * 菜单管理页面（后台） * @description
+后台菜单树形管理，支持菜单的增删改查、状态切换、查看详情，展开状态自动保存 * @module
+admin/menu/Menus * @see api/sys/menu.ts */
 <script lang="ts" setup>
 import { computed, onMounted, ref } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
@@ -157,7 +192,10 @@ function collectMenuKeys(tree: SysMenuAdminVO[]): string[] {
 }
 
 function collectDescendantKeys(children: SysMenuAdminVO[] = []): string[] {
-  return children.flatMap(item => [toExpandedRowKey(item.id), ...collectDescendantKeys(item.children ?? [])])
+  return children.flatMap(item => [
+    toExpandedRowKey(item.id),
+    ...collectDescendantKeys(item.children ?? []),
+  ])
 }
 
 // 保存展开状态到 localStorage

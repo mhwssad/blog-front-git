@@ -14,26 +14,13 @@
           </span>
         </div>
         <div class="channel-header-right">
-          <el-button
-            v-if="isJoined"
-            type="default"
-            :loading="joinLoading"
-            @click="handleLeave"
-          >
+          <el-button v-if="isJoined" type="default" :loading="joinLoading" @click="handleLeave">
             已加入
           </el-button>
-          <el-button
-            v-else
-            type="primary"
-            :loading="joinLoading"
-            @click="handleJoin"
-          >
+          <el-button v-else type="primary" :loading="joinLoading" @click="handleJoin">
             加入
           </el-button>
-          <el-button
-            v-if="isManager"
-            @click="$router.push(`/channel/${conversationId}/settings`)"
-          >
+          <el-button v-if="isManager" @click="$router.push(`/channel/${conversationId}/settings`)">
             设置
           </el-button>
         </div>
@@ -48,30 +35,19 @@
       <!-- Message list -->
       <div ref="messageListRef" class="message-list" @scroll="onScroll">
         <div v-if="hasMoreMessages" class="load-more-area">
-          <el-button
-            text
-            size="small"
-            :loading="loadingMore"
-            @click="loadMoreMessages"
-          >
+          <el-button text size="small" :loading="loadingMore" @click="loadMoreMessages">
             加载更多消息
           </el-button>
         </div>
-        <div
-          v-for="msg in store.messages"
-          :key="msg.id"
-          class="message-item"
-        >
-          <el-avatar
-            :size="36"
-            :src="msg.senderAvatar ?? undefined"
-            class="message-avatar"
-          >
+        <div v-for="msg in store.messages" :key="msg.id" class="message-item">
+          <el-avatar :size="36" :src="msg.senderAvatar ?? undefined" class="message-avatar">
             {{ msg.senderNickname?.charAt(0) ?? '?' }}
           </el-avatar>
           <div class="message-body">
             <div class="message-header">
-              <span class="message-username">{{ msg.senderNickname ?? msg.senderUsername ?? '未知用户' }}</span>
+              <span class="message-username">{{
+                msg.senderNickname ?? msg.senderUsername ?? '未知用户'
+              }}</span>
               <span class="message-time">{{ formatTime(msg.createdAt) }}</span>
             </div>
             <div v-if="msg.revoked" class="message-content revoked">消息已撤回</div>
@@ -100,9 +76,7 @@
       </div>
       <div v-else class="message-input-area join-prompt">
         <span class="join-prompt-text">加入频道后即可发送消息</span>
-        <el-button type="primary" :loading="joinLoading" @click="handleJoin">
-          加入频道
-        </el-button>
+        <el-button type="primary" :loading="joinLoading" @click="handleJoin"> 加入频道 </el-button>
       </div>
 
       <!-- 成员抽屉 -->
@@ -117,12 +91,7 @@
             </el-avatar>
             <div class="member-info">
               <span class="member-name">{{ m.nickname ?? m.username ?? '未知用户' }}</span>
-              <el-tag
-                v-if="m.role"
-                :type="roleTagType(m.role)"
-                size="small"
-                class="member-role"
-              >
+              <el-tag v-if="m.role" :type="roleTagType(m.role)" size="small" class="member-role">
                 {{ formatRole(m.role) }}
               </el-tag>
             </div>
@@ -137,6 +106,12 @@
 </template>
 
 <script lang="ts" setup>
+/**
+ * 频道详情页面
+ * @description 展示频道信息、消息历史，支持加入/离开频道、查看成员
+ * @module front/channel/ChannelDetail
+ * @see ../../api/user/chat.ts
+ */
 import { ref, computed, watch, onMounted, nextTick } from 'vue'
 import { useRoute } from 'vue-router'
 import { ElMessage } from 'element-plus'
@@ -159,14 +134,17 @@ const members = ref<ChatGroupMemberVO[]>([])
 
 const conversationId = computed(() => Number(route.params.id))
 
+// 是否已加入该频道（根据 selfRole 判断）
 const isJoined = computed(() => !!store.currentConversation?.selfRole)
 
+// 是否为频道管理员或群主（可以管理成员、发送消息）
 const isManager = computed(
   () =>
     store.currentConversation?.selfRole === 'owner' ||
-    store.currentConversation?.selfRole === 'admin',
+    store.currentConversation?.selfRole === 'admin'
 )
 
+// 是否有更多历史消息可加载（已加载数 < 总数）
 const hasMoreMessages = computed(() => {
   const loaded = store.messages.length
   const total = store.msgTotal

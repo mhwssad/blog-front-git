@@ -12,10 +12,14 @@ import type {
   RegisterRequest,
   RefreshTokenRequest,
   TakeoverLoginRequest,
+  PasswordResetCodeRequest,
+  PasswordResetSelfRequest,
   // 响应类型
   AuthenticationToken,
   AuthUserInfo,
   AuthMenuInfo,
+  UserSearchVO,
+  PageResult,
 } from '@/types/api-types'
 
 /**
@@ -92,6 +96,27 @@ export const authApi = {
    */
   takeoverLogin: (data: TakeoverLoginRequest) =>
     http.post<AuthenticationToken>('/auth/takeover/login', data),
+
+  /**
+   * 发送密码重置验证码
+   * POST /api/auth/password-reset/code
+   */
+  sendPasswordResetCode: (data: PasswordResetCodeRequest) =>
+    http.post<void>('/auth/password-reset/code', data, { skipAuth: true }),
+
+  /**
+   * 重置密码
+   * POST /api/auth/password-reset
+   */
+  resetPassword: (data: PasswordResetSelfRequest) =>
+    http.post<void>('/auth/password-reset', data, { skipAuth: true }),
+
+  /**
+   * 搜索用户（公开）
+   * GET /api/users/search
+   */
+  searchUsers: (params?: { keyword?: string; current?: number; size?: number }) =>
+    http.get<PageResult<UserSearchVO>>('/users/search', params),
 }
 
 export default authApi

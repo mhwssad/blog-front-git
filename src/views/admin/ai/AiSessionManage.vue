@@ -1,3 +1,6 @@
+/** * AI 会话管理 * @description 后台 AI
+会话列表管理，支持按用户、渠道、状态、时间范围筛选，查看会话详情 * @module admin/ai/AiSessionManage
+* @see api/sys/ai.ts */
 <template>
   <div class="ai-session-page">
     <el-card class="search-card" shadow="never">
@@ -52,42 +55,48 @@
       <template #header>
         <span>AI 会话列表</span>
       </template>
-        <el-table
-          :data="tableData"
-          v-loading="loading"
-          :size="isCompactTable ? 'small' : 'default'"
-          border
-          stripe
-        >
-          <el-table-column prop="id" label="ID" width="80" align="center" />
-          <el-table-column prop="userId" label="用户ID" width="90" align="center" />
-          <el-table-column prop="username" label="用户名" min-width="120" align="center" />
-          <el-table-column prop="nickname" label="昵称" min-width="120" align="center" />
-          <el-table-column prop="channelName" label="渠道" min-width="140" align="center" show-overflow-tooltip />
-          <el-table-column prop="title" label="标题" min-width="180" show-overflow-tooltip />
-          <el-table-column prop="sceneType" label="场景" width="100" align="center">
-            <template #default="{ row }">
-              {{ formatAiSceneType(row.sceneType) }}
-            </template>
-          </el-table-column>
-          <el-table-column prop="status" label="状态" width="100" align="center">
-            <template #default="{ row }">
-              <el-tag :type="row.status === 1 ? 'success' : 'info'">
-                {{ formatAiSessionStatus(row.status) }}
-              </el-tag>
-            </template>
-          </el-table-column>
-          <el-table-column prop="lastMessageAt" label="最后消息" min-width="180" align="center">
-            <template #default="{ row }">
-              {{ formatAiDate(row.lastMessageAt) }}
-            </template>
-          </el-table-column>
-          <el-table-column prop="createdAt" label="创建时间" min-width="180" align="center">
-            <template #default="{ row }">
-              {{ formatAiDate(row.createdAt) }}
-            </template>
-          </el-table-column>
-        </el-table>
+      <el-table
+        :data="tableData"
+        v-loading="loading"
+        :size="isCompactTable ? 'small' : 'default'"
+        border
+        stripe
+      >
+        <el-table-column prop="id" label="ID" width="80" align="center" />
+        <el-table-column prop="userId" label="用户ID" width="90" align="center" />
+        <el-table-column prop="username" label="用户名" min-width="120" align="center" />
+        <el-table-column prop="nickname" label="昵称" min-width="120" align="center" />
+        <el-table-column
+          prop="channelName"
+          label="渠道"
+          min-width="140"
+          align="center"
+          show-overflow-tooltip
+        />
+        <el-table-column prop="title" label="标题" min-width="180" show-overflow-tooltip />
+        <el-table-column prop="sceneType" label="场景" width="100" align="center">
+          <template #default="{ row }">
+            {{ formatAiSceneType(row.sceneType) }}
+          </template>
+        </el-table-column>
+        <el-table-column prop="status" label="状态" width="100" align="center">
+          <template #default="{ row }">
+            <el-tag :type="row.status === 1 ? 'success' : 'info'">
+              {{ formatAiSessionStatus(row.status) }}
+            </el-tag>
+          </template>
+        </el-table-column>
+        <el-table-column prop="lastMessageAt" label="最后消息" min-width="180" align="center">
+          <template #default="{ row }">
+            {{ formatAiDate(row.lastMessageAt) }}
+          </template>
+        </el-table-column>
+        <el-table-column prop="createdAt" label="创建时间" min-width="180" align="center">
+          <template #default="{ row }">
+            {{ formatAiDate(row.createdAt) }}
+          </template>
+        </el-table-column>
+      </el-table>
       <div class="pagination-area">
         <el-pagination
           v-model:current-page="pagination.current"
@@ -116,6 +125,7 @@ import {
 } from '@/utils/aiAdmin'
 import type { AiChannelConfigVO, AiSessionAdminVO } from '@/types/api-types'
 
+// 搜索条件：用户ID、渠道、状态
 const query = reactive({
   userId: '' as string,
   channelConfigId: undefined as number | undefined,
@@ -130,16 +140,19 @@ const pagination = reactive({
   total: 0,
 })
 
+// 表格数据和加载状态
 const tableData = ref<AiSessionAdminVO[]>([])
 const loading = ref(false)
+
+// 渠道下拉列表
 const channelList = ref<AiChannelConfigVO[]>([])
 
-const { paginationLayout, isCompactTable } =
-  useContentAdmin({
-    minHeight: 360,
-    bottomOffset: 28,
-  })
+const { paginationLayout, isCompactTable } = useContentAdmin({
+  minHeight: 360,
+  bottomOffset: 28,
+})
 
+// 获取渠道下拉列表
 async function fetchChannels() {
   try {
     const res = await aiSysApi.getChannels({ size: 100 })
@@ -149,6 +162,7 @@ async function fetchChannels() {
   }
 }
 
+// 获取会话列表
 async function fetchList() {
   loading.value = true
   try {
@@ -165,9 +179,7 @@ async function fetchList() {
       params.endTime = dateRange.value[1]
     }
 
-    const res = await aiSysApi.getSessions(
-      params as Parameters<typeof aiSysApi.getSessions>[0],
-    )
+    const res = await aiSysApi.getSessions(params as Parameters<typeof aiSysApi.getSessions>[0])
     const page = res.data.data
     tableData.value = page?.records ?? []
     pagination.total = page?.total ?? 0
@@ -178,11 +190,13 @@ async function fetchList() {
   }
 }
 
+// 查询按钮
 function handleQuery() {
   pagination.current = 1
   void fetchList()
 }
 
+// 重置搜索条件
 function handleReset() {
   query.userId = ''
   query.channelConfigId = undefined
@@ -193,11 +207,13 @@ function handleReset() {
   void fetchList()
 }
 
+// 切换每页条数
 function handleSizeChange() {
   pagination.current = 1
   void fetchList()
 }
 
+// 切换当前页
 function handleCurrentChange() {
   void fetchList()
 }
