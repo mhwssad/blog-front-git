@@ -1,11 +1,7 @@
 <template>
   <div class="logo">
     <router-link class="logo-link" to="/">
-      <div class="logo-icon">
-        <el-icon :size="28">
-          <Platform />
-        </el-icon>
-      </div>
+      <img :src="logoUrl" alt="Logo" class="logo-image" />
       <transition name="logo-text">
         <span v-if="!collapse" class="logo-title">
           {{ title }}
@@ -16,7 +12,9 @@
 </template>
 
 <script lang="ts" setup>
-import { Platform } from '@element-plus/icons-vue'
+import { ref, onMounted } from 'vue'
+import { useConfigStore } from '@/stores/modules/config'
+import logoUrl from '@/assets/images/logo.png'
 
 interface Props {
   collapse?: boolean
@@ -26,7 +24,15 @@ withDefaults(defineProps<Props>(), {
   collapse: false
 })
 
-const title = 'Blog Admin'
+const configStore = useConfigStore()
+const title = ref('Blog Admin')
+
+onMounted(async () => {
+  const name = await configStore.fetchConfigByKey('site_name')
+  if (name) {
+    title.value = name
+  }
+})
 </script>
 
 <style scoped>
@@ -55,16 +61,11 @@ const title = 'Blog Admin'
   background-color: rgba(255, 255, 255, 0.05);
 }
 
-.logo-icon {
+.logo-image {
   width: 32px;
   height: 32px;
   flex-shrink: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: var(--color-primary);
-  background-color: rgba(255, 255, 255, 0.1);
-  border-radius: 8px;
+  object-fit: contain;
 }
 
 .logo-title {

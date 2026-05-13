@@ -5,8 +5,10 @@
 
 import type { Router } from 'vue-router'
 import { useAuthStore, useTabsStore } from '@/stores'
+import { isSuperAdmin } from '@/utils/permission'
 import { ensureDynamicAdminRoutes } from './dynamic-routes'
 import { getAdminMenus, getFirstAccessibleMenuPath, hasMenuPath } from './menu'
+import { log } from '@/composables/useLogger'
 
 const APP_TITLE = 'Blog Admin'
 
@@ -73,8 +75,12 @@ export function setupRouterGuards(router: Router): void {
       return getFirstAccessibleMenuPath(adminMenus) ?? '/403'
     }
 
-    // 后台路径但不在菜单中，无权限
-    if (to.path.startsWith('/admin') && !hasMenuPath(adminMenus, to.path)) {
+    // 后台路径但不在菜单中且非超级管理员，无权限
+    if (
+      to.path.startsWith('/admin') &&
+      !isSuperAdmin(authStore.currentUser?.permissions) &&
+      !hasMenuPath(adminMenus, to.path)
+    ) {
       return '/403'
     }
 

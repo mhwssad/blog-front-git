@@ -16,6 +16,12 @@ export const FRONT_ROUTES: RouteRecordRaw[] = [
         meta: { title: '首页' },
       },
       {
+        path: 'articles',
+        name: 'Articles',
+        component: () => import('@/views/front/articles/ArticlesView.vue'),
+        meta: { title: '文章' },
+      },
+      {
         path: 'articles/:id',
         name: 'ArticleDetail',
         component: () => import('@/views/front/article/ArticleDetail.vue'),

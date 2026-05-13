@@ -11,6 +11,7 @@ import {
   hasAllPermissions as checkAllPermissions,
   hasAnyPermission as checkAnyPermission,
   hasPermission as checkPermission,
+  isSuperAdmin as checkSuperAdmin,
   type PermissionRequirement,
 } from '@/utils/permission'
 import type {
@@ -310,6 +311,13 @@ export const useAuthStore = defineStore('auth', () => {
   }
 
   /**
+   * 检查当前用户是否为超级管理员
+   */
+  function isSuperAdmin(): boolean {
+    return checkSuperAdmin(currentUser.value?.permissions)
+  }
+
+  /**
    * 发送密码重置验证码
    */
   async function sendPasswordResetCode(data: PasswordResetCodeRequest): Promise<boolean> {
@@ -406,6 +414,7 @@ export const useAuthStore = defineStore('auth', () => {
     hasAnyPermission,
     hasAllPermissions,
     hasRole,
+    isSuperAdmin,
     initAuth,
     sendPasswordResetCode,
     resetPassword,

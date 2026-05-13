@@ -1,88 +1,54 @@
 <template>
-  <div class="article-section">
-    <div class="section-body">
-      <aside class="category-tree">
-        <div
-          class="category-item"
-          :class="{ 'category-item--active': !selectedCategoryId }"
-          @click="emit('category-change', undefined)"
-        >
-          全部
-        </div>
-        <template v-for="cat in categories" :key="cat.id">
-          <div
-            class="category-item"
-            :class="{ 'category-item--active': selectedCategoryId === cat.id }"
-            @click="emit('category-change', cat.id)"
-          >
-            <el-icon v-if="cat.children?.length" size="14">
-              <ArrowRight />
-            </el-icon>
-            {{ cat.name }}
+  <section class="article-section">
+    <header class="section-header">
+      <router-link to="/articles" class="more-link">
+        更多内容
+        <el-icon><ArrowRight /></el-icon>
+      </router-link>
+    </header>
+
+    <div v-if="loading" class="section-loading">
+      <div class="skeleton-grid">
+        <div v-for="n in 6" :key="n" class="skeleton-card">
+          <div class="skeleton-cover" />
+          <div class="skeleton-body">
+            <div class="skeleton-line skeleton-line--title" />
+            <div class="skeleton-line skeleton-line--text" />
+            <div class="skeleton-line skeleton-line--short" />
           </div>
-          <div
-            v-for="child in cat.children"
-            :key="child.id"
-            class="category-item category-item--child"
-            :class="{ 'category-item--active': selectedCategoryId === child.id }"
-            @click="emit('category-change', child.id)"
-          >
-            {{ child.name }}
-          </div>
-        </template>
-      </aside>
-
-      <div class="article-list">
-        <div class="list-header">
-          <el-select
-            :model-value="selectedSort"
-            size="small"
-            style="width: 120px"
-            @change="(v: string | number) => emit('sort-change', v as SortOption['value'])"
-          >
-            <el-option
-              v-for="opt in sortOptions"
-              :key="opt.value"
-              :label="opt.label"
-              :value="opt.value"
-            />
-          </el-select>
         </div>
-
-        <div v-if="loading" class="list-loading">
-          <el-skeleton :rows="5" animated />
-        </div>
-
-        <template v-else-if="articles.length">
-          <HomeArticleCard v-for="article in articles" :key="article.id" :article="article" />
-
-          <div class="list-pagination">
-            <el-pagination
-              :current-page="current"
-              :page-size="size"
-              :total="total"
-              layout="prev, pager, next"
-              @current-change="(page: number) => emit('page-change', page)"
-            />
-          </div>
-        </template>
-
-        <el-empty v-else description="暂无文章" />
       </div>
     </div>
-  </div>
+
+    <div v-else-if="articles.length" class="article-grid">
+      <HomeArticleCard v-for="article in articles" :key="article.id" :article="article" />
+    </div>
+
+    <div v-else class="section-empty">
+      <div class="empty-icon">
+        <el-icon :size="48"><Document /></el-icon>
+      </div>
+      <p class="empty-text">暂无文章</p>
+      <p class="empty-hint">敬请期待更多内容</p>
+    </div>
+
+    <div v-if="articles.length" class="section-pagination">
+      <el-pagination
+        :current-page="current"
+        :page-size="size"
+        :total="total"
+        background
+        layout="prev, pager, next"
+        @current-change="(page: number) => emit('page-change', page)"
+      />
+    </div>
+  </section>
 </template>
 
 <script lang="ts" setup>
-/**
- * 文章列表区块组件
- * @description 包含分类侧边栏和文章列表，支持分类筛选和排序
- * @module front/home/components/HomeArticleSection
- */
-import { ArrowRight } from '@element-plus/icons-vue'
+import { ArrowRight, Document } from '@element-plus/icons-vue'
 import HomeArticleCard from './HomeArticleCard.vue'
-import type { PublicArticleCardVO, PublicCategoryTreeVO } from '@/types/api-types'
-import type { SortOption } from '@/types/ui'
+import type { PublicArticleCardVO } from '@/types/api-types'
 
 defineProps<{
   loading?: boolean
@@ -90,119 +56,177 @@ defineProps<{
   total: number
   current: number
   size: number
-  sortOptions: SortOption[]
-  selectedSort: SortOption['value']
-  categories: PublicCategoryTreeVO[]
-  selectedCategoryId?: number | null
 }>()
 
 const emit = defineEmits<{
-  'sort-change': [value: SortOption['value']]
   'page-change': [page: number]
-  'category-change': [id: number | undefined]
 }>()
 </script>
 
 <style scoped>
 .article-section {
-  background: #fff;
-  border-radius: 8px;
-  overflow: hidden;
+  background: var(--el-bg-color, #fff);
+  border-radius: 12px;
+  padding: 28px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
 }
 
-.section-body {
-  display: flex;
-}
-
-.category-tree {
-  width: 180px;
-  flex-shrink: 0;
-  padding: 16px 0;
-  border-right: 1px solid var(--el-border-color-lighter);
-  background: var(--el-fill-color-lighter);
-}
-
-.category-item {
-  padding: 8px 16px;
-  font-size: 14px;
-  color: var(--el-text-color-regular);
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  transition:
-    color 0.2s,
-    background 0.2s;
-}
-
-.category-item:hover {
-  color: var(--el-color-primary);
-  background: var(--el-fill-color);
-}
-
-.category-item--active {
-  color: var(--el-color-primary);
-  font-weight: 500;
-  background: var(--el-color-primary-light-9);
-  border-right: 2px solid var(--el-color-primary);
-}
-
-.category-item--child {
-  padding-left: 32px;
-}
-
-.article-list {
-  flex: 1;
-  min-width: 0;
-  padding: 20px 24px;
-}
-
-.list-header {
+.section-header {
   display: flex;
   justify-content: flex-end;
-  margin-bottom: 12px;
+  margin-bottom: 24px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid var(--el-border-color-lighter);
 }
 
-.list-loading {
-  padding: 16px 0;
+.more-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--el-color-primary);
+  text-decoration: none;
+  transition: opacity 0.2s;
 }
 
-.list-pagination {
+.more-link:hover {
+  opacity: 0.8;
+}
+
+.article-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+}
+
+/* Skeleton loading */
+.skeleton-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+}
+
+.skeleton-card {
+  border-radius: 12px;
+  overflow: hidden;
+  background: var(--el-bg-color, #fff);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+}
+
+.skeleton-cover {
+  aspect-ratio: 16 / 9;
+  background: linear-gradient(
+    90deg,
+    var(--el-fill-color-light) 25%,
+    var(--el-fill-color) 50%,
+    var(--el-fill-color-light) 75%
+  );
+  background-size: 200% 100%;
+  animation: skeleton-shimmer 1.5s ease-in-out infinite;
+}
+
+.skeleton-body {
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.skeleton-line {
+  height: 14px;
+  border-radius: 4px;
+  background: linear-gradient(
+    90deg,
+    var(--el-fill-color-light) 25%,
+    var(--el-fill-color) 50%,
+    var(--el-fill-color-light) 75%
+  );
+  background-size: 200% 100%;
+  animation: skeleton-shimmer 1.5s ease-in-out infinite;
+}
+
+.skeleton-line--title {
+  width: 80%;
+  height: 16px;
+}
+
+.skeleton-line--text {
+  width: 100%;
+}
+
+.skeleton-line--short {
+  width: 50%;
+}
+
+@keyframes skeleton-shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+/* Empty state */
+.section-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 64px 24px;
+  color: var(--el-text-color-placeholder);
+}
+
+.empty-icon {
+  margin-bottom: 16px;
+  opacity: 0.4;
+}
+
+.empty-text {
+  margin: 0 0 4px;
+  font-size: 16px;
+  font-weight: 500;
+  color: var(--el-text-color-secondary);
+}
+
+.empty-hint {
+  margin: 0;
+  font-size: 13px;
+}
+
+.section-pagination {
   display: flex;
   justify-content: center;
-  margin-top: 20px;
-  padding-top: 16px;
+  margin-top: 32px;
+  padding-top: 24px;
   border-top: 1px solid var(--el-border-color-lighter);
 }
 
+@media (max-width: 1024px) {
+  .article-grid,
+  .skeleton-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+  }
+}
+
 @media (max-width: 768px) {
-  .section-body {
-    flex-direction: column;
+  .article-section {
+    padding: 20px;
+    border-radius: 0;
   }
 
-  .category-tree {
-    width: 100%;
-    border-right: none;
-    border-bottom: 1px solid var(--el-border-color-lighter);
-    display: flex;
-    flex-wrap: wrap;
-    gap: 4px;
-    padding: 12px 16px;
+  .article-grid,
+  .skeleton-grid {
+    grid-template-columns: 1fr;
+    gap: 16px;
   }
+}
 
-  .category-item {
-    padding: 4px 12px;
-    border-radius: 4px;
-    font-size: 13px;
-  }
-
-  .category-item--active {
-    border-right: none;
-    border-radius: 4px;
-  }
-
-  .category-item--child {
-    padding-left: 12px;
+@media (prefers-reduced-motion: reduce) {
+  .skeleton-cover,
+  .skeleton-line {
+    animation: none;
   }
 }
 </style>

@@ -68,14 +68,21 @@
           align="center"
           show-overflow-tooltip
         />
-        <el-table-column prop="provider" label="提供方" min-width="100" align="center" />
-        <el-table-column
-          prop="modelName"
-          label="模型"
-          min-width="140"
-          align="center"
-          show-overflow-tooltip
-        />
+        <el-table-column label="输入上限" min-width="100" align="center">
+          <template #default="{ row }">
+            {{ row.maxInputTokens || '不限制' }}
+          </template>
+        </el-table-column>
+        <el-table-column label="RAG上限" min-width="100" align="center">
+          <template #default="{ row }">
+            {{ row.maxRagTokens || '不限制' }}
+          </template>
+        </el-table-column>
+        <el-table-column label="输出上限" min-width="100" align="center">
+          <template #default="{ row }">
+            {{ row.maxOutputTokens || '不限制' }}
+          </template>
+        </el-table-column>
         <el-table-column label="用户日限额" min-width="110" align="center">
           <template #default="{ row }">
             {{ row.userDailyQuota || '不限制' }}

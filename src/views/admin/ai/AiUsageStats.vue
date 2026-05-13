@@ -132,6 +132,22 @@ api/sys/ai.ts (AiUsageStore, AiChannelStore) */
                 {{ row.errorCode || '-' }}
               </template>
             </el-table-column>
+            <el-table-column label="RAG" width="80" align="center">
+              <template #default="{ row }">
+                <el-tag v-if="row.ragEnabled === 1" type="success" size="small">启用</el-tag>
+                <span v-else>-</span>
+              </template>
+            </el-table-column>
+            <el-table-column label="RAG命中" width="90" align="center">
+              <template #default="{ row }">
+                {{ row.ragHitCount ?? '-' }}
+              </template>
+            </el-table-column>
+            <el-table-column label="RAG耗时" width="100" align="center">
+              <template #default="{ row }">
+                {{ row.ragDurationMs != null ? `${row.ragDurationMs}ms` : '-' }}
+              </template>
+            </el-table-column>
             <el-table-column label="时间" min-width="170" align="center">
               <template #default="{ row }">
                 {{ formatAiDate(row.createdAt) }}
@@ -274,7 +290,7 @@ api/sys/ai.ts (AiUsageStore, AiChannelStore) */
 </template>
 
 <script lang="ts" setup>
-import { onMounted, reactive, ref } from 'vue'
+import { computed, onMounted, reactive, ref } from 'vue'
 import { useAiUsageStore, useAiChannelStore } from '@/stores'
 import {
   AI_SUCCESS_STATUS_OPTIONS,
@@ -292,7 +308,7 @@ const channelStore = useAiChannelStore()
 const activeTab = ref('logs')
 
 // 统计数据引用（响应式更新）
-const stats = ref(usageStore.usageStats)
+const stats = computed(() => usageStore.usageStats)
 
 // 日志搜索时间范围 [开始时间, 结束时间]
 const logTimeRange = ref<[string, string] | null>(null)
@@ -452,7 +468,6 @@ async function fetchStats(): Promise<void> {
     startTime: logTimeRange.value?.[0],
     endTime: logTimeRange.value?.[1],
   })
-  stats.value = usageStore.usageStats
 }
 
 /**

@@ -1,10 +1,13 @@
 <template>
   <div class="sidebar-comments">
-    <div class="sidebar-block-title">最新评论</div>
+    <h3 class="sidebar-block-title">
+      <el-icon aria-hidden="true" class="title-icon"><ChatDotSquare /></el-icon>
+      最新评论
+    </h3>
     <div v-if="comments.length" class="comment-list">
       <div v-for="comment in comments" :key="comment.id" class="comment-item">
         <img v-if="comment.userAvatar" :src="comment.userAvatar" class="comment-avatar" alt="" />
-        <div v-else class="comment-avatar comment-avatar-placeholder">
+        <div v-else class="comment-avatar comment-avatar--placeholder">
           {{ comment.userNickname?.charAt(0) }}
         </div>
         <div class="comment-body">
@@ -21,11 +24,7 @@
 </template>
 
 <script lang="ts" setup>
-/**
- * 侧边栏最新评论组件
- * @description 展示最近的用户评论，支持日期格式化
- * @module front/home/components/HomeSidebarComments
- */
+import { ChatDotSquare } from '@element-plus/icons-vue'
 import type { PublicCommentVO } from '@/types/api-types'
 
 defineProps<{
@@ -39,18 +38,30 @@ defineProps<{
   font-size: 15px;
   font-weight: 600;
   color: var(--el-text-color-primary);
-  margin-bottom: 12px;
+  margin: 0 0 16px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.title-icon {
+  color: var(--el-color-primary);
 }
 
 .comment-list {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 14px;
 }
 
 .comment-item {
   display: flex;
   gap: 10px;
+}
+
+.comment-item:not(:last-child) {
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--el-border-color-extra-light, #f5f5f5);
 }
 
 .comment-avatar {
@@ -61,12 +72,12 @@ defineProps<{
   flex-shrink: 0;
 }
 
-.comment-avatar-placeholder {
+.comment-avatar--placeholder {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: var(--el-fill-color);
-  color: var(--el-text-color-secondary);
+  background: var(--el-color-primary-light-9);
+  color: var(--el-color-primary);
   font-size: 13px;
   font-weight: 600;
 }
@@ -79,8 +90,8 @@ defineProps<{
 .comment-meta {
   display: flex;
   align-items: center;
-  gap: 6px;
-  margin-bottom: 2px;
+  gap: 8px;
+  margin-bottom: 4px;
 }
 
 .comment-nickname {
@@ -90,20 +101,24 @@ defineProps<{
 }
 
 .comment-time {
-  font-size: 12px;
+  font-size: 11px;
   color: var(--el-text-color-placeholder);
 }
 
 .comment-content {
   font-size: 13px;
+  line-height: 1.5;
   color: var(--el-text-color-regular);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
   overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
 }
 
 .sidebar-empty {
   font-size: 13px;
   color: var(--el-text-color-placeholder);
+  text-align: center;
+  padding: 8px 0;
 }
 </style>

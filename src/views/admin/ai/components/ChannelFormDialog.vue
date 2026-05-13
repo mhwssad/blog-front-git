@@ -31,35 +31,6 @@
           </el-form-item>
         </el-col>
       </el-row>
-      <el-row :gutter="16">
-        <el-col :span="12">
-          <el-form-item label="提供方" prop="provider">
-            <el-input
-              v-model="formData.provider"
-              maxlength="64"
-              placeholder="如 openai、deepseek"
-            />
-          </el-form-item>
-        </el-col>
-        <el-col :span="12">
-          <el-form-item label="模型名称" prop="modelName">
-            <el-input v-model="formData.modelName" maxlength="128" placeholder="如 gpt-4o" />
-          </el-form-item>
-        </el-col>
-      </el-row>
-
-      <el-divider content-position="left">API 配置</el-divider>
-      <el-form-item label="API 地址" prop="apiBaseUrl">
-        <el-input v-model="formData.apiBaseUrl" placeholder="https://api.openai.com/v1" />
-      </el-form-item>
-      <el-form-item label="API Key" prop="apiKeyEncrypted">
-        <el-input
-          v-model="formData.apiKeyEncrypted"
-          type="password"
-          show-password
-          placeholder="请输入 API Key"
-        />
-      </el-form-item>
 
       <el-divider content-position="left">额度配置</el-divider>
       <el-row :gutter="16">
@@ -90,6 +61,67 @@
               :min="0"
               :max="1000000"
               :step="1024"
+              style="width: 100%"
+            />
+          </el-form-item>
+        </el-col>
+      </el-row>
+
+      <el-divider content-position="left">Token 预算</el-divider>
+      <el-row :gutter="16">
+        <el-col :span="8">
+          <el-form-item label="输入上限" prop="maxInputTokens">
+            <el-input-number
+              v-model="formData.maxInputTokens"
+              :min="0"
+              :max="1000000"
+              :step="256"
+              style="width: 100%"
+            />
+          </el-form-item>
+        </el-col>
+        <el-col :span="8">
+          <el-form-item label="历史上限" prop="maxHistoryTokens">
+            <el-input-number
+              v-model="formData.maxHistoryTokens"
+              :min="0"
+              :max="1000000"
+              :step="256"
+              style="width: 100%"
+            />
+          </el-form-item>
+        </el-col>
+        <el-col :span="8">
+          <el-form-item label="RAG上限" prop="maxRagTokens">
+            <el-input-number
+              v-model="formData.maxRagTokens"
+              :min="0"
+              :max="1000000"
+              :step="256"
+              style="width: 100%"
+            />
+          </el-form-item>
+        </el-col>
+      </el-row>
+      <el-row :gutter="16">
+        <el-col :span="8">
+          <el-form-item label="附件上限" prop="maxAttachmentTokens">
+            <el-input-number
+              v-model="formData.maxAttachmentTokens"
+              :min="0"
+              :max="1000000"
+              :step="256"
+              style="width: 100%"
+            />
+          </el-form-item>
+        </el-col>
+        <el-col :span="8">
+          <el-form-item label="输出上限" prop="maxOutputTokens">
+            <el-input-number
+              v-model="formData.maxOutputTokens"
+              :min="0"
+              :max="1000000"
+              :step="256"
               style="width: 100%"
             />
           </el-form-item>
@@ -189,13 +221,14 @@ const submitPermission = computed(() =>
 const formData = reactive<AiChannelConfigSaveRequest>({
   channelCode: '',
   channelName: '',
-  provider: '',
-  modelName: '',
-  apiBaseUrl: '',
-  apiKeyEncrypted: '',
   dailyQuota: 0,
   userDailyQuota: 0,
   maxContextTokens: 4096,
+  maxInputTokens: 0,
+  maxHistoryTokens: 0,
+  maxRagTokens: 0,
+  maxAttachmentTokens: 0,
+  maxOutputTokens: 0,
   dataScopeJson: '[]',
   systemPromptTemplate: '',
   status: 1,
@@ -205,21 +238,20 @@ const formData = reactive<AiChannelConfigSaveRequest>({
 const formRules: FormRules<AiChannelConfigSaveRequest> = {
   channelCode: [{ required: true, message: '请输入渠道编码', trigger: 'blur' }],
   channelName: [{ required: true, message: '请输入渠道名称', trigger: 'blur' }],
-  provider: [{ required: true, message: '请输入提供方', trigger: 'blur' }],
-  modelName: [{ required: true, message: '请输入模型名称', trigger: 'blur' }],
 }
 
 function resetForm(): void {
   Object.assign(formData, {
     channelCode: '',
     channelName: '',
-    provider: '',
-    modelName: '',
-    apiBaseUrl: '',
-    apiKeyEncrypted: '',
     dailyQuota: 0,
     userDailyQuota: 0,
     maxContextTokens: 4096,
+    maxInputTokens: 0,
+    maxHistoryTokens: 0,
+    maxRagTokens: 0,
+    maxAttachmentTokens: 0,
+    maxOutputTokens: 0,
     dataScopeJson: '[]',
     systemPromptTemplate: '',
     status: 1,
@@ -236,13 +268,14 @@ async function loadChannelDetail(id: number): Promise<void> {
     Object.assign(formData, {
       channelCode: detail.channelCode,
       channelName: detail.channelName,
-      provider: detail.provider,
-      modelName: detail.modelName,
-      apiBaseUrl: detail.apiBaseUrl ?? '',
-      apiKeyEncrypted: detail.apiKeyEncrypted ?? '',
       dailyQuota: detail.dailyQuota,
       userDailyQuota: detail.userDailyQuota,
       maxContextTokens: detail.maxContextTokens,
+      maxInputTokens: detail.maxInputTokens,
+      maxHistoryTokens: detail.maxHistoryTokens,
+      maxRagTokens: detail.maxRagTokens,
+      maxAttachmentTokens: detail.maxAttachmentTokens,
+      maxOutputTokens: detail.maxOutputTokens,
       dataScopeJson: detail.dataScopeJson ?? '[]',
       systemPromptTemplate: detail.systemPromptTemplate ?? '',
       status: detail.status,
@@ -263,13 +296,14 @@ async function handleSubmit(): Promise<void> {
     const payload: AiChannelConfigSaveRequest = {
       channelCode: formData.channelCode.trim(),
       channelName: formData.channelName.trim(),
-      provider: formData.provider.trim(),
-      modelName: formData.modelName.trim(),
-      apiBaseUrl: formData.apiBaseUrl?.trim() || undefined,
-      apiKeyEncrypted: formData.apiKeyEncrypted?.trim() || undefined,
       dailyQuota: formData.dailyQuota,
       userDailyQuota: formData.userDailyQuota,
       maxContextTokens: formData.maxContextTokens,
+      maxInputTokens: formData.maxInputTokens,
+      maxHistoryTokens: formData.maxHistoryTokens,
+      maxRagTokens: formData.maxRagTokens,
+      maxAttachmentTokens: formData.maxAttachmentTokens,
+      maxOutputTokens: formData.maxOutputTokens,
       dataScopeJson: formData.dataScopeJson?.trim() || undefined,
       systemPromptTemplate: formData.systemPromptTemplate?.trim() || undefined,
       status: formData.status,

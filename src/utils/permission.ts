@@ -79,6 +79,12 @@ export function hasAllPermissions(
   return requiredPermissions.every(permission => hasPermission(grantedPermissions, permission))
 }
 
+const SUPER_ADMIN_PERMISSIONS = new Set(['*', '*:*:*'])
+
+export function isSuperAdmin(permissions: string[] | null | undefined): boolean {
+  return normalizePermissionList(permissions).some(p => SUPER_ADMIN_PERMISSIONS.has(p))
+}
+
 export function checkPermissions(
   grantedPermissions: string[] | null | undefined,
   requirement: PermissionRequirement | PermissionCheckOptions

@@ -1,36 +1,174 @@
 <template>
   <div class="forum-create-page">
-    <FeaturePlaceholder
-      title="发布帖子"
-      summary="发帖页已预留登录态路由，后续直接对接用户论坛发帖接口和频道挂接能力。"
-      status-label="待接表单"
-      :route-meta="routeMeta"
-      :api-refs="['POST /api/user/forum/posts']"
-      :doc-refs="['docs/api文档/forum-api.md']"
-      :next-steps="[
-        '补版块选择、标题、正文和标签区域',
-        '接入发帖保存和校验',
-        '补发帖后跳转帖子详情页'
-      ]"
-    />
+    <div class="forum-create-container">
+      <el-breadcrumb separator="/">
+        <el-breadcrumb-item :to="{ path: '/' }">首页</el-breadcrumb-item>
+        <el-breadcrumb-item :to="{ path: '/forum' }">论坛</el-breadcrumb-item>
+        <el-breadcrumb-item>发布帖子</el-breadcrumb-item>
+      </el-breadcrumb>
+
+      <div class="create-card">
+        <el-form
+          ref="formRef"
+          :model="form"
+          :rules="rules"
+          label-position="top"
+          @submit.prevent="handleSubmit(1)"
+        >
+          <el-form-item label="版块" prop="sectionId">
+            <el-select
+              v-model="form.sectionId"
+              placeholder="请选择版块"
+              style="width: 100%"
+            >
+              <el-option
+                v-for="section in store.sections"
+                :key="section.id"
+                :label="section.name"
+                :value="section.id"
+              />
+            </el-select>
+          </el-form-item>
+
+          <el-form-item label="标题" prop="title">
+            <el-input
+              v-model="form.title"
+              placeholder="请输入帖子标题"
+              maxlength="128"
+              show-word-limit
+            />
+          </el-form-item>
+
+          <el-form-item label="正文" prop="content">
+            <el-input
+              v-model="form.content"
+              type="textarea"
+              placeholder="请输入帖子内容"
+              :rows="12"
+              maxlength="50000"
+            />
+          </el-form-item>
+
+          <el-form-item label="可见范围">
+            <el-radio-group v-model="form.visibilityScope">
+              <el-radio :value="0">公开</el-radio>
+              <el-radio :value="1">登录可见</el-radio>
+            </el-radio-group>
+          </el-form-item>
+
+          <el-form-item>
+            <div class="form-actions">
+              <el-button plain :loading="submitting" @click="handleSubmit(0)">
+                存草稿
+              </el-button>
+              <el-button type="primary" :loading="submitting" @click="handleSubmit(1)">
+                发布
+              </el-button>
+            </div>
+          </el-form-item>
+        </el-form>
+      </div>
+    </div>
   </div>
 </template>
 
 <script lang="ts" setup>
-import { computed } from 'vue'
-import { useRoute } from 'vue-router'
-import FeaturePlaceholder from '@/components/common/FeaturePlaceholder.vue'
+import { onMounted, reactive, ref } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
+import { ElMessage } from 'element-plus'
+import type { FormInstance, FormRules } from 'element-plus'
+import { useUserForumStore } from '@/stores'
+import type { ForumPostSaveRequest } from '@/types/api-types'
 
 const route = useRoute()
+const router = useRouter()
+const store = useUserForumStore()
 
-const routeMeta = computed(() => {
+const formRef = ref<FormInstance>()
+const submitting = ref(false)
+
+const form = reactive({
+  sectionId: undefined as number | undefined,
+  title: '',
+  content: '',
+  visibilityScope: 0,
+})
+
+const rules: FormRules = {
+  sectionId: [{ required: true, message: '请选择版块', trigger: 'change' }],
+  title: [
+    { required: true, message: '请输入标题', trigger: 'blur' },
+    { max: 128, message: '标题最多128个字符', trigger: 'blur' },
+  ],
+  content: [{ required: true, message: '请输入正文', trigger: 'blur' }],
+}
+
+async function handleSubmit(status: number): Promise<void> {
+  const valid = await formRef.value?.validate().catch(() => false)
+  if (!valid) return
+
+  submitting.value = true
+  try {
+    const data: ForumPostSaveRequest = {
+      sectionId: form.sectionId!,
+      title: form.title,
+      content: form.content,
+      status,
+      visibilityScope: form.visibilityScope,
+    }
+    const ok = await store.createPost(data)
+    if (ok) {
+      ElMessage.success(status === 0 ? '草稿已保存' : '发布成功')
+      router.push('/forum')
+    }
+  } finally {
+    submitting.value = false
+  }
+}
+
+onMounted(() => {
   const sectionId = route.query.sectionId
-  return sectionId ? [{ label: 'sectionId', value: String(sectionId) }] : []
+  if (sectionId) {
+    form.sectionId = Number(sectionId)
+  }
+  store.fetchSections()
 })
 </script>
 
 <style scoped>
 .forum-create-page {
-  padding: 0;
+  min-height: 100vh;
+  background: var(--el-fill-color-lighter, #f5f5f5);
+}
+
+.forum-create-container {
+  width: min(800px, 100%);
+  margin: 0 auto;
+  padding: 32px 24px 48px;
+}
+
+.create-card {
+  margin-top: 20px;
+  background: var(--el-bg-color, #fff);
+  border-radius: 12px;
+  padding: 28px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+}
+
+.form-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+  width: 100%;
+}
+
+@media (max-width: 768px) {
+  .forum-create-container {
+    padding: 16px 16px 32px;
+  }
+
+  .create-card {
+    padding: 20px;
+  }
 }
 </style>

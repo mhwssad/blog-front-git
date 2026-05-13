@@ -21,7 +21,7 @@ export interface ArticleQueryRequest {
   keyword?: string
   /** 作者ID */
   authorId?: number
-  /** 文章状态：0-草稿，1-已发布 */
+  /** 文章状态：0-草稿，1-已发布，2-待发布，3-已下架 */
   status?: number
   /** 审核状态：0-未送审，1-审核中，2-审核通过，3-审核拒绝 */
   reviewStatus?: number
@@ -83,7 +83,7 @@ export interface ArticleAdminVO {
   isTop: number
   /** 是否原创：0-否，1-是 */
   isOriginal: number
-  /** 文章状态：0-草稿，1-已发布 */
+  /** 文章状态：0-草稿，1-已发布，2-待发布，3-已下架 */
   status: number
   /** 审核状态：0-未送审，1-审核中，2-审核通过，3-审核拒绝 */
   reviewStatus: number
@@ -157,7 +157,7 @@ export interface ArticleSaveRequest {
   isOriginal?: number
   /** 原文地址，非原创时必填 */
   sourceUrl?: string
-  /** 文章状态：0-草稿，1-已发布 */
+  /** 文章状态：0-草稿，1-已发布，2-待发布，3-已下架 */
   status?: number
   /** 定时发布时间，未来时间会先以草稿保存 */
   scheduledPublishTime?: string
@@ -629,7 +629,7 @@ export interface ArticleSeriesArticleVO {
   summary: string | null
   /** 文章封面 */
   coverImage: string | null
-  /** 文章状态：0-草稿，1-已发布 */
+  /** 文章状态：0-草稿，1-已发布，2-待发布，3-已下架 */
   status: number
   /** 审核状态：0-未送审，1-审核中，2-审核通过，3-审核拒绝 */
   reviewStatus: number

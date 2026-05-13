@@ -5,6 +5,7 @@ import {
   hasAllPermissions,
   hasAnyPermission,
   hasPermission,
+  isSuperAdmin as checkSuperAdmin,
   type PermissionCheckOptions,
   type PermissionRequirement,
 } from '@/utils/permission'
@@ -15,6 +16,7 @@ export function usePermission() {
 
   return {
     permissions,
+    isSuperAdmin: () => checkSuperAdmin(permissions.value),
     hasPermission: (permission: string) => hasPermission(permissions.value, permission),
     hasAnyPermission: (requiredPermissions: PermissionRequirement) =>
       hasAnyPermission(permissions.value, requiredPermissions),

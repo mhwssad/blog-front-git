@@ -251,11 +251,6 @@ export const useFrontContentStore = defineStore('frontContent', () => {
         fetchHotArticles(),
         fetchCategoryTree(),
         fetchTags(),
-        fetchComments({
-          current: 1,
-          size: 6,
-          targetType: 'article',
-        }),
       ])
     } finally {
       initializing.value = false

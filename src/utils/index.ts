@@ -100,15 +100,30 @@ export {
   formatUpdateTime,
 } from './systemAdmin'
 export {
+  AI_AGENT_TASK_STATUS_OPTIONS,
+  AI_AUTHORIZATION_TYPE_OPTIONS,
   AI_CHANNEL_STATUS_OPTIONS,
+  AI_KNOWLEDGE_ENTRY_STATUS_OPTIONS,
+  AI_KNOWLEDGE_SOURCE_TYPE_OPTIONS,
+  AI_MCP_TRANSPORT_TYPE_OPTIONS,
   AI_SCENE_TYPE_OPTIONS,
   AI_SESSION_STATUS_OPTIONS,
   AI_SUCCESS_STATUS_OPTIONS,
+  AI_SYNC_TASK_STATUS_OPTIONS,
+  AI_TOOL_RISK_LEVEL_OPTIONS,
+  AI_TOOL_SOURCE_TYPE_OPTIONS,
+  formatAiAgentTaskStatus,
+  formatAiAuthType,
   formatAiChannelStatus,
   formatAiDate,
+  formatAiEntryStatus,
   formatAiSceneType,
   formatAiSessionStatus,
+  formatAiSourceType,
   formatAiSuccessStatus,
+  formatAiSyncTaskStatus,
+  formatAiToolRiskLevel,
+  formatAiTransportType,
 } from './aiAdmin'
 
 // ==================== DOM 操作 ====================

@@ -10,6 +10,8 @@ export interface ContentOption<T extends string | number = number> {
 export const ARTICLE_STATUS_OPTIONS = [
   { label: '草稿', value: 0 },
   { label: '已发布', value: 1 },
+  { label: '待发布', value: 2 },
+  { label: '已下架', value: 3 },
 ] as const satisfies readonly ContentOption<number>[]
 
 export const CATEGORY_STATUS_OPTIONS = [

@@ -13,11 +13,6 @@
 </template>
 
 <script lang="ts" setup>
-/**
- * 首页侧边栏组件
- * @description 聚合热门文章、标签、最新评论三个模块
- * @module front/home/components/HomeSidebar
- */
 import type { PublicArticleCardVO, PublicCommentVO, PublicTagVO } from '@/types/api-types'
 import HomeSidebarComments from './HomeSidebarComments.vue'
 import HomeSidebarHot from './HomeSidebarHot.vue'
@@ -39,12 +34,13 @@ const emit = defineEmits<{
 .sidebar-stack {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 20px;
 }
 
 .sidebar-card {
-  padding: 16px;
-  background: #fff;
-  border-radius: 8px;
+  padding: 20px;
+  background: var(--el-bg-color, #fff);
+  border-radius: 12px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
 }
 </style>

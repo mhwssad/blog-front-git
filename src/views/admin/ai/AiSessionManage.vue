@@ -16,7 +16,7 @@
             style="width: 160px"
           >
             <el-option
-              v-for="ch in channelList"
+              v-for="ch in channelStore.channels"
               :key="ch.id"
               :label="ch.channelName"
               :value="ch.id"
@@ -56,8 +56,8 @@
         <span>AI 会话列表</span>
       </template>
       <el-table
-        :data="tableData"
-        v-loading="loading"
+        :data="usageStore.sessions"
+        v-loading="usageStore.sessionLoading"
         :size="isCompactTable ? 'small' : 'default'"
         border
         stripe
@@ -101,7 +101,7 @@
         <el-pagination
           v-model:current-page="pagination.current"
           v-model:page-size="pagination.size"
-          :total="pagination.total"
+          :total="usageStore.sessionTotal"
           :page-sizes="[10, 20, 50]"
           :layout="paginationLayout"
           @size-change="handleSizeChange"
@@ -114,8 +114,7 @@
 
 <script lang="ts" setup>
 import { onMounted, reactive, ref } from 'vue'
-import { ElMessage } from 'element-plus'
-import { aiSysApi } from '@/api/sys/ai'
+import { useAiUsageStore, useAiChannelStore } from '@/stores'
 import { useContentAdmin } from '@/composables/useContentAdmin'
 import {
   AI_SESSION_STATUS_OPTIONS,
@@ -123,9 +122,10 @@ import {
   formatAiSceneType,
   formatAiSessionStatus,
 } from '@/utils/aiAdmin'
-import type { AiChannelConfigVO, AiSessionAdminVO } from '@/types/api-types'
 
-// 搜索条件：用户ID、渠道、状态
+const usageStore = useAiUsageStore()
+const channelStore = useAiChannelStore()
+
 const query = reactive({
   userId: '' as string,
   channelConfigId: undefined as number | undefined,
@@ -137,66 +137,34 @@ const dateRange = ref<[string, string] | null>(null)
 const pagination = reactive({
   current: 1,
   size: 10,
-  total: 0,
 })
-
-// 表格数据和加载状态
-const tableData = ref<AiSessionAdminVO[]>([])
-const loading = ref(false)
-
-// 渠道下拉列表
-const channelList = ref<AiChannelConfigVO[]>([])
 
 const { paginationLayout, isCompactTable } = useContentAdmin({
   minHeight: 360,
   bottomOffset: 28,
 })
 
-// 获取渠道下拉列表
-async function fetchChannels() {
-  try {
-    const res = await aiSysApi.getChannels({ size: 100 })
-    channelList.value = res.data.data?.records ?? []
-  } catch {
-    // ignore
-  }
-}
-
-// 获取会话列表
 async function fetchList() {
-  loading.value = true
-  try {
-    const params: Record<string, unknown> = {
-      current: pagination.current,
-      size: pagination.size,
-    }
-    if (query.userId) params.userId = Number(query.userId)
-    if (query.channelConfigId !== undefined && query.channelConfigId !== null)
-      params.channelConfigId = query.channelConfigId
-    if (query.status !== undefined && query.status !== null) params.status = query.status
-    if (dateRange.value) {
-      params.startTime = dateRange.value[0]
-      params.endTime = dateRange.value[1]
-    }
-
-    const res = await aiSysApi.getSessions(params as Parameters<typeof aiSysApi.getSessions>[0])
-    const page = res.data.data
-    tableData.value = page?.records ?? []
-    pagination.total = page?.total ?? 0
-  } catch {
-    ElMessage.error('获取会话列表失败')
-  } finally {
-    loading.value = false
+  const params: Record<string, unknown> = {
+    current: pagination.current,
+    size: pagination.size,
   }
+  if (query.userId) params.userId = Number(query.userId)
+  if (query.channelConfigId != null) params.channelConfigId = query.channelConfigId
+  if (query.status != null) params.status = query.status
+  if (dateRange.value) {
+    params.startTime = dateRange.value[0]
+    params.endTime = dateRange.value[1]
+  }
+
+  await usageStore.fetchSessions(params as Parameters<typeof usageStore.fetchSessions>[0])
 }
 
-// 查询按钮
 function handleQuery() {
   pagination.current = 1
   void fetchList()
 }
 
-// 重置搜索条件
 function handleReset() {
   query.userId = ''
   query.channelConfigId = undefined
@@ -207,19 +175,17 @@ function handleReset() {
   void fetchList()
 }
 
-// 切换每页条数
 function handleSizeChange() {
   pagination.current = 1
   void fetchList()
 }
 
-// 切换当前页
 function handleCurrentChange() {
   void fetchList()
 }
 
 onMounted(async () => {
-  await fetchChannels()
+  await channelStore.fetchChannels({ size: 100 })
   void fetchList()
 })
 </script>

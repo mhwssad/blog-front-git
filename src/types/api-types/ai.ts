@@ -184,20 +184,22 @@ export interface AiChannelConfigVO {
   channelCode: string
   /** 渠道名称 */
   channelName: string
-  /** 提供方 */
-  provider: string
-  /** 模型名称 */
-  modelName: string
-  /** 接口基础地址 */
-  apiBaseUrl?: string
-  /** 加密后的API Key */
-  apiKeyEncrypted?: string
   /** 全局每日额度，0表示不限制 */
   dailyQuota: number
   /** 单用户每日额度，0表示不限制 */
   userDailyQuota: number
   /** 上下文长度上限，0表示不限制 */
   maxContextTokens: number
+  /** 输入Token上限，0表示不限制 */
+  maxInputTokens: number
+  /** 历史消息Token上限，0表示不限制 */
+  maxHistoryTokens: number
+  /** RAG检索Token上限，0表示不限制 */
+  maxRagTokens: number
+  /** 附件Token上限，0表示不限制 */
+  maxAttachmentTokens: number
+  /** 输出Token上限，0表示不限制 */
+  maxOutputTokens: number
   /** 可读取数据范围配置JSON */
   dataScopeJson?: string
   /** 系统提示词模板 */
@@ -228,20 +230,22 @@ export interface AiChannelConfigSaveRequest {
   channelCode: string
   /** 渠道名称 */
   channelName: string
-  /** 提供方 */
-  provider: string
-  /** 模型名称 */
-  modelName: string
-  /** 接口基础地址 */
-  apiBaseUrl?: string
-  /** 加密后的API Key */
-  apiKeyEncrypted?: string
   /** 全局每日额度，0表示不限制 */
   dailyQuota?: number
   /** 单用户每日额度，0表示不限制 */
   userDailyQuota?: number
   /** 上下文长度上限，0表示不限制 */
   maxContextTokens?: number
+  /** 输入Token上限，0表示不限制 */
+  maxInputTokens?: number
+  /** 历史消息Token上限，0表示不限制 */
+  maxHistoryTokens?: number
+  /** RAG检索Token上限，0表示不限制 */
+  maxRagTokens?: number
+  /** 附件Token上限，0表示不限制 */
+  maxAttachmentTokens?: number
+  /** 输出Token上限，0表示不限制 */
+  maxOutputTokens?: number
   /** 可读取数据范围配置JSON */
   dataScopeJson?: string
   /** 系统提示词模板 */
@@ -328,6 +332,14 @@ export interface AiUsageLogVO {
   successStatus: number
   /** 错误码 */
   errorCode?: string
+  /** 是否启用RAG */
+  ragEnabled?: number
+  /** RAG命中条数 */
+  ragHitCount?: number
+  /** RAG检索耗时(ms) */
+  ragDurationMs?: number
+  /** RAG引用列表JSON */
+  ragReferences?: string
   /** 调用时间 */
   createdAt: string
 }

@@ -6,8 +6,22 @@
       >
       <h3 class="editor-title">{{ articleId ? '编辑文章' : '新建文章' }}</h3>
       <div class="header-actions">
-        <el-button @click="handleSubmit(0)">存为草稿</el-button>
-        <el-button type="primary" :loading="submitting" @click="handleSubmit(1)">发布</el-button>
+        <template v-if="currentStatus === 1">
+          <el-button @click="handleSubmit(1)" :loading="submitting">更新文章</el-button>
+          <el-button type="danger" plain @click="handleSubmit(3)">下架</el-button>
+        </template>
+        <template v-else-if="currentStatus === 3">
+          <el-button @click="handleSubmit(0)">转为草稿</el-button>
+          <el-button type="primary" :loading="submitting" @click="handleSubmit(1)">重新发布</el-button>
+        </template>
+        <template v-else-if="currentStatus === 2">
+          <el-button @click="handleSubmit(0)">转为草稿</el-button>
+          <el-button type="primary" :loading="submitting" @click="handleSubmit(1)">立即发布</el-button>
+        </template>
+        <template v-else>
+          <el-button @click="handleSubmit(0)">存为草稿</el-button>
+          <el-button type="primary" :loading="submitting" @click="handleSubmit(1)">发布</el-button>
+        </template>
       </div>
     </div>
 
@@ -22,6 +36,7 @@
         <el-row :gutter="20">
           <el-col :xs="24" :sm="24" :md="17">
             <ArticleEditorContent
+              ref="editorContentRef"
               :form-data="formData"
               :html-source="htmlSource"
               @update:html-source="htmlSource = $event"
@@ -34,6 +49,8 @@
               :categories="categories"
               :tags="tags"
               :author-name="authorName"
+              :current-status="currentStatus"
+              @tags-updated="tagStore.fetchTags()"
             />
           </el-col>
         </el-row>
@@ -51,12 +68,6 @@
   </div>
 </template>
 
-/** * 文章编辑器页面 * @description
-后台文章发布/编辑的完整页面，包含内容编辑、分类标签选择、封面设置、SEO配置、定时发布等完整功能 *
-@module admin/article/components/ArticleEditorPage * @see api/sys/article.ts */ /** * 文章编辑器页面
-* @description
-后台文章发布/编辑的完整页面，包含内容编辑、分类标签选择、封面设置、SEO配置、定时发布等完整功能 *
-@module admin/article/components/ArticleEditorPage * @see api/sys/article.ts */
 <script lang="ts" setup>
 import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
 import { onBeforeRouteLeave } from 'vue-router'
@@ -71,6 +82,13 @@ import ArticleEditorContent from './ArticleEditorContent.vue'
 import ArticleEditorSettings from './ArticleEditorSettings.vue'
 import MarkdownImportDialog from './MarkdownImportDialog.vue'
 import { createEmptyForm, normalizeHtml, formatHtml } from './article-editor'
+
+const STATUS_MESSAGES: Record<number, string> = {
+  0: '已保存为草稿',
+  1: '文章已发布',
+  2: '已设为待发布',
+  3: '文章已下架',
+}
 
 interface Props {
   articleId: number | null
@@ -89,6 +107,7 @@ const tagStore = useTagStore()
 const authStore = useAuthStore()
 
 const formRef = ref<FormInstance>()
+const editorContentRef = ref<InstanceType<typeof ArticleEditorContent>>()
 const formData = ref<ArticleSaveRequest>(createEmptyForm())
 const htmlSource = ref('')
 const pageLoading = ref(false)
@@ -108,6 +127,8 @@ const authorName = computed(() => {
 })
 
 const originalArticle = ref<ArticleDetailVO | null>(null)
+
+const currentStatus = computed(() => originalArticle.value?.status ?? 0)
 
 const formRules: FormRules = {
   title: [{ required: true, message: '请输入文章标题', trigger: 'blur' }],
@@ -153,7 +174,9 @@ async function loadArticle(): Promise<void> {
       sourceUrl: detail.sourceUrl || '',
       status: detail.status ?? 0,
       publishTime: detail.publishTime || '',
+      scheduledPublishTime: detail.scheduledPublishTime || '',
       accessLevel: detail.accessLevel ?? 0,
+      visibilityScope: detail.visibilityScope ?? 0,
       remark: detail.remark || '',
       categoryIds: detail.categoryIds || [],
       tagIds: detail.tagIds || [],
@@ -202,14 +225,21 @@ async function handleSubmit(targetStatus: number): Promise<void> {
     return
   }
 
+  if (!formData.value.authorId) {
+    ElMessage.error('作者信息缺失，请刷新页面重试')
+    return
+  }
+
   submitting.value = true
   formData.value.status = targetStatus
   formData.value.content = normalizeHtml(htmlSource.value)
+  editorContentRef.value?.ensureSummary()
 
   try {
     if (props.articleId) {
       await ArticleApi.updateArticle(props.articleId, formData.value)
-      ElMessage.success('文章已更新')
+      ElMessage.success(STATUS_MESSAGES[targetStatus] ?? '操作成功')
+      originalArticle.value = { ...originalArticle.value!, status: targetStatus } as ArticleDetailVO
     } else {
       await ArticleApi.createArticle(formData.value)
       ElMessage.success(targetStatus === 1 ? '文章已发布' : '草稿已保存')
@@ -247,6 +277,7 @@ function onBeforeUnload(e: BeforeUnloadEvent): void {
 
 onMounted(() => {
   if (!props.articleId) {
+    formData.value.authorId = authStore.currentUser?.id ?? 0
     takeSnapshot()
   }
   loadDependencies()
