@@ -69,7 +69,10 @@
       "createTime": "2026-03-31 12:00:00",
       "type": 1,
       "level": "info",
-      "publishTime": "2026-03-31 12:00:00"
+      "publishTime": "2026-03-31 12:00:00",
+      "businessType": "system",
+      "businessId": null,
+      "actionPath": null
     }
   ],
   "logs": [

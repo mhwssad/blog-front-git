@@ -8,7 +8,7 @@ function handle(req: any) {
 
   if (m === 'POST' && path === '/api/admin/2fa/send-code') return ok(null, '验证码已发送')
 
-  if (m === 'POST' && path === '/api/admin/2fa/verify') return ok({ mfaTicket: `mock-mfa-ticket-${Date.now()}` })
+  if (m === 'POST' && path === '/api/admin/2fa/verify') return ok({ ticket: `mock-mfa-ticket-${Date.now()}`, expiresIn: 1800 })
 
   if (m === 'POST' && match(/^\/api\/admin\/users\/(\d+)\/ban$/)) {
     const id = Number(match(/^\/api\/admin\/users\/(\d+)\/ban$/)![1])
@@ -34,11 +34,17 @@ function handle(req: any) {
   if (m === 'PUT' && match(/^\/api\/admin\/users\/(\d+)\/experience$/)) {
     const id = Number(match(/^\/api\/admin\/users\/(\d+)\/experience$/)![1])
     const user = db.users.find((i: any) => i.id === id)
-    if (user) user.experiencePoints = req.body.experiencePoints ?? user.experiencePoints
+    if (user) user.experiencePoints = req.body.experience ?? user.experiencePoints
     return ok(null)
   }
 
-  if (m === 'POST' && path === '/api/admin/takeover') return ok({ tokenType: 'Bearer', accessToken: `mock-access-token-takeover`, refreshToken: `mock-refresh-token-takeover`, expiresIn: 7200 })
+  if (m === 'POST' && path === '/api/admin/takeover') {
+    const targetUserId = req.body.targetUserId
+    const target = db.users.find((i: any) => i.id === targetUserId)
+    return target
+      ? ok({ takeoverToken: `mock-takeover-${targetUserId}`, expiresIn: 300 })
+      : ok(null, '目标用户不存在', 404)
+  }
 
   if (m === 'PUT' && match(/^\/api\/admin\/users\/(\d+)\/roles$/)) {
     const id = Number(match(/^\/api\/admin\/users\/(\d+)\/roles$/)![1])

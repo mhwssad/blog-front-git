@@ -1,11 +1,11 @@
 import { defineMock } from 'vite-plugin-mock-dev-server'
-import { cp, db, me, now, num, ok, p, page } from './shared'
+import { cp, db, has, me, now, num, ok, page } from './shared'
 
-const stripUserNotice = ({ userId, ...n }: any) => n
+const stripUserNotice = ({ userId, noticeId, ...n }: any) => n
 
 function handle(req: any) {
   const m = String(req.method).toUpperCase()
-  const path = p(req)
+  const path = new URL(req.url || '/', 'http://mock').pathname
   const u = me(req)
 
   if (m === 'GET' && path === '/api/user/notices/unread-count') {
@@ -13,7 +13,10 @@ function handle(req: any) {
   }
 
   if (m === 'GET' && path === '/api/user/notices') {
-    return ok(page(db.userNotices.filter((i: any) => i.userId === u.id).map(stripUserNotice), req.query))
+    let rs = db.userNotices.filter((i: any) => i.userId === u.id)
+    if (req.query.title) rs = rs.filter((i: any) => has(i.title, req.query.title))
+    if (req.query.isRead !== undefined) rs = rs.filter((i: any) => i.isRead === num(req.query.isRead))
+    return ok(page(rs.map(stripUserNotice), req.query))
   }
 
   const detailMatch = path.match(/^\/api\/user\/notices\/(\d+)$/)

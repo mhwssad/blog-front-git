@@ -9,8 +9,15 @@
             <el-breadcrumb-item>{{ sectionName }}</el-breadcrumb-item>
           </el-breadcrumb>
 
-          <h1 class="forum-title">{{ sectionName }}</h1>
-          <p v-if="sectionDesc" class="forum-desc">{{ sectionDesc }}</p>
+          <div class="forum-hero">
+            <div class="forum-hero-content">
+              <h1 class="forum-hero-title">{{ sectionName }}</h1>
+              <p v-if="sectionDesc" class="forum-hero-desc">{{ sectionDesc }}</p>
+            </div>
+            <router-link v-if="authStore.isLoggedIn" to="/forum/create">
+              <el-button type="primary" effect="dark" class="forum-hero-btn">发帖</el-button>
+            </router-link>
+          </div>
 
           <div class="forum-filter-row">
             <el-input
@@ -78,6 +85,25 @@
             </li>
           </ul>
         </div>
+
+        <div v-if="hotPosts.length" class="sidebar-card sidebar-hot">
+          <h3 class="sidebar-card__title">热门帖子</h3>
+          <ul class="sidebar-hot-list">
+            <li
+              v-for="(hp, idx) in hotPosts"
+              :key="hp.id"
+              class="sidebar-hot-item"
+            >
+              <span class="sidebar-hot-rank" :class="rankClass(idx)">
+                {{ idx + 1 }}
+              </span>
+              <router-link :to="`/forum/posts/${hp.id}`" class="sidebar-hot-title">
+                {{ hp.title }}
+              </router-link>
+              <span class="sidebar-hot-count">{{ hp.replyCount }}</span>
+            </li>
+          </ul>
+        </div>
       </aside>
 
       <div v-if="sidebarOpen" class="sidebar-overlay" @click="sidebarOpen = false" />
@@ -89,11 +115,12 @@
 import { computed, onMounted, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import { Search, Expand, Fold } from '@element-plus/icons-vue'
-import { useUserForumStore } from '@/stores'
+import { useUserForumStore, useAuthStore } from '@/stores'
 import ForumPostCard from './components/ForumPostCard.vue'
 
 const route = useRoute()
 const store = useUserForumStore()
+const authStore = useAuthStore()
 const sidebarOpen = ref(false)
 
 const sectionId = computed(() => Number(route.params.sectionId))
@@ -110,6 +137,17 @@ const keyword = ref('')
 const sort = ref<'latest' | 'hot'>('latest')
 const currentPage = ref(1)
 const pageSize = 10
+
+const hotPosts = computed(() =>
+  [...store.posts].sort((a, b) => b.replyCount - a.replyCount).slice(0, 5),
+)
+
+function rankClass(idx: number): string {
+  if (idx === 0) return 'sidebar-hot-rank--gold'
+  if (idx === 1) return 'sidebar-hot-rank--silver'
+  if (idx === 2) return 'sidebar-hot-rank--bronze'
+  return ''
+}
 
 function buildParams() {
   return {
@@ -182,26 +220,50 @@ onMounted(async () => {
 .forum-header {
   background: var(--el-bg-color, #fff);
   border-radius: 12px;
-  padding: 24px;
+  overflow: hidden;
   margin-bottom: 16px;
 }
 
-.forum-title {
-  font-size: 24px;
-  font-weight: 700;
-  margin: 16px 0 0;
+.forum-header .el-breadcrumb {
+  padding: 12px 24px 0;
 }
 
-.forum-desc {
+.forum-hero {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: linear-gradient(135deg, var(--el-color-primary-light-3), var(--el-color-primary));
+  padding: 24px;
+  margin-top: 8px;
+}
+
+.forum-hero-content {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.forum-hero-title {
+  margin: 0;
+  font-size: 26px;
+  font-weight: 700;
+  color: #fff;
+}
+
+.forum-hero-desc {
+  margin: 0;
   font-size: 14px;
-  color: var(--el-text-color-secondary, #909399);
-  margin: 8px 0 0;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.forum-hero-btn {
+  flex-shrink: 0;
 }
 
 .forum-filter-row {
   display: flex;
   gap: 12px;
-  margin-top: 16px;
+  padding: 16px 24px;
 }
 
 .forum-filter-row .el-input {
@@ -227,6 +289,9 @@ onMounted(async () => {
 .forum-sidebar {
   width: 300px;
   flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
 }
 
 .sidebar-toggle {
@@ -247,6 +312,7 @@ onMounted(async () => {
   font-size: 16px;
   font-weight: 600;
   margin: 0 0 16px;
+  color: var(--el-text-color-primary);
 }
 
 .sidebar-section-list {
@@ -301,6 +367,74 @@ onMounted(async () => {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+.sidebar-hot-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.sidebar-hot-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--el-border-color-extra-light, #f2f6fc);
+}
+
+.sidebar-hot-item:last-child {
+  border-bottom: none;
+}
+
+.sidebar-hot-rank {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 700;
+  background: var(--el-fill-color);
+  color: var(--el-text-color-secondary);
+  flex-shrink: 0;
+}
+
+.sidebar-hot-rank--gold {
+  background: #f59e0b;
+  color: #fff;
+}
+
+.sidebar-hot-rank--silver {
+  background: #9ca3af;
+  color: #fff;
+}
+
+.sidebar-hot-rank--bronze {
+  background: #b45309;
+  color: #fff;
+}
+
+.sidebar-hot-title {
+  flex: 1;
+  font-size: 13px;
+  color: var(--el-text-color-regular);
+  text-decoration: none;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  transition: color 0.2s;
+}
+
+.sidebar-hot-title:hover {
+  color: var(--el-color-primary);
+}
+
+.sidebar-hot-count {
+  font-size: 12px;
+  color: var(--el-text-color-placeholder);
+  flex-shrink: 0;
 }
 
 @media (max-width: 1024px) {
@@ -374,11 +508,19 @@ onMounted(async () => {
     width: 280px;
   }
 
-  .forum-header {
+  .forum-hero {
     padding: 16px;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .forum-hero-title {
+    font-size: 22px;
   }
 
   .forum-filter-row {
+    padding: 12px 16px;
     flex-direction: column;
   }
 

@@ -204,11 +204,12 @@ function handle(req: any) {
 
   if (method === 'PUT' && /^\/api\/sys\/chats\/lobby\/settings\/?$/.test(path)) {
     db.chatLobbySettings = {
-      speakLevelLimit: req.body.speakLevelLimit ?? 0,
-      slowModeSeconds: req.body.slowModeSeconds ?? 0,
-      allowGuestSpeak: req.body.allowGuestSpeak ?? false,
+      ...(db.chatLobbySettings || {}),
+      name: req.body.name ?? db.chatLobbySettings?.name ?? '全站大厅',
+      notice: req.body.notice ?? db.chatLobbySettings?.notice ?? '',
+      updatedAt: now(),
     }
-    return ok(null)
+    return ok(db.chatLobbySettings)
   }
   if (method === 'GET' && /^\/api\/sys\/chats\/lobby\/messages\/pinned\/?$/.test(path)) {
     const message = db.chatMessages.find((item: any) => item.id === 6)
@@ -305,7 +306,7 @@ function handle(req: any) {
     const item = findChannelApplication(num(path.match(/^\/api\/sys\/chats\/channel-applications\/(\d+)\/review$/)![1]))
     if (!item) return ok(null, '申请不存在', 404)
     item.applyStatus = req.body.approved ? 1 : 2
-    item.reviewComment = req.body.reviewRemark ?? null
+    item.reviewComment = req.body.reason ?? null
     item.reviewerId = 1
     item.reviewerUsername = 'admin'
     item.reviewerNickname = '管理员'
@@ -330,11 +331,16 @@ function handle(req: any) {
     }
     return ok(page(rs, req.query))
   }
+  if (method === 'GET' && path.match(/^\/api\/sys\/chats\/group-join-applications\/(\d+)$/) && !path.includes('/review')) {
+    const item = findGroupJoinApplication(num(path.match(/^\/api\/sys\/chats\/group-join-applications\/(\d+)$/)![1]))
+    return item ? ok(cp(item)) : ok(null, '申请不存在', 404)
+  }
+
   if (method === 'PUT' && path.match(/^\/api\/sys\/chats\/group-join-applications\/(\d+)\/review$/)) {
     const item = findGroupJoinApplication(num(path.match(/^\/api\/sys\/chats\/group-join-applications\/(\d+)\/review$/)![1]))
     if (!item) return ok(null, '申请不存在', 404)
-    item.applyStatus = req.body.reviewStatus === 1 ? 1 : 2
-    item.reviewComment = req.body.reviewComment ?? null
+    item.applyStatus = req.body.approved ? 1 : 2
+    item.reviewComment = req.body.reason ?? null
     item.reviewedAt = now()
     return ok(null)
   }
@@ -344,9 +350,8 @@ function handle(req: any) {
   if (method === 'GET' && path === '/api/sys/chats/mutes') {
     let rs = [...(db.chatMutes || [])]
     if (req.query.userId) rs = rs.filter((i: any) => i.userId === num(req.query.userId))
-    if (req.query.muteType) rs = rs.filter((i: any) => i.muteType === req.query.muteType)
-    if (req.query.isReleased !== undefined && req.query.isReleased !== '')
-      rs = rs.filter((i: any) => i.isReleased === num(req.query.isReleased))
+    if (req.query.scope) rs = rs.filter((i: any) => i.scope === req.query.scope)
+    if (req.query.status) rs = rs.filter((i: any) => i.status === req.query.status)
     return ok(page(rs, req.query))
   }
 
@@ -354,19 +359,11 @@ function handle(req: any) {
     const item = {
       id: ++db.seq.chatMute,
       userId: req.body.userId,
-      username: req.body.username ?? '',
-      nickname: req.body.nickname ?? '',
-      conversationId: req.body.conversationId ?? null,
-      muteType: req.body.muteType ?? 'global',
+      scope: req.body.scope ?? 'global',
       reason: req.body.reason ?? '',
-      mutedBy: 1,
-      mutedByUsername: 'admin',
-      startTime: now(),
-      endTime: req.body.endTime ?? null,
-      isReleased: 0,
-      releasedBy: null,
-      releasedAt: null,
-      createTime: now(),
+      status: 'active',
+      muteUntil: req.body.muteUntil ?? null,
+      createdAt: now(),
     }
     if (!db.chatMutes) db.chatMutes = []
     db.chatMutes.push(item)
@@ -410,6 +407,7 @@ export default defineMock([
   { url: '/api/sys/chats/channel-applications/:id', method: 'GET', body: handle },
   { url: '/api/sys/chats/channel-applications/:id/review', method: 'PUT', body: handle },
   { url: '/api/sys/chats/group-join-applications', method: 'GET', body: handle },
+  { url: '/api/sys/chats/group-join-applications/:id', method: 'GET', body: handle },
   { url: '/api/sys/chats/group-join-applications/:applicationId/review', method: 'PUT', body: handle },
   { url: '/api/sys/chats/mutes', method: ['GET', 'POST'], body: handle },
   { url: '/api/sys/chats/mutes/:id/release', method: 'PUT', body: handle },

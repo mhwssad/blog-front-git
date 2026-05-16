@@ -14,7 +14,7 @@ function handle(req: any) {
       .filter((a: any) => a.authorId === authorId && a.seriesId)
       .reduce((acc: any[], a: any) => {
         if (!acc.find((s: any) => s.id === a.seriesId)) {
-          acc.push({ id: a.seriesId, seriesName: a.seriesName ?? '未命名系列', articleCount: 1 })
+          acc.push({ id: a.seriesId, title: a.seriesName ?? '未命名系列', articleCount: 1 })
         } else {
           const s = acc.find((s: any) => s.id === a.seriesId)
           s.articleCount++
@@ -27,7 +27,7 @@ function handle(req: any) {
   if (m === 'GET' && match(/^\/api\/public\/article-series\/(\d+)$/)) {
     return ok({
       id: 1,
-      seriesName: '示例系列',
+      title: '示例系列',
       description: '这是一个示例文章系列',
       articles: db.articles.filter((a: any) => a.seriesId === 1).map((a: any) => ({
         id: a.id,
@@ -41,13 +41,31 @@ function handle(req: any) {
 
   if (m === 'GET' && path === '/api/public/chat/lobby/messages') {
     let rs = (db.chatMessages || []).filter((i: any) => i.conversationType === 'lobby')
-    return ok(page(rs, req.query))
+    return ok(page(rs.map((msg: any) => ({
+      id: msg.id,
+      senderId: msg.senderId,
+      senderName: msg.senderNickname,
+      senderAvatar: msg.senderAvatar,
+      messageType: msg.messageType,
+      content: msg.content,
+      createdAt: msg.createdAt,
+    })), req.query))
   }
 
   if (m === 'GET' && path === '/api/public/chat/channels') {
-    let rs = (db.chatConversations || []).filter((i: any) => i.type === 'channel' && i.status === 1)
-    if (req.query.categoryCode) rs = rs.filter((i: any) => has(i.categoryCode, req.query.categoryCode))
-    return ok(page(rs, req.query))
+    let rs = (db.chatConversations || []).filter((i: any) => i.sceneType === 'hall_channel' && i.status === 0)
+    if (req.query.categoryCode) rs = rs.filter((i: any) => has(i.channelCategoryCode, req.query.categoryCode))
+    return ok(page(rs.map((c: any) => ({
+      id: c.id,
+      conversationType: c.conversationType,
+      sceneType: c.sceneType,
+      name: c.name,
+      avatar: c.avatar,
+      status: c.status,
+      visibilityScope: c.visibilityScope,
+      memberCount: c.memberCount,
+      createdAt: c.createdAt,
+    })), req.query))
   }
 
   if (m === 'GET' && match(/^\/api\/public\/chat\/channels\/(\d+)$/)) {
@@ -88,9 +106,10 @@ function handle(req: any) {
   if (m === 'GET' && match(/^\/api\/users\/(\d+)\/author-profile$/)) {
     const userId = num(match(/^\/api\/users\/(\d+)\/author-profile$/)![1])
     const user = db.users.find((u: any) => u.id === userId)
-    return user
-      ? ok({ userId: user.id, nickname: user.nickname, avatar: user.avatar, bio: user.bio ?? '' })
-      : ok(null, '用户不存在', 404)
+    if (!user) return ok(null, '用户不存在', 404)
+    const articleCount = db.articles.filter((a: any) => a.authorId === userId && a.status === 1).length
+    const likeCount = db.articles.filter((a: any) => a.authorId === userId && a.status === 1).reduce((sum: number, a: any) => sum + (a.likeCount ?? 0), 0)
+    return ok({ userId: user.id, nickname: user.nickname, avatar: user.avatar, bio: user.bio ?? '', articleCount, likeCount })
   }
 
   return ok(null, '未匹配到公开扩展接口', 404)

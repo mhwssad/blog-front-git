@@ -1,12 +1,12 @@
 import { defineMock } from 'vite-plugin-mock-dev-server'
 import { ok } from './shared'
 
-const settings: Record<string, any> = {
-  system: { enabled: true, emailNotify: false },
-  comment: { enabled: true, emailNotify: true },
-  follow: { enabled: true, emailNotify: false },
-  like: { enabled: true, emailNotify: false },
-  mention: { enabled: true, emailNotify: true },
+const settings: Record<string, boolean> = {
+  system: true,
+  comment: true,
+  follow: true,
+  like: true,
+  mention: true,
 }
 
 function handle(req: any) {
@@ -15,18 +15,22 @@ function handle(req: any) {
   const match = (r: RegExp) => path.match(r)
 
   if (m === 'GET' && path === '/api/user/notification-settings') {
-    return ok(settings)
+    return ok(Object.entries(settings).map(([type, enabled]) => ({ type, enabled })))
   }
 
   if (m === 'PUT' && path === '/api/user/notification-settings') {
-    Object.assign(settings, req.body)
+    const items = req.body.settings
+    if (Array.isArray(items)) {
+      items.forEach((item: any) => {
+        if (item.type && typeof item.enabled === 'boolean') settings[item.type] = item.enabled
+      })
+    }
     return ok(null)
   }
 
   if (m === 'PUT' && match(/^\/api\/user\/notification-settings\/(\w+)$/)) {
     const type = match(/^\/api\/user\/notification-settings\/(\w+)$/)![1]
-    if (settings[type]) Object.assign(settings[type], req.body)
-    else settings[type] = req.body
+    if (typeof req.body.enabled === 'boolean') settings[type] = req.body.enabled
     return ok(null)
   }
 

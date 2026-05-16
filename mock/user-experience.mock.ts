@@ -1,5 +1,5 @@
 import { defineMock } from 'vite-plugin-mock-dev-server'
-import { db, me, ok } from './shared'
+import { me, ok } from './shared'
 
 function handle(req: any) {
   const m = String(req.method).toUpperCase()
@@ -9,9 +9,8 @@ function handle(req: any) {
   if (m === 'GET' && path === '/api/user/experience/level') {
     if (!u) return ok(null, '未登录', 401)
     return ok({
-      userId: u.id,
-      level: u.level ?? 1,
-      experience: u.experience ?? 0,
+      level: u.userLevel ?? 1,
+      experiencePoints: u.experiencePoints ?? 0,
       nextLevelExp: 300,
     })
   }

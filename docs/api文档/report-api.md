@@ -24,7 +24,7 @@
 **接口信息**
 - 路径: `POST /api/user/reports`
 - 鉴权: 必须（需要登录态）
-- 说明: 用户提交一个新的举报，支持文章、评论、聊天消息等对象类型。
+- 说明: 用户提交一个新的举报，支持文章、评论、聊天消息、论坛帖子、论坛回复等对象类型。
 
 **请求示例**
 
@@ -33,14 +33,23 @@
 axios.post('/api/user/reports', {
   targetType: 'comment',      // 必填，举报对象类型
   targetId: 501,              // 必填，举报对象ID
-  reasonCode: 'spam',         // 必填，举报原因编码
-  reasonDetail: '该评论为垃圾广告内容，重复发布多次'  // 可选，补充说明
+  reasonCode: 'spam',         // 必填，举报原因编码（最大64字符）
+  reasonDetail: '该评论为垃圾广告内容，重复发布多次'  // 可选，补充说明（最大512字符）
 }, {
   headers: {
     Authorization: 'Bearer <accessToken>'
   }
 })
 ```
+
+**请求字段说明**
+
+| 字段 | 类型 | 必填 | 说明 |
+|------|------|------|------|
+| `targetType` | String | 是 | 举报对象类型：`article` / `comment` / `chat_message` / `forum_post` / `forum_reply` |
+| `targetId` | Long | 是 | 举报对象ID |
+| `reasonCode` | String | 是 | 举报原因编码，最大64字符 |
+| `reasonDetail` | String | 否 | 补充说明，最大512字符 |
 
 **响应示例（成功）**
 
@@ -69,7 +78,7 @@ axios.post('/api/user/reports', {
 | 字段 | 类型 | 说明 |
 |------|------|------|
 | `id` | Long | 举报记录ID |
-| `targetType` | String | 举报对象类型：`article`/`comment`/`chat_message` |
+| `targetType` | String | 举报对象类型：`article` / `comment` / `chat_message` / `forum_post` / `forum_reply` |
 | `targetId` | Long | 被举报对象的ID |
 | `reasonCode` | String | 举报原因编码 |
 | `reasonDetail` | String | 用户补充的说明 |
@@ -84,7 +93,7 @@ axios.post('/api/user/reports', {
 | code | 说明 | 前端处理 |
 |------|------|---------|
 | 401 | 未登录 | 跳转登录页 |
-| 400 | 参数校验失败（如缺少必填字段） | 提示用户补充信息 |
+| 400 | 参数校验失败（如缺少必填字段、targetType 无效） | 提示用户补充信息 |
 | 403 | 无权限 | 提示用户无操作权限 |
 | 500 | 服务器内部错误 | 提示"提交失败，请稍后重试" |
 
@@ -95,6 +104,8 @@ axios.post('/api/user/reports', {
 | `article` | 文章 | 举报文章内容违规 |
 | `comment` | 评论 | 举报评论包含不当信息 |
 | `chat_message` | 聊天消息 | 举报聊天消息 |
+| `forum_post` | 论坛帖子 | 举报论坛帖子违规 |
+| `forum_reply` | 论坛回复 | 举报论坛回复违规 |
 
 **举报原因编码枚举（reasonCode）**
 
@@ -146,6 +157,14 @@ axios.get('/api/user/reports', {
   }
 })
 ```
+
+**请求字段说明**
+
+| 参数 | 类型 | 必填 | 说明 |
+|------|------|------|------|
+| `targetType` | String | 否 | 举报对象类型筛选：`article` / `comment` / `chat_message` / `forum_post` / `forum_reply` |
+| `current` | Long | 否 | 页码，默认 `1`，最小值 `1` |
+| `size` | Long | 否 | 每页条数，默认 `10`，最小值 `1` |
 
 **响应示例**
 
@@ -223,7 +242,7 @@ axios.get('/api/user/reports', {
 **接口信息**
 - 路径: `GET /api/user/reports/{id}`
 - 鉴权: 必须
-- 说明: 查询单条举报记录的完整详情。
+- 说明: 查询单条举报记录的完整详情。仅允许查询本人提交的举报。
 
 **请求示例**
 
@@ -234,6 +253,12 @@ axios.get('/api/user/reports/1', {
   }
 })
 ```
+
+**路径参数**
+
+| 参数 | 类型 | 必填 | 说明 |
+|------|------|------|------|
+| `id` | Long | 是 | 举报记录ID（正整数） |
 
 **响应示例**
 
@@ -266,7 +291,7 @@ axios.get('/api/user/reports/1', {
 | `targetId` | Long | 举报对象ID |
 | `reasonCode` | String | 举报原因编码 |
 | `reasonDetail` | String | 用户补充的说明 |
-| `status` | Integer | 举报状态 |
+| `status` | Integer | 举报状态：0-待处理 / 1-处理中 / 2-已处理 / 3-已驳回 |
 | `reportedAt` | DateTime | 举报时间 |
 | `handledAt` | DateTime | 处理时间（已处理/已驳回时有值） |
 | `resultType` | String | 处理结果类型（已处理时有值） |
@@ -333,6 +358,18 @@ axios.get('/api/sys/reports', {
 })
 ```
 
+**请求字段说明**
+
+| 参数 | 类型 | 必填 | 说明 |
+|------|------|------|------|
+| `status` | Integer | 否 | 状态筛选：0-待处理 / 1-处理中 / 2-已处理 / 3-已驳回 |
+| `reportTargetType` | String | 否 | 举报对象类型筛选：`article` / `comment` / `chat_message` / `forum_post` / `forum_reply` |
+| `reporterUserId` | Long | 否 | 举报人ID精确筛选 |
+| `reportedStart` | LocalDateTime | 否 | 举报时间范围起点（包含） |
+| `reportedEnd` | LocalDateTime | 否 | 举报时间范围终点（包含） |
+| `current` | Long | 否 | 页码，默认 `1` |
+| `size` | Long | 否 | 每页条数，默认 `20`，上限 `100` |
+
 **响应示例**
 
 ```json
@@ -392,18 +429,6 @@ axios.get('/api/sys/reports', {
 | `records[].remark` | String | 处理备注（已处理/已驳回时有值） |
 | `records[].createdAt` | DateTime | 记录创建时间 |
 
-**查询参数说明**
-
-| 参数 | 类型 | 必填 | 说明 |
-|------|------|------|------|
-| `status` | Integer | 否 | 状态筛选：0-待处理 / 1-处理中 / 2-已处理 / 3-已驳回 |
-| `reportTargetType` | String | 否 | 举报对象类型筛选：`article`/`comment`/`chat_message` |
-| `reporterUserId` | Long | 否 | 举报人ID精确筛选 |
-| `reportedStart` | LocalDateTime | 否 | 举报时间范围起点（包含） |
-| `reportedEnd` | LocalDateTime | 否 | 举报时间范围终点（包含） |
-| `current` | Long | 否 | 页码，默认 `1` |
-| `size` | Long | 否 | 每页条数，默认 `20` |
-
 ---
 
 ### 举报详情（后台）
@@ -422,6 +447,12 @@ axios.get('/api/sys/reports/1', {
   }
 })
 ```
+
+**路径参数**
+
+| 参数 | 类型 | 必填 | 说明 |
+|------|------|------|------|
+| `id` | Long | 是 | 举报记录ID（正整数） |
 
 **响应示例**
 
@@ -462,7 +493,7 @@ axios.get('/api/sys/reports/1', {
 | `reporterUsername` | String | 举报人用户名 |
 | `reasonCode` | String | 举报原因编码 |
 | `reasonDetail` | String | 补充说明 |
-| `status` | Integer | 举报状态 |
+| `status` | Integer | 举报状态：0-待处理 / 1-处理中 / 2-已处理 / 3-已驳回 |
 | `handlerUserId` | Long | 处理人ID |
 | `handlerUsername` | String | 处理人用户名 |
 | `resultType` | String | 处理结果类型 |
@@ -471,6 +502,14 @@ axios.get('/api/sys/reports/1', {
 | `handledAt` | DateTime | 处理时间 |
 | `remark` | String | 处理备注 |
 | `createdAt` | DateTime | 创建时间 |
+
+**错误码**
+
+| code | 说明 | 前端处理 |
+|------|------|---------|
+| 401 | 未登录 | 跳转登录页 |
+| 403 | 无 `sys:report:query` 权限 | 提示无权限 |
+| 404 | 举报记录不存在 | 提示"举报记录不存在" |
 
 ---
 
@@ -492,6 +531,12 @@ axios.put('/api/sys/reports/1/take', {}, {
   }
 })
 ```
+
+**路径参数**
+
+| 参数 | 类型 | 必填 | 说明 |
+|------|------|------|------|
+| `id` | Long | 是 | 举报记录ID（正整数） |
 
 **响应示例**
 
@@ -588,6 +633,23 @@ axios.put('/api/sys/reports/9/handle', {
 })
 ```
 
+**路径参数**
+
+| 参数 | 类型 | 必填 | 说明 |
+|------|------|------|------|
+| `id` | Long | 是 | 举报记录ID（正整数） |
+
+**请求字段说明**
+
+| 字段 | 类型 | 必填 | 说明 |
+|------|------|------|------|
+| `resultType` | String | 是 | 处理结果类型：`delete_content` / `revoke_message` / `mute_user` / `ban_user` / `record_only` |
+| `punishmentType` | String | 否 | 处罚类型：`content_delete` / `message_revoke` / `mute` / `ban` / `none` |
+| `remark` | String | 否 | 处理备注，最大512字符 |
+| `conversationId` | Long | 否 | 会话ID，`resultType=revoke_message` 或 `muteScope` 为 `topic_channel`/`group` 时作为关联会话 |
+| `muteScope` | String | 否 | 禁言范围，`resultType=mute_user` 时使用：`global` / `lobby` / `topic_channel` / `group` |
+| `muteUntil` | DateTime | 否 | 禁言截止时间，`resultType=mute_user` 时使用；默认禁言1天；传入 `null` 表示永久禁言 |
+
 **响应示例**
 
 ```json
@@ -599,23 +661,12 @@ axios.put('/api/sys/reports/9/handle', {
 }
 ```
 
-**请求字段说明**
-
-| 字段 | 类型 | 必填 | 说明 |
-|------|------|------|------|
-| `resultType` | String | 是 | 处理结果类型 |
-| `punishmentType` | String | 否 | 处罚类型 |
-| `remark` | String | 否 | 处理备注，最大512字符 |
-| `conversationId` | Long | 否 | 会话ID，举报聊天消息时必填；`resultType=mute_user` 且 `muteScope` 为 `topic_channel`/`group` 时作为禁言关联会话 |
-| `muteScope` | String | 否 | 禁言范围，`resultType=mute_user` 时使用：`global`（全站）/ `lobby`（大厅）/ `topic_channel`（主题频道）/ `group`（群组） |
-| `muteUntil` | DateTime | 否 | 禁言截止时间，`resultType=mute_user` 时使用；默认禁言1天；传入 `null` 表示永久禁言 |
-
 **resultType 枚举值**
 
 | 值 | 说明 | 触发动作 |
 |------|------|---------|
-| `delete_content` | 删除内容 | 删除被举报的文章/评论 |
-| `revoke_message` | 撤回消息 | 撤回被举报的聊天消息 |
+| `delete_content` | 删除内容 | 删除被举报的文章/评论/论坛帖子/论坛回复 |
+| `revoke_message` | 撤回消息 | 撤回被举报的聊天消息（需传 `conversationId`） |
 | `mute_user` | 禁言用户 | 调用禁言服务创建禁言记录 |
 | `ban_user` | 封禁用户 | 封禁被举报用户 |
 | `record_only` | 仅记录 | 不执行处罚，仅记录处理结果 |
@@ -656,8 +707,8 @@ axios.put('/api/sys/reports/9/handle', {
 | `revoke_message` | 你的举报已处理 | 你举报的消息已被撤回 |
 | `mute_user` | 你的举报已处理 | 相关用户已被禁言 |
 | `ban_user` | 你的举报已处理 | 相关用户已被封禁 |
-| `record_only` | 你的举报已处理 | 你举报的内容经核实不构成违规 |
-| 驳回（reject） | 你的举报已驳回 | 你举报的内容经核实不构成违规（附驳回原因） |
+| `record_only` | 你的举报已处理 | 你举报的内容已经审核处理 |
+| 驳回（reject） | 你的举报已驳回 | 你举报的内容经审核未违反社区规范（附驳回原因） |
 
 **错误码**
 
@@ -665,6 +716,7 @@ axios.put('/api/sys/reports/9/handle', {
 |------|------|---------|
 | 400 | 举报状态不是待处理或处理中 | 提示"该举报已处理完毕" |
 | 400 | 缺少 resultType | 提示"请选择处理结果" |
+| 400 | resultType 无效 | 提示"处理结果类型无效" |
 | 403 | 无 `sys:report:handle` 权限 | 提示无权限操作 |
 | 404 | 举报记录不存在 | 提示"举报记录不存在" |
 
@@ -689,6 +741,18 @@ axios.put('/api/sys/reports/1/reject', {
 })
 ```
 
+**路径参数**
+
+| 参数 | 类型 | 必填 | 说明 |
+|------|------|------|------|
+| `id` | Long | 是 | 举报记录ID（正整数） |
+
+**请求字段说明**
+
+| 字段 | 类型 | 必填 | 说明 |
+|------|------|------|------|
+| `remark` | String | 否 | 驳回原因备注，最大512字符 |
+
 **响应示例**
 
 ```json
@@ -700,18 +764,12 @@ axios.put('/api/sys/reports/1/reject', {
 }
 ```
 
-**请求字段说明**
-
-| 字段 | 类型 | 必填 | 说明 |
-|------|------|------|------|
-| `remark` | String | 否 | 驳回原因备注，最大512字符 |
-
 **驳回结果通知**
 
 驳回后系统自动向举报人发送站内通知：
 - 通知类型：`REPORT_RESULT`
 - 通知标题：你的举报已驳回
-- 通知内容：举报内容经核实不构成违规（附驳回原因，截取前100字符）
+- 通知内容：你举报的{对象类型}经审核未违反社区规范（附驳回原因，截取前100字符）
 
 **错误码**
 
@@ -740,6 +798,12 @@ axios.put('/api/sys/reports/1/override', {}, {
 })
 ```
 
+**路径参数**
+
+| 参数 | 类型 | 必填 | 说明 |
+|------|------|------|------|
+| `id` | Long | 是 | 举报记录ID（正整数） |
+
 **响应示例**
 
 ```json
@@ -752,15 +816,16 @@ axios.put('/api/sys/reports/1/override', {}, {
 ```
 
 **前置条件**
-- 举报状态必须为 `1-处理中`（已接手但未处理）
-- 已处理（status=2）或已驳回（status=3）的举报不可接管
+- 仅超级管理员可操作
+- 举报状态必须不是已处理（status=2）或已驳回（status=3）
+- 接管后状态变更为 `1-处理中`，处理人变更为当前超管
 
 **错误码**
 
 | code | 说明 | 前端处理 |
 |------|------|---------|
-| 400 | 举报状态不是处理中 | 提示"仅处理中的举报可接管" |
-| 403 | 无 `sys:report:handle` 权限 | 提示无权限操作 |
+| 400 | 举报已处理或已驳回，不可接管 | 提示"该举报已处理完毕" |
+| 403 | 无 `sys:report:handle` 权限或非超管 | 提示无权限操作 |
 | 404 | 举报记录不存在 | 提示"举报记录不存在" |
 
 ---
@@ -784,6 +849,12 @@ axios.get('/api/sys/reports/1/logs', {
 })
 ```
 
+**路径参数**
+
+| 参数 | 类型 | 必填 | 说明 |
+|------|------|------|------|
+| `id` | Long | 是 | 举报记录ID（正整数） |
+
 **响应示例**
 
 ```json
@@ -796,7 +867,7 @@ axios.get('/api/sys/reports/1/logs', {
       "id": 4,
       "fromStatus": 1,
       "toStatus": 2,
-      "actionType": "handle",
+      "actionType": "approve",
       "actionResult": "delete_content",
       "operatorUserId": 1,
       "operatorUsername": "admin",
@@ -813,6 +884,17 @@ axios.get('/api/sys/reports/1/logs', {
       "operatorUsername": "admin",
       "actionRemark": null,
       "createdAt": "2026-04-21T09:30:00"
+    },
+    {
+      "id": 2,
+      "fromStatus": 1,
+      "toStatus": 1,
+      "actionType": "reassign",
+      "actionResult": null,
+      "operatorUserId": 2,
+      "operatorUsername": "superadmin",
+      "actionRemark": "超管接管，原处理人: 1",
+      "createdAt": "2026-04-21T09:45:00"
     },
     {
       "id": 1,
@@ -837,7 +919,7 @@ axios.get('/api/sys/reports/1/logs', {
 | `fromStatus` | Integer | 变更前状态（null 表示初始创建） |
 | `toStatus` | Integer | 变更后状态 |
 | `actionType` | String | 操作类型 |
-| `actionResult` | String | 处理结果（仅 handle 操作时有值） |
+| `actionResult` | String | 处理结果（仅 approve 操作时有值） |
 | `operatorUserId` | Long | 操作人用户ID |
 | `operatorUsername` | String | 操作人用户名 |
 | `actionRemark` | String | 操作备注 |
@@ -849,9 +931,10 @@ axios.get('/api/sys/reports/1/logs', {
 |------|------|------------|----------|
 | `create` | 举报提交 | null | 0 |
 | `claim` | 管理员接手 | 0 | 1 |
-| `handle` | 管理员处理 | 1 | 2 |
+| `approve` | 管理员处理通过 | 1 | 2 |
 | `reject` | 管理员驳回 | 1 | 3 |
-| `override` | 超管接管 | 1 | 1 |
+| `reassign` | 超管接管 | 1 | 1 |
+| `close` | 关闭流程 | - | - |
 
 **fromStatus / toStatus 状态枚举**
 
@@ -861,6 +944,14 @@ axios.get('/api/sys/reports/1/logs', {
 | 1 | 处理中 |
 | 2 | 已处理 |
 | 3 | 已驳回 |
+
+**错误码**
+
+| code | 说明 | 前端处理 |
+|------|------|---------|
+| 401 | 未登录 | 跳转登录页 |
+| 403 | 无 `sys:report:query` 权限 | 提示无权限 |
+| 404 | 举报记录不存在 | 提示"举报记录不存在" |
 
 ---
 
@@ -917,6 +1008,8 @@ axios.get('/api/sys/reports/1/logs', {
 | `article` | 文章 |
 | `comment` | 评论 |
 | `chat_message` | 聊天消息 |
+| `forum_post` | 论坛帖子 |
+| `forum_reply` | 论坛回复 |
 
 **处理结果类型（resultType）**
 
@@ -937,6 +1030,25 @@ axios.get('/api/sys/reports/1/logs', {
 | `mute` | 禁言 |
 | `ban` | 封禁 |
 | `none` | 无处罚 |
+
+**禁言范围（muteScope）**
+
+| 值 | 说明 |
+|------|------|
+| `global` | 全站 |
+| `lobby` | 大厅频道 |
+| `topic_channel` | 主题频道 |
+| `group` | 群聊 |
+
+**处理动作类型（actionType）**
+
+| 值 | 说明 |
+|------|------|
+| `claim` | 接单处理（管理员认领） |
+| `approve` | 处理通过 |
+| `reject` | 驳回举报 |
+| `close` | 关闭流程 |
+| `reassign` | 转派处理（超管接管） |
 
 ---
 

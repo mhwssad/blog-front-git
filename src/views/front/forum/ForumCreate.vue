@@ -40,13 +40,36 @@
           </el-form-item>
 
           <el-form-item label="正文" prop="content">
+            <div class="editor-tabs">
+              <button
+                type="button"
+                class="editor-tab"
+                :class="{ 'editor-tab--active': editorMode === 'edit' }"
+                @click="editorMode = 'edit'"
+              >
+                编辑
+              </button>
+              <button
+                type="button"
+                class="editor-tab"
+                :class="{ 'editor-tab--active': editorMode === 'preview' }"
+                @click="editorMode = 'preview'"
+              >
+                预览
+              </button>
+            </div>
             <el-input
+              v-if="editorMode === 'edit'"
               v-model="form.content"
               type="textarea"
               placeholder="请输入帖子内容"
-              :rows="12"
+              :rows="14"
               maxlength="50000"
             />
+            <div v-else class="content-preview">
+              <div v-if="form.content" class="preview-body" v-html="form.content"></div>
+              <div v-else class="preview-empty">暂无内容，请先在编辑模式输入</div>
+            </div>
           </el-form-item>
 
           <el-form-item label="可见范围">
@@ -86,6 +109,7 @@ const store = useUserForumStore()
 
 const formRef = ref<FormInstance>()
 const submitting = ref(false)
+const editorMode = ref<'edit' | 'preview'>('edit')
 
 const form = reactive({
   sectionId: undefined as number | undefined,
@@ -152,7 +176,61 @@ onMounted(() => {
   background: var(--el-bg-color, #fff);
   border-radius: 12px;
   padding: 28px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+  border-top: 3px solid var(--el-color-primary);
+}
+
+.editor-tabs {
+  display: flex;
+  gap: 0;
+  margin-bottom: 8px;
+  border-bottom: 1px solid var(--el-border-color-lighter);
+}
+
+.editor-tab {
+  padding: 8px 20px;
+  border: none;
+  background: transparent;
+  color: var(--el-text-color-secondary);
+  font-size: 14px;
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  transition:
+    color 0.2s,
+    border-color 0.2s;
+}
+
+.editor-tab:hover {
+  color: var(--el-color-primary);
+}
+
+.editor-tab--active {
+  color: var(--el-color-primary);
+  border-bottom-color: var(--el-color-primary);
+  font-weight: 500;
+}
+
+.content-preview {
+  min-height: 300px;
+  border: 1px solid var(--el-border-color, #dcdfe6);
+  border-radius: 6px;
+  padding: 16px;
+  background: var(--el-fill-color-lighter);
+}
+
+.preview-body {
+  font-size: 15px;
+  line-height: 1.8;
+  color: var(--el-text-color-regular);
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.preview-empty {
+  color: var(--el-text-color-placeholder);
+  font-size: 14px;
+  text-align: center;
+  padding: 80px 0;
 }
 
 .form-actions {

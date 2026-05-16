@@ -37,7 +37,7 @@
       "targetUrl": "/articles/1",
       "ipAddress": "192.168.1.10",
       "userAgent": "Chrome/120",
-      "visitedAt": "2026-03-31 12:00:00"
+      "visitedAt": "2026-05-16 09:15:00"
     },
     {
       "id": 2,
@@ -48,7 +48,7 @@
       "targetUrl": "/articles/1",
       "ipAddress": "192.168.1.11",
       "userAgent": "Firefox/121",
-      "visitedAt": "2026-04-26 08:15:00"
+      "visitedAt": "2026-05-16 08:15:00"
     },
     {
       "id": 3,
@@ -59,7 +59,7 @@
       "targetUrl": "/articles/2",
       "ipAddress": "192.168.1.10",
       "userAgent": "Chrome/120",
-      "visitedAt": "2026-04-26 09:30:00"
+      "visitedAt": "2026-05-16 11:30:00"
     },
     {
       "id": 4,
@@ -70,18 +70,18 @@
       "targetUrl": "/articles/3",
       "ipAddress": "10.0.0.5",
       "userAgent": "Safari/17",
-      "visitedAt": "2026-04-26 10:00:00"
+      "visitedAt": "2026-05-16 10:00:00"
     },
     {
       "id": 5,
-      "userId": 2,
+      "userId": 1,
       "targetId": 5,
       "targetType": "article",
       "targetTitle": "Pinia 状态管理最佳实践",
       "targetUrl": "/articles/5",
-      "ipAddress": "192.168.1.11",
-      "userAgent": "Firefox/121",
-      "visitedAt": "2026-04-26 11:20:00"
+      "ipAddress": "192.168.1.10",
+      "userAgent": "Chrome/120",
+      "visitedAt": "2026-05-15 14:20:00"
     },
     {
       "id": 6,
@@ -92,18 +92,18 @@
       "targetUrl": "/articles/1",
       "ipAddress": "192.168.1.10",
       "userAgent": "Chrome/120",
-      "visitedAt": "2026-04-26 14:05:00"
+      "visitedAt": "2026-05-15 16:05:00"
     },
     {
       "id": 7,
-      "userId": 3,
+      "userId": 1,
       "targetId": 4,
       "targetType": "article",
       "targetTitle": "Element Plus 后台管理实战",
       "targetUrl": "/articles/4",
-      "ipAddress": "10.0.0.5",
-      "userAgent": "Safari/17",
-      "visitedAt": "2026-04-26 15:45:00"
+      "ipAddress": "192.168.1.10",
+      "userAgent": "Chrome/120",
+      "visitedAt": "2026-05-14 09:45:00"
     },
     {
       "id": 8,
@@ -114,7 +114,51 @@
       "targetUrl": "/articles/6",
       "ipAddress": "192.168.1.10",
       "userAgent": "Chrome/120",
-      "visitedAt": "2026-04-26 16:30:00"
+      "visitedAt": "2026-05-10 11:30:00"
+    },
+    {
+      "id": 9,
+      "userId": 1,
+      "targetId": 7,
+      "targetType": "article",
+      "targetTitle": "Axios 拦截器与请求重试策略",
+      "targetUrl": "/articles/7",
+      "ipAddress": "192.168.1.10",
+      "userAgent": "Chrome/120",
+      "visitedAt": "2026-05-08 15:00:00"
+    },
+    {
+      "id": 10,
+      "userId": 1,
+      "targetId": 8,
+      "targetType": "article",
+      "targetTitle": "CSS Grid 与 Flexbox 布局对比",
+      "targetUrl": "/articles/8",
+      "ipAddress": "192.168.1.10",
+      "userAgent": "Chrome/120",
+      "visitedAt": "2026-04-28 10:20:00"
+    },
+    {
+      "id": 11,
+      "userId": 2,
+      "targetId": 5,
+      "targetType": "article",
+      "targetTitle": "Pinia 状态管理最佳实践",
+      "targetUrl": "/articles/5",
+      "ipAddress": "192.168.1.11",
+      "userAgent": "Firefox/121",
+      "visitedAt": "2026-05-15 11:20:00"
+    },
+    {
+      "id": 12,
+      "userId": 3,
+      "targetId": 4,
+      "targetType": "article",
+      "targetTitle": "Element Plus 后台管理实战",
+      "targetUrl": "/articles/4",
+      "ipAddress": "10.0.0.5",
+      "userAgent": "Safari/17",
+      "visitedAt": "2026-05-14 15:45:00"
     }
   ],
   "interactions": [

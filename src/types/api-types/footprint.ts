@@ -72,6 +72,12 @@ export interface UserFootprintQueryRequest {
   size?: number
   /** 目标类型，当前固定为article */
   targetType?: string
+  /** 关键词搜索（匹配标题） */
+  keyword?: string
+  /** 访问开始时间 */
+  visitedAtStart?: string
+  /** 访问结束时间 */
+  visitedAtEnd?: string
 }
 
 /**

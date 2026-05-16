@@ -2234,6 +2234,239 @@ axios.delete('/api/sys/forum/replies/1001', {
 
 ---
 
+## 帖子频道挂接
+
+> 以下接口均要求登录。路由前缀 `/api/user/chat/forum-links`，由聊天模块下的 `UserForumPostChannelLinkController` 提供。
+
+---
+
+### 分享帖子到频道（频道侧入口）
+
+**接口信息**
+
+- 路径：`POST /api/user/chat/forum-links`
+- 鉴权：是
+- 说明：将帖子分享到指定频道，每个帖子同一时间只能挂接一个频道。论坛侧另有一个入口 `POST /api/user/forum/posts/{postId}/channel-share`，功能相同
+
+**请求示例**
+
+```javascript
+axios.post('/api/user/chat/forum-links', {
+  forumPostId: 10,
+  conversationId: 99
+}, {
+  headers: { Authorization: 'Bearer xxx' }
+})
+```
+
+**请求体**
+
+| 字段 | 类型 | 必填 | 说明 |
+|-----|------|-----|------|
+| `forumPostId` | Long | 是 | 论坛帖子ID |
+| `conversationId` | Long | 是 | 目标频道会话ID |
+
+**响应示例**
+
+```json
+{
+  "code": 200,
+  "message": "成功",
+  "timestamp": "2026-01-15 15:30:00",
+  "data": {
+    "id": 5,
+    "forumPostId": 10,
+    "conversationId": 99,
+    "channelName": "技术交流频道",
+    "linkType": "forum_share",
+    "linkedBy": 100,
+    "linkedAt": "2026-01-15 15:30:00"
+  }
+}
+```
+
+**响应字段说明**
+
+| 字段 | 类型 | 说明 |
+|-----|------|-----|
+| `id` | Long | 关联记录ID |
+| `forumPostId` | Long | 论坛帖子ID |
+| `conversationId` | Long | 频道会话ID |
+| `channelName` | String | 频道名称 |
+| `linkType` | String | 关联方式，如 `forum_share` |
+| `linkedBy` | Long | 关联人ID |
+| `linkedAt` | DateTime | 关联时间 |
+
+**错误码**
+
+| code | 说明 | 前端处理 |
+|-----|------|---------|
+| 40001 | 参数校验失败 | 提示具体校验错误 |
+| 40401 | 帖子或频道不存在 | 提示不存在 |
+| 40011 | 帖子未发布或用户不是频道成员 | 提示具体原因 |
+| 40101 | 未登录 | 跳转登录页 |
+| 50001 | 系统异常 | 提示稍后重试 |
+
+---
+
+### 查询帖子关联的频道
+
+**接口信息**
+
+- 路径：`GET /api/user/chat/forum-links/posts/{forumPostId}`
+- 鉴权：是
+- 说明：查询指定帖子当前挂接的频道信息，未挂接时返回 `data: null`
+
+**请求示例**
+
+```javascript
+axios.get('/api/user/chat/forum-links/posts/10', {
+  headers: { Authorization: 'Bearer xxx' }
+})
+```
+
+**路径参数**
+
+| 参数 | 类型 | 必填 | 说明 |
+|-----|------|-----|------|
+| `forumPostId` | Long | 是 | 论坛帖子ID |
+
+**响应示例**
+
+```json
+{
+  "code": 200,
+  "message": "成功",
+  "timestamp": "2026-01-15 15:30:00",
+  "data": {
+    "id": 5,
+    "forumPostId": 10,
+    "conversationId": 99,
+    "channelName": "技术交流频道",
+    "linkType": "forum_share",
+    "linkedBy": 100,
+    "linkedAt": "2026-01-15 15:30:00"
+  }
+}
+```
+
+**错误码**
+
+| code | 说明 | 前端处理 |
+|-----|------|---------|
+| 40101 | 未登录 | 跳转登录页 |
+| 50001 | 系统异常 | 提示稍后重试 |
+
+---
+
+### 分页查询频道关联的帖子
+
+**接口信息**
+
+- 路径：`GET /api/user/chat/forum-links/channels/{conversationId}`
+- 鉴权：是
+- 说明：分页查询指定频道下挂接的所有帖子
+
+**请求示例**
+
+```javascript
+axios.get('/api/user/chat/forum-links/channels/99?current=1&size=20', {
+  headers: { Authorization: 'Bearer xxx' }
+})
+```
+
+**路径参数**
+
+| 参数 | 类型 | 必填 | 说明 |
+|-----|------|-----|------|
+| `conversationId` | Long | 是 | 频道会话ID |
+
+**查询参数**
+
+| 参数 | 类型 | 必填 | 说明 | 默认值 |
+|-----|------|-----|------|-------|
+| `current` | Long | 否 | 页码 | 1 |
+| `size` | Long | 否 | 每页数量 | 20 |
+
+**响应示例**
+
+```json
+{
+  "code": 200,
+  "message": "成功",
+  "timestamp": "2026-01-15 15:30:00",
+  "data": {
+    "total": 3,
+    "current": 1,
+    "size": 20,
+    "records": [
+      {
+        "id": 5,
+        "forumPostId": 10,
+        "conversationId": 99,
+        "channelName": "技术交流频道",
+        "linkType": "forum_share",
+        "linkedBy": 100,
+        "linkedAt": "2026-01-15 15:30:00"
+      }
+    ]
+  }
+}
+```
+
+**错误码**
+
+| code | 说明 | 前端处理 |
+|-----|------|---------|
+| 40101 | 未登录 | 跳转登录页 |
+| 50001 | 系统异常 | 提示稍后重试 |
+
+---
+
+### 取消帖子与频道的关联
+
+**接口信息**
+
+- 路径：`DELETE /api/user/chat/forum-links/posts/{forumPostId}`
+- 鉴权：是
+- 说明：取消指定帖子与频道的关联，仅关联人本人可操作
+
+**请求示例**
+
+```javascript
+axios.delete('/api/user/chat/forum-links/posts/10', {
+  headers: { Authorization: 'Bearer xxx' }
+})
+```
+
+**路径参数**
+
+| 参数 | 类型 | 必填 | 说明 |
+|-----|------|-----|------|
+| `forumPostId` | Long | 是 | 论坛帖子ID |
+
+**响应示例**
+
+```json
+{
+  "code": 200,
+  "message": "成功",
+  "timestamp": "2026-01-15 16:00:00",
+  "data": null
+}
+```
+
+**错误码**
+
+| code | 说明 | 前端处理 |
+|-----|------|---------|
+| 40401 | 关联不存在 | 提示关联不存在 |
+| 40300 | 非关联人本人 | 提示无权限 |
+| 40101 | 未登录 | 跳转登录页 |
+| 50001 | 系统异常 | 提示稍后重试 |
+
+---
+
 ## 附录
 
 ### 状态值对照表

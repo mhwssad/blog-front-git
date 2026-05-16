@@ -1,5 +1,5 @@
 import { defineMock } from 'vite-plugin-mock-dev-server'
-import { cp, db, me, now, num, ok, page } from './shared'
+import { cp, db, me, now, num, ok, page, toForumPostVO, toForumPostDetailVO, toForumReplyVO } from './shared'
 
 function handle(req: any) {
   const m = String(req.method).toUpperCase()
@@ -13,7 +13,7 @@ function handle(req: any) {
     let rs = (db.forumPosts || []).filter((i: any) => !i.isHidden)
     if (req.query.sectionId) rs = rs.filter((i: any) => i.sectionId === num(req.query.sectionId))
     if (u) rs = req.query.myOnly ? rs.filter((i: any) => i.userId === u.id) : rs
-    return ok(page(rs, req.query))
+    return ok(page(rs.map(toForumPostVO), req.query))
   }
 
   if (m === 'POST' && path === '/api/user/forum/posts') {
@@ -43,7 +43,7 @@ function handle(req: any) {
 
   if (m === 'GET' && match(/^\/api\/user\/forum\/posts\/(\d+)$/)) {
     const x = (db.forumPosts || []).find((i: any) => i.id === num(match(/^\/api\/user\/forum\/posts\/(\d+)$/)![1]))
-    return x ? ok(cp(x)) : ok(null, '帖子不存在', 404)
+    return x ? ok(toForumPostDetailVO(cp(x))) : ok(null, '帖子不存在', 404)
   }
 
   if (m === 'PUT' && match(/^\/api\/user\/forum\/posts\/(\d+)$/)) {

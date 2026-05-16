@@ -8,10 +8,23 @@
             <el-breadcrumb-item>论坛</el-breadcrumb-item>
           </el-breadcrumb>
 
-          <div class="forum-title-row">
-            <h1 class="forum-title">论坛</h1>
+          <div class="forum-hero">
+            <div class="forum-hero-content">
+              <h1 class="forum-hero-title">论坛</h1>
+              <p class="forum-hero-desc">与社区成员分享想法、交流经验</p>
+              <div class="forum-hero-stats">
+                <div class="forum-stat">
+                  <span class="forum-stat__number">{{ store.postTotal }}</span>
+                  <span class="forum-stat__label">篇帖子</span>
+                </div>
+                <div class="forum-stat">
+                  <span class="forum-stat__number">{{ store.sections.length }}</span>
+                  <span class="forum-stat__label">个版块</span>
+                </div>
+              </div>
+            </div>
             <router-link v-if="authStore.isLoggedIn" to="/forum/create">
-              <el-button type="primary">发帖</el-button>
+              <el-button type="primary" effect="dark" class="forum-hero-btn">发帖</el-button>
             </router-link>
           </div>
 
@@ -38,6 +51,7 @@
             :class="{ 'section-tab--active': selectedSectionId === undefined }"
             @click="handleSectionClick(undefined)"
           >
+            <el-icon><Grid /></el-icon>
             全部
           </button>
           <button
@@ -48,6 +62,7 @@
             :class="{ 'section-tab--active': selectedSectionId === section.id }"
             @click="handleSectionClick(section.id)"
           >
+            <span class="section-tab__dot">{{ section.name?.charAt(0) }}</span>
             {{ section.name }}
           </button>
         </div>
@@ -99,6 +114,35 @@
             </li>
           </ul>
         </div>
+
+        <div v-if="hotPosts.length" class="sidebar-card sidebar-hot">
+          <h3 class="sidebar-card__title">热门帖子</h3>
+          <ul class="sidebar-hot-list">
+            <li
+              v-for="(hp, idx) in hotPosts"
+              :key="hp.id"
+              class="sidebar-hot-item"
+            >
+              <span class="sidebar-hot-rank" :class="rankClass(idx)">
+                {{ idx + 1 }}
+              </span>
+              <router-link :to="`/forum/posts/${hp.id}`" class="sidebar-hot-title">
+                {{ hp.title }}
+              </router-link>
+              <span class="sidebar-hot-count">{{ hp.replyCount }}</span>
+            </li>
+          </ul>
+        </div>
+
+        <div class="sidebar-card sidebar-tips">
+          <h3 class="sidebar-card__title">社区公约</h3>
+          <ul class="sidebar-tips-list">
+            <li>友善交流，尊重他人观点</li>
+            <li>分享有价值的内容和经验</li>
+            <li>不发布违规或广告信息</li>
+            <li>遇到问题积极反馈</li>
+          </ul>
+        </div>
       </aside>
 
       <div v-if="sidebarOpen" class="sidebar-overlay" @click="sidebarOpen = false" />
@@ -107,8 +151,8 @@
 </template>
 
 <script lang="ts" setup>
-import { onMounted, ref } from 'vue'
-import { Search, Expand, Fold } from '@element-plus/icons-vue'
+import { computed, onMounted, ref } from 'vue'
+import { Search, Expand, Fold, Grid } from '@element-plus/icons-vue'
 import { useUserForumStore, useAuthStore } from '@/stores'
 import ForumPostCard from './components/ForumPostCard.vue'
 
@@ -121,6 +165,17 @@ const sort = ref<'latest' | 'hot'>('latest')
 const selectedSectionId = ref<number | undefined>(undefined)
 const currentPage = ref(1)
 const pageSize = 10
+
+const hotPosts = computed(() =>
+  [...store.posts].sort((a, b) => b.replyCount - a.replyCount).slice(0, 5),
+)
+
+function rankClass(idx: number): string {
+  if (idx === 0) return 'sidebar-hot-rank--gold'
+  if (idx === 1) return 'sidebar-hot-rank--silver'
+  if (idx === 2) return 'sidebar-hot-rank--bronze'
+  return ''
+}
 
 function buildParams() {
   return {
@@ -187,27 +242,73 @@ onMounted(async () => {
 .forum-header {
   background: var(--el-bg-color, #fff);
   border-radius: 12px;
-  padding: 24px;
+  overflow: hidden;
   margin-bottom: 16px;
 }
 
-.forum-title-row {
+.forum-header .el-breadcrumb {
+  padding: 12px 24px 0;
+}
+
+.forum-hero {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-top: 16px;
+  background: linear-gradient(135deg, var(--el-color-primary-light-3), var(--el-color-primary));
+  padding: 24px;
+  margin-top: 8px;
 }
 
-.forum-title {
-  font-size: 24px;
-  font-weight: 700;
+.forum-hero-content {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.forum-hero-title {
   margin: 0;
+  font-size: 26px;
+  font-weight: 700;
+  color: #fff;
+}
+
+.forum-hero-desc {
+  margin: 0;
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.forum-hero-stats {
+  display: flex;
+  gap: 20px;
+  margin-top: 8px;
+}
+
+.forum-stat {
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+}
+
+.forum-stat__number {
+  font-size: 20px;
+  font-weight: 700;
+  color: #fff;
+}
+
+.forum-stat__label {
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.75);
+}
+
+.forum-hero-btn {
+  flex-shrink: 0;
 }
 
 .forum-filter-row {
   display: flex;
   gap: 12px;
-  margin-top: 16px;
+  padding: 16px 24px;
 }
 
 .forum-filter-row .el-input {
@@ -226,6 +327,9 @@ onMounted(async () => {
 }
 
 .section-tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
   padding: 6px 16px;
   border-radius: 20px;
   border: 1px solid var(--el-border-color, #dcdfe6);
@@ -255,6 +359,24 @@ onMounted(async () => {
   color: #fff;
 }
 
+.section-tab__dot {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  font-size: 10px;
+  font-weight: 600;
+  background: var(--el-fill-color-light);
+  color: var(--el-text-color-secondary);
+}
+
+.section-tab--active .section-tab__dot {
+  background: rgba(255, 255, 255, 0.25);
+  color: #fff;
+}
+
 .forum-post-list {
   display: flex;
   flex-direction: column;
@@ -270,6 +392,9 @@ onMounted(async () => {
 .forum-sidebar {
   width: 300px;
   flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
 }
 
 .sidebar-toggle {
@@ -290,6 +415,7 @@ onMounted(async () => {
   font-size: 16px;
   font-weight: 600;
   margin: 0 0 16px;
+  color: var(--el-text-color-primary);
 }
 
 .sidebar-section-list {
@@ -332,6 +458,83 @@ onMounted(async () => {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+.sidebar-hot-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.sidebar-hot-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--el-border-color-extra-light, #f2f6fc);
+}
+
+.sidebar-hot-item:last-child {
+  border-bottom: none;
+}
+
+.sidebar-hot-rank {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 700;
+  background: var(--el-fill-color);
+  color: var(--el-text-color-secondary);
+  flex-shrink: 0;
+}
+
+.sidebar-hot-rank--gold {
+  background: #f59e0b;
+  color: #fff;
+}
+
+.sidebar-hot-rank--silver {
+  background: #9ca3af;
+  color: #fff;
+}
+
+.sidebar-hot-rank--bronze {
+  background: #b45309;
+  color: #fff;
+}
+
+.sidebar-hot-title {
+  flex: 1;
+  font-size: 13px;
+  color: var(--el-text-color-regular);
+  text-decoration: none;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  transition: color 0.2s;
+}
+
+.sidebar-hot-title:hover {
+  color: var(--el-color-primary);
+}
+
+.sidebar-hot-count {
+  font-size: 12px;
+  color: var(--el-text-color-placeholder);
+  flex-shrink: 0;
+}
+
+.sidebar-tips-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  font-size: 13px;
+  color: var(--el-text-color-secondary);
+  line-height: 2;
 }
 
 @media (max-width: 1024px) {
@@ -405,11 +608,23 @@ onMounted(async () => {
     width: 280px;
   }
 
-  .forum-header {
+  .forum-hero {
     padding: 16px;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .forum-hero-title {
+    font-size: 22px;
+  }
+
+  .forum-hero-desc {
+    display: none;
   }
 
   .forum-filter-row {
+    padding: 12px 16px;
     flex-direction: column;
   }
 
@@ -419,6 +634,10 @@ onMounted(async () => {
 
   .forum-filter-row .el-select {
     width: 100%;
+  }
+
+  .sidebar-tips {
+    display: none;
   }
 }
 

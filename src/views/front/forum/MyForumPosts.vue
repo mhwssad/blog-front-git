@@ -14,7 +14,22 @@
         </router-link>
       </div>
 
-      <div class="filter-row">
+      <div class="stats-bar">
+        <div class="stats-item">
+          <span class="stats-item__number">{{ store.postTotal }}</span>
+          <span class="stats-item__label">总帖子</span>
+        </div>
+        <div class="stats-item">
+          <span class="stats-item__number">{{ publishedCount }}</span>
+          <span class="stats-item__label">已发布</span>
+        </div>
+        <div class="stats-item">
+          <span class="stats-item__number">{{ draftCount }}</span>
+          <span class="stats-item__label">草稿</span>
+        </div>
+      </div>
+
+      <div class="filter-card">
         <el-input
           v-model="keyword"
           placeholder="搜索帖子"
@@ -79,7 +94,7 @@
 </template>
 
 <script lang="ts" setup>
-import { onMounted, ref } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { Search } from '@element-plus/icons-vue'
@@ -100,6 +115,9 @@ const statusOptions = [
   { label: '草稿', value: 0 },
   { label: '已发布', value: 1 },
 ] as { label: string; value: number | '' }[]
+
+const publishedCount = computed(() => store.posts.filter((p) => p.status === 1).length)
+const draftCount = computed(() => store.posts.filter((p) => p.status === 0).length)
 
 function loadPosts(): void {
   store.getMyPosts({
@@ -168,10 +186,42 @@ onMounted(() => {
   color: var(--el-text-color-primary);
 }
 
-.filter-row {
+.stats-bar {
+  display: flex;
+  gap: 24px;
+  margin-bottom: 16px;
+  padding: 16px 20px;
+  background: var(--el-bg-color, #fff);
+  border-radius: 10px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+}
+
+.stats-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+
+.stats-item__number {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--el-color-primary);
+}
+
+.stats-item__label {
+  font-size: 12px;
+  color: var(--el-text-color-placeholder);
+}
+
+.filter-card {
   display: flex;
   gap: 12px;
   margin-bottom: 20px;
+  padding: 12px 16px;
+  background: var(--el-bg-color, #fff);
+  border-radius: 10px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
 }
 
 .posts-list {
@@ -199,12 +249,20 @@ onMounted(() => {
     padding: 16px 16px 32px;
   }
 
-  .filter-row {
+  .stats-bar {
+    gap: 16px;
+  }
+
+  .stats-item__number {
+    font-size: 18px;
+  }
+
+  .filter-card {
     flex-direction: column;
   }
 
-  .filter-row .el-input,
-  .filter-row .el-select {
+  .filter-card .el-input,
+  .filter-card .el-select {
     width: 100% !important;
   }
 }

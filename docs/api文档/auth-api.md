@@ -11,12 +11,16 @@
   - [账号注册](#账号注册)
   - [发送邮箱验证码](#发送邮箱验证码)
   - [邮箱验证码登录](#邮箱验证码登录)
+- [找回密码](#找回密码)
+  - [发送找回密码验证码](#发送找回密码验证码)
+  - [重置密码](#重置密码)
 - [应用启动初始化](#应用启动初始化)
   - [恢复登录态](#恢复登录态)
   - [获取当前用户信息](#获取当前用户信息)
   - [获取用户菜单](#获取用户菜单)
 - [Token 刷新机制](#token-刷新机制)
 - [退出登录](#退出登录)
+- [账号接管认证](#账号接管认证)
 - [个人中心](#个人中心)
   - [查看个人资料](#查看个人资料)
   - [更新个人资料](#更新个人资料)
@@ -26,13 +30,21 @@
   - [通知详情](#通知详情)
   - [未读数量](#未读数量)
   - [标记已读](#标记已读)
-- [密码重置（忘记密码）](#密码重置忘记密码)
-  - [发送重置验证码](#发送重置验证码)
-  - [重置密码](#重置密码)
-- [用户搜索（公开）](#用户搜索公开)
-- [接管登录](#接管登录)
-- [经验体系后台管理](#经验体系后台管理)
-- [审计日志后台管理](#审计日志后台管理)
+- [用户通知设置](#用户通知设置)
+- [用户经验等级](#用户经验等级)
+- [用户作者申请](#用户作者申请)
+- [公开用户搜索](#公开用户搜索)
+- [公开作者主页](#公开作者主页)
+- [后台用户管理](#后台用户管理)
+- [后台菜单管理](#后台菜单管理)
+- [后台角色管理](#后台角色管理)
+- [通知后台管理](#通知后台管理)
+- [作者申请后台管理](#作者申请后台管理)
+- [超级管理员操作](#超级管理员操作)
+- [经验体系管理](#经验体系管理)
+- [系统日志管理](#系统日志管理)
+- [审计日志管理](#审计日志管理)
+- [系统配置管理](#系统配置管理)
 - [错误码速查](#错误码速查)
 - [前端集成指南](#前端集成指南)
   - [登录流程时序](#登录流程时序)
@@ -49,10 +61,13 @@
 | 账号注册 | POST | `/api/auth/register` | 否 | 支持邮箱/手机号 |
 | 发送邮箱验证码 | POST | `/api/auth/email-code` | 否 | 用于邮箱登录/注册 |
 | 邮箱验证码登录 | POST | `/api/auth/email-login` | 否 | 邮箱 + 验证码 |
+| 发送找回密码验证码 | POST | `/api/auth/password-reset/code` | 否 | 用于密码重置 |
+| 重置密码 | POST | `/api/auth/password-reset` | 否 | 邮箱 + 验证码 + 新密码 |
 | 刷新令牌 | POST | `/api/auth/refresh` | 否 | 使用 refreshToken |
 | 退出登录 | POST | `/api/auth/logout` | 是 | 支持不传 token |
 | 获取当前用户 | GET | `/api/auth/current-user` | 是 | 包含角色权限 |
 | 获取用户菜单 | GET | `/api/auth/current-user-menus` | 是 | 树形菜单结构 |
+| 接管令牌登录 | POST | `/api/auth/takeover/login` | 否 | 超管接管 |
 | 获取个人资料 | GET | `/api/user/profile` | 是 | 个人详细信息 |
 | 更新个人资料 | PUT | `/api/user/profile` | 是 | 修改昵称/头像等 |
 | 修改密码 | PUT | `/api/user/profile/password` | 是 | 需验证原密码 |
@@ -61,6 +76,73 @@
 | 未读数量 | GET | `/api/user/notices/unread-count` | 是 | 数字 |
 | 单条已读 | POST | `/api/user/notices/{id}/read` | 是 | - |
 | 全部已读 | POST | `/api/user/notices/read-all` | 是 | - |
+| 查询通知设置 | GET | `/api/user/notification-settings` | 是 | 全部通知设置项 |
+| 批量更新通知设置 | PUT | `/api/user/notification-settings` | 是 | 批量开关 |
+| 单项更新通知设置 | PUT | `/api/user/notification-settings/{type}` | 是 | 按类型开关 |
+| 查看当前等级信息 | GET | `/api/user/experience/level` | 是 | 等级+经验值 |
+| 提交作者申请 | POST | `/api/user/author-applications` | 是 | 提交申请 |
+| 查询最近一次申请 | GET | `/api/user/author-applications/latest` | 是 | 最新一条 |
+| 分页查询我的申请 | GET | `/api/user/author-applications` | 是 | 分页 |
+| 搜索用户 | GET | `/api/users/search` | 否 | 关键字模糊搜索 |
+| 查询公开作者主页 | GET | `/api/users/{userId}/author-profile` | 否 | 作者摘要 |
+| 分页查询用户 | GET | `/api/sys/users` | 后台 | 分页 |
+| 查询用户详情 | GET | `/api/sys/users/{id}` | 后台 | - |
+| 新增用户 | POST | `/api/sys/users` | 后台 | - |
+| 修改用户 | PUT | `/api/sys/users/{id}` | 后台 | - |
+| 修改用户状态 | PUT | `/api/sys/users/{id}/status` | 后台 | 启用/禁用 |
+| 重置用户密码 | PUT | `/api/sys/users/{id}/password/reset` | 后台 | - |
+| 删除用户 | DELETE | `/api/sys/users/{id}` | 后台 | - |
+| 查询用户角色 | GET | `/api/sys/users/{id}/roles` | 后台 | 角色 ID 列表 |
+| 分配用户角色 | PUT | `/api/sys/users/{id}/roles` | 后台 | - |
+| 查询菜单树 | GET | `/api/sys/menus/tree` | 后台 | 完整菜单树 |
+| 查询菜单详情 | GET | `/api/sys/menus/{id}` | 后台 | - |
+| 新增菜单 | POST | `/api/sys/menus` | 后台 | - |
+| 修改菜单 | PUT | `/api/sys/menus/{id}` | 后台 | - |
+| 删除菜单 | DELETE | `/api/sys/menus/{id}` | 后台 | - |
+| 分页查询角色 | GET | `/api/sys/roles` | 后台 | 分页 |
+| 查询角色详情 | GET | `/api/sys/roles/{id}` | 后台 | - |
+| 新增角色 | POST | `/api/sys/roles` | 后台 | - |
+| 修改角色 | PUT | `/api/sys/roles/{id}` | 后台 | - |
+| 修改角色状态 | PUT | `/api/sys/roles/{id}/status` | 后台 | 启用/禁用 |
+| 删除角色 | DELETE | `/api/sys/roles/{id}` | 后台 | - |
+| 查询角色菜单 | GET | `/api/sys/roles/{id}/menus` | 后台 | 菜单 ID 列表 |
+| 分配角色菜单 | PUT | `/api/sys/roles/{id}/menus` | 后台 | - |
+| 分页查询通知 | GET | `/api/sys/notices` | 后台 | 分页 |
+| 查询通知详情 | GET | `/api/sys/notices/{id}` | 后台 | - |
+| 新增通知 | POST | `/api/sys/notices` | 后台 | - |
+| 修改通知 | PUT | `/api/sys/notices/{id}` | 后台 | - |
+| 发布通知 | POST | `/api/sys/notices/{id}/publish` | 后台 | - |
+| 撤回通知 | POST | `/api/sys/notices/{id}/revoke` | 后台 | - |
+| 删除通知 | DELETE | `/api/sys/notices/{id}` | 后台 | - |
+| 分页查询作者申请 | GET | `/api/sys/author-applications` | 后台 | 分页 |
+| 查询作者申请详情 | GET | `/api/sys/author-applications/{id}` | 后台 | - |
+| 审核作者申请 | PUT | `/api/sys/author-applications/{id}/review` | 后台 | 通过/驳回 |
+| 修正作者申请状态 | PUT | `/api/sys/author-applications/{id}/repair` | 后台 | - |
+| 发送2FA验证码 | POST | `/api/admin/2fa/send-code` | 超管 | - |
+| 校验2FA验证码 | POST | `/api/admin/2fa/verify` | 超管 | 返回 mfaTicket |
+| 封禁用户 | POST | `/api/admin/users/{id}/ban` | 超管 | 需要 mfaTicket |
+| 解封用户 | POST | `/api/admin/users/{id}/unban` | 超管 | 需要 mfaTicket |
+| 调整用户等级 | PUT | `/api/admin/users/{id}/level` | 超管 | 需要 mfaTicket |
+| 调整用户经验 | PUT | `/api/admin/users/{id}/experience` | 超管 | 需要 mfaTicket |
+| 账号接管 | POST | `/api/admin/takeover` | 超管 | 需要 mfaTicket |
+| 带审计的角色分配 | PUT | `/api/admin/users/{id}/roles` | 超管 | 需要 mfaTicket |
+| 查看用户经验来源汇总 | GET | `/api/sys/experience/users/{userId}/summary` | 后台 | - |
+| 经验流水分页查询 | GET | `/api/sys/experience/logs` | 后台 | 分页 |
+| 手动调整等级或经验 | POST | `/api/sys/experience/users/{userId}/adjust` | 后台 | - |
+| 查看经验来源配置 | GET | `/api/sys/experience/config` | 后台 | - |
+| 更新经验来源配置 | PUT | `/api/sys/experience/config` | 后台 | - |
+| 分页查询日志 | GET | `/api/sys/logs` | 后台 | 分页 |
+| 查询日志详情 | GET | `/api/sys/logs/{id}` | 后台 | - |
+| 删除日志 | DELETE | `/api/sys/logs/{id}` | 后台 | - |
+| 按条件清理日志 | POST | `/api/sys/logs/clean` | 后台 | 返回清理数量 |
+| 分页查询审计日志 | GET | `/api/sys/audit-logs` | 超管 | 分页 |
+| 查询审计日志详情 | GET | `/api/sys/audit-logs/{id}` | 超管 | - |
+| 分页查询配置 | GET | `/api/sys/configs` | 后台 | 分页 |
+| 查询配置详情 | GET | `/api/sys/configs/{id}` | 后台 | - |
+| 新增配置 | POST | `/api/sys/configs` | 后台 | - |
+| 修改配置 | PUT | `/api/sys/configs/{id}` | 后台 | - |
+| 删除配置 | DELETE | `/api/sys/configs/{id}` | 后台 | - |
+| 按配置键查询配置值 | GET | `/api/sys/configs/key/{configKey}` | 后台 | 按 key 查 value |
 
 ---
 
@@ -310,6 +392,82 @@ axios.post('/api/auth/email-login', {
 |-----|------|---------|
 | 40112 | 验证码错误 | 显示「验证码错误」 |
 | 40113 | 验证码已过期 | 显示「验证码已过期，请重新获取」 |
+
+---
+
+## 找回密码
+
+### 发送找回密码验证码
+
+**接口信息**
+- 路径: `POST /api/auth/password-reset/code`
+- 鉴权: 否
+- Content-Type: `application/json`
+
+**请求参数**
+
+| 字段 | 类型 | 必填 | 说明 | 示例 |
+|-----|------|------|------|------|
+| email | string | 是 | 注册时绑定的邮箱地址 | `user@example.com` |
+
+**请求示例**
+
+```javascript
+// axios
+axios.post('/api/auth/password-reset/code', {
+  email: 'user@example.com'
+})
+```
+
+**响应示例**
+
+```json
+{
+  "code": 200,
+  "message": "成功",
+  "timestamp": 1774310400000,
+  "data": null
+}
+```
+
+---
+
+### 重置密码
+
+**接口信息**
+- 路径: `POST /api/auth/password-reset`
+- 鉴权: 否
+- Content-Type: `application/json`
+
+**请求参数**
+
+| 字段 | 类型 | 必填 | 说明 | 限制 |
+|-----|------|------|------|------|
+| email | string | 是 | 邮箱地址 | 与验证码发送邮箱一致 |
+| code | string | 是 | 邮箱验证码（6位数字） | - |
+| newPassword | string | 是 | 新密码 | 8-64位，需包含大小写字母和数字 |
+
+**请求示例**
+
+```javascript
+// axios
+axios.post('/api/auth/password-reset', {
+  email: 'user@example.com',
+  code: '123456',
+  newPassword: 'NewPass456'
+})
+```
+
+**响应示例**
+
+```json
+{
+  "code": 200,
+  "message": "成功",
+  "timestamp": 1774310400000,
+  "data": null
+}
+```
 
 ---
 
@@ -575,6 +733,48 @@ await axios.post('/api/auth/logout', {
   "message": "成功",
   "timestamp": 1774310400000,
   "data": null
+}
+```
+
+---
+
+## 账号接管认证
+
+### 使用接管令牌登录
+
+**接口信息**
+- 路径: `POST /api/auth/takeover/login`
+- 鉴权: 否（使用超管操作返回的接管令牌）
+- Content-Type: `application/json`
+
+**请求参数**
+
+| 字段 | 类型 | 必填 | 说明 |
+|-----|------|------|------|
+| takeoverToken | string | 是 | 超管发起接管时返回的一次性令牌 |
+
+**请求示例**
+
+```javascript
+// axios
+axios.post('/api/auth/takeover/login', {
+  takeoverToken: 'xxx-takeover-token-xxx'
+})
+```
+
+**响应示例**
+
+```json
+{
+  "code": 200,
+  "message": "成功",
+  "timestamp": 1774310400000,
+  "data": {
+    "tokenType": "Bearer",
+    "accessToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+    "refreshToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+    "expiresIn": 7200
+  }
 }
 ```
 
@@ -946,6 +1146,2698 @@ await axios.post('/api/user/notices/read-all')
 
 ---
 
+## 用户通知设置
+
+### 查询我的通知设置
+
+**接口信息**
+- 路径: `GET /api/user/notification-settings`
+- 鉴权: 是
+
+**请求示例**
+
+```javascript
+// axios
+const res = await axios.get('/api/user/notification-settings')
+```
+
+**响应示例**
+
+```json
+{
+  "code": 200,
+  "message": "成功",
+  "timestamp": 1774310400000,
+  "data": [
+    {
+      "type": "system",
+      "enabled": true
+    },
+    {
+      "type": "comment",
+      "enabled": true
+    },
+    {
+      "type": "like",
+      "enabled": false
+    }
+  ]
+}
+```
+
+---
+
+### 批量更新我的通知设置
+
+**接口信息**
+- 路径: `PUT /api/user/notification-settings`
+- 鉴权: 是
+- Content-Type: `application/json`
+
+**请求参数**
+
+| 字段 | 类型 | 必填 | 说明 |
+|-----|------|------|------|
+| settings | array | 是 | 通知设置列表 |
+| settings[].type | string | 是 | 通知类型 |
+| settings[].enabled | boolean | 是 | 是否启用 |
+
+**请求示例**
+
+```javascript
+// axios
+await axios.put('/api/user/notification-settings', {
+  settings: [
+    { type: 'system', enabled: true },
+    { type: 'comment', enabled: false }
+  ]
+})
+```
+
+**响应示例**
+
+```json
+{
+  "code": 200,
+  "message": "成功",
+  "timestamp": 1774310400000,
+  "data": null
+}
+```
+
+---
+
+### 单独更新某类通知设置
+
+**接口信息**
+- 路径: `PUT /api/user/notification-settings/{type}`
+- 鉴权: 是
+- Content-Type: `application/json`
+
+**路径参数**
+
+| 参数 | 说明 |
+|------|------|
+| type | 通知类型，如 `system`、`comment`、`like` |
+
+**请求参数**
+
+| 字段 | 类型 | 必填 | 说明 |
+|-----|------|------|------|
+| enabled | boolean | 是 | 是否启用 |
+
+**请求示例**
+
+```javascript
+// axios
+await axios.put('/api/user/notification-settings/comment', {
+  enabled: false
+})
+```
+
+**响应示例**
+
+```json
+{
+  "code": 200,
+  "message": "成功",
+  "timestamp": 1774310400000,
+  "data": null
+}
+```
+
+---
+
+## 用户经验等级
+
+### 查看当前等级信息
+
+**接口信息**
+- 路径: `GET /api/user/experience/level`
+- 鉴权: 是
+
+**请求示例**
+
+```javascript
+// axios
+const res = await axios.get('/api/user/experience/level')
+```
+
+**响应示例**
+
+```json
+{
+  "code": 200,
+  "message": "成功",
+  "timestamp": 1774310400000,
+  "data": {
+    "level": 5,
+    "experiencePoints": 15000,
+    "nextLevelExp": 20000
+  }
+}
+```
+
+---
+
+## 用户作者申请
+
+### 提交作者申请
+
+**接口信息**
+- 路径: `POST /api/user/author-applications`
+- 鉴权: 是
+- Content-Type: `application/json`
+
+**请求参数**
+
+| 字段 | 类型 | 必填 | 说明 |
+|-----|------|------|------|
+| realName | string | 否 | 真实姓名 |
+| penName | string | 否 | 笔名 |
+| introduction | string | 否 | 自我介绍 |
+| portfolioUrl | string | 否 | 作品集链接 |
+
+**请求示例**
+
+```javascript
+// axios
+await axios.post('/api/user/author-applications', {
+  penName: '我的笔名',
+  introduction: '写作爱好者'
+})
+```
+
+**响应示例**
+
+```json
+{
+  "code": 200,
+  "message": "成功",
+  "timestamp": 1774310400000,
+  "data": {
+    "id": 1,
+    "status": "pending",
+    "createdAt": "2026-05-16T10:00:00"
+  }
+}
+```
+
+---
+
+### 查询最近一次作者申请
+
+**接口信息**
+- 路径: `GET /api/user/author-applications/latest`
+- 鉴权: 是
+
+**请求示例**
+
+```javascript
+// axios
+const res = await axios.get('/api/user/author-applications/latest')
+```
+
+**响应示例**
+
+```json
+{
+  "code": 200,
+  "message": "成功",
+  "timestamp": 1774310400000,
+  "data": {
+    "id": 1,
+    "status": "pending",
+    "createdAt": "2026-05-16T10:00:00"
+  }
+}
+```
+
+---
+
+### 分页查询我的作者申请记录
+
+**接口信息**
+- 路径: `GET /api/user/author-applications`
+- 鉴权: 是
+- 分页参数通过 Query 传递
+
+**请求参数**（Query）
+
+| 字段 | 类型 | 必填 | 说明 | 示例 |
+|-----|------|------|------|------|
+| current | integer | 否 | 当前页，默认1 | `1` |
+| size | integer | 否 | 每页条数，默认10 | `10` |
+
+**请求示例**
+
+```javascript
+// axios
+const res = await axios.get('/api/user/author-applications', {
+  params: { current: 1, size: 10 }
+})
+```
+
+**响应示例**
+
+```json
+{
+  "code": 200,
+  "message": "成功",
+  "timestamp": 1774310400000,
+  "data": {
+    "total": 3,
+    "current": 1,
+    "size": 10,
+    "records": [
+      {
+        "id": 1,
+        "status": "approved",
+        "createdAt": "2026-05-10T10:00:00"
+      }
+    ]
+  }
+}
+```
+
+---
+
+## 公开用户搜索
+
+### 搜索用户
+
+**接口信息**
+- 路径: `GET /api/users/search`
+- 鉴权: 否
+- 分页参数通过 Query 传递
+
+**请求参数**（Query）
+
+| 字段 | 类型 | 必填 | 说明 | 限制 |
+|-----|------|------|------|------|
+| keyword | string | 是 | 搜索关键字 | 至少2个字符 |
+| current | integer | 否 | 当前页，默认1 | - |
+| size | integer | 否 | 每页条数，默认10 | - |
+
+**请求示例**
+
+```javascript
+// axios
+const res = await axios.get('/api/users/search', {
+  params: { keyword: 'admin', current: 1, size: 10 }
+})
+```
+
+**响应示例**
+
+```json
+{
+  "code": 200,
+  "message": "成功",
+  "timestamp": 1774310400000,
+  "data": {
+    "total": 1,
+    "current": 1,
+    "size": 10,
+    "records": [
+      {
+        "userId": 1,
+        "username": "admin",
+        "nickname": "管理员",
+        "avatar": "https://example.com/avatar.jpg"
+      }
+    ]
+  }
+}
+```
+
+---
+
+## 公开作者主页
+
+### 查询指定用户的公开作者主页摘要
+
+**接口信息**
+- 路径: `GET /api/users/{userId}/author-profile`
+- 鉴权: 否
+
+**路径参数**
+
+| 参数 | 说明 |
+|------|------|
+| userId | 目标用户ID |
+
+**请求示例**
+
+```javascript
+// axios
+const res = await axios.get('/api/users/1/author-profile')
+```
+
+**响应示例**
+
+```json
+{
+  "code": 200,
+  "message": "成功",
+  "timestamp": 1774310400000,
+  "data": {
+    "userId": 1,
+    "nickname": "管理员",
+    "avatar": "https://example.com/avatar.jpg",
+    "bio": "这是个人简介",
+    "articleCount": 10,
+    "likeCount": 50
+  }
+}
+```
+
+---
+
+## 后台用户管理
+
+> 以下接口均需要对应后台权限，通过 `@PreAuthorize` 控制。
+
+### 分页查询用户
+
+**接口信息**
+- 路径: `GET /api/sys/users`
+- 鉴权: 后台（`sys:user:query`）
+- 分页参数通过 Query 传递
+
+**请求参数**（Query）
+
+| 字段 | 类型 | 必填 | 说明 |
+|-----|------|------|------|
+| current | integer | 否 | 当前页，默认1 |
+| size | integer | 否 | 每页条数，默认10 |
+| keyword | string | 否 | 搜索关键字（用户名/昵称/邮箱） |
+| status | integer | 否 | 状态筛选 |
+
+**请求示例**
+
+```javascript
+// axios
+const res = await axios.get('/api/sys/users', {
+  params: { current: 1, size: 10, keyword: 'admin' }
+})
+```
+
+**响应示例**
+
+```json
+{
+  "code": 200,
+  "message": "成功",
+  "timestamp": 1774310400000,
+  "data": {
+    "total": 50,
+    "current": 1,
+    "size": 10,
+    "records": [
+      {
+        "id": 1,
+        "username": "admin",
+        "nickname": "管理员",
+        "email": "admin@example.com",
+        "status": 1,
+        "createdAt": "2024-01-01T00:00:00"
+      }
+    ]
+  }
+}
+```
+
+---
+
+### 查询用户详情
+
+**接口信息**
+- 路径: `GET /api/sys/users/{id}`
+- 鉴权: 后台（`sys:user:query`）
+
+**路径参数**
+
+| 参数 | 说明 |
+|------|------|
+| id | 用户ID |
+
+**请求示例**
+
+```javascript
+// axios
+const res = await axios.get('/api/sys/users/1')
+```
+
+**响应示例**
+
+```json
+{
+  "code": 200,
+  "message": "成功",
+  "timestamp": 1774310400000,
+  "data": {
+    "id": 1,
+    "username": "admin",
+    "nickname": "管理员",
+    "email": "admin@example.com",
+    "phone": "13800138000",
+    "status": 1,
+    "createdAt": "2024-01-01T00:00:00"
+  }
+}
+```
+
+---
+
+### 新增用户
+
+**接口信息**
+- 路径: `POST /api/sys/users`
+- 鉴权: 后台（`sys:user:create`）
+- Content-Type: `application/json`
+
+**请求参数**
+
+| 字段 | 类型 | 必填 | 说明 |
+|-----|------|------|------|
+| username | string | 是 | 用户名 |
+| password | string | 是 | 密码 |
+| nickname | string | 否 | 昵称 |
+| email | string | 否 | 邮箱 |
+| phone | string | 否 | 手机号 |
+| status | integer | 否 | 状态 |
+
+**请求示例**
+
+```javascript
+// axios
+await axios.post('/api/sys/users', {
+  username: 'new_user',
+  password: 'Abc12345',
+  nickname: '新用户',
+  email: 'new@example.com'
+})
+```
+
+**响应示例**
+
+```json
+{
+  "code": 200,
+  "message": "成功",
+  "timestamp": 1774310400000,
+  "data": {
+    "id": 10,
+    "username": "new_user",
+    "nickname": "新用户"
+  }
+}
+```
+
+---
+
+### 修改用户
+
+**接口信息**
+- 路径: `PUT /api/sys/users/{id}`
+- 鉴权: 后台（`sys:user:update`）
+- Content-Type: `application/json`
+
+**路径参数**
+
+| 参数 | 说明 |
+|------|------|
+| id | 用户ID |
+
+**请求参数**：同新增用户（字段均可选）
+
+**请求示例**
+
+```javascript
+// axios
+await axios.put('/api/sys/users/10', {
+  nickname: '修改后的昵称',
+  status: 1
+})
+```
+
+**响应示例**
+
+```json
+{
+  "code": 200,
+  "message": "成功",
+  "timestamp": 1774310400000,
+  "data": {
+    "id": 10,
+    "username": "new_user",
+    "nickname": "修改后的昵称"
+  }
+}
+```
+
+---
+
+### 修改用户状态
+
+**接口信息**
+- 路径: `PUT /api/sys/users/{id}/status`
+- 鉴权: 后台（`sys:user:update`）
+- Content-Type: `application/json`
+
+**请求参数**
+
+| 字段 | 类型 | 必填 | 说明 |
+|-----|------|------|------|
+| status | integer | 是 | 状态值（1-启用，0-禁用） |
+
+**请求示例**
+
+```javascript
+// axios
+await axios.put('/api/sys/users/10/status', { status: 0 })
+```
+
+**响应示例**
+
+```json
+{
+  "code": 200,
+  "message": "成功",
+  "timestamp": 1774310400000,
+  "data": null
+}
+```
+
+---
+
+### 重置用户密码
+
+**接口信息**
+- 路径: `PUT /api/sys/users/{id}/password/reset`
+- 鉴权: 后台（`sys:user:reset-password`）
+- Content-Type: `application/json`
+
+**请求参数**
+
+| 字段 | 类型 | 必填 | 说明 |
+|-----|------|------|------|
+| password | string | 是 | 新密码 |
+
+**请求示例**
+
+```javascript
+// axios
+await axios.put('/api/sys/users/10/password/reset', { password: 'NewPass123' })
+```
+
+**响应示例**
+
+```json
+{
+  "code": 200,
+  "message": "成功",
+  "timestamp": 1774310400000,
+  "data": null
+}
+```
+
+---
+
+### 删除用户
+
+**接口信息**
+- 路径: `DELETE /api/sys/users/{id}`
+- 鉴权: 后台（`sys:user:delete`）
+
+**路径参数**
+
+| 参数 | 说明 |
+|------|------|
+| id | 用户ID |
+
+**请求示例**
+
+```javascript
+// axios
+await axios.delete('/api/sys/users/10')
+```
+
+**响应示例**
+
+```json
+{
+  "code": 200,
+  "message": "成功",
+  "timestamp": 1774310400000,
+  "data": null
+}
+```
+
+---
+
+### 查询用户角色
+
+**接口信息**
+- 路径: `GET /api/sys/users/{id}/roles`
+- 鉴权: 后台（`sys:user:query`）
+
+**请求示例**
+
+```javascript
+// axios
+const res = await axios.get('/api/sys/users/1/roles')
+```
+
+**响应示例**
+
+```json
+{
+  "code": 200,
+  "message": "成功",
+  "timestamp": 1774310400000,
+  "data": [1, 2]
+}
+```
+
+---
+
+### 分配用户角色
+
+**接口信息**
+- 路径: `PUT /api/sys/users/{id}/roles`
+- 鉴权: 后台（`sys:user:assign-role`）
+- Content-Type: `application/json`
+
+**请求参数**
+
+| 字段 | 类型 | 必填 | 说明 |
+|-----|------|------|------|
+| roleIds | array\<long\> | 是 | 角色 ID 列表 |
+
+**请求示例**
+
+```javascript
+// axios
+await axios.put('/api/sys/users/1/roles', { roleIds: [1, 3] })
+```
+
+**响应示例**
+
+```json
+{
+  "code": 200,
+  "message": "成功",
+  "timestamp": 1774310400000,
+  "data": null
+}
+```
+
+---
+
+## 后台菜单管理
+
+> 以下接口均需要对应后台权限，通过 `@PreAuthorize` 控制。
+
+### 查询菜单树
+
+**接口信息**
+- 路径: `GET /api/sys/menus/tree`
+- 鉴权: 后台（`sys:menu:query`）
+
+**请求示例**
+
+```javascript
+// axios
+const res = await axios.get('/api/sys/menus/tree')
+```
+
+**响应示例**
+
+```json
+{
+  "code": 200,
+  "message": "成功",
+  "timestamp": 1774310400000,
+  "data": [
+    {
+      "id": 1,
+      "parentId": 0,
+      "name": "工作台",
+      "type": "menu",
+      "sort": 1,
+      "children": []
+    }
+  ]
+}
+```
+
+---
+
+### 查询菜单详情
+
+**接口信息**
+- 路径: `GET /api/sys/menus/{id}`
+- 鉴权: 后台（`sys:menu:query`）
+
+**路径参数**
+
+| 参数 | 说明 |
+|------|------|
+| id | 菜单ID |
+
+**请求示例**
+
+```javascript
+// axios
+const res = await axios.get('/api/sys/menus/1')
+```
+
+**响应示例**
+
+```json
+{
+  "code": 200,
+  "message": "成功",
+  "timestamp": 1774310400000,
+  "data": {
+    "id": 1,
+    "parentId": 0,
+    "name": "工作台",
+    "type": "menu",
+    "routeName": "Dashboard",
+    "routePath": "/dashboard",
+    "component": "dashboard/index",
+    "perm": null,
+    "visible": 1,
+    "sort": 1,
+    "icon": "ant-design:dashboard-outlined"
+  }
+}
+```
+
+---
+
+### 新增菜单
+
+**接口信息**
+- 路径: `POST /api/sys/menus`
+- 鉴权: 后台（`sys:menu:create`）
+- Content-Type: `application/json`
+
+**请求参数**
+
+| 字段 | 类型 | 必填 | 说明 |
+|-----|------|------|------|
+| parentId | long | 否 | 父菜单ID，默认0 |
+| name | string | 是 | 菜单名称 |
+| type | string | 是 | 菜单类型 |
+| routeName | string | 否 | 路由名称 |
+| routePath | string | 否 | 路由路径 |
+| component | string | 否 | 组件路径 |
+| perm | string | 否 | 权限标识 |
+| visible | integer | 否 | 是否显示，默认1 |
+| sort | integer | 否 | 排序序号 |
+| icon | string | 否 | 图标 |
+
+**请求示例**
+
+```javascript
+// axios
+await axios.post('/api/sys/menus', {
+  parentId: 0,
+  name: '新菜单',
+  type: 'menu',
+  routePath: '/new-menu',
+  component: 'new-menu/index',
+  sort: 10
+})
+```
+
+**响应示例**
+
+```json
+{
+  "code": 200,
+  "message": "成功",
+  "timestamp": 1774310400000,
+  "data": {
+    "id": 10,
+    "parentId": 0,
+    "name": "新菜单"
+  }
+}
+```
+
+---
+
+### 修改菜单
+
+**接口信息**
+- 路径: `PUT /api/sys/menus/{id}`
+- 鉴权: 后台（`sys:menu:update`）
+- Content-Type: `application/json`
+
+**路径参数**
+
+| 参数 | 说明 |
+|------|------|
+| id | 菜单ID |
+
+**请求参数**：同新增菜单（字段均可选）
+
+**请求示例**
+
+```javascript
+// axios
+await axios.put('/api/sys/menus/10', { name: '修改后的菜单', sort: 20 })
+```
+
+**响应示例**
+
+```json
+{
+  "code": 200,
+  "message": "成功",
+  "timestamp": 1774310400000,
+  "data": {
+    "id": 10,
+    "name": "修改后的菜单"
+  }
+}
+```
+
+---
+
+### 删除菜单
+
+**接口信息**
+- 路径: `DELETE /api/sys/menus/{id}`
+- 鉴权: 后台（`sys:menu:delete`）
+
+**路径参数**
+
+| 参数 | 说明 |
+|------|------|
+| id | 菜单ID |
+
+**请求示例**
+
+```javascript
+// axios
+await axios.delete('/api/sys/menus/10')
+```
+
+**响应示例**
+
+```json
+{
+  "code": 200,
+  "message": "成功",
+  "timestamp": 1774310400000,
+  "data": null
+}
+```
+
+---
+
+## 后台角色管理
+
+> 以下接口均需要对应后台权限，通过 `@PreAuthorize` 控制。
+
+### 分页查询角色
+
+**接口信息**
+- 路径: `GET /api/sys/roles`
+- 鉴权: 后台（`sys:role:query`）
+- 分页参数通过 Query 传递
+
+**请求参数**（Query）
+
+| 字段 | 类型 | 必填 | 说明 |
+|-----|------|------|------|
+| current | integer | 否 | 当前页，默认1 |
+| size | integer | 否 | 每页条数，默认10 |
+| keyword | string | 否 | 搜索关键字 |
+| status | integer | 否 | 状态筛选 |
+
+**请求示例**
+
+```javascript
+// axios
+const res = await axios.get('/api/sys/roles', {
+  params: { current: 1, size: 10 }
+})
+```
+
+**响应示例**
+
+```json
+{
+  "code": 200,
+  "message": "成功",
+  "timestamp": 1774310400000,
+  "data": {
+    "total": 5,
+    "current": 1,
+    "size": 10,
+    "records": [
+      {
+        "id": 1,
+        "name": "超级管理员",
+        "code": "admin",
+        "status": 1
+      }
+    ]
+  }
+}
+```
+
+---
+
+### 查询角色详情
+
+**接口信息**
+- 路径: `GET /api/sys/roles/{id}`
+- 鉴权: 后台（`sys:role:query`）
+
+**路径参数**
+
+| 参数 | 说明 |
+|------|------|
+| id | 角色ID |
+
+**请求示例**
+
+```javascript
+// axios
+const res = await axios.get('/api/sys/roles/1')
+```
+
+**响应示例**
+
+```json
+{
+  "code": 200,
+  "message": "成功",
+  "timestamp": 1774310400000,
+  "data": {
+    "id": 1,
+    "name": "超级管理员",
+    "code": "admin",
+    "status": 1,
+    "description": "拥有所有权限"
+  }
+}
+```
+
+---
+
+### 新增角色
+
+**接口信息**
+- 路径: `POST /api/sys/roles`
+- 鉴权: 后台（`sys:role:create`）
+- Content-Type: `application/json`
+
+**请求参数**
+
+| 字段 | 类型 | 必填 | 说明 |
+|-----|------|------|------|
+| name | string | 是 | 角色名称 |
+| code | string | 是 | 角色编码 |
+| description | string | 否 | 描述 |
+| status | integer | 否 | 状态 |
+
+**请求示例**
+
+```javascript
+// axios
+await axios.post('/api/sys/roles', {
+  name: '编辑',
+  code: 'editor',
+  description: '内容编辑'
+})
+```
+
+**响应示例**
+
+```json
+{
+  "code": 200,
+  "message": "成功",
+  "timestamp": 1774310400000,
+  "data": {
+    "id": 5,
+    "name": "编辑",
+    "code": "editor"
+  }
+}
+```
+
+---
+
+### 修改角色
+
+**接口信息**
+- 路径: `PUT /api/sys/roles/{id}`
+- 鉴权: 后台（`sys:role:update`）
+- Content-Type: `application/json`
+
+**路径参数**
+
+| 参数 | 说明 |
+|------|------|
+| id | 角色ID |
+
+**请求参数**：同新增角色（字段均可选）
+
+**请求示例**
+
+```javascript
+// axios
+await axios.put('/api/sys/roles/5', { description: '内容编辑，可发布文章' })
+```
+
+**响应示例**
+
+```json
+{
+  "code": 200,
+  "message": "成功",
+  "timestamp": 1774310400000,
+  "data": {
+    "id": 5,
+    "name": "编辑",
+    "code": "editor"
+  }
+}
+```
+
+---
+
+### 修改角色状态
+
+**接口信息**
+- 路径: `PUT /api/sys/roles/{id}/status`
+- 鉴权: 后台（`sys:role:update`）
+- Content-Type: `application/json`
+
+**请求参数**
+
+| 字段 | 类型 | 必填 | 说明 |
+|-----|------|------|------|
+| status | integer | 是 | 状态值（1-启用，0-禁用） |
+
+**请求示例**
+
+```javascript
+// axios
+await axios.put('/api/sys/roles/5/status', { status: 0 })
+```
+
+**响应示例**
+
+```json
+{
+  "code": 200,
+  "message": "成功",
+  "timestamp": 1774310400000,
+  "data": null
+}
+```
+
+---
+
+### 删除角色
+
+**接口信息**
+- 路径: `DELETE /api/sys/roles/{id}`
+- 鉴权: 后台（`sys:role:delete`）
+
+**路径参数**
+
+| 参数 | 说明 |
+|------|------|
+| id | 角色ID |
+
+**请求示例**
+
+```javascript
+// axios
+await axios.delete('/api/sys/roles/5')
+```
+
+**响应示例**
+
+```json
+{
+  "code": 200,
+  "message": "成功",
+  "timestamp": 1774310400000,
+  "data": null
+}
+```
+
+---
+
+### 查询角色菜单
+
+**接口信息**
+- 路径: `GET /api/sys/roles/{id}/menus`
+- 鉴权: 后台（`sys:role:query`）
+
+**请求示例**
+
+```javascript
+// axios
+const res = await axios.get('/api/sys/roles/1/menus')
+```
+
+**响应示例**
+
+```json
+{
+  "code": 200,
+  "message": "成功",
+  "timestamp": 1774310400000,
+  "data": [1, 2, 3, 4, 5]
+}
+```
+
+---
+
+### 分配角色菜单
+
+**接口信息**
+- 路径: `PUT /api/sys/roles/{id}/menus`
+- 鉴权: 后台（`sys:role:assign-menu`）
+- Content-Type: `application/json`
+
+**请求参数**
+
+| 字段 | 类型 | 必填 | 说明 |
+|-----|------|------|------|
+| menuIds | array\<long\> | 是 | 菜单 ID 列表 |
+
+**请求示例**
+
+```javascript
+// axios
+await axios.put('/api/sys/roles/2/menus', { menuIds: [1, 2, 3] })
+```
+
+**响应示例**
+
+```json
+{
+  "code": 200,
+  "message": "成功",
+  "timestamp": 1774310400000,
+  "data": null
+}
+```
+
+---
+
+## 通知后台管理
+
+> 以下接口均需要对应后台权限，通过 `@PreAuthorize` 控制。
+
+### 分页查询通知
+
+**接口信息**
+- 路径: `GET /api/sys/notices`
+- 鉴权: 后台（`sys:notice:query`）
+- 分页参数通过 Query 传递
+
+**请求参数**（Query）
+
+| 字段 | 类型 | 必填 | 说明 |
+|-----|------|------|------|
+| current | integer | 否 | 当前页，默认1 |
+| size | integer | 否 | 每页条数，默认10 |
+| title | string | 否 | 标题筛选 |
+| status | integer | 否 | 状态筛选 |
+
+**请求示例**
+
+```javascript
+// axios
+const res = await axios.get('/api/sys/notices', {
+  params: { current: 1, size: 10 }
+})
+```
+
+**响应示例**
+
+```json
+{
+  "code": 200,
+  "message": "成功",
+  "timestamp": 1774310400000,
+  "data": {
+    "total": 10,
+    "current": 1,
+    "size": 10,
+    "records": [
+      {
+        "id": 1,
+        "title": "系统维护通知",
+        "content": "...",
+        "status": "published",
+        "createdAt": "2026-05-01T10:00:00"
+      }
+    ]
+  }
+}
+```
+
+---
+
+### 查询通知详情
+
+**接口信息**
+- 路径: `GET /api/sys/notices/{id}`
+- 鉴权: 后台（`sys:notice:query`）
+
+**请求示例**
+
+```javascript
+// axios
+const res = await axios.get('/api/sys/notices/1')
+```
+
+**响应示例**
+
+```json
+{
+  "code": 200,
+  "message": "成功",
+  "timestamp": 1774310400000,
+  "data": {
+    "id": 1,
+    "title": "系统维护通知",
+    "content": "系统将于今晚进行维护",
+    "type": 1,
+    "level": "info",
+    "status": "published",
+    "createdAt": "2026-05-01T10:00:00"
+  }
+}
+```
+
+---
+
+### 新增通知
+
+**接口信息**
+- 路径: `POST /api/sys/notices`
+- 鉴权: 后台（`sys:notice:create`）
+- Content-Type: `application/json`
+
+**请求参数**
+
+| 字段 | 类型 | 必填 | 说明 |
+|-----|------|------|------|
+| title | string | 是 | 通知标题 |
+| content | string | 是 | 通知内容 |
+| type | integer | 否 | 通知类型 |
+| level | string | 否 | 通知等级：info/warning/error |
+
+**请求示例**
+
+```javascript
+// axios
+await axios.post('/api/sys/notices', {
+  title: '新通知',
+  content: '通知内容',
+  type: 1,
+  level: 'info'
+})
+```
+
+**响应示例**
+
+```json
+{
+  "code": 200,
+  "message": "成功",
+  "timestamp": 1774310400000,
+  "data": {
+    "id": 2,
+    "title": "新通知",
+    "status": "draft"
+  }
+}
+```
+
+---
+
+### 修改通知
+
+**接口信息**
+- 路径: `PUT /api/sys/notices/{id}`
+- 鉴权: 后台（`sys:notice:update`）
+- Content-Type: `application/json`
+
+**路径参数**
+
+| 参数 | 说明 |
+|------|------|
+| id | 通知ID |
+
+**请求参数**：同新增通知（字段均可选）
+
+**请求示例**
+
+```javascript
+// axios
+await axios.put('/api/sys/notices/2', { title: '修改后的标题' })
+```
+
+**响应示例**
+
+```json
+{
+  "code": 200,
+  "message": "成功",
+  "timestamp": 1774310400000,
+  "data": {
+    "id": 2,
+    "title": "修改后的标题"
+  }
+}
+```
+
+---
+
+### 发布通知
+
+**接口信息**
+- 路径: `POST /api/sys/notices/{id}/publish`
+- 鉴权: 后台（`sys:notice:publish`）
+
+**路径参数**
+
+| 参数 | 说明 |
+|------|------|
+| id | 通知ID |
+
+**请求示例**
+
+```javascript
+// axios
+await axios.post('/api/sys/notices/2/publish')
+```
+
+**响应示例**
+
+```json
+{
+  "code": 200,
+  "message": "成功",
+  "timestamp": 1774310400000,
+  "data": null
+}
+```
+
+---
+
+### 撤回通知
+
+**接口信息**
+- 路径: `POST /api/sys/notices/{id}/revoke`
+- 鉴权: 后台（`sys:notice:revoke`）
+
+**路径参数**
+
+| 参数 | 说明 |
+|------|------|
+| id | 通知ID |
+
+**请求示例**
+
+```javascript
+// axios
+await axios.post('/api/sys/notices/2/revoke')
+```
+
+**响应示例**
+
+```json
+{
+  "code": 200,
+  "message": "成功",
+  "timestamp": 1774310400000,
+  "data": null
+}
+```
+
+---
+
+### 删除通知
+
+**接口信息**
+- 路径: `DELETE /api/sys/notices/{id}`
+- 鉴权: 后台（`sys:notice:delete`）
+
+**路径参数**
+
+| 参数 | 说明 |
+|------|------|
+| id | 通知ID |
+
+**请求示例**
+
+```javascript
+// axios
+await axios.delete('/api/sys/notices/2')
+```
+
+**响应示例**
+
+```json
+{
+  "code": 200,
+  "message": "成功",
+  "timestamp": 1774310400000,
+  "data": null
+}
+```
+
+---
+
+## 作者申请后台管理
+
+> 以下接口均需要对应后台权限，通过 `@PreAuthorize` 控制。
+
+### 分页查询作者申请
+
+**接口信息**
+- 路径: `GET /api/sys/author-applications`
+- 鉴权: 后台（`sys:author-application:query`）
+- 分页参数通过 Query 传递
+
+**请求参数**（Query）
+
+| 字段 | 类型 | 必填 | 说明 |
+|-----|------|------|------|
+| current | integer | 否 | 当前页，默认1 |
+| size | integer | 否 | 每页条数，默认10 |
+| status | string | 否 | 状态筛选（pending/approved/rejected） |
+
+**请求示例**
+
+```javascript
+// axios
+const res = await axios.get('/api/sys/author-applications', {
+  params: { current: 1, size: 10 }
+})
+```
+
+**响应示例**
+
+```json
+{
+  "code": 200,
+  "message": "成功",
+  "timestamp": 1774310400000,
+  "data": {
+    "total": 5,
+    "current": 1,
+    "size": 10,
+    "records": [
+      {
+        "id": 1,
+        "userId": 10,
+        "status": "pending",
+        "createdAt": "2026-05-16T10:00:00"
+      }
+    ]
+  }
+}
+```
+
+---
+
+### 查询作者申请详情
+
+**接口信息**
+- 路径: `GET /api/sys/author-applications/{id}`
+- 鉴权: 后台（`sys:author-application:query`）
+
+**路径参数**
+
+| 参数 | 说明 |
+|------|------|
+| id | 申请ID |
+
+**请求示例**
+
+```javascript
+// axios
+const res = await axios.get('/api/sys/author-applications/1')
+```
+
+**响应示例**
+
+```json
+{
+  "code": 200,
+  "message": "成功",
+  "timestamp": 1774310400000,
+  "data": {
+    "id": 1,
+    "userId": 10,
+    "status": "pending",
+    "penName": "笔名",
+    "introduction": "自我介绍",
+    "createdAt": "2026-05-16T10:00:00"
+  }
+}
+```
+
+---
+
+### 审核作者申请
+
+**接口信息**
+- 路径: `PUT /api/sys/author-applications/{id}/review`
+- 鉴权: 后台（`sys:author-application:review`）
+- Content-Type: `application/json`
+
+**路径参数**
+
+| 参数 | 说明 |
+|------|------|
+| id | 申请ID |
+
+**请求参数**
+
+| 字段 | 类型 | 必填 | 说明 |
+|-----|------|------|------|
+| approved | boolean | 是 | 是否通过 |
+| reason | string | 否 | 驳回原因 |
+
+**请求示例**
+
+```javascript
+// axios
+await axios.put('/api/sys/author-applications/1/review', {
+  approved: true
+})
+```
+
+**响应示例**
+
+```json
+{
+  "code": 200,
+  "message": "成功",
+  "timestamp": 1774310400000,
+  "data": null
+}
+```
+
+---
+
+### 修正作者申请状态
+
+**接口信息**
+- 路径: `PUT /api/sys/author-applications/{id}/repair`
+- 鉴权: 后台（`sys:author-application:repair`）
+- Content-Type: `application/json`
+
+**路径参数**
+
+| 参数 | 说明 |
+|------|------|
+| id | 申请ID |
+
+**请求参数**
+
+| 字段 | 类型 | 必填 | 说明 |
+|-----|------|------|------|
+| status | string | 是 | 目标状态 |
+| reason | string | 否 | 修正原因 |
+
+**请求示例**
+
+```javascript
+// axios
+await axios.put('/api/sys/author-applications/1/repair', {
+  status: 'approved',
+  reason: '数据修正'
+})
+```
+
+**响应示例**
+
+```json
+{
+  "code": 200,
+  "message": "成功",
+  "timestamp": 1774310400000,
+  "data": null
+}
+```
+
+---
+
+## 超级管理员操作
+
+> 以下接口均需要超级管理员权限及 2FA 验证，通过 `@PreAuthorize` 控制。大部分操作需要 `mfaTicket` 参数。
+
+### 发送2FA验证码
+
+**接口信息**
+- 路径: `POST /api/admin/2fa/send-code`
+- 鉴权: 超管（`sys:user:update`）
+
+**请求示例**
+
+```javascript
+// axios
+await axios.post('/api/admin/2fa/send-code')
+```
+
+**响应示例**
+
+```json
+{
+  "code": 200,
+  "message": "成功",
+  "timestamp": 1774310400000,
+  "data": null
+}
+```
+
+---
+
+### 校验2FA验证码
+
+**接口信息**
+- 路径: `POST /api/admin/2fa/verify`
+- 鉴权: 超管（`sys:user:update`）
+- Content-Type: `application/json`
+
+**请求参数**
+
+| 字段 | 类型 | 必填 | 说明 |
+|-----|------|------|------|
+| code | string | 是 | 6位验证码 |
+
+**请求示例**
+
+```javascript
+// axios
+const res = await axios.post('/api/admin/2fa/verify', { code: '123456' })
+```
+
+**响应示例**
+
+```json
+{
+  "code": 200,
+  "message": "成功",
+  "timestamp": 1774310400000,
+  "data": {
+    "ticket": "xxx-mfa-ticket-xxx",
+    "expiresIn": 1800
+  }
+}
+```
+
+**响应字段说明**
+
+| 字段 | 类型 | 说明 |
+|-----|------|------|
+| ticket | string | MFA 凭证，用于后续敏感操作 |
+| expiresIn | long | 凭证有效期，单位：秒（1800 = 30分钟） |
+
+---
+
+### 封禁用户
+
+**接口信息**
+- 路径: `POST /api/admin/users/{id}/ban`
+- 鉴权: 超管（`sys:user:ban`）
+- Content-Type: `application/json`
+
+**路径参数**
+
+| 参数 | 说明 |
+|------|------|
+| id | 目标用户ID |
+
+**请求参数**
+
+| 字段 | 类型 | 必填 | 说明 |
+|-----|------|------|------|
+| mfaTicket | string | 是 | 2FA 验证凭证 |
+
+**请求示例**
+
+```javascript
+// axios
+await axios.post('/api/admin/users/10/ban', { mfaTicket: 'xxx-mfa-ticket-xxx' })
+```
+
+**响应示例**
+
+```json
+{
+  "code": 200,
+  "message": "成功",
+  "timestamp": 1774310400000,
+  "data": null
+}
+```
+
+---
+
+### 解封用户
+
+**接口信息**
+- 路径: `POST /api/admin/users/{id}/unban`
+- 鉴权: 超管（`sys:user:unban`）
+- Content-Type: `application/json`
+
+**路径参数**
+
+| 参数 | 说明 |
+|------|------|
+| id | 目标用户ID |
+
+**请求参数**
+
+| 字段 | 类型 | 必填 | 说明 |
+|-----|------|------|------|
+| mfaTicket | string | 是 | 2FA 验证凭证 |
+
+**请求示例**
+
+```javascript
+// axios
+await axios.post('/api/admin/users/10/unban', { mfaTicket: 'xxx-mfa-ticket-xxx' })
+```
+
+**响应示例**
+
+```json
+{
+  "code": 200,
+  "message": "成功",
+  "timestamp": 1774310400000,
+  "data": null
+}
+```
+
+---
+
+### 调整用户等级
+
+**接口信息**
+- 路径: `PUT /api/admin/users/{id}/level`
+- 鉴权: 超管（`sys:user:adjust-level`）
+- Content-Type: `application/json`
+
+**路径参数**
+
+| 参数 | 说明 |
+|------|------|
+| id | 目标用户ID |
+
+**请求参数**
+
+| 字段 | 类型 | 必填 | 说明 |
+|-----|------|------|------|
+| level | integer | 是 | 目标等级 |
+| mfaTicket | string | 是 | 2FA 验证凭证 |
+
+**请求示例**
+
+```javascript
+// axios
+await axios.put('/api/admin/users/10/level', {
+  level: 10,
+  mfaTicket: 'xxx-mfa-ticket-xxx'
+})
+```
+
+**响应示例**
+
+```json
+{
+  "code": 200,
+  "message": "成功",
+  "timestamp": 1774310400000,
+  "data": null
+}
+```
+
+---
+
+### 调整用户经验
+
+**接口信息**
+- 路径: `PUT /api/admin/users/{id}/experience`
+- 鉴权: 超管（`sys:user:adjust-experience`）
+- Content-Type: `application/json`
+
+**路径参数**
+
+| 参数 | 说明 |
+|------|------|
+| id | 目标用户ID |
+
+**请求参数**
+
+| 字段 | 类型 | 必填 | 说明 |
+|-----|------|------|------|
+| experience | integer | 是 | 目标经验值 |
+| mfaTicket | string | 是 | 2FA 验证凭证 |
+
+**请求示例**
+
+```javascript
+// axios
+await axios.put('/api/admin/users/10/experience', {
+  experience: 50000,
+  mfaTicket: 'xxx-mfa-ticket-xxx'
+})
+```
+
+**响应示例**
+
+```json
+{
+  "code": 200,
+  "message": "成功",
+  "timestamp": 1774310400000,
+  "data": null
+}
+```
+
+---
+
+### 账号接管
+
+**接口信息**
+- 路径: `POST /api/admin/takeover`
+- 鉴权: 超管（`sys:user:takeover`）
+- Content-Type: `application/json`
+
+**请求参数**
+
+| 字段 | 类型 | 必填 | 说明 |
+|-----|------|------|------|
+| targetUserId | long | 是 | 目标用户ID |
+| mfaTicket | string | 是 | 2FA 验证凭证 |
+
+**请求示例**
+
+```javascript
+// axios
+const res = await axios.post('/api/admin/takeover', {
+  targetUserId: 10,
+  mfaTicket: 'xxx-mfa-ticket-xxx'
+})
+```
+
+**响应示例**
+
+```json
+{
+  "code": 200,
+  "message": "成功",
+  "timestamp": 1774310400000,
+  "data": {
+    "takeoverToken": "xxx-takeover-token-xxx",
+    "expiresIn": 300
+  }
+}
+```
+
+**响应字段说明**
+
+| 字段 | 类型 | 说明 |
+|-----|------|------|
+| takeoverToken | string | 接管令牌，用于调用 `/api/auth/takeover/login` |
+| expiresIn | long | 令牌有效期，单位：秒 |
+
+---
+
+### 带审计的角色分配
+
+**接口信息**
+- 路径: `PUT /api/admin/users/{id}/roles`
+- 鉴权: 超管（`sys:user:assign-role`）
+- Content-Type: `application/json`
+
+**路径参数**
+
+| 参数 | 说明 |
+|------|------|
+| id | 目标用户ID |
+
+**请求参数**
+
+| 字段 | 类型 | 必填 | 说明 |
+|-----|------|------|------|
+| roleIds | array\<long\> | 是 | 角色 ID 列表 |
+| mfaTicket | string | 是 | 2FA 验证凭证 |
+
+**请求示例**
+
+```javascript
+// axios
+await axios.put('/api/admin/users/10/roles', {
+  roleIds: [1, 2],
+  mfaTicket: 'xxx-mfa-ticket-xxx'
+})
+```
+
+**响应示例**
+
+```json
+{
+  "code": 200,
+  "message": "成功",
+  "timestamp": 1774310400000,
+  "data": null
+}
+```
+
+---
+
+## 经验体系管理
+
+> 以下接口均需要对应后台权限，通过 `@PreAuthorize` 控制。
+
+### 查看用户经验来源汇总
+
+**接口信息**
+- 路径: `GET /api/sys/experience/users/{userId}/summary`
+- 鉴权: 后台（`sys:experience:query`）
+
+**路径参数**
+
+| 参数 | 说明 |
+|------|------|
+| userId | 用户ID |
+
+**请求示例**
+
+```javascript
+// axios
+const res = await axios.get('/api/sys/experience/users/1/summary')
+```
+
+**响应示例**
+
+```json
+{
+  "code": 200,
+  "message": "成功",
+  "timestamp": 1774310400000,
+  "data": {
+    "userId": 1,
+    "level": 5,
+    "experiencePoints": 15000,
+    "sources": [
+      { "source": "article_publish", "total": 5000 },
+      { "source": "comment", "total": 3000 }
+    ]
+  }
+}
+```
+
+---
+
+### 经验流水分页查询
+
+**接口信息**
+- 路径: `GET /api/sys/experience/logs`
+- 鉴权: 后台（`sys:experience:query`）
+- 分页参数通过 Query 传递
+
+**请求参数**（Query）
+
+| 字段 | 类型 | 必填 | 说明 |
+|-----|------|------|------|
+| current | integer | 否 | 当前页，默认1 |
+| size | integer | 否 | 每页条数，默认10 |
+| userId | long | 否 | 用户ID筛选 |
+| source | string | 否 | 经验来源筛选 |
+
+**请求示例**
+
+```javascript
+// axios
+const res = await axios.get('/api/sys/experience/logs', {
+  params: { current: 1, size: 10, userId: 1 }
+})
+```
+
+**响应示例**
+
+```json
+{
+  "code": 200,
+  "message": "成功",
+  "timestamp": 1774310400000,
+  "data": {
+    "total": 20,
+    "current": 1,
+    "size": 10,
+    "records": [
+      {
+        "id": 1,
+        "userId": 1,
+        "source": "article_publish",
+        "points": 50,
+        "createdAt": "2026-05-16T10:00:00"
+      }
+    ]
+  }
+}
+```
+
+---
+
+### 手动调整等级或经验
+
+**接口信息**
+- 路径: `POST /api/sys/experience/users/{userId}/adjust`
+- 鉴权: 后台（`sys:experience:adjust`）
+- Content-Type: `application/json`
+
+**路径参数**
+
+| 参数 | 说明 |
+|------|------|
+| userId | 用户ID |
+
+**请求参数**
+
+| 字段 | 类型 | 必填 | 说明 |
+|-----|------|------|------|
+| level | integer | 否 | 目标等级（与 experience 二选一或同时传） |
+| experience | integer | 否 | 增减的经验值 |
+| reason | string | 否 | 调整原因 |
+
+**请求示例**
+
+```javascript
+// axios
+await axios.post('/api/sys/experience/users/1/adjust', {
+  level: 6,
+  experience: 1000,
+  reason: '运营活动奖励'
+})
+```
+
+**响应示例**
+
+```json
+{
+  "code": 200,
+  "message": "成功",
+  "timestamp": 1774310400000,
+  "data": null
+}
+```
+
+---
+
+### 查看经验来源配置
+
+**接口信息**
+- 路径: `GET /api/sys/experience/config`
+- 鉴权: 后台（`sys:experience:config`）
+
+**请求示例**
+
+```javascript
+// axios
+const res = await axios.get('/api/sys/experience/config')
+```
+
+**响应示例**
+
+```json
+{
+  "code": 200,
+  "message": "成功",
+  "timestamp": 1774310400000,
+  "data": [
+    {
+      "configKey": "exp_article_publish",
+      "configValue": "50",
+      "description": "发布文章获得经验"
+    }
+  ]
+}
+```
+
+---
+
+### 更新经验来源配置
+
+**接口信息**
+- 路径: `PUT /api/sys/experience/config`
+- 鉴权: 后台（`sys:experience:config`）
+- Content-Type: `application/json`
+
+**请求参数**
+
+| 字段 | 类型 | 必填 | 说明 |
+|-----|------|------|------|
+| configKey | string | 是 | 配置键 |
+| configValue | string | 是 | 配置值 |
+
+**请求示例**
+
+```javascript
+// axios
+await axios.put('/api/sys/experience/config', {
+  configKey: 'exp_article_publish',
+  configValue: '100'
+})
+```
+
+**响应示例**
+
+```json
+{
+  "code": 200,
+  "message": "成功",
+  "timestamp": 1774310400000,
+  "data": null
+}
+```
+
+---
+
+## 系统日志管理
+
+> 以下接口均需要对应后台权限，通过 `@PreAuthorize` 控制。
+
+### 分页查询日志
+
+**接口信息**
+- 路径: `GET /api/sys/logs`
+- 鉴权: 后台（`sys:log:query`）
+- 分页参数通过 Query 传递
+
+**请求参数**（Query）
+
+| 字段 | 类型 | 必填 | 说明 |
+|-----|------|------|------|
+| current | integer | 否 | 当前页，默认1 |
+| size | integer | 否 | 每页条数，默认10 |
+
+**请求示例**
+
+```javascript
+// axios
+const res = await axios.get('/api/sys/logs', {
+  params: { current: 1, size: 10 }
+})
+```
+
+**响应示例**
+
+```json
+{
+  "code": 200,
+  "message": "成功",
+  "timestamp": 1774310400000,
+  "data": {
+    "total": 100,
+    "current": 1,
+    "size": 10,
+    "records": [
+      {
+        "id": 1,
+        "action": "LOGIN",
+        "operator": "admin",
+        "ip": "127.0.0.1",
+        "createdAt": "2026-05-16T10:00:00"
+      }
+    ]
+  }
+}
+```
+
+---
+
+### 查询日志详情
+
+**接口信息**
+- 路径: `GET /api/sys/logs/{id}`
+- 鉴权: 后台（`sys:log:query`）
+
+**路径参数**
+
+| 参数 | 说明 |
+|------|------|
+| id | 日志ID |
+
+**请求示例**
+
+```javascript
+// axios
+const res = await axios.get('/api/sys/logs/1')
+```
+
+**响应示例**
+
+```json
+{
+  "code": 200,
+  "message": "成功",
+  "timestamp": 1774310400000,
+  "data": {
+    "id": 1,
+    "action": "LOGIN",
+    "operator": "admin",
+    "ip": "127.0.0.1",
+    "detail": "登录成功",
+    "createdAt": "2026-05-16T10:00:00"
+  }
+}
+```
+
+---
+
+### 删除日志
+
+**接口信息**
+- 路径: `DELETE /api/sys/logs/{id}`
+- 鉴权: 后台（`sys:log:delete`）
+
+**路径参数**
+
+| 参数 | 说明 |
+|------|------|
+| id | 日志ID |
+
+**请求示例**
+
+```javascript
+// axios
+await axios.delete('/api/sys/logs/1')
+```
+
+**响应示例**
+
+```json
+{
+  "code": 200,
+  "message": "成功",
+  "timestamp": 1774310400000,
+  "data": null
+}
+```
+
+---
+
+### 按条件清理日志
+
+**接口信息**
+- 路径: `POST /api/sys/logs/clean`
+- 鉴权: 后台（`sys:log:clean`）
+- Content-Type: `application/json`
+
+**请求参数**
+
+| 字段 | 类型 | 必填 | 说明 |
+|-----|------|------|------|
+| beforeDate | string | 否 | 清理此日期之前的日志 |
+| action | string | 否 | 按操作类型清理 |
+
+**请求示例**
+
+```javascript
+// axios
+const res = await axios.post('/api/sys/logs/clean', {
+  beforeDate: '2026-01-01'
+})
+```
+
+**响应示例**
+
+```json
+{
+  "code": 200,
+  "message": "成功",
+  "timestamp": 1774310400000,
+  "data": 150
+}
+```
+
+**响应字段说明**
+
+| 字段 | 类型 | 说明 |
+|-----|------|------|
+| data | long | 清理的日志数量 |
+
+---
+
+## 审计日志管理
+
+> 以下接口仅超级管理员可访问，通过 `@PreAuthorize` + `superAdminVerifier` 双重校验。
+
+### 分页查询审计日志
+
+**接口信息**
+- 路径: `GET /api/sys/audit-logs`
+- 鉴权: 超管（`sys:audit:query`）
+- 分页参数通过 Query 传递
+
+**请求参数**（Query）
+
+| 字段 | 类型 | 必填 | 说明 |
+|-----|------|------|------|
+| current | integer | 否 | 当前页，默认1 |
+| size | integer | 否 | 每页条数，默认10 |
+
+**请求示例**
+
+```javascript
+// axios
+const res = await axios.get('/api/sys/audit-logs', {
+  params: { current: 1, size: 10 }
+})
+```
+
+**响应示例**
+
+```json
+{
+  "code": 200,
+  "message": "成功",
+  "timestamp": 1774310400000,
+  "data": {
+    "total": 50,
+    "current": 1,
+    "size": 10,
+    "records": [
+      {
+        "id": 1,
+        "action": "BAN_USER",
+        "operatorId": 1,
+        "targetUserId": 10,
+        "ip": "127.0.0.1",
+        "createdAt": "2026-05-16T10:00:00"
+      }
+    ]
+  }
+}
+```
+
+---
+
+### 查询审计日志详情
+
+**接口信息**
+- 路径: `GET /api/sys/audit-logs/{id}`
+- 鉴权: 超管（`sys:audit:query`）
+
+**路径参数**
+
+| 参数 | 说明 |
+|------|------|
+| id | 审计日志ID |
+
+**请求示例**
+
+```javascript
+// axios
+const res = await axios.get('/api/sys/audit-logs/1')
+```
+
+**响应示例**
+
+```json
+{
+  "code": 200,
+  "message": "成功",
+  "timestamp": 1774310400000,
+  "data": {
+    "id": 1,
+    "action": "BAN_USER",
+    "operatorId": 1,
+    "targetUserId": 10,
+    "ip": "127.0.0.1",
+    "userAgent": "Mozilla/5.0...",
+    "detail": "封禁用户",
+    "createdAt": "2026-05-16T10:00:00"
+  }
+}
+```
+
+---
+
+## 系统配置管理
+
+> 以下接口均需要对应后台权限，通过 `@PreAuthorize` 控制。
+
+### 分页查询配置
+
+**接口信息**
+- 路径: `GET /api/sys/configs`
+- 鉴权: 后台（`sys:config:query`）
+- 分页参数通过 Query 传递
+
+**请求参数**（Query）
+
+| 字段 | 类型 | 必填 | 说明 |
+|-----|------|------|------|
+| current | integer | 否 | 当前页，默认1 |
+| size | integer | 否 | 每页条数，默认10 |
+
+**请求示例**
+
+```javascript
+// axios
+const res = await axios.get('/api/sys/configs', {
+  params: { current: 1, size: 10 }
+})
+```
+
+**响应示例**
+
+```json
+{
+  "code": 200,
+  "message": "成功",
+  "timestamp": 1774310400000,
+  "data": {
+    "total": 20,
+    "current": 1,
+    "size": 10,
+    "records": [
+      {
+        "id": 1,
+        "configKey": "site_name",
+        "configValue": "我的博客",
+        "description": "站点名称"
+      }
+    ]
+  }
+}
+```
+
+---
+
+### 查询配置详情
+
+**接口信息**
+- 路径: `GET /api/sys/configs/{id}`
+- 鉴权: 后台（`sys:config:query`）
+
+**路径参数**
+
+| 参数 | 说明 |
+|------|------|
+| id | 配置ID |
+
+**请求示例**
+
+```javascript
+// axios
+const res = await axios.get('/api/sys/configs/1')
+```
+
+**响应示例**
+
+```json
+{
+  "code": 200,
+  "message": "成功",
+  "timestamp": 1774310400000,
+  "data": {
+    "id": 1,
+    "configKey": "site_name",
+    "configValue": "我的博客",
+    "description": "站点名称"
+  }
+}
+```
+
+---
+
+### 新增配置
+
+**接口信息**
+- 路径: `POST /api/sys/configs`
+- 鉴权: 后台（`sys:config:create`）
+- Content-Type: `application/json`
+
+**请求参数**
+
+| 字段 | 类型 | 必填 | 说明 |
+|-----|------|------|------|
+| configKey | string | 是 | 配置键 |
+| configValue | string | 是 | 配置值 |
+| description | string | 否 | 描述 |
+
+**请求示例**
+
+```javascript
+// axios
+await axios.post('/api/sys/configs', {
+  configKey: 'site_description',
+  configValue: '一个技术博客',
+  description: '站点描述'
+})
+```
+
+**响应示例**
+
+```json
+{
+  "code": 200,
+  "message": "成功",
+  "timestamp": 1774310400000,
+  "data": {
+    "id": 2,
+    "configKey": "site_description",
+    "configValue": "一个技术博客"
+  }
+}
+```
+
+---
+
+### 修改配置
+
+**接口信息**
+- 路径: `PUT /api/sys/configs/{id}`
+- 鉴权: 后台（`sys:config:update`）
+- Content-Type: `application/json`
+
+**路径参数**
+
+| 参数 | 说明 |
+|------|------|
+| id | 配置ID |
+
+**请求参数**：同新增配置（字段均可选）
+
+**请求示例**
+
+```javascript
+// axios
+await axios.put('/api/sys/configs/2', { configValue: '新的站点描述' })
+```
+
+**响应示例**
+
+```json
+{
+  "code": 200,
+  "message": "成功",
+  "timestamp": 1774310400000,
+  "data": {
+    "id": 2,
+    "configKey": "site_description",
+    "configValue": "新的站点描述"
+  }
+}
+```
+
+---
+
+### 删除配置
+
+**接口信息**
+- 路径: `DELETE /api/sys/configs/{id}`
+- 鉴权: 后台（`sys:config:delete`）
+
+**路径参数**
+
+| 参数 | 说明 |
+|------|------|
+| id | 配置ID |
+
+**请求示例**
+
+```javascript
+// axios
+await axios.delete('/api/sys/configs/2')
+```
+
+**响应示例**
+
+```json
+{
+  "code": 200,
+  "message": "成功",
+  "timestamp": 1774310400000,
+  "data": null
+}
+```
+
+---
+
+### 按配置键查询配置值
+
+**接口信息**
+- 路径: `GET /api/sys/configs/key/{configKey}`
+- 鉴权: 后台（`sys:config:query`）
+
+**路径参数**
+
+| 参数 | 说明 |
+|------|------|
+| configKey | 配置键名 |
+
+**请求示例**
+
+```javascript
+// axios
+const res = await axios.get('/api/sys/configs/key/site_name')
+```
+
+**响应示例**
+
+```json
+{
+  "code": 200,
+  "message": "成功",
+  "timestamp": 1774310400000,
+  "data": "我的博客"
+}
+```
+
+---
+
 ## 错误码速查
 
 ### 认证相关（401xx）
@@ -1113,888 +4005,3 @@ axios.interceptors.response.use(
 2. refreshToken 可以存储在 cookie（HttpOnly）或较安全的存储
 3. 敏感操作（如修改密码）要求用户重新输入密码
 4. 退出登录时清除所有 token
-
----
-
-## 密码重置（忘记密码）
-
-### 发送重置验证码
-
-**接口信息**
-
-- 路径: `POST /api/auth/password-reset/code`
-- 鉴权: 无（公开接口）
-- 说明: 向邮箱发送密码重置验证码
-
-**请求示例**
-
-```javascript
-axios.post('/api/auth/password-reset/code', {
-  email: 'user@example.com'
-})
-```
-
-**请求体字段说明**
-
-| 字段 | 类型 | 必填 | 说明 |
-|-----|------|------|-----|
-| `email` | String | 是 | 邮箱地址 |
-
----
-
-### 重置密码
-
-**接口信息**
-
-- 路径: `POST /api/auth/password-reset`
-- 鉴权: 无（公开接口）
-- 说明: 使用验证码重置密码
-
-**请求示例**
-
-```javascript
-axios.post('/api/auth/password-reset', {
-  email: 'user@example.com',
-  code: '123456',
-  newPassword: 'NewPass123'
-})
-```
-
-**请求体字段说明**
-
-| 字段 | 类型 | 必填 | 说明 |
-|-----|------|------|-----|
-| `email` | String | 是 | 邮箱地址 |
-| `code` | String | 是 | 验证码 |
-| `newPassword` | String | 是 | 新密码，8-64 位 |
-
----
-
-## 用户搜索（公开）
-
-### 搜索用户
-
-**接口信息**
-
-- 路径: `GET /api/users/search`
-- 鉴权: 无（公开接口）
-- 说明: 根据关键词搜索用户
-
-**查询参数说明**
-
-| 参数 | 类型 | 必填 | 说明 |
-|-----|------|------|-----|
-| `keyword` | String | 否 | 搜索关键词 |
-| `current` | Long | 否 | 页码，默认 `1` |
-| `size` | Long | 否 | 每页条数，默认 `10` |
-
-**响应字段说明**
-
-| 字段 | 类型 | 说明 |
-|-----|------|-----|
-| `id` | Long | 用户ID |
-| `username` | String | 用户名 |
-| `nickname` | String | 昵称 |
-| `avatar` | String | 头像 URL |
-| `bio` | String | 个人简介 |
-
----
-
-## 接管登录
-
-### 使用接管令牌登录
-
-**接口信息**
-
-- 路径: `POST /api/auth/takeover/login`
-- 鉴权: 无（通过接管令牌认证）
-- 说明: 使用超管通过 `POST /api/admin/takeover` 获取的接管令牌登录为目标用户
-
-**请求示例**
-
-```javascript
-axios.post('/api/auth/takeover/login', {
-  takeoverToken: 'xxx'
-})
-```
-
-**请求体字段说明**
-
-| 字段 | 类型 | 必填 | 说明 |
-|-----|------|------|-----|
-| `takeoverToken` | String | 是 | 接管令牌（由超管通过 `/api/admin/takeover` 获取） |
-
-**响应字段说明**: 返回标准 `AuthenticationToken`（accessToken + refreshToken），与普通登录一致。
-
----
-
-## 经验体系后台管理
-
-### 查询用户经验汇总
-
-**接口信息**
-
-- 路径: `GET /api/sys/experience/users/{userId}/summary`
-- 鉴权: `sys:experience:query`
-- 说明: 查询指定用户的经验等级与各来源汇总
-
-**响应字段说明**
-
-| 字段 | 类型 | 说明 |
-|-----|------|-----|
-| `userId` | Long | 用户ID |
-| `level` | Integer | 当前等级 |
-| `title` | String | 等级称号 |
-| `experiencePoints` | Integer | 当前经验值 |
-| `todayXp` | Integer | 今日已获得经验 |
-| `dailyLoginXp` | Integer | 登录经验总计 |
-| `articlePublishXp` | Integer | 发文经验总计 |
-| `commentCreateXp` | Integer | 评论经验总计 |
-| `likeGivenXp` | Integer | 点赞经验总计 |
-| `likeReceivedXp` | Integer | 被点赞经验总计 |
-| `chatMessageXp` | Integer | 聊天经验总计 |
-
----
-
-### 分页查询经验流水
-
-**接口信息**
-
-- 路径: `GET /api/sys/experience/logs`
-- 鉴权: `sys:experience:query`
-
-**查询参数说明**
-
-| 参数 | 类型 | 必填 | 说明 |
-|-----|------|------|-----|
-| `current` | Long | 否 | 页码，默认 `1` |
-| `size` | Long | 否 | 每页条数，默认 `10` |
-| `userId` | Long | 否 | 用户ID |
-| `sourceType` | String | 否 | 经验来源类型 |
-| `startDate` | Date | 否 | 开始日期 |
-| `endDate` | Date | 否 | 结束日期 |
-
-**响应字段说明**
-
-| 字段 | 类型 | 说明 |
-|-----|------|-----|
-| `id` | Long | 记录ID |
-| `userId` | Long | 用户ID |
-| `sourceType` | String | 经验来源类型 |
-| `sourceBizId` | String | 来源业务ID |
-| `xpValue` | Integer | 经验值 |
-| `logDate` | Date | 入账日期 |
-| `createdAt` | DateTime | 创建时间 |
-
----
-
-### 调整用户等级/经验
-
-**接口信息**
-
-- 路径: `POST /api/sys/experience/users/{userId}/adjust`
-- 鉴权: `sys:experience:adjust`
-
-**请求体字段说明**
-
-| 字段 | 类型 | 必填 | 说明 |
-|-----|------|------|-----|
-| `adjustType` | String | 是 | 调整类型：`level` 或 `experience` |
-| `value` | Integer | 是 | 调整值（设置等级或增减经验，经验支持负数） |
-| `reason` | String | 否 | 调整原因 |
-
----
-
-### 查询经验来源配置
-
-**接口信息**
-
-- 路径: `GET /api/sys/experience/config`
-- 鉴权: `sys:experience:config`
-- 说明: 查询所有经验来源配置项（返回列表，非分页）
-
-**响应字段说明**
-
-| 字段 | 类型 | 说明 |
-|-----|------|-----|
-| `configKey` | String | 配置键 |
-| `configName` | String | 配置名称 |
-| `configValue` | String | 配置值 |
-| `remark` | String | 备注 |
-
----
-
-### 更新经验来源配置
-
-**接口信息**
-
-- 路径: `PUT /api/sys/experience/config`
-- 鉴权: `sys:experience:config`
-
----
-
-## 审计日志后台管理
-
-> 审计日志仅超级管理员可查看，且操作本身不记录系统日志。
-
-### 分页查询审计日志
-
-**接口信息**
-
-- 路径: `GET /api/sys/audit-logs`
-- 鉴权: `sys:audit:query` + 超级管理员
-
-**查询参数说明**
-
-| 参数 | 类型 | 必填 | 说明 |
-|-----|------|------|-----|
-| `current` | Long | 否 | 页码，默认 `1` |
-| `size` | Long | 否 | 每页条数，默认 `10` |
-| `operatorUserId` | Long | 否 | 操作人ID |
-| `targetUserId` | Long | 否 | 目标用户ID |
-| `operationType` | String | 否 | 操作类型 |
-
-**响应字段说明**
-
-| 字段 | 类型 | 说明 |
-|-----|------|-----|
-| `id` | Long | 主键 |
-| `operatorUserId` | Long | 操作人ID |
-| `operatorUsername` | String | 操作人用户名 |
-| `targetUserId` | Long | 目标用户ID |
-| `targetUsername` | String | 目标用户名 |
-| `operationType` | String | 操作类型 |
-| `operationTypeDesc` | String | 操作类型描述 |
-| `targetTypeName` | String | 目标对象类型名称 |
-| `targetId` | Long | 目标对象ID |
-| `beforeState` | String | 操作前状态 |
-| `afterState` | String | 操作后状态 |
-| `mfaPassed` | Integer | 2FA 是否通过 |
-| `requestIp` | String | 请求 IP |
-| `userAgent` | String | User-Agent |
-| `remark` | String | 备注 |
-| `createdAt` | DateTime | 创建时间 |
-
----
-
-### 查询审计日志详情
-
-**接口信息**
-
-- 路径: `GET /api/sys/audit-logs/{id}`
-- 鉴权: `sys:audit:query` + 超级管理员
-
----
-
-## 后台用户管理
-
-> 路径前缀：`/api/sys/users`，需要对应权限 + 管理员角色。
-
-### 分页查询用户
-
-- 路径: `GET /api/sys/users`
-- 鉴权: `sys:user:query`
-- 说明: 分页查询用户列表
-
-### 查询用户详情
-
-- 路径: `GET /api/sys/users/{id}`
-- 鉴权: `sys:user:query`
-
-### 创建用户
-
-- 路径: `POST /api/sys/users`
-- 鉴权: `sys:user:create`
-
-**请求体**
-
-| 字段 | 类型 | 必填 | 说明 |
-|-----|------|------|------|
-| `username` | String | 是 | 用户名 |
-| `password` | String | 是 | 密码，8-64 位，需含大小写字母和数字 |
-| `nickname` | String | 否 | 昵称 |
-| `email` | String | 否 | 邮箱（@Email 格式校验） |
-| `phone` | String | 否 | 手机号 |
-| `avatar` | String | 否 | 头像 |
-| `gender` | Integer | 否 | 性别 |
-| `birthday` | LocalDate | 否 | 生日 |
-| `status` | Integer | 否 | 状态 |
-| `remark` | String | 否 | 备注 |
-
-### 更新用户
-
-- 路径: `PUT /api/sys/users/{id}`
-- 鉴权: `sys:user:update`
-- 请求体: 同创建用户
-
-### 更新用户状态
-
-- 路径: `PUT /api/sys/users/{id}/status`
-- 鉴权: `sys:user:update`
-
-**请求体**
-
-| 字段 | 类型 | 必填 | 说明 |
-|-----|------|------|------|
-| `status` | Integer | 是 | 用户状态 |
-
-### 重置用户密码
-
-- 路径: `PUT /api/sys/users/{id}/password/reset`
-- 鉴权: `sys:user:reset-password`
-
-**请求体**
-
-| 字段 | 类型 | 必填 | 说明 |
-|-----|------|------|------|
-| `password` | String | 是 | 新密码，8-64 位，需含大小写字母和数字 |
-
-### 删除用户
-
-- 路径: `DELETE /api/sys/users/{id}`
-- 鉴权: `sys:user:delete`
-
-### 查询用户角色
-
-- 路径: `GET /api/sys/users/{id}/roles`
-- 鉴权: `sys:user:query`
-- 响应: `List<Long>`（角色 ID 列表）
-
-### 分配用户角色
-
-- 路径: `PUT /api/sys/users/{id}/roles`
-- 鉴权: `sys:user:assign-role`
-
-**请求体**
-
-| 字段 | 类型 | 必填 | 说明 |
-|-----|------|------|------|
-| `roleIds` | List\<Long\> | 是 | 角色 ID 列表 |
-
----
-
-## 超级管理员操作
-
-> 路径前缀：`/api/admin`，敏感操作需 MFA 验证。
-
-### 发送 MFA 验证码
-
-- 路径: `POST /api/admin/2fa/send-code`
-- 鉴权: `sys:user:update`
-- 说明: 发送 MFA 验证码，用于后续敏感操作
-
-### 验证 MFA 验证码
-
-- 路径: `POST /api/admin/2fa/verify`
-- 鉴权: `sys:user:update`
-
-**请求体**
-
-| 字段 | 类型 | 必填 | 说明 |
-|-----|------|------|------|
-| `code` | String | 是 | MFA 验证码 |
-
-**响应字段**
-
-| 字段 | 类型 | 说明 |
-|-----|------|------|
-| `ticket` | String | MFA 凭证（用于后续操作） |
-| `expiresAt` | LocalDateTime | 凭证过期时间 |
-
-### 封禁用户
-
-- 路径: `POST /api/admin/users/{id}/ban`
-- 鉴权: `sys:user:ban`
-
-**请求体**
-
-| 字段 | 类型 | 必填 | 说明 |
-|-----|------|------|------|
-| `status` | Integer | 是 | 0-解封，1-封禁 |
-| `mfaTicket` | String | 是 | MFA 凭证 |
-
-### 解封用户
-
-- 路径: `POST /api/admin/users/{id}/unban`
-- 鉴权: `sys:user:unban`
-- 请求体: 同封禁用户
-
-### 调整用户等级
-
-- 路径: `PUT /api/admin/users/{id}/level`
-- 鉴权: `sys:user:adjust-level`
-
-**请求体**
-
-| 字段 | 类型 | 必填 | 说明 |
-|-----|------|------|------|
-| `level` | Integer | 是 | 目标等级 |
-| `mfaTicket` | String | 是 | MFA 凭证 |
-
-### 调整用户经验
-
-- 路径: `PUT /api/admin/users/{id}/experience`
-- 鉴权: `sys:user:adjust-experience`
-
-**请求体**
-
-| 字段 | 类型 | 必填 | 说明 |
-|-----|------|------|------|
-| `experience` | Integer | 是 | 经验值 |
-| `mfaTicket` | String | 是 | MFA 凭证 |
-
-### 接管登录
-
-- 路径: `POST /api/admin/takeover`
-- 鉴权: `sys:user:takeover`
-
-**请求体**
-
-| 字段 | 类型 | 必填 | 说明 |
-|-----|------|------|------|
-| `targetUserId` | Long | 是 | 目标用户 ID |
-| `mfaTicket` | String | 是 | MFA 凭证 |
-
-**响应字段**
-
-| 字段 | 类型 | 说明 |
-|-----|------|------|
-| `takeoverToken` | String | 接管令牌 |
-| `targetUserId` | Long | 目标用户 ID |
-| `targetUsername` | String | 目标用户名 |
-| `expiresIn` | Long | 有效时长（秒） |
-
-### 分配角色（带审计）
-
-- 路径: `PUT /api/admin/users/{id}/roles`
-- 鉴权: `sys:user:assign-role`
-
-**请求体**
-
-| 字段 | 类型 | 必填 | 说明 |
-|-----|------|------|------|
-| `roleIds` | List\<Long\> | 是 | 角色 ID 列表 |
-| `mfaTicket` | String | 是 | MFA 凭证 |
-
----
-
-## 公开作者资料
-
-> 路径前缀：`/api/users/{userId}`，无需登录。
-
-### 查询作者资料
-
-- 路径: `GET /api/users/{userId}/author-profile`
-- 鉴权: 公开接口
-
----
-
-## 用户作者申请
-
-> 路径前缀：`/api/user/author-applications`，需登录。
-
-### 提交作者申请
-
-- 路径: `POST /api/user/author-applications`
-- 鉴权: 需登录
-
-**请求体**
-
-| 字段 | 类型 | 必填 | 说明 |
-|-----|------|------|------|
-| `applyReason` | String | 是 | 申请理由，最多 512 字 |
-| `contentDirection` | String | 是 | 内容方向，最多 128 字 |
-| `introduction` | String | 否 | 自我介绍，最多 1024 字 |
-| `sampleLinks` | List\<String\> | 否 | 作品链接，最多 10 个 |
-
-### 查询最新申请
-
-- 路径: `GET /api/user/author-applications/latest`
-- 鉴权: 需登录
-
-### 分页查询我的申请
-
-- 路径: `GET /api/user/author-applications`
-- 鉴权: 需登录
-- 说明: 分页查询当前用户的作者申请记录
-
----
-
-## 作者申请审核后台
-
-> 路径前缀：`/api/sys/author-applications`，需要对应权限。
-
-### 分页查询申请
-
-- 路径: `GET /api/sys/author-applications`
-- 鉴权: `sys:author-application:query`
-- 说明: 分页查询作者申请列表
-
-### 查询申请详情
-
-- 路径: `GET /api/sys/author-applications/{id}`
-- 鉴权: `sys:author-application:query`
-
-### 审核申请
-
-- 路径: `PUT /api/sys/author-applications/{id}/review`
-- 鉴权: `sys:author-application:review`
-
-**请求体**
-
-| 字段 | 类型 | 必填 | 说明 |
-|-----|------|------|------|
-| `reviewStatus` | Integer | 是 | 审核状态：1-通过，2-拒绝，3-待补充 |
-| `reviewComment` | String | 否 | 审核意见，最多 512 字 |
-
-### 修复申请状态
-
-- 路径: `PUT /api/sys/author-applications/{id}/repair`
-- 鉴权: `sys:author-application:repair`
-
-**请求体**
-
-| 字段 | 类型 | 必填 | 说明 |
-|-----|------|------|------|
-| `targetStatus` | Integer | 是 | 目标状态：0-待审核，1-已通过，2-已拒绝，3-待补充 |
-| `reviewComment` | String | 否 | 修复意见，最多 512 字 |
-
----
-
-## 系统配置管理
-
-> 路径前缀：`/api/sys/configs`，需要对应权限。
-
-### 分页查询配置
-
-- 路径: `GET /api/sys/configs`
-- 鉴权: `sys:config:query`
-- 说明: 分页查询系统配置列表
-
-### 查询配置详情
-
-- 路径: `GET /api/sys/configs/{id}`
-- 鉴权: `sys:config:query`
-
-### 创建配置
-
-- 路径: `POST /api/sys/configs`
-- 鉴权: `sys:config:create`
-
-**请求体**
-
-| 字段 | 类型 | 必填 | 说明 |
-|-----|------|------|------|
-| `configName` | String | 是 | 配置名称 |
-| `configKey` | String | 是 | 配置键 |
-| `configValue` | String | 是 | 配置值 |
-| `remark` | String | 否 | 备注 |
-
-### 更新配置
-
-- 路径: `PUT /api/sys/configs/{id}`
-- 鉴权: `sys:config:update`
-- 请求体: 同创建配置
-
-### 删除配置
-
-- 路径: `DELETE /api/sys/configs/{id}`
-- 鉴权: `sys:config:delete`
-
-### 按键查询配置值
-
-- 路径: `GET /api/sys/configs/key/{configKey}`
-- 鉴权: `sys:config:query`
-- 响应: `String`
-
----
-
-## 菜单管理
-
-> 路径前缀：`/api/sys/menus`，需要对应权限。
-
-### 查询菜单树
-
-- 路径: `GET /api/sys/menus/tree`
-- 鉴权: `sys:menu:query`
-- 响应: 树形结构
-
-### 查询菜单详情
-
-- 路径: `GET /api/sys/menus/{id}`
-- 鉴权: `sys:menu:query`
-
-### 创建菜单
-
-- 路径: `POST /api/sys/menus`
-- 鉴权: `sys:menu:create`
-
-**请求体**
-
-| 字段 | 类型 | 必填 | 说明 |
-|-----|------|------|------|
-| `parentId` | Long | 是 | 父菜单 ID |
-| `name` | String | 是 | 菜单名称 |
-| `type` | String | 是 | 菜单类型 |
-| `treePath` | String | 否 | 树路径 |
-| `routeName` | String | 否 | 路由名称 |
-| `routePath` | String | 否 | 路由路径 |
-| `component` | String | 否 | 前端组件路径 |
-| `perm` | String | 否 | 权限标识 |
-| `alwaysShow` | Integer | 否 | 是否始终显示 |
-| `keepAlive` | Integer | 否 | 是否缓存 |
-| `visible` | Integer | 否 | 是否可见 |
-| `sort` | Integer | 否 | 排序值 |
-| `icon` | String | 否 | 图标 |
-| `redirect` | String | 否 | 重定向地址 |
-| `params` | Object | 否 | 路由参数 |
-
-### 更新菜单
-
-- 路径: `PUT /api/sys/menus/{id}`
-- 鉴权: `sys:menu:update`
-- 请求体: 同创建菜单
-
-### 删除菜单
-
-- 路径: `DELETE /api/sys/menus/{id}`
-- 鉴权: `sys:menu:delete`
-
----
-
-## 角色管理
-
-> 路径前缀：`/api/sys/roles`，需要对应权限。
-
-### 分页查询角色
-
-- 路径: `GET /api/sys/roles`
-- 鉴权: `sys:role:query`
-- 说明: 分页查询角色列表
-
-### 查询角色详情
-
-- 路径: `GET /api/sys/roles/{id}`
-- 鉴权: `sys:role:query`
-
-### 创建角色
-
-- 路径: `POST /api/sys/roles`
-- 鉴权: `sys:role:create`
-
-**请求体**
-
-| 字段 | 类型 | 必填 | 说明 |
-|-----|------|------|------|
-| `name` | String | 是 | 角色名称 |
-| `code` | String | 是 | 角色编码 |
-| `sort` | Integer | 否 | 排序值 |
-| `status` | Integer | 否 | 状态 |
-| `dataScope` | Integer | 否 | 数据权限范围 |
-
-### 更新角色
-
-- 路径: `PUT /api/sys/roles/{id}`
-- 鉴权: `sys:role:update`
-- 请求体: 同创建角色
-
-### 更新角色状态
-
-- 路径: `PUT /api/sys/roles/{id}/status`
-- 鉴权: `sys:role:update`
-
-**请求体**
-
-| 字段 | 类型 | 必填 | 说明 |
-|-----|------|------|------|
-| `status` | Integer | 是 | 角色状态 |
-
-### 删除角色
-
-- 路径: `DELETE /api/sys/roles/{id}`
-- 鉴权: `sys:role:delete`
-
-### 查询角色菜单
-
-- 路径: `GET /api/sys/roles/{id}/menus`
-- 鉴权: `sys:role:query`
-- 响应: `List<Long>`（菜单 ID 列表）
-
-### 分配角色菜单
-
-- 路径: `PUT /api/sys/roles/{id}/menus`
-- 鉴权: `sys:role:assign-menu`
-
-**请求体**
-
-| 字段 | 类型 | 必填 | 说明 |
-|-----|------|------|------|
-| `menuIds` | List\<Long\> | 是 | 菜单 ID 列表 |
-
----
-
-## 通知后台管理
-
-> 路径前缀：`/api/sys/notices`，需要对应权限。
-
-### 分页查询通知
-
-- 路径: `GET /api/sys/notices`
-- 鉴权: `sys:notice:query`
-- 说明: 分页查询通知列表
-
-### 查询通知详情
-
-- 路径: `GET /api/sys/notices/{id}`
-- 鉴权: `sys:notice:query`
-
-### 创建通知
-
-- 路径: `POST /api/sys/notices`
-- 鉴权: `sys:notice:create`
-
-**请求体**
-
-| 字段 | 类型 | 必填 | 说明 |
-|-----|------|------|------|
-| `title` | String | 是 | 标题 |
-| `content` | String | 是 | 内容 |
-| `type` | Integer | 是 | 通知类型 |
-| `level` | String | 是 | 通知级别 |
-| `targetType` | Integer | 是 | 目标类型：1-全体，2-指定用户 |
-| `targetUserIds` | List\<Long\> | 否 | 目标用户 ID 列表（targetType=2 时必填） |
-
-### 更新通知
-
-- 路径: `PUT /api/sys/notices/{id}`
-- 鉴权: `sys:notice:update`
-- 请求体: 同创建通知
-
-### 发布通知
-
-- 路径: `POST /api/sys/notices/{id}/publish`
-- 鉴权: `sys:notice:publish`
-
-### 撤回通知
-
-- 路径: `POST /api/sys/notices/{id}/revoke`
-- 鉴权: `sys:notice:revoke`
-
-### 删除通知
-
-- 路径: `DELETE /api/sys/notices/{id}`
-- 鉴权: `sys:notice:delete`
-
----
-
-## 用户通知设置
-
-> 路径前缀：`/api/user/notification-settings`，需登录。
-
-### 查询我的通知设置
-
-- 路径: `GET /api/user/notification-settings`
-- 鉴权: 需登录
-
-### 批量更新通知设置
-
-- 路径: `PUT /api/user/notification-settings`
-- 鉴权: 需登录
-
-**请求体**
-
-| 字段 | 类型 | 必填 | 说明 |
-|-----|------|------|------|
-| `settings` | List | 是 | 通知设置列表 |
-
-**settings 每项字段**
-
-| 字段 | 类型 | 必填 | 说明 |
-|-----|------|------|------|
-| `type` | String | 是 | 通知类型 |
-| `enabled` | Boolean | 是 | 是否启用 |
-
-### 更新单项通知设置
-
-- 路径: `PUT /api/user/notification-settings/{type}`
-- 鉴权: 需登录
-
-**请求体**
-
-| 字段 | 类型 | 必填 | 说明 |
-|-----|------|------|------|
-| `enabled` | Boolean | 是 | 是否启用 |
-
----
-
-## 用户等级信息
-
-> 路径前缀：`/api/user/experience`，需登录。
-
-### 查询我的等级信息
-
-- 路径: `GET /api/user/experience/level`
-- 鉴权: 需登录
-
-**响应字段**
-
-| 字段 | 类型 | 说明 |
-|-----|------|------|
-| `level` | Integer | 当前等级 |
-| `title` | String | 等级称号 |
-| `experiencePoints` | Integer | 当前经验值 |
-| `nextLevelThreshold` | Integer | 下一级所需经验 |
-| `currentLevelThreshold` | Integer | 当前级起始经验 |
-
----
-
-## 系统日志管理
-
-> 路径前缀：`/api/sys/logs`，需要对应权限。所有接口标注 `@DisableSysLog`，操作本身不记录日志。
-
-### 分页查询日志
-
-- 路径: `GET /api/sys/logs`
-- 鉴权: `sys:log:query`
-- 说明: 分页查询系统日志，支持以下筛选参数
-
-**查询参数说明**
-
-| 参数 | 类型 | 必填 | 说明 |
-|-----|------|------|------|
-| `module` | String | 否 | 模块名 |
-| `requestMethod` | String | 否 | 请求方法 |
-| `requestUri` | String | 否 | 请求 URI |
-| `ip` | String | 否 | 请求 IP |
-| `createBy` | String | 否 | 操作人 |
-| `createTimeStart` | DateTime | 否 | 创建时间起始 |
-| `createTimeEnd` | DateTime | 否 | 创建时间截止 |
-
-### 查询日志详情
-
-- 路径: `GET /api/sys/logs/{id}`
-- 鉴权: `sys:log:query`
-
-### 删除日志
-
-- 路径: `DELETE /api/sys/logs/{id}`
-- 鉴权: `sys:log:delete`
-
-### 批量清理日志
-
-- 路径: `POST /api/sys/logs/clean`
-- 鉴权: `sys:log:clean`
-
-**请求体**
-
-| 字段 | 类型 | 必填 | 说明 |
-|-----|------|------|------|
-| `module` | String | 否 | 模块名 |
-| `requestMethod` | String | 否 | 请求方法 |
-| `requestUri` | String | 否 | 请求 URI |
-| `ip` | String | 否 | 请求 IP |
-| `createBy` | String | 否 | 操作人 |
-| `createTimeStart` | DateTime | 否 | 创建时间起始 |
-| `createTimeEnd` | DateTime | 否 | 创建时间截止 |
-
-**响应**: 清理数量 `Long`

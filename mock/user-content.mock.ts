@@ -144,10 +144,17 @@ function handle(req: any) {
   // ==================== 足迹 ====================
 
   if (m === 'GET' && path === '/api/user/footprints') {
-    const rs = db.footprints
-      .filter((i: any) => i.userId === u.id)
-      .map(({ userId, ipAddress, userAgent, ...fp }: any) => fp)
-    return ok(page(rs, req.query))
+    let rs = db.footprints.filter((i: any) => i.userId === u.id)
+    if (req.query.targetType) rs = rs.filter((i: any) => i.targetType === req.query.targetType)
+    if (req.query.keyword) {
+      const kw = String(req.query.keyword).toLowerCase()
+      rs = rs.filter((i: any) => String(i.targetTitle ?? '').toLowerCase().includes(kw))
+    }
+    if (req.query.visitedAtStart) rs = rs.filter((i: any) => i.visitedAt >= req.query.visitedAtStart)
+    if (req.query.visitedAtEnd) rs = rs.filter((i: any) => i.visitedAt <= req.query.visitedAtEnd)
+    rs.sort((a: any, b: any) => String(b.visitedAt).localeCompare(String(a.visitedAt)))
+    const paged = page(rs.map(({ userId, ipAddress, userAgent, ...fp }: any) => fp), req.query)
+    return ok(paged)
   }
 
   const footprintMatch = path.match(/^\/api\/user\/footprints\/(\d+)$/)

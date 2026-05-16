@@ -5,8 +5,8 @@ export const num = (v: any, d = 0) => (Number.isFinite(Number(v)) ? Number(v) : 
 export const ok = (data: any = null, message = '操作成功', code = 200) => ({
   code,
   message,
+  timestamp: new Date().toISOString(),
   data,
-  timestamp: Date.now(),
 })
 export const cp = <T>(v: T): T => structuredClone(v)
 export const has = (v: any, k: any) =>
@@ -81,11 +81,15 @@ export const me = (req: any) => {
 export function menuFilter(ns: any[], set: Set<number>): any[] {
   return ns
     .filter(i => set.has(i.id))
-    .map(({ status, ...i }) => ({ ...i, children: menuFilter(i.children ?? [], set) }))
+    .map(({ status: _status, ...i }) => ({ ...i, children: menuFilter(i.children ?? [], set) }))
 }
 
-export const perms = (u: any) =>
-  flat(
+export const perms = (u: any) => {
+  const roleCodes = u.roleIds.map(
+    (id: number) => db.roles.find((r: any) => r.id === id)?.code
+  )
+  if (roleCodes.includes('admin')) return ['*:*:*']
+  return flat(
     menuFilter(
       db.menus,
       new Set(
@@ -95,6 +99,7 @@ export const perms = (u: any) =>
   )
     .filter(i => i.perm)
     .map(i => i.perm)
+}
 
 export const ad = (a: any) => ({
   id: a.id,
@@ -103,12 +108,13 @@ export const ad = (a: any) => ({
   coverImage: a.coverImage,
   authorId: a.authorId,
   authorName: a.authorName,
-  isTop: a.isTop,
-  accessLevel: a.accessLevel,
-  viewCount: a.viewCount,
-  likeCount: a.likeCount,
-  commentCount: a.commentCount,
-  collectCount: a.collectCount,
+  isTop: a.isTop ?? 0,
+  isRecommend: a.isRecommend ?? 0,
+  accessLevel: a.accessLevel ?? 0,
+  viewCount: a.viewCount ?? 0,
+  likeCount: a.likeCount ?? 0,
+  commentCount: a.commentCount ?? 0,
+  collectCount: a.collectCount ?? 0,
   publishTime: a.publishTime,
 })
 
@@ -127,6 +133,68 @@ export const detail = (a: any) => ({
   collected: db.collections.some((i: any) => i.targetType === 'article' && i.targetId === a.id),
   canComment: true,
   seriesList: [],
+})
+
+export const toForumSectionVO = (s: any) => ({
+  id: s.id,
+  name: s.sectionName ?? s.name,
+  description: s.description ?? '',
+  sortOrder: s.sortOrder ?? 0,
+  visibilityScope: s.visibilityScope ?? 0,
+  postLevelLimit: s.postLevelLimit ?? 1,
+  status: s.status ?? 1,
+  createdAt: s.createTime ?? s.createdAt,
+  updatedAt: s.updateTime ?? s.updatedAt,
+})
+
+export const toForumPostVO = (p: any) => {
+  const section = (db.forumSections || []).find((s: any) => s.id === p.sectionId)
+  return {
+    id: p.id,
+    sectionId: p.sectionId,
+    sectionName: section?.sectionName ?? section?.name ?? '',
+    authorId: p.userId ?? p.authorId,
+    authorName: p.nickname ?? p.username ?? p.authorName ?? '',
+    title: p.title,
+    status: p.status ?? (p.isHidden ? 5 : 1),
+    visibilityScope: p.visibilityScope ?? 0,
+    isTop: p.isTop ?? 0,
+    isEssence: p.isEssence ?? 0,
+    viewCount: p.viewCount ?? 0,
+    likeCount: p.likeCount ?? 0,
+    replyCount: p.replyCount ?? 0,
+    collectCount: p.collectCount ?? 0,
+    shareCount: p.shareCount ?? 0,
+    publishedAt: p.publishedAt ?? (p.isHidden ? null : (p.createTime ?? p.createdAt)),
+    createdAt: p.createTime ?? p.createdAt,
+    updatedAt: p.updateTime ?? p.updatedAt,
+  }
+}
+
+export const toForumPostDetailVO = (p: any) => ({
+  ...toForumPostVO(p),
+  content: p.content ?? '',
+  liked: false,
+  collected: false,
+  canReply: true,
+  linkedChannel: null,
+})
+
+export const toForumReplyVO = (r: any, idx = 0) => ({
+  id: r.id,
+  postId: r.postId,
+  parentId: r.parentId ?? null,
+  rootId: r.rootId ?? null,
+  userId: r.userId,
+  userName: r.nickname ?? r.username ?? '',
+  content: r.content,
+  status: r.status ?? (r.isHidden ? 5 : 1),
+  floorNo: r.floorNo ?? idx + 1,
+  likeCount: r.likeCount ?? 0,
+  replyCount: r.replyCount ?? r.children?.length ?? 0,
+  createdAt: r.createTime ?? r.createdAt,
+  updatedAt: r.updateTime ?? r.updatedAt,
+  children: r.children?.map?.((c: any, i: number) => toForumReplyVO(c, i)),
 })
 
 export const syncComments = (id: number) => {

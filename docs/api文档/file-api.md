@@ -1,6 +1,6 @@
 # 文件与上传 API
 
-> 本文档面向前端联调，覆盖上传流程、文件查询、后台管理全场景。
+> 本文档面向前端联调，覆盖上传流程、文件查询、公开文件访问、后台管理全场景。
 
 ---
 
@@ -24,6 +24,12 @@
 | 查询我的上传任务 | GET | `/api/user/files/upload-tasks` |
 | 删除我的文件引用 | DELETE | `/api/user/files/{businessId}` |
 
+### 公开文件访问
+
+| 用途 | 方法 | 路径 | 说明 |
+|---|---|---|---|
+| 代理访问文件 | GET | `/api/public/files/{fileId}` | 无需鉴权，流式返回文件内容 |
+
 ### 后台管理
 
 | 用途 | 方法 | 路径 | 权限 |
@@ -42,6 +48,7 @@
 
 | 路由前缀 | 面向场景 | 鉴权要求 |
 |---|---|---|
+| `/api/public/files/**` | 公开文件访问（代理下载，带访问控制校验） | 无需登录 |
 | `/api/user/files/**` | 登录用户上传、查询我的文件、查询上传任务 | 需要登录 |
 | `/api/sys/files/**` | 后台文件库、后台上传任务管理 | 需要登录 + 对应权限 |
 
@@ -78,6 +85,10 @@
 | `CHUNK_MD5_MISMATCH` | 分片 MD5 不匹配 | 重新上传该分片 |
 | `CHUNK_INCOMPLETE` | 分片未全部上传完成 | 确保所有分片上传成功 |
 | `CHUNK_MERGE_FAILED` | 分片合并失败 | 检查文件完整性或重试 |
+| `FILE_NOT_FOUND` | 文件不存在 | 检查 fileId 是否正确 |
+| `FILE_REFERENCE_NOT_FOUND` | 文件引用不存在 | 检查 businessId 是否正确 |
+| `FILE_STATUS_INVALID` | 文件状态非法 | 检查 status 值是否合法 |
+| `UPLOAD_TASK_NOT_FOUND` | 上传任务不存在 | 检查 uploadId 是否正确 |
 
 ### 1.4 上传场景选型
 
@@ -153,15 +164,15 @@ axios.post('/api/user/files/upload-tasks/init', {
 
 | 字段 | 类型 | 必填 | 说明 |
 |---|---|---|---|
-| `originalName` | String | 是 | 原始文件名 |
-| `fileSize` | Long | 是 | 文件大小（字节） |
-| `fileMd5` | String | 否 | 文件 MD5，建议传入以支持秒传 |
+| `originalName` | String | 是 | 原始文件名，不允许双重扩展名和非法字符 |
+| `fileSize` | Long | 是 | 文件大小（字节），必须大于 0 |
+| `fileMd5` | String | 是 | 文件 MD5，用于秒传检测和完整性校验 |
 | `mimeType` | String | 否 | MIME 类型 |
-| `referenceType` | String | 否 | `avatar`、`chat_message`、`article_attachment`、`temp` |
+| `referenceType` | String | 否 | 引用类型：`avatar`、`chat_message`、`article_attachment`、`temp` |
 | `referenceId` | Long | 否 | 引用对象 ID |
 | `category` | String | 否 | 业务分类：`avatar`、`attachment`、`comment`、`chat_attachment`、`temp` |
 | `isPublic` | Integer | 否 | `0` 私有，`1` 公开 |
-| `totalChunks` | Integer | 否 | 分片上传时传总分片数，必须大于 1 |
+| `totalChunks` | Integer | 否 | 分片上传时传总分片数 |
 | `chunkSize` | Long | 否 | 分片大小，必须大于 0 |
 | `remark` | String | 否 | 备注 |
 
@@ -254,7 +265,7 @@ axios.post('/api/user/files/upload-tasks/init', {
 
 | code | 说明 | 前端处理 |
 |---|---|---|
-| `ILLEGAL_ARGUMENT` | 参数校验失败 | 检查 `referenceType`、`category`、`isPublic` 是否合法 |
+| `ILLEGAL_ARGUMENT` | 参数校验失败 | 检查 `referenceType`、`category`、`isPublic`、`fileMd5` 是否合法 |
 
 ### 2.3 秒传检测
 
@@ -271,6 +282,12 @@ axios.post('/api/user/files/upload-tasks/a1b2c3d4-e5f6-7890-abcd-ef1234567890/qu
   headers: { Authorization: 'Bearer xxx' }
 })
 ```
+
+**路径参数说明**
+
+| 参数 | 类型 | 说明 |
+|---|---|---|
+| `uploadId` | String | 上传标识 |
 
 **响应示例（秒传成功）**
 
@@ -352,6 +369,12 @@ axios.post('/api/user/files/upload-tasks/a1b2c3d4-e5f6-7890-abcd-ef1234567890/fi
 })
 ```
 
+**路径参数说明**
+
+| 参数 | 类型 | 说明 |
+|---|---|---|
+| `uploadId` | String | 上传标识 |
+
 **请求表单字段**
 
 | 字段 | 类型 | 必填 | 说明 |
@@ -420,6 +443,13 @@ axios.post('/api/user/files/upload-tasks/c3d4e5f6-a7b8-9012-cdef-123456789012/ch
 })
 ```
 
+**路径参数说明**
+
+| 参数 | 类型 | 说明 |
+|---|---|---|
+| `uploadId` | String | 上传标识 |
+| `chunkNumber` | Integer | 分片序号，从 1 开始，必须大于 0 |
+
 **请求表单字段**
 
 | 字段 | 类型 | 必填 | 说明 |
@@ -477,6 +507,12 @@ axios.post('/api/user/files/upload-tasks/c3d4e5f6-a7b8-9012-cdef-123456789012/co
   headers: { Authorization: 'Bearer xxx' }
 })
 ```
+
+**路径参数说明**
+
+| 参数 | 类型 | 说明 |
+|---|---|---|
+| `uploadId` | String | 上传标识 |
 
 **响应示例**
 
@@ -768,15 +804,67 @@ axios.delete('/api/user/files/301', {
 }
 ```
 
+**错误码说明**
+
+| code | 说明 | 前端处理 |
+|---|---|---|
+| `FILE_REFERENCE_NOT_FOUND` | 文件引用不存在 | 检查 businessId 是否正确 |
+
 **前端说明**
 - 删除的是"文件引用"，不是直接按 `fileId` 删除物理文件
 - 若同一底层文件没有任何引用，系统会尝试清理存储对象，并把文件状态改为 `0`
 
 ---
 
-## 4. 后台文件管理接口
+## 4. 公开文件访问接口
 
-### 4.1 权限说明
+### 4.1 代理访问文件
+
+**接口信息**
+- 路径：GET `/api/public/files/{fileId}`
+- 鉴权：否（无需登录，白名单接口）
+- 说明：代理文件下载并对关联文章做访问控制校验，防止私密/白名单文章附件被绕过文章权限直接访问
+- Content-Type：根据文件 MIME 类型动态设置（如 `image/png`、`application/pdf` 等）
+- 响应方式：流式响应（StreamingResponseBody）
+
+**请求示例**
+
+```javascript
+// axios（以 ArrayBuffer 方式接收二进制流）
+axios.get('/api/public/files/501', {
+  responseType: 'arraybuffer'
+})
+```
+
+```html
+<!-- 或直接在 HTML 中使用 -->
+<img src="/api/public/files/501" alt="文件" />
+```
+
+**路径参数说明**
+
+| 参数 | 类型 | 说明 |
+|---|---|---|
+| `fileId` | Long | 文件 ID |
+
+**响应说明**
+
+- 响应体为文件二进制流
+- 响应头 `Content-Disposition` 设置为 `inline`，文件名经过 URL 编码
+- 响应头 `Content-Type` 根据文件 MIME 类型动态设置
+- 响应头 `Content-Length` 设置为文件实际大小
+
+**错误码说明**
+
+| code | 说明 | 前端处理 |
+|---|---|---|
+| `FILE_NOT_FOUND` | 文件不存在 | 检查 fileId 是否正确 |
+
+---
+
+## 5. 后台文件管理接口
+
+### 5.1 权限说明
 
 所有后台接口都需要：
 1. 登录状态
@@ -788,7 +876,7 @@ axios.delete('/api/user/files/301', {
 | `content:file:update` | 文件更新权限 |
 | `content:file:delete` | 文件删除权限 |
 
-### 4.2 分页查询文件
+### 5.2 分页查询文件
 
 **接口信息**
 - 路径：GET `/api/sys/files`
@@ -883,7 +971,7 @@ axios.get('/api/sys/files', {
 | `referenceCount` | Integer | 引用数 |
 | `createdAt` | DateTime | 创建时间 |
 
-### 4.3 查询文件详情
+### 5.3 查询文件详情
 
 **接口信息**
 - 路径：GET `/api/sys/files/{id}`
@@ -1006,7 +1094,7 @@ axios.get('/api/sys/files/501', {
 | `createdAt` | DateTime | 创建时间 |
 | `completeTime` | DateTime | 完成时间 |
 
-### 4.4 分页查询上传任务
+### 5.4 分页查询上传任务
 
 **接口信息**
 - 路径：GET `/api/sys/files/upload-tasks`
@@ -1043,7 +1131,7 @@ axios.get('/api/sys/files/upload-tasks', {
 
 **响应字段**：同 `FileTaskAdminVO`
 
-### 4.5 更新文件状态
+### 5.5 更新文件状态
 
 **接口信息**
 - 路径：PUT `/api/sys/files/{id}/status`
@@ -1086,9 +1174,10 @@ axios.put('/api/sys/files/501/status', {
 
 **前端说明**
 - 该接口不支持设置为 `0`（已删除），删除文件请使用 DELETE 接口
+- 该接口不支持设置为 `2`（待物理删除），该状态由系统自动管理
 - 已删除文件（`status=0`）不支持通过该接口恢复状态
 
-### 4.6 删除文件
+### 5.6 删除文件
 
 **接口信息**
 - 路径：DELETE `/api/sys/files/{id}`
@@ -1123,9 +1212,9 @@ axios.delete('/api/sys/files/501', {
 
 ---
 
-## 5. 取值速查
+## 6. 取值速查
 
-### 5.1 上传模式（uploadMode）
+### 6.1 上传模式（uploadMode）
 
 | 值 | 说明 |
 |---|---|
@@ -1133,7 +1222,7 @@ axios.delete('/api/sys/files/501', {
 | `2` | 分片上传 |
 | `3` | 全量上传 |
 
-### 5.2 任务状态（taskStatus）
+### 6.2 任务状态（taskStatus）
 
 | 值 | 说明 |
 |---|---|
@@ -1144,7 +1233,7 @@ axios.delete('/api/sys/files/501', {
 | `4` | 失败 |
 | `5` | 已取消（过期任务也会收口到该状态） |
 
-### 5.3 文件状态（status）
+### 6.3 文件状态（status）
 
 | 值 | 说明 |
 |---|---|
@@ -1154,7 +1243,7 @@ axios.delete('/api/sys/files/501', {
 | `3` | 审核中 |
 | `4` | 违规下架 |
 
-### 5.4 业务分类（category）
+### 6.4 业务分类（category）
 
 | 值 | 说明 |
 |---|---|
@@ -1164,7 +1253,7 @@ axios.delete('/api/sys/files/501', {
 | `chat_attachment` | 聊天附件 |
 | `temp` | 临时文件 |
 
-### 5.5 引用类型（referenceType）
+### 6.5 引用类型（referenceType）
 
 | 值 | 说明 |
 |---|---|
@@ -1175,7 +1264,7 @@ axios.delete('/api/sys/files/501', {
 
 ---
 
-## 6. 常见联调问题
+## 7. 常见联调问题
 
 | 问题 | 当前行为 |
 |---|---|
@@ -1184,26 +1273,10 @@ axios.delete('/api/sys/files/501', {
 | 同一分片重复上传会怎样 | 覆盖该分片的元数据与临时文件，不会新增重复分片记录 |
 | 整文件或分片 MD5 不匹配会怎样 | 服务端直接拒绝本次上传，不继续落存储 |
 | 用户删除文件是否一定删底层物理文件 | 不一定，只有引用数归零才会尝试删除 |
-| 初始化时未传 MD5 会怎样 | 服务端会在上传过程中自动计算（普通上传流式计算，分片上传合并后计算） |
+| 初始化时未传 MD5 会怎样 | 初始化时 `fileMd5` 为必填，服务端会在上传过程中校验完整性 |
 | 分片完成后临时文件清理失败 | 上传结果仍保持成功，不回滚已完成任务 |
 | 上传任务过期后再调用上传接口会怎样 | 服务端先把任务收口为已取消，再返回 `UPLOAD_TASK_EXPIRED` |
 | 秒传检测时任务已过期 | 服务端先将任务收口为 `5(已取消)`，再返回 `UPLOAD_TASK_EXPIRED` |
 | 后台文件权限前缀是什么 | `content:file:query`、`content:file:update`、`content:file:delete` |
-
----
-
-## 7. 公开文件访问
-
-### 下载文件
-
-**接口信息**
-
-- 路径: `GET /api/public/files/{fileId}`
-- 鉴权: 无（公开接口）
-- 说明: 直接下载文件，返回文件流（非 `Result<>` 包装），浏览器会触发下载或内联显示
-
-**路径参数说明**
-
-| 参数 | 类型 | 必填 | 说明 |
-|-----|------|------|-----|
-| `fileId` | Long | 是 | 文件ID |
+| 公开文件访问是否需要登录 | 不需要，`/api/public/files/**` 已加入白名单 |
+| 公开文件访问的安全性 | 代理下载会校验关联文章的访问权限，防止私密/白名单文章附件被绕过 |

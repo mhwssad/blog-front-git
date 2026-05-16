@@ -59,6 +59,10 @@ function handle(req: any) {
       username: u.username,
       nickname: u.nickname,
       avatar: u.avatar,
+      bio: u.bio ?? '',
+      website: u.website ?? '',
+      gender: u.gender ?? 0,
+      birthday: u.birthday ?? '',
       email: u.email,
       phone: u.phone,
       status: u.status,
@@ -76,11 +80,12 @@ function handle(req: any) {
   // ==================== 接管登录 ====================
 
   if (m === 'POST' && path === '/api/auth/takeover/login') {
-    const userId = req.body.userId
+    const takeoverToken = req.body.takeoverToken
+    const userId = Number(String(takeoverToken || '').match(/takeover-(\d+)/)?.[1]) || 0
     const x = db.users.find((i: any) => i.id === userId)
     return x
       ? ok({ tokenType: 'Bearer', accessToken: `mock-access-token-${x.id}`, refreshToken: `mock-refresh-token-${x.id}`, expiresIn: 7200 }, '接管登录成功')
-      : ok(null, '用户不存在', 404)
+      : ok(null, '接管令牌无效', 404)
   }
 
   // ==================== 密码重置 ====================
@@ -100,7 +105,7 @@ function handle(req: any) {
   if (m === 'GET' && path === '/api/users/search') {
     let rs = [...db.users]
     if (req.query.keyword) rs = rs.filter((i: any) => has(i.username, req.query.keyword) || has(i.nickname, req.query.keyword) || has(i.email, req.query.keyword))
-    return ok(rs.slice(0, 10).map((i: any) => ({ id: i.id, username: i.username, nickname: i.nickname, avatar: i.avatar, email: i.email })))
+    return ok(page(rs.map((i: any) => ({ userId: i.id, username: i.username, nickname: i.nickname, avatar: i.avatar })), req.query))
   }
 
   return ok(null, '未匹配到认证接口', 404)

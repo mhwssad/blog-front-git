@@ -14,6 +14,13 @@
 | 令牌参数名 | `accessToken` |
 | 协议 | `ws://` (HTTP) 或 `wss://` (HTTPS) |
 
+### 认证方式
+
+握手阶段支持两种方式传递访问令牌（二选一）：
+
+1. **查询参数**（推荐）：通过 URL 参数传递
+2. **请求头**：通过 `Authorization` 请求头传递
+
 ### 连接地址格式
 
 ```
@@ -34,23 +41,23 @@ class ChatWebSocket {
   connect(token) {
     const wsUrl = `ws://localhost:8000/ws/chat?accessToken=${token}`;
     this.socket = new WebSocket(wsUrl);
-    
+
     this.socket.onopen = () => {
       console.log('WebSocket connected');
       this.startHeartbeat();
     };
-    
+
     this.socket.onmessage = (event) => {
       const data = JSON.parse(event.data);
       this.handleMessage(data);
     };
-    
+
     this.socket.onclose = (event) => {
       console.log('WebSocket disconnected', event.code, event.reason);
       this.stopHeartbeat();
       this.scheduleReconnect(token);
     };
-    
+
     this.socket.onerror = (error) => {
       console.error('WebSocket error:', error);
     };
@@ -110,9 +117,9 @@ class ChatWebSocket {
     return new Promise((resolve, reject) => {
       const requestId = this.generateRequestId();
       const message = { type, requestId, payload };
-      
+
       this.pendingRequests.set(requestId, { resolve, reject });
-      
+
       // 设置超时
       setTimeout(() => {
         if (this.pendingRequests.has(requestId)) {
@@ -120,7 +127,7 @@ class ChatWebSocket {
           reject(new Error('Request timeout'));
         }
       }, 10000);
-      
+
       this.socket.send(JSON.stringify(message));
     });
   }
@@ -289,10 +296,17 @@ ws.connect('your-access-token');
 ping
 ```
 
-服务端响应（纯文本）：
+服务端响应（JSON 格式，requestId 为 null）：
 
-```
-pong
+```json
+{
+  "type": "pong",
+  "requestId": null,
+  "timestamp": "2024-03-09T12:00:00",
+  "code": 200,
+  "message": "成功",
+  "payload": null
+}
 ```
 
 ### 5.2 JSON ping
@@ -340,6 +354,7 @@ pong
   "requestId": "msg-001",
   "payload": {
     "conversationId": 1001,
+    "targetUserId": null,
     "content": "你好，这是测试消息",
     "clientMessageId": "client-msg-001",
     "replyMessageId": null
@@ -349,10 +364,13 @@ pong
 
 | payload 字段 | 类型 | 必填 | 说明 |
 |-------------|------|------|------|
-| conversationId | long | 是 | 会话 ID |
-| content | string | 是 | 消息内容，最大 4000 字符 |
-| clientMessageId | string | 否 | 客户端消息 ID，用于幂等校验 |
+| conversationId | long | 条件必填 | 会话 ID；已存在会话时优先传该字段 |
+| targetUserId | long | 条件必填 | 单聊目标用户 ID；未传 conversationId 时用于自动创建/获取单聊 |
+| content | string | 是 | 消息内容，最大 2000 字符 |
+| clientMessageId | string | 否 | 客户端消息 ID，用于幂等校验，最大 64 字符 |
 | replyMessageId | long | 否 | 回复的消息 ID |
+
+> **注意**：`conversationId` 和 `targetUserId` 至少需要传一个，两者同时为空时服务端将返回参数错误。
 
 #### 成功响应 (ack)
 
@@ -379,7 +397,7 @@ pong
       "reply": null,
       "clientMessageId": "client-msg-001",
       "self": true,
-      "deliveryStatus": "delivered",
+      "deliveryStatus": 1,
       "readByCurrentUser": true,
       "readAt": null,
       "revoked": false,
@@ -398,8 +416,8 @@ pong
   "type": "error",
   "requestId": "msg-001",
   "timestamp": "2024-03-09T12:00:00",
-  "code": 40003,
-  "message": "会话不存在或无权发送消息",
+  "code": 40011,
+  "message": "send_message payload 不能为空",
   "payload": null
 }
 ```
@@ -477,7 +495,7 @@ pong
     "reply": null,
     "clientMessageId": null,
     "self": false,
-    "deliveryStatus": "delivered",
+    "deliveryStatus": 1,
     "readByCurrentUser": false,
     "readAt": null,
     "revoked": false,
@@ -500,14 +518,15 @@ pong
 | content | string | 文本内容（文本消息时） |
 | file | object | 文件信息（文件消息时），见文件消息格式 |
 | replyMessageId | long | 回复的消息 ID |
-| reply | object | 被回复的消息内容 |
+| reply | object | 被回复的消息快照，见回复消息快照格式 |
 | clientMessageId | string | 客户端消息 ID |
 | self | boolean | 是否为当前用户发送的消息 |
-| deliveryStatus | string | 投递状态：pending, delivered, read |
+| deliveryStatus | integer | 投递状态：0 待投递，1 已送达，2 已读 |
 | readByCurrentUser | boolean | 当前用户是否已读 |
 | readAt | string | 当前用户已读时间 |
 | revoked | boolean | 是否已撤回 |
 | edited | boolean | 是否已编辑 |
+| updatedAt | string | 更新时间 |
 | createdAt | string | 创建时间 |
 
 #### 文件消息格式
@@ -516,7 +535,7 @@ pong
 
 ```json
 "file": {
-  "businessId": "file-001",
+  "businessId": 100,
   "fileId": 12345,
   "fileName": "document.pdf",
   "originalName": "原始文件名.pdf",
@@ -534,6 +553,62 @@ pong
 }
 ```
 
+| file 字段 | 类型 | 说明 |
+|-----------|------|------|
+| businessId | long | 聊天文件业务引用 ID |
+| fileId | long | 文件 ID |
+| fileName | string | 文件名称 |
+| originalName | string | 原始文件名 |
+| fileUrl | string | 文件地址 |
+| fileSize | long | 文件大小（字节） |
+| fileType | string | 文件类型 |
+| mimeType | string | MIME 类型 |
+| previewUrl | string | 预览地址（图片/语音可直接复用） |
+| thumbnailUrl | string | 缩略图地址（图片默认回落原图地址） |
+| width | integer | 图片宽度 |
+| height | integer | 图片高度 |
+| durationSeconds | integer | 语音时长（秒） |
+| waveform | array[integer] | 语音波形采样点 |
+| transcodeStatus | string | 转码状态：source / pending / ready / failed |
+
+#### 回复消息快照格式
+
+当消息包含回复时，`reply` 字段包含被回复消息的快照：
+
+```json
+"reply": {
+  "id": 5000,
+  "senderId": 3,
+  "senderUsername": "bob",
+  "senderNickname": "Bob",
+  "senderAvatar": "https://example.com/avatar/3.png",
+  "messageType": "text",
+  "replyToMessageId": null,
+  "content": "原始消息内容",
+  "file": null,
+  "revoked": false,
+  "deleted": false,
+  "state": "normal",
+  "createdAt": "2024-03-09T11:50:00"
+}
+```
+
+| reply 字段 | 类型 | 说明 |
+|------------|------|------|
+| id | long | 被回复消息 ID |
+| senderId | long | 被回复消息发送人 ID |
+| senderUsername | string | 被回复消息发送人用户名 |
+| senderNickname | string | 被回复消息发送人昵称 |
+| senderAvatar | string | 被回复消息发送人头像 |
+| messageType | string | 被回复消息类型 |
+| replyToMessageId | long | 被回复消息自身所引用的上一层消息 ID（仅用于前端状态链接，不继续内联多层快照） |
+| content | string | 被回复消息摘要内容 |
+| file | object | 被回复消息附件快照（结构同文件消息格式） |
+| revoked | boolean | 被回复消息是否已撤回 |
+| deleted | boolean | 被回复消息是否已不可见（仅用于缺失回退提示） |
+| state | string | 被回复消息当前状态：normal / revoked / unavailable |
+| createdAt | string | 被回复消息发送时间 |
+
 ### 7.2 消息已编辑 (`message_updated`)
 
 消息内容被编辑后推送，更新消息显示。
@@ -549,12 +624,28 @@ pong
     "id": 5002,
     "conversationId": 1001,
     "senderId": 5,
+    "senderUsername": "alice",
+    "senderNickname": "Alice",
+    "senderAvatar": "https://example.com/avatar/5.png",
+    "messageType": "text",
     "content": "编辑后的消息内容",
+    "file": null,
+    "replyMessageId": null,
+    "reply": null,
+    "clientMessageId": null,
+    "self": true,
+    "deliveryStatus": 1,
+    "readByCurrentUser": true,
+    "readAt": "2024-03-09T12:00:00",
+    "revoked": false,
     "edited": true,
-    "updatedAt": "2024-03-09T12:05:00"
+    "updatedAt": "2024-03-09T12:05:00",
+    "createdAt": "2024-03-09T12:00:00"
   }
 }
 ```
+
+> **说明**：`message_updated` 事件推送完整的消息对象（与 `message_created` 结构一致），而非仅变更字段。客户端应整体替换本地消息对象。
 
 ### 7.3 消息已撤回 (`message_revoked`)
 
@@ -571,10 +662,28 @@ pong
     "id": 5002,
     "conversationId": 1001,
     "senderId": 5,
-    "revoked": true
+    "senderUsername": "alice",
+    "senderNickname": "Alice",
+    "senderAvatar": "https://example.com/avatar/5.png",
+    "messageType": "text",
+    "content": "大家好",
+    "file": null,
+    "replyMessageId": null,
+    "reply": null,
+    "clientMessageId": null,
+    "self": false,
+    "deliveryStatus": 1,
+    "readByCurrentUser": false,
+    "readAt": null,
+    "revoked": true,
+    "edited": false,
+    "updatedAt": null,
+    "createdAt": "2024-03-09T12:00:00"
   }
 }
 ```
+
+> **说明**：`message_revoked` 事件推送完整的消息对象（与 `message_created` 结构一致），`revoked` 字段为 `true`。客户端应整体替换本地消息对象。
 
 ### 7.4 消息已删除 (`message_deleted`)
 
@@ -595,6 +704,13 @@ pong
   }
 }
 ```
+
+| payload 字段 | 类型 | 说明 |
+|-------------|------|------|
+| conversationId | long | 会话 ID |
+| messageId | long | 被删除的消息 ID |
+| userId | long | 执行删除的用户 ID |
+| unreadCount | integer | 删除后的当前会话未读数 |
 
 ### 7.5 已读状态推进 (`read_updated`)
 
@@ -618,6 +734,16 @@ pong
   }
 }
 ```
+
+| payload 字段 | 类型 | 说明 |
+|-------------|------|------|
+| conversationId | long | 会话 ID |
+| userId | long | 用户 ID |
+| readMessageId | long | 最后已读消息 ID |
+| readAt | string | 最后已读时间 |
+| deliveredMessageId | long | 最后已送达消息 ID |
+| deliveredAt | string | 最后已送达时间 |
+| unreadCount | integer | 未读数 |
 
 ### 7.6 会话信息变更 (`conversation_updated`)
 
@@ -653,8 +779,8 @@ pong
 | avatar | string | 会话头像 |
 | ownerId | long | 群主 ID |
 | notice | string | 群公告 |
-| status | int | 会话状态 |
-| memberCount | long | 当前成员数 |
+| status | integer | 会话状态 |
+| memberCount | long | 当前活跃成员数 |
 
 ### 7.7 群成员变更 (`members_updated`)
 
@@ -694,6 +820,19 @@ pong
 | affectedUserId | long | 受影响用户 ID |
 | members | array | 当前活跃成员列表 |
 
+#### members 元素字段
+
+| 字段 | 类型 | 说明 |
+|------|------|------|
+| userId | long | 用户 ID |
+| username | string | 用户名 |
+| nickname | string | 昵称 |
+| avatar | string | 头像 |
+| role | string | 成员角色：owner, admin, member |
+| status | integer | 成员状态 |
+| joinedAt | string | 加入时间 |
+| muteUntil | string | 禁言截止时间 |
+
 ---
 
 ## 8. 错误处理
@@ -705,34 +844,41 @@ pong
   "type": "error",
   "requestId": "msg-001",
   "timestamp": "2024-03-09T12:00:00",
-  "code": 40003,
-  "message": "会话不存在或无权发送消息",
+  "code": 40011,
+  "message": "非法参数",
   "payload": null
 }
 ```
 
 ### 8.2 业务错误码
 
-| code | 说明 | 处理建议 |
+| code | 说明 | 触发场景 |
 |------|------|---------|
 | 200 | 成功 | - |
-| 40001 | 参数错误 | 检查请求参数 |
-| 40002 | 不支持的操 作 | 如发送服务端专用类型 |
-| 40011 | JSON 解析失败 | 检查 JSON 格式 |
-| 40101 | 登录失效 | 刷新令牌后重连 |
-| 40303 | 无权限 | 检查会话权限 |
-| 40403 | 会话不存在 | 检查 conversationId |
-| 50001 | 系统错误 | 重试或联系技术支持 |
+| 40011 | 非法参数 | payload 缺少必填字段、type 缺失等 |
+| 40008 | 缺少请求参数 | 缺少必填的请求参数 |
+| 40102 | 未登录或登录已过期 | Token 无效或过期 |
+| 40300 | 没有访问权限 | 无权限操作 |
+| 40401 | 用户不存在 | 用户不存在 |
+| 50000 | 系统异常，请联系管理员 | 服务端内部错误 |
+| 50008 | JSON处理异常 | WebSocket 消息不是合法 JSON |
+| 50011 | 不支持的操作 | 发送未支持的 type、客户端发送服务端专用类型 |
+| 50001 | 并发修改异常 | 并发操作冲突 |
+| 74005 | 当前用户已被禁言，暂时不能发送消息 | 被禁言用户尝试发消息 |
+
+> **说明**：以上列出 WebSocket 通信中常见的错误码。服务端可能返回其他业务错误码，前端应根据 `code` 值做通用处理：非 200 即为失败。
 
 ### 8.3 连接级错误
 
 | 场景 | 表现 | 处理建议 |
 |------|------|---------|
 | 令牌无效或过期 | 握手阶段 HTTP `401` | 刷新令牌后重连 |
-| JSON 格式错误 | 收到 `error`，`code=40011` | 检查发送内容格式 |
-| 发送未支持的 type | 收到 `error`，`code=40002` | 检查 `type` 拼写 |
+| JSON 格式错误 | 收到 `error`，`code=50008` | 检查发送内容格式 |
+| 发送未支持的 type | 收到 `error`，`code=50011` | 检查 `type` 拼写 |
+| 缺少 type 字段 | 收到 `error`，`code=40011` | 确保 JSON 包含 `type` 字段 |
+| 客户端发送服务端专用类型 | 收到 `error`，`code=40011`，message 提示 "当前消息类型不允许由客户端直接发送" | 仅发送 ping / send_message / mark_read |
 | 连接意外断开 | `onclose` 触发 | 按第 9 节策略重连 |
-| 服务器内部错误 | `onerror` 触发，收到 `error` | 记录日志，稍后重试 |
+| 服务器内部错误 | `onerror` 触发，收到 `error`，`code=50000` | 记录日志，稍后重试 |
 
 ---
 
@@ -762,23 +908,23 @@ class ChatWebSocketManager {
   doConnect() {
     const wsUrl = `ws://localhost:8000/ws/chat?accessToken=${this.token}`;
     console.log(`Connecting to ${wsUrl}...`);
-    
+
     this.socket = new WebSocket(wsUrl);
-    
+
     this.socket.onopen = () => {
       console.log('WebSocket connected');
       this.reconnectAttempt = 0;
       this.startHeartbeat();
     };
-    
+
     this.socket.onmessage = (event) => this.handleMessage(event);
-    
+
     this.socket.onclose = (event) => {
       console.log(`WebSocket closed: code=${event.code}, reason=${event.reason}`);
       this.stopHeartbeat();
       this.scheduleReconnect();
     };
-    
+
     this.socket.onerror = (error) => {
       console.error('WebSocket error:', error);
     };
@@ -786,12 +932,12 @@ class ChatWebSocketManager {
 
   handleMessage(event) {
     const data = JSON.parse(event.data);
-    
+
     if (data.type === 'pong') {
       this.lastPongTime = Date.now();
       return;
     }
-    
+
     // 处理其他消息...
   }
 
@@ -801,16 +947,16 @@ class ChatWebSocketManager {
       this.notifyUser('连接失败，请刷新页面');
       return;
     }
-    
+
     // 指数退避，最大 30 秒
     const delay = Math.min(
       this.baseDelay * Math.pow(2, this.reconnectAttempt),
       this.maxDelay
     );
-    
+
     console.log(`Reconnecting in ${delay}ms (attempt ${this.reconnectAttempt + 1}/${this.maxReconnectAttempts})`);
     this.reconnectAttempt++;
-    
+
     setTimeout(() => this.doConnect(), delay);
   }
 
@@ -859,6 +1005,15 @@ class ChatWebSocketManager {
     });
   }
 
+  // 通过目标用户 ID 发送单聊消息
+  async sendMessageToUser(targetUserId, content, clientMessageId) {
+    return this.send('send_message', {
+      targetUserId,
+      content,
+      clientMessageId
+    });
+  }
+
   async markRead(conversationId, readMessageId) {
     return this.send('mark_read', {
       conversationId,
@@ -872,17 +1027,17 @@ class ChatWebSocketManager {
         reject(new Error('WebSocket not connected'));
         return;
       }
-      
+
       const requestId = `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
       const message = JSON.stringify({ type, requestId, payload });
-      
+
       this.socket.send(message);
-      
+
       // 简单超时处理，实际项目可配合 pendingRequests Map
       const timeout = setTimeout(() => {
         reject(new Error('Request timeout'));
       }, 10000);
-      
+
       // 实际使用时应在 handleMessage 中根据 requestId 匹配响应
       // 这里简化处理，假设服务端会立即响应
       resolve({ requestId });
@@ -896,6 +1051,7 @@ class ChatWebSocketManager {
 - 每个标签页独立建立 WebSocket 连接
 - 服务端通过 `read_updated` 事件协调各端的已读状态
 - 建议在多标签页场景下，活跃标签页才建立长连接，非活跃标签页可断开以节省资源
+- 多节点部署时，服务端通过 Redis Pub/Sub 在节点间广播推送事件
 
 ### 9.3 消息发送流程建议
 
@@ -922,6 +1078,7 @@ class ChatWebSocketManager {
 | 拉取会话列表 | HTTP `GET /api/user/chat/conversations` | 初始化加载 |
 | 编辑消息 | HTTP `PUT /api/user/chat/messages/{id}` | 编辑后推送 `message_updated` |
 | 撤回消息 | HTTP `POST /api/user/chat/messages/{id}/revoke` | 撤回后推送 `message_revoked` |
+| 删除消息 | HTTP `DELETE /api/user/chat/messages/{id}` | 删除后推送 `message_deleted` |
 | 推进已读 | WebSocket `mark_read` | 实时性好 |
 | 实时接收新消息 | 监听 `message_created` | 不需要轮询 |
 | 实时接收编辑/撤回 | 监听 `message_updated` / `message_revoked` | 不需要轮询 |
@@ -963,11 +1120,22 @@ const chatWs = new ChatWebSocket();
 chatWs.connect(accessToken);
 ```
 
-#### 发送消息
+#### 发送消息（已有会话）
 
 ```javascript
 try {
   const result = await chatWs.sendMessage(conversationId, content, clientMessageId);
+  console.log('Message sent:', result);
+} catch (error) {
+  console.error('Send failed:', error);
+}
+```
+
+#### 发送消息（通过目标用户 ID 自动创建/获取单聊）
+
+```javascript
+try {
+  const result = await chatWs.sendMessageToUser(targetUserId, content, clientMessageId);
   console.log('Message sent:', result);
 } catch (error) {
   console.error('Send failed:', error);
@@ -1016,9 +1184,9 @@ chatWs.disconnect();
 
 | 值 | 说明 |
 |----|------|
-| `pending` | 发送中 |
-| `delivered` | 已送达 |
-| `read` | 已读 |
+| 0 | 待投递 |
+| 1 | 已送达 |
+| 2 | 已读 |
 
 ### 成员角色 (role)
 
@@ -1027,6 +1195,23 @@ chatWs.disconnect();
 | `owner` | 群主 |
 | `admin` | 管理员 |
 | `member` | 普通成员 |
+
+### 转码状态 (transcodeStatus)
+
+| 值 | 说明 |
+|----|------|
+| `source` | 原始文件 |
+| `pending` | 转码排队中 |
+| `ready` | 转码完成 |
+| `failed` | 转码失败 |
+
+### 回复消息状态 (state)
+
+| 值 | 说明 |
+|----|------|
+| `normal` | 正常 |
+| `revoked` | 已撤回 |
+| `unavailable` | 不可用 |
 
 ### 变更动作 (action)
 
