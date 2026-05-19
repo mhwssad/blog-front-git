@@ -10,7 +10,7 @@ function handle(req: any) {
   // ==================== 会话列表 ====================
   if (m === 'GET' && path === '/api/user/chat/conversations') {
     const convIds = new Set(db.chatMembers.filter((i: any) => i.userId === u.id).map((i: any) => i.conversationId))
-    let rs = db.chatConversations.filter((i: any) => convIds.has(i.id))
+    let rs = db.chatConversations.filter((i: any) => convIds.has(i.id) || (i.sceneType === 'hall_channel' && i.status === 0))
     if (req.query.keyword) {
       const kw = String(req.query.keyword).toLowerCase()
       rs = rs.filter((c: any) => {

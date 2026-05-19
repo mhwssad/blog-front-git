@@ -202,35 +202,83 @@ function handle(req: any) {
 
   // ==================== 大厅管理 ====================
 
+  // 内存中的置顶记录
+  if (!db.lobbyPins) {
+    const msg = db.chatMessages.find((m: any) => m.id === 10 && m.conversationId === 4)
+    db.lobbyPins = [
+      {
+        id: 1,
+        messageId: 10,
+        conversationId: 4,
+        pinnedBy: 1,
+        pinnedAt: '2026-04-01 10:05:00',
+        message: msg ? cp(msg) : null,
+      },
+    ]
+  }
+
   if (method === 'PUT' && /^\/api\/sys\/chats\/lobby\/settings\/?$/.test(path)) {
+    const lobby = db.chatConversations.find((c: any) => c.sceneType === 'hall_channel')
+    if (lobby) {
+      if (req.body.name !== undefined) lobby.name = req.body.name
+      if (req.body.notice !== undefined) lobby.notice = req.body.notice
+      if (req.body.speakLevelLimit !== undefined) lobby.speakLevelLimit = req.body.speakLevelLimit
+      if (req.body.slowModeSeconds !== undefined) lobby.slowModeSeconds = req.body.slowModeSeconds
+      if (req.body.allowGuestSpeak !== undefined) lobby.allowGuestView = req.body.allowGuestSpeak ? 1 : 0
+      lobby.updatedAt = now()
+    }
     db.chatLobbySettings = {
       ...(db.chatLobbySettings || {}),
-      name: req.body.name ?? db.chatLobbySettings?.name ?? '全站大厅',
-      notice: req.body.notice ?? db.chatLobbySettings?.notice ?? '',
+      name: req.body.name ?? db.chatLobbySettings?.name ?? lobby?.name ?? '全站大厅',
+      notice: req.body.notice ?? db.chatLobbySettings?.notice ?? lobby?.notice ?? '',
+      speakLevelLimit: req.body.speakLevelLimit ?? db.chatLobbySettings?.speakLevelLimit ?? lobby?.speakLevelLimit ?? 0,
+      slowModeSeconds: req.body.slowModeSeconds ?? db.chatLobbySettings?.slowModeSeconds ?? lobby?.slowModeSeconds ?? 0,
+      allowGuestSpeak: req.body.allowGuestSpeak ?? db.chatLobbySettings?.allowGuestSpeak ?? false,
       updatedAt: now(),
     }
     return ok(db.chatLobbySettings)
   }
   if (method === 'GET' && /^\/api\/sys\/chats\/lobby\/messages\/pinned\/?$/.test(path)) {
-    const message = db.chatMessages.find((item: any) => item.id === 6)
-    return ok(
-      [
-        {
-          id: 1,
-          messageId: 6,
-          conversationId: 3,
-          pinnedBy: 1,
-          pinnedAt: '2026-03-30 18:05:00',
-          message: message ? cp(message) : null,
-        },
-      ],
-      '成功',
-    )
+    return ok(page(db.lobbyPins, req.query))
   }
-  if (method === 'POST' && path.match(/^\/api\/sys\/chats\/lobby\/messages\/(\d+)\/pin$/)) return ok(null)
-  if (method === 'DELETE' && path.match(/^\/api\/sys\/chats\/lobby\/messages\/(\d+)\/pin$/)) return ok(null)
-  if (method === 'PUT' && path.match(/^\/api\/sys\/chats\/lobby\/members\/(\d+)\/mute$/)) return ok(null)
-  if (method === 'PUT' && path.match(/^\/api\/sys\/chats\/lobby\/members\/(\d+)\/kick$/)) return ok(null)
+  if (method === 'POST' && path.match(/^\/api\/sys\/chats\/lobby\/messages\/(\d+)\/pin$/)) {
+    const msgId = num(path.match(/^\/api\/sys\/chats\/lobby\/messages\/(\d+)\/pin$/)![1])
+    if (!db.lobbyPins.some((p: any) => p.messageId === msgId)) {
+      const msg = db.chatMessages.find((m: any) => m.id === msgId)
+      db.lobbyPins.push({
+        id: db.lobbyPins.length + 1,
+        messageId: msgId,
+        conversationId: msg?.conversationId ?? 4,
+        pinnedBy: 1,
+        pinnedAt: now(),
+        message: msg ? cp(msg) : null,
+      })
+    }
+    return ok(null)
+  }
+  if (method === 'DELETE' && path.match(/^\/api\/sys\/chats\/lobby\/messages\/(\d+)\/pin$/)) {
+    const msgId = num(path.match(/^\/api\/sys\/chats\/lobby\/messages\/(\d+)\/pin$/)![1])
+    db.lobbyPins = db.lobbyPins.filter((p: any) => p.messageId !== msgId)
+    return ok(null)
+  }
+  if (method === 'PUT' && path.match(/^\/api\/sys\/chats\/lobby\/members\/(\d+)\/mute$/)) {
+    const userId = num(path.match(/^\/api\/sys\/chats\/lobby\/members\/(\d+)\/mute$/)![1])
+    const lobby = db.chatConversations.find((c: any) => c.sceneType === 'hall_channel')
+    if (lobby) {
+      const member = db.chatMembers.find((m: any) => m.conversationId === lobby.id && m.userId === userId)
+      if (member) member.muteUntil = req.body.muteUntil ?? null
+    }
+    return ok(null)
+  }
+  if (method === 'PUT' && path.match(/^\/api\/sys\/chats\/lobby\/members\/(\d+)\/kick$/)) {
+    const userId = num(path.match(/^\/api\/sys\/chats\/lobby\/members\/(\d+)\/kick$/)![1])
+    const lobby = db.chatConversations.find((c: any) => c.sceneType === 'hall_channel')
+    if (lobby) {
+      const member = db.chatMembers.find((m: any) => m.conversationId === lobby.id && m.userId === userId)
+      if (member) member.status = 0
+    }
+    return ok(null)
+  }
 
   // ==================== 话题频道 ====================
 
