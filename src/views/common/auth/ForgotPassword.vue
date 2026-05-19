@@ -62,7 +62,7 @@
 import { ref, reactive } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
-import { authApi } from '@/api/auth'
+import { AuthApi } from '@/api/auth'
 
 const router = useRouter()
 const loading = ref(false)
@@ -93,7 +93,7 @@ async function handleSendCode(): Promise<void> {
 
   sendingCode.value = true
   try {
-    await authApi.sendEmailCode({ email: form.email })
+    await AuthApi.sendEmailCode({ email: form.email })
     ElMessage.success('验证码已发送')
     // 启动 60 秒倒计时
     countdown.value = 60

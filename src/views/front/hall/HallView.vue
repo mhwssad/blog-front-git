@@ -5,14 +5,23 @@
     <HallAnnouncement :content="hallNotice" />
 
     <div class="hall-container">
-      <div v-if="store.loading && !store.messages.length" class="loading-area">
+      <div v-if="loadError" class="hall-empty">
+        <el-empty description="大厅暂未开放，请稍后再试" :image-size="80" />
+      </div>
+
+      <div v-else-if="store.loading && !store.messages.length" class="loading-area">
         <el-skeleton :rows="8" animated />
       </div>
 
       <template v-else>
         <div ref="messageListRef" class="hall-message-list">
-          <div v-for="msg in store.messages" :key="msg.id" class="hall-message-item">
-            <el-avatar :size="32" :src="msg.senderAvatar ?? undefined">
+          <div
+            v-for="msg in store.messages"
+            :key="msg.id"
+            class="hall-message-item"
+            :class="{ 'is-self': msg.self }"
+          >
+            <el-avatar :size="36" :src="msg.senderAvatar ?? undefined">
               {{ msg.senderNickname?.charAt(0) ?? '?' }}
             </el-avatar>
             <div class="message-body">
@@ -22,15 +31,20 @@
                 }}</span>
                 <span class="message-time">{{ formatTime(msg.createdAt) }}</span>
               </div>
-              <div class="message-content">{{ msg.content }}</div>
+              <div class="message-bubble">
+                {{ msg.content }}
+              </div>
             </div>
           </div>
-          <el-empty v-if="!store.messages.length" description="暂无消息" :image-size="64" />
+          <el-empty v-if="!store.messages.length" description="暂无消息，来发第一条吧" :image-size="64" />
         </div>
 
         <div class="hall-input-area">
           <template v-if="!authStore.isLoggedIn">
-            <div class="input-notice">登录后可以发言</div>
+            <div class="input-notice">
+              <span>登录后可以发言</span>
+              <el-button type="primary" size="small" @click="goLogin">去登录</el-button>
+            </div>
           </template>
           <template v-else>
             <el-input
@@ -62,28 +76,44 @@
  * @see ../../api/user/chat.ts
  */
 import { ref, computed, onMounted, nextTick } from 'vue'
+import { useRouter } from 'vue-router'
 import { useUserChatStore } from '@/stores'
 import { useAuthStore } from '@/stores'
-import { formatAiDate } from '@/utils'
 import HallAnnouncement from './components/HallAnnouncement.vue'
 
 const store = useUserChatStore()
 const authStore = useAuthStore()
+const router = useRouter()
 
 const inputText = ref('')
 const messageListRef = ref<HTMLElement | null>(null)
-// 大厅会话 ID
 const hallConversationId = ref<number | null>(null)
+const loadError = ref(false)
 
-// 大厅公告文本（优先使用会话公告，否则显示默认欢迎语）
 const hallNotice = computed(
-  () => store.currentConversation?.notice ?? '欢迎来到聊天大厅，请文明发言，遵守社区规范。'
+  () => store.currentConversation?.notice ?? '欢迎来到聊天大厅，请文明发言，遵守社区规范。',
 )
 
 function formatTime(dateStr: string): string {
   if (!dateStr) return ''
   const d = new Date(dateStr)
-  return `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`
+  const now = new Date()
+  const diffMs = now.getTime() - d.getTime()
+  const diffMin = Math.floor(diffMs / 60000)
+
+  if (diffMin < 1) return '刚刚'
+  if (diffMin < 60) return `${diffMin}分钟前`
+
+  const isToday =
+    d.getFullYear() === now.getFullYear() &&
+    d.getMonth() === now.getMonth() &&
+    d.getDate() === now.getDate()
+
+  if (isToday) {
+    return `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`
+  }
+
+  return `${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')} ${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`
 }
 
 function scrollToBottom(): void {
@@ -94,13 +124,23 @@ function scrollToBottom(): void {
   })
 }
 
+function goLogin(): void {
+  router.push({ name: 'Login' })
+}
+
 async function loadHall(): Promise<void> {
-  await store.fetchConversations({ size: 100 })
-  const hallConv = store.conversations.find(c => c.sceneType === 'hall_channel')
-  if (hallConv) {
-    hallConversationId.value = hallConv.id
-    await store.selectConversation(hallConv.id)
-    scrollToBottom()
+  try {
+    await store.fetchConversations({ size: 100 })
+    const hallConv = store.conversations.find((c) => c.sceneType === 'hall_channel')
+    if (hallConv) {
+      hallConversationId.value = hallConv.id
+      await store.selectConversation(hallConv.id)
+      scrollToBottom()
+    } else {
+      loadError.value = true
+    }
+  } catch {
+    loadError.value = true
   }
 }
 
@@ -145,6 +185,13 @@ onMounted(() => {
   overflow: hidden;
 }
 
+.hall-empty {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
 .loading-area {
   flex: 1;
   padding: 16px;
@@ -160,12 +207,25 @@ onMounted(() => {
   display: flex;
   align-items: flex-start;
   gap: 10px;
-  margin-bottom: 16px;
+  margin-bottom: 20px;
+}
+
+.hall-message-item.is-self {
+  flex-direction: row-reverse;
+}
+
+.hall-message-item.is-self .message-header {
+  flex-direction: row-reverse;
+}
+
+.hall-message-item.is-self .message-username {
+  color: var(--el-color-success);
 }
 
 .message-body {
   flex: 1;
   min-width: 0;
+  max-width: 70%;
 }
 
 .message-header {
@@ -186,10 +246,21 @@ onMounted(() => {
   color: var(--el-text-color-placeholder);
 }
 
-.message-content {
+.message-bubble {
+  display: inline-block;
+  padding: 8px 12px;
   font-size: 14px;
   line-height: 1.5;
   word-break: break-word;
+  background: var(--el-fill-color-light);
+  border-radius: 12px;
+  border-top-left-radius: 4px;
+}
+
+.is-self .message-bubble {
+  background: var(--el-color-primary-light-9);
+  border-radius: 12px;
+  border-top-right-radius: 4px;
 }
 
 .hall-input-area {
@@ -202,8 +273,11 @@ onMounted(() => {
 
 .input-notice {
   width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
   padding: 8px 0;
-  text-align: center;
   font-size: 14px;
   color: var(--el-text-color-placeholder);
 }

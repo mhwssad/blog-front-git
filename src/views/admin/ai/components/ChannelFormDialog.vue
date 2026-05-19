@@ -188,7 +188,7 @@
 <script lang="ts" setup>
 import { computed, reactive, ref, watch } from 'vue'
 import { ElMessage, type FormInstance, type FormRules } from 'element-plus'
-import { aiSysApi } from '@/api/sys/ai'
+import { AiSysApi } from '@/api/sys/ai'
 import type { AiChannelConfigSaveRequest } from '@/types/api-types'
 
 interface Props {
@@ -263,7 +263,7 @@ function resetForm(): void {
 async function loadChannelDetail(id: number): Promise<void> {
   detailLoading.value = true
   try {
-    const response = await aiSysApi.getChannelById(id)
+    const response = await AiSysApi.getChannelById(id)
     const detail = response.data.data
     Object.assign(formData, {
       channelCode: detail.channelCode,
@@ -311,10 +311,10 @@ async function handleSubmit(): Promise<void> {
     }
 
     if (isEdit.value && props.channelId) {
-      await aiSysApi.updateChannel(props.channelId, payload)
+      await AiSysApi.updateChannel(props.channelId, payload)
       ElMessage.success('渠道更新成功')
     } else {
-      await aiSysApi.createChannel(payload)
+      await AiSysApi.createChannel(payload)
       ElMessage.success('渠道创建成功')
     }
 

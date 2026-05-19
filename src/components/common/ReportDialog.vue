@@ -53,7 +53,7 @@
 import { reactive } from 'vue'
 import { ElMessage } from 'element-plus'
 import { Plus } from '@element-plus/icons-vue'
-import { reportUserApi } from '@/api/user/report'
+import { ReportUserApi } from '@/api/user/report'
 import type { UploadUserFile } from 'element-plus'
 
 interface Props {
@@ -97,7 +97,7 @@ function handleCancel() {
 
 async function handleSubmit() {
   try {
-    await reportUserApi.createReport({
+    await ReportUserApi.createReport({
       targetType: props.targetType === 'message' ? 'chat_message' : props.targetType,
       targetId: props.targetId,
       reasonCode: form.type,

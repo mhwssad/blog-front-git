@@ -150,8 +150,8 @@ let countdownTimer: number | null = null
 // 账号密码表单
 const passwordFormRef = ref()
 const passwordForm = reactive({
-  username: '',
-  password: '',
+  username: 'admin',
+  password: 'QWEasdzxc123',
 })
 
 const passwordRules = {
