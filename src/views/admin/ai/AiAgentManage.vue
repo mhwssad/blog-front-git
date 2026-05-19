@@ -39,26 +39,32 @@
           </el-form>
         </el-card>
 
-        <el-card class="table-card" shadow="never">
-          <template #header>
-            <div class="card-header">
-              <span>Agent 定义列表</span>
-              <el-button
-                v-permission="'ai:agent:create'"
-                type="primary"
-                @click="handleAdd"
-              >
-                <el-icon><Plus /></el-icon>
-                新增 Agent
-              </el-button>
-            </div>
+        <DataTable
+          :data="agentStore.definitions"
+          :loading="agentStore.loading"
+          :total="agentStore.definitionTotal"
+          :current-page="defPagination.current"
+          :page-size="defPagination.size"
+          :page-sizes="[10, 20, 50]"
+          :pagination-layout="paginationLayout"
+          :compact="isCompactTable"
+          title="Agent 定义列表"
+          @update:current-page="(val: number) => { defPagination.current = val; void fetchDefinitions() }"
+          @update:page-size="(val: number) => { defPagination.size = val; defPagination.current = 1; void fetchDefinitions() }"
+        >
+          <template #header-extra>
+            <el-button
+              v-permission="'ai:agent:create'"
+              type="primary"
+              @click="handleAdd"
+            >
+              <el-icon><Plus /></el-icon>
+              新增 Agent
+            </el-button>
           </template>
+
           <el-table
-            :data="agentStore.definitions"
-            v-loading="agentStore.loading"
             :size="isCompactTable ? 'small' : 'default'"
-            border
-            stripe
           >
             <el-table-column prop="id" label="ID" width="80" align="center" />
             <el-table-column prop="name" label="名称" min-width="140" />
@@ -114,18 +120,7 @@
               </template>
             </el-table-column>
           </el-table>
-          <div class="pagination-area">
-            <el-pagination
-              v-model:current-page="defPagination.current"
-              v-model:page-size="defPagination.size"
-              :total="agentStore.definitionTotal"
-              :page-sizes="[10, 20, 50]"
-              :layout="paginationLayout"
-              @size-change="handleDefSizeChange"
-              @current-change="handleDefCurrentChange"
-            />
-          </div>
-        </el-card>
+        </DataTable>
       </el-tab-pane>
 
       <!-- ==================== Agent 任务 ==================== -->
@@ -162,16 +157,21 @@
           </el-form>
         </el-card>
 
-        <el-card class="table-card" shadow="never">
-          <template #header>
-            <span>Agent 任务列表</span>
-          </template>
+        <DataTable
+          :data="agentStore.tasks"
+          :loading="agentStore.taskLoading"
+          :total="agentStore.taskTotal"
+          :current-page="taskPagination.current"
+          :page-size="taskPagination.size"
+          :page-sizes="[10, 20, 50]"
+          :pagination-layout="paginationLayout"
+          :compact="isCompactTable"
+          title="Agent 任务列表"
+          @update:current-page="(val: number) => { taskPagination.current = val; void fetchTasks() }"
+          @update:page-size="(val: number) => { taskPagination.size = val; taskPagination.current = 1; void fetchTasks() }"
+        >
           <el-table
-            :data="agentStore.tasks"
-            v-loading="agentStore.taskLoading"
             :size="isCompactTable ? 'small' : 'default'"
-            border
-            stripe
           >
             <el-table-column prop="id" label="ID" width="80" align="center" />
             <el-table-column prop="agentName" label="Agent" min-width="140" />
@@ -211,18 +211,7 @@
               </template>
             </el-table-column>
           </el-table>
-          <div class="pagination-area">
-            <el-pagination
-              v-model:current-page="taskPagination.current"
-              v-model:page-size="taskPagination.size"
-              :total="agentStore.taskTotal"
-              :page-sizes="[10, 20, 50]"
-              :layout="paginationLayout"
-              @size-change="handleTaskSizeChange"
-              @current-change="handleTaskCurrentChange"
-            />
-          </div>
-        </el-card>
+        </DataTable>
       </el-tab-pane>
     </el-tabs>
 
@@ -240,6 +229,7 @@ import { ElMessage, ElMessageBox } from 'element-plus'
 import { Plus } from '@element-plus/icons-vue'
 import { useAiAgentStore, useAiChannelStore } from '@/stores'
 import { useContentAdmin } from '@/composables/useContentAdmin'
+import DataTable from '@/components/common/DataTable.vue'
 import {
   AI_AGENT_TASK_STATUS_OPTIONS,
   formatAiDate,
@@ -296,15 +286,6 @@ function handleDefReset(): void {
   defQuery.enabled = undefined
   defPagination.current = 1
   defPagination.size = 10
-  void fetchDefinitions()
-}
-
-function handleDefSizeChange(): void {
-  defPagination.current = 1
-  void fetchDefinitions()
-}
-
-function handleDefCurrentChange(): void {
   void fetchDefinitions()
 }
 
@@ -387,15 +368,6 @@ function handleTaskReset(): void {
   void fetchTasks()
 }
 
-function handleTaskSizeChange(): void {
-  taskPagination.current = 1
-  void fetchTasks()
-}
-
-function handleTaskCurrentChange(): void {
-  void fetchTasks()
-}
-
 function taskStatusTagType(status: number): 'success' | 'warning' | 'danger' | 'info' {
   switch (status) {
     case 2:
@@ -424,22 +396,6 @@ onMounted(async () => {
 
 .search-card {
   margin-bottom: 16px;
-}
-
-.table-card {
-  margin-bottom: 16px;
-}
-
-.card-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.pagination-area {
-  display: flex;
-  justify-content: flex-end;
-  margin-top: 16px;
 }
 
 .table-actions {

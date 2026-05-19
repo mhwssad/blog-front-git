@@ -34,24 +34,28 @@
       </el-form>
     </el-card>
 
-    <el-card class="table-card" shadow="never">
-      <template #header>
-        <div class="card-header">
-          <span>渠道配置列表</span>
-          <el-button v-permission="'ai:channel-config:create'" type="primary" @click="handleAdd">
-            <el-icon><Plus /></el-icon>
-            新增渠道
-          </el-button>
-        </div>
+    <DataTable
+      :data="channelStore.channels"
+      :loading="channelStore.loading"
+      :total="channelStore.total"
+      :current-page="pagination.current"
+      :page-size="pagination.size"
+      :page-sizes="[10, 20, 50]"
+      :pagination-layout="paginationLayout"
+      :compact="isCompactTable"
+      title="渠道配置列表"
+      @update:current-page="(val: number) => { pagination.current = val; void fetchChannels() }"
+      @update:page-size="(val: number) => { pagination.size = val; pagination.current = 1; void fetchChannels() }"
+    >
+      <template #header-extra>
+        <el-button v-permission="'ai:channel-config:create'" type="primary" @click="handleAdd">
+          <el-icon><Plus /></el-icon>
+          新增渠道
+        </el-button>
       </template>
 
       <el-table
-        v-loading="channelStore.loading"
-        :data="channelStore.channels"
         :size="isCompactTable ? 'small' : 'default'"
-        table-layout="auto"
-        border
-        stripe
       >
         <el-table-column prop="id" label="ID" min-width="70" align="center" />
         <el-table-column
@@ -138,20 +142,7 @@
           </template>
         </el-table-column>
       </el-table>
-
-      <div class="pagination">
-        <el-pagination
-          v-model:current-page="pagination.current"
-          v-model:page-size="pagination.size"
-          :total="channelStore.total"
-          :page-sizes="[10, 20, 50]"
-          :layout="paginationLayout"
-          :small="isCompactTable"
-          @size-change="handleSizeChange"
-          @current-change="handleCurrentChange"
-        />
-      </div>
-    </el-card>
+    </DataTable>
 
     <ChannelFormDialog
       v-model:visible="formDialogVisible"
@@ -170,6 +161,7 @@ import { ElMessage, ElMessageBox } from 'element-plus'
 import { Plus } from '@element-plus/icons-vue'
 import { useContentAdmin } from '@/composables/useContentAdmin'
 import { useAiChannelStore } from '@/stores'
+import DataTable from '@/components/common/DataTable.vue'
 import { AI_CHANNEL_STATUS_OPTIONS, formatAiDate } from '@/utils'
 import type { AiChannelConfigVO } from '@/types/api-types'
 import ChannelFormDialog from './components/ChannelFormDialog.vue'
@@ -219,19 +211,6 @@ function handleReset(): void {
   searchForm.status = undefined
   pagination.current = 1
   pagination.size = 10
-  void fetchChannels()
-}
-
-// 切换每页条数
-function handleSizeChange(size: number): void {
-  pagination.size = size
-  pagination.current = 1
-  void fetchChannels()
-}
-
-// 切换当前页
-function handleCurrentChange(current: number): void {
-  pagination.current = current
   void fetchChannels()
 }
 
@@ -322,14 +301,6 @@ onMounted(() => {
   margin-right: 0;
 }
 
-.card-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 12px;
-  font-weight: 500;
-}
-
 .table-actions {
   display: inline-flex;
   flex-wrap: wrap;
@@ -345,12 +316,6 @@ onMounted(() => {
 
 .table-actions :deep(.el-button + .el-button) {
   margin-left: 0;
-}
-
-.pagination {
-  display: flex;
-  justify-content: center;
-  margin-top: 16px;
 }
 
 @media (max-width: 768px) {

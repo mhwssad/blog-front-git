@@ -51,64 +51,54 @@
       </el-form>
     </el-card>
 
-    <el-card class="table-card" shadow="never">
-      <template #header>
-        <span>AI 会话列表</span>
-      </template>
-      <el-table
-        :data="usageStore.sessions"
-        v-loading="usageStore.sessionLoading"
-        :size="isCompactTable ? 'small' : 'default'"
-        border
-        stripe
-      >
-        <el-table-column prop="id" label="ID" width="80" align="center" />
-        <el-table-column prop="userId" label="用户ID" width="90" align="center" />
-        <el-table-column prop="username" label="用户名" min-width="120" align="center" />
-        <el-table-column prop="nickname" label="昵称" min-width="120" align="center" />
-        <el-table-column
-          prop="channelName"
-          label="渠道"
-          min-width="140"
-          align="center"
-          show-overflow-tooltip
-        />
-        <el-table-column prop="title" label="标题" min-width="180" show-overflow-tooltip />
-        <el-table-column prop="sceneType" label="场景" width="100" align="center">
-          <template #default="{ row }">
-            {{ formatAiSceneType(row.sceneType) }}
-          </template>
-        </el-table-column>
-        <el-table-column prop="status" label="状态" width="100" align="center">
-          <template #default="{ row }">
-            <el-tag :type="row.status === 1 ? 'success' : 'info'">
-              {{ formatAiSessionStatus(row.status) }}
-            </el-tag>
-          </template>
-        </el-table-column>
-        <el-table-column prop="lastMessageAt" label="最后消息" min-width="180" align="center">
-          <template #default="{ row }">
-            {{ formatAiDate(row.lastMessageAt) }}
-          </template>
-        </el-table-column>
-        <el-table-column prop="createdAt" label="创建时间" min-width="180" align="center">
-          <template #default="{ row }">
-            {{ formatAiDate(row.createdAt) }}
-          </template>
-        </el-table-column>
-      </el-table>
-      <div class="pagination-area">
-        <el-pagination
-          v-model:current-page="pagination.current"
-          v-model:page-size="pagination.size"
-          :total="usageStore.sessionTotal"
-          :page-sizes="[10, 20, 50]"
-          :layout="paginationLayout"
-          @size-change="handleSizeChange"
-          @current-change="handleCurrentChange"
-        />
-      </div>
-    </el-card>
+    <DataTable
+      :data="usageStore.sessions"
+      :loading="usageStore.sessionLoading"
+      :total="usageStore.sessionTotal"
+      v-model:current-page="pagination.current"
+      v-model:page-size="pagination.size"
+      :page-sizes="[10, 20, 50]"
+      :pagination-layout="paginationLayout"
+      :compact="isCompactTable"
+      title="AI 会话列表"
+      @size-change="handleSizeChange"
+      @page-change="handleCurrentChange"
+    >
+      <el-table-column prop="id" label="ID" width="80" align="center" />
+      <el-table-column prop="userId" label="用户ID" width="90" align="center" />
+      <el-table-column prop="username" label="用户名" min-width="120" align="center" />
+      <el-table-column prop="nickname" label="昵称" min-width="120" align="center" />
+      <el-table-column
+        prop="channelName"
+        label="渠道"
+        min-width="140"
+        align="center"
+        show-overflow-tooltip
+      />
+      <el-table-column prop="title" label="标题" min-width="180" show-overflow-tooltip />
+      <el-table-column prop="sceneType" label="场景" width="100" align="center">
+        <template #default="{ row }">
+          {{ formatAiSceneType(row.sceneType) }}
+        </template>
+      </el-table-column>
+      <el-table-column prop="status" label="状态" width="100" align="center">
+        <template #default="{ row }">
+          <el-tag :type="row.status === 1 ? 'success' : 'info'">
+            {{ formatAiSessionStatus(row.status) }}
+          </el-tag>
+        </template>
+      </el-table-column>
+      <el-table-column prop="lastMessageAt" label="最后消息" min-width="180" align="center">
+        <template #default="{ row }">
+          {{ formatAiDate(row.lastMessageAt) }}
+        </template>
+      </el-table-column>
+      <el-table-column prop="createdAt" label="创建时间" min-width="180" align="center">
+        <template #default="{ row }">
+          {{ formatAiDate(row.createdAt) }}
+        </template>
+      </el-table-column>
+    </DataTable>
   </div>
 </template>
 
@@ -116,6 +106,7 @@
 import { onMounted, reactive, ref } from 'vue'
 import { useAiUsageStore, useAiChannelStore } from '@/stores'
 import { useContentAdmin } from '@/composables/useContentAdmin'
+import DataTable from '@/components/common/DataTable.vue'
 import {
   AI_SESSION_STATUS_OPTIONS,
   formatAiDate,
@@ -197,15 +188,5 @@ onMounted(async () => {
 
 .search-card {
   margin-bottom: 16px;
-}
-
-.table-card {
-  margin-bottom: 16px;
-}
-
-.pagination-area {
-  display: flex;
-  justify-content: flex-end;
-  margin-top: 16px;
 }
 </style>

@@ -53,26 +53,32 @@
     </el-card>
 
     <!-- 表格区 -->
-    <el-card class="table-card" shadow="never">
-      <template #header>
-        <div class="card-header">
-          <span>MCP 服务列表</span>
-          <el-button
-            v-permission="'ai:mcp:create'"
-            type="primary"
-            @click="handleAdd"
-          >
-            <el-icon><Plus /></el-icon>
-            新增MCP服务
-          </el-button>
-        </div>
+    <DataTable
+      :data="store.servers"
+      :loading="store.loading"
+      :total="store.serverTotal"
+      :current-page="pagination.current"
+      :page-size="pagination.size"
+      :page-sizes="[10, 20, 50]"
+      :pagination-layout="paginationLayout"
+      :compact="isCompactTable"
+      title="MCP 服务列表"
+      @update:current-page="(val: number) => { pagination.current = val; void fetchList() }"
+      @update:page-size="(val: number) => { pagination.size = val; pagination.current = 1; void fetchList() }"
+    >
+      <template #header-extra>
+        <el-button
+          v-permission="'ai:mcp:create'"
+          type="primary"
+          @click="handleAdd"
+        >
+          <el-icon><Plus /></el-icon>
+          新增MCP服务
+        </el-button>
       </template>
+
       <el-table
-        :data="store.servers"
-        v-loading="store.loading"
         :size="isCompactTable ? 'small' : 'default'"
-        border
-        stripe
       >
         <el-table-column prop="id" label="ID" width="80" align="center" />
         <el-table-column prop="serverName" label="服务名称" min-width="140" />
@@ -169,18 +175,7 @@
           </template>
         </el-table-column>
       </el-table>
-      <div class="pagination-area">
-        <el-pagination
-          v-model:current-page="pagination.current"
-          v-model:page-size="pagination.size"
-          :total="store.serverTotal"
-          :page-sizes="[10, 20, 50]"
-          :layout="paginationLayout"
-          @size-change="handleSizeChange"
-          @current-change="handleCurrentChange"
-        />
-      </div>
-    </el-card>
+    </DataTable>
 
     <!-- 新增/编辑弹窗 -->
     <McpServerFormDialog
@@ -240,6 +235,7 @@ import { ElMessage, ElMessageBox } from 'element-plus'
 import { Plus } from '@element-plus/icons-vue'
 import { useAiMcpStore } from '@/stores'
 import { useContentAdmin } from '@/composables/useContentAdmin'
+import DataTable from '@/components/common/DataTable.vue'
 import {
   AI_MCP_TRANSPORT_TYPE_OPTIONS,
   formatAiDate,
@@ -292,15 +288,6 @@ function handleReset(): void {
   query.enabled = undefined
   pagination.current = 1
   pagination.size = 10
-  void fetchList()
-}
-
-function handleSizeChange(): void {
-  pagination.current = 1
-  void fetchList()
-}
-
-function handleCurrentChange(): void {
   void fetchList()
 }
 
@@ -435,22 +422,6 @@ onMounted(() => {
 
 .search-card {
   margin-bottom: 16px;
-}
-
-.table-card {
-  margin-bottom: 16px;
-}
-
-.card-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.pagination-area {
-  display: flex;
-  justify-content: flex-end;
-  margin-top: 16px;
 }
 
 .table-actions {

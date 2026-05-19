@@ -42,143 +42,140 @@
       </el-form>
     </el-card>
 
-    <el-card class="table-card" shadow="never">
-      <template #header>
-        <div class="card-header">
-          <span>渠道账号池</span>
+    <template v-if="!selectedChannelId">
+      <DataTable :data="[]" title="渠道账号池">
+        <template #header-extra>
           <el-button
             v-permission="'ai:channel-account:create'"
             type="primary"
-            :disabled="!selectedChannelId"
-            @click="handleAdd"
+            disabled
           >
             <el-icon><Plus /></el-icon>
             新增账号
           </el-button>
-        </div>
-      </template>
+        </template>
+        <el-table-column label="ID" />
+      </DataTable>
+    </template>
 
-      <template v-if="!selectedChannelId">
-        <el-empty description="请先选择一个渠道" />
-      </template>
-
-      <template v-else>
-        <el-table
-          v-loading="channelStore.accountLoading"
-          :data="channelStore.accounts"
-          :size="isCompactTable ? 'small' : 'default'"
-          table-layout="auto"
-          border
-          stripe
+    <DataTable
+      v-else
+      :data="channelStore.accounts"
+      :loading="channelStore.accountLoading"
+      :total="channelStore.accountTotal"
+      v-model:current-page="pagination.current"
+      v-model:page-size="pagination.size"
+      :page-sizes="[10, 20, 50]"
+      :pagination-layout="paginationLayout"
+      title="渠道账号池"
+      :compact="isCompactTable"
+      @page-change="fetchAccounts"
+      @size-change="() => { pagination.current = 1; fetchAccounts() }"
+    >
+      <template #header-extra>
+        <el-button
+          v-permission="'ai:channel-account:create'"
+          type="primary"
+          @click="handleAdd"
         >
-          <el-table-column prop="id" label="ID" min-width="70" align="center" />
-          <el-table-column
-            prop="accountName"
-            label="账号名称"
-            min-width="150"
-            align="center"
-            show-overflow-tooltip
-          />
-          <el-table-column
-            prop="provider"
-            label="服务商"
-            min-width="100"
-            align="center"
-            show-overflow-tooltip
-          />
-          <el-table-column
-            prop="modelName"
-            label="模型"
-            min-width="130"
-            align="center"
-            show-overflow-tooltip
-          />
-          <el-table-column label="权重" min-width="80" align="center">
-            <template #default="{ row }">
-              {{ row.weight }}
-            </template>
-          </el-table-column>
-          <el-table-column label="状态" min-width="100" align="center">
-            <template #default="{ row }">
-              <el-switch
-                v-permission.disable="'ai:channel-account:update'"
-                v-model="row.status"
-                :active-value="1"
-                :inactive-value="0"
-                @change="handleStatusChange(row)"
-              />
-            </template>
-          </el-table-column>
-          <el-table-column label="日限额" min-width="100" align="center">
-            <template #default="{ row }">
-              {{ row.dailyQuota || '不限' }}
-            </template>
-          </el-table-column>
-          <el-table-column label="连续错误" min-width="100" align="center">
-            <template #default="{ row }">
-              <el-tag
-                v-if="row.consecutiveErrors > 0"
-                type="danger"
-                size="small"
-              >
-                {{ row.consecutiveErrors }}
-              </el-tag>
-              <span v-else>{{ row.consecutiveErrors }}</span>
-            </template>
-          </el-table-column>
-          <el-table-column label="最后使用" min-width="170" align="center">
-            <template #default="{ row }">
-              {{ row.lastUsedAt ? formatAiDate(row.lastUsedAt) : '-' }}
-            </template>
-          </el-table-column>
-          <el-table-column label="创建时间" min-width="170" align="center">
-            <template #default="{ row }">
-              {{ formatAiDate(row.createdAt) }}
-            </template>
-          </el-table-column>
-          <el-table-column
-            label="操作"
-            :min-width="isCompactTable ? 130 : 180"
-            :fixed="isCompactTable ? false : 'right'"
-            align="center"
-          >
-            <template #default="{ row }">
-              <div class="table-actions" :class="{ 'table-actions--compact': isCompactTable }">
-                <el-button
-                  v-permission="'ai:channel-account:update'"
-                  link
-                  type="primary"
-                  @click="handleEdit(row)"
-                >
-                  编辑
-                </el-button>
-                <el-button
-                  v-permission="'ai:channel-account:delete'"
-                  link
-                  type="danger"
-                  @click="handleDelete(row)"
-                >
-                  删除
-                </el-button>
-              </div>
-            </template>
-          </el-table-column>
-        </el-table>
-
-        <div class="pagination">
-          <el-pagination
-            v-model:current-page="pagination.current"
-            v-model:page-size="pagination.size"
-            :total="channelStore.accountTotal"
-            :page-sizes="[10, 20, 50]"
-            :layout="paginationLayout"
-            :small="isCompactTable"
-            @size-change="handleSizeChange"
-            @current-change="handleCurrentChange"
-          />
-        </div>
+          <el-icon><Plus /></el-icon>
+          新增账号
+        </el-button>
       </template>
-    </el-card>
+
+      <el-table-column prop="id" label="ID" min-width="70" align="center" />
+      <el-table-column
+        prop="accountName"
+        label="账号名称"
+        min-width="150"
+        align="center"
+        show-overflow-tooltip
+      />
+      <el-table-column
+        prop="provider"
+        label="服务商"
+        min-width="100"
+        align="center"
+        show-overflow-tooltip
+      />
+      <el-table-column
+        prop="modelName"
+        label="模型"
+        min-width="130"
+        align="center"
+        show-overflow-tooltip
+      />
+      <el-table-column label="权重" min-width="80" align="center">
+        <template #default="{ row }">
+          {{ row.weight }}
+        </template>
+      </el-table-column>
+      <el-table-column label="状态" min-width="100" align="center">
+        <template #default="{ row }">
+          <el-switch
+            v-permission.disable="'ai:channel-account:update'"
+            v-model="row.status"
+            :active-value="1"
+            :inactive-value="0"
+            @change="handleStatusChange(row)"
+          />
+        </template>
+      </el-table-column>
+      <el-table-column label="日限额" min-width="100" align="center">
+        <template #default="{ row }">
+          {{ row.dailyQuota || '不限' }}
+        </template>
+      </el-table-column>
+      <el-table-column label="连续错误" min-width="100" align="center">
+        <template #default="{ row }">
+          <el-tag
+            v-if="row.consecutiveErrors > 0"
+            type="danger"
+            size="small"
+          >
+            {{ row.consecutiveErrors }}
+          </el-tag>
+          <span v-else>{{ row.consecutiveErrors }}</span>
+        </template>
+      </el-table-column>
+      <el-table-column label="最后使用" min-width="170" align="center">
+        <template #default="{ row }">
+          {{ row.lastUsedAt ? formatAiDate(row.lastUsedAt) : '-' }}
+        </template>
+      </el-table-column>
+      <el-table-column label="创建时间" min-width="170" align="center">
+        <template #default="{ row }">
+          {{ formatAiDate(row.createdAt) }}
+        </template>
+      </el-table-column>
+      <el-table-column
+        label="操作"
+        :min-width="isCompactTable ? 130 : 180"
+        :fixed="isCompactTable ? false : 'right'"
+        align="center"
+      >
+        <template #default="{ row }">
+          <div class="table-actions" :class="{ 'table-actions--compact': isCompactTable }">
+            <el-button
+              v-permission="'ai:channel-account:update'"
+              link
+              type="primary"
+              @click="handleEdit(row)"
+            >
+              编辑
+            </el-button>
+            <el-button
+              v-permission="'ai:channel-account:delete'"
+              link
+              type="danger"
+              @click="handleDelete(row)"
+            >
+              删除
+            </el-button>
+          </div>
+        </template>
+      </el-table-column>
+    </DataTable>
 
     <AccountFormDialog
       v-model:visible="formDialogVisible"
@@ -196,6 +193,7 @@ import { onMounted, reactive, ref } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { Plus } from '@element-plus/icons-vue'
 import { useContentAdmin } from '@/composables/useContentAdmin'
+import DataTable from '@/components/common/DataTable.vue'
 import { useAiChannelStore } from '@/stores'
 import { formatAiDate } from '@/utils'
 import type { AiChannelAccountVO } from '@/types/api-types'
@@ -255,19 +253,6 @@ function handleReset(): void {
   searchForm.accountName = undefined
   pagination.current = 1
   pagination.size = 10
-  void fetchAccounts()
-}
-
-// 切换每页条数
-function handleSizeChange(size: number): void {
-  pagination.size = size
-  pagination.current = 1
-  void fetchAccounts()
-}
-
-// 切换当前页
-function handleCurrentChange(current: number): void {
-  pagination.current = current
   void fetchAccounts()
 }
 
@@ -364,14 +349,6 @@ onMounted(() => {
   margin-right: 0;
 }
 
-.card-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 12px;
-  font-weight: 500;
-}
-
 .table-actions {
   display: inline-flex;
   flex-wrap: wrap;
@@ -387,12 +364,6 @@ onMounted(() => {
 
 .table-actions :deep(.el-button + .el-button) {
   margin-left: 0;
-}
-
-.pagination {
-  display: flex;
-  justify-content: center;
-  margin-top: 16px;
 }
 
 @media (max-width: 768px) {

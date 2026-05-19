@@ -62,95 +62,86 @@
           </el-form>
         </el-card>
 
-        <el-card class="table-card" shadow="never">
-          <template #header>
-            <div class="card-header">
-              <span>工具定义列表</span>
-              <el-button v-permission="'ai:tool:create'" type="primary" @click="handleAddTool">
-                <el-icon><Plus /></el-icon>
-                新增工具
-              </el-button>
-            </div>
+        <DataTable
+          :data="toolStore.tools"
+          :loading="toolStore.loading"
+          :total="toolStore.toolTotal"
+          v-model:current-page="toolPagination.current"
+          v-model:page-size="toolPagination.size"
+          :page-sizes="[10, 20, 50]"
+          :pagination-layout="paginationLayout"
+          :compact="isCompactTable"
+          title="工具定义列表"
+          @size-change="handleToolSizeChange"
+          @page-change="handleToolCurrentChange"
+        >
+          <template #header-extra>
+            <el-button v-permission="'ai:tool:create'" type="primary" @click="handleAddTool">
+              <el-icon><Plus /></el-icon>
+              新增工具
+            </el-button>
           </template>
-          <el-table
-            :data="toolStore.tools"
-            v-loading="toolStore.loading"
-            :size="isCompactTable ? 'small' : 'default'"
-            border
-            stripe
-          >
-            <el-table-column prop="id" label="ID" width="80" align="center" />
-            <el-table-column prop="toolCode" label="工具编码" min-width="140" />
-            <el-table-column prop="toolName" label="工具名称" min-width="140" />
-            <el-table-column label="来源类型" width="100" align="center">
-              <template #default="{ row }">
-                <el-tag>{{ formatToolSourceType(row.sourceType) }}</el-tag>
-              </template>
-            </el-table-column>
-            <el-table-column
-              prop="description"
-              label="描述"
-              min-width="180"
-              show-overflow-tooltip
-            />
-            <el-table-column label="风险等级" width="100" align="center">
-              <template #default="{ row }">
-                <el-tag :type="riskLevelTagType(row.riskLevel)">
-                  {{ formatAiToolRiskLevel(row.riskLevel) }}
-                </el-tag>
-              </template>
-            </el-table-column>
-            <el-table-column label="启用" width="100" align="center">
-              <template #default="{ row }">
-                <el-switch
-                  v-permission.disable="'ai:tool:update'"
-                  v-model="row.enabled"
-                  :active-value="1"
-                  :inactive-value="0"
-                  @change="handleToolToggle(row)"
-                />
-              </template>
-            </el-table-column>
-            <el-table-column label="创建时间" min-width="170" align="center">
-              <template #default="{ row }">
-                {{ formatAiDate(row.createdAt) }}
-              </template>
-            </el-table-column>
-            <el-table-column label="操作" width="150" align="center" fixed="right">
-              <template #default="{ row }">
-                <div class="table-actions" :class="{ 'table-actions--compact': isCompactTable }">
-                  <el-button
-                    v-permission="'ai:tool:update'"
-                    link
-                    type="primary"
-                    @click="handleEditTool(row)"
-                  >
-                    编辑
-                  </el-button>
-                  <el-button
-                    v-permission="'ai:tool:delete'"
-                    link
-                    type="danger"
-                    @click="handleDeleteTool(row)"
-                  >
-                    删除
-                  </el-button>
-                </div>
-              </template>
-            </el-table-column>
-          </el-table>
-          <div class="pagination-area">
-            <el-pagination
-              v-model:current-page="toolPagination.current"
-              v-model:page-size="toolPagination.size"
-              :total="toolStore.toolTotal"
-              :page-sizes="[10, 20, 50]"
-              :layout="paginationLayout"
-              @size-change="handleToolSizeChange"
-              @current-change="handleToolCurrentChange"
-            />
-          </div>
-        </el-card>
+
+          <el-table-column prop="id" label="ID" width="80" align="center" />
+          <el-table-column prop="toolCode" label="工具编码" min-width="140" />
+          <el-table-column prop="toolName" label="工具名称" min-width="140" />
+          <el-table-column label="来源类型" width="100" align="center">
+            <template #default="{ row }">
+              <el-tag>{{ formatToolSourceType(row.sourceType) }}</el-tag>
+            </template>
+          </el-table-column>
+          <el-table-column
+            prop="description"
+            label="描述"
+            min-width="180"
+            show-overflow-tooltip
+          />
+          <el-table-column label="风险等级" width="100" align="center">
+            <template #default="{ row }">
+              <el-tag :type="riskLevelTagType(row.riskLevel)">
+                {{ formatAiToolRiskLevel(row.riskLevel) }}
+              </el-tag>
+            </template>
+          </el-table-column>
+          <el-table-column label="启用" width="100" align="center">
+            <template #default="{ row }">
+              <el-switch
+                v-permission.disable="'ai:tool:update'"
+                v-model="row.enabled"
+                :active-value="1"
+                :inactive-value="0"
+                @change="handleToolToggle(row)"
+              />
+            </template>
+          </el-table-column>
+          <el-table-column label="创建时间" min-width="170" align="center">
+            <template #default="{ row }">
+              {{ formatAiDate(row.createdAt) }}
+            </template>
+          </el-table-column>
+          <el-table-column label="操作" width="150" align="center" fixed="right">
+            <template #default="{ row }">
+              <div class="table-actions" :class="{ 'table-actions--compact': isCompactTable }">
+                <el-button
+                  v-permission="'ai:tool:update'"
+                  link
+                  type="primary"
+                  @click="handleEditTool(row)"
+                >
+                  编辑
+                </el-button>
+                <el-button
+                  v-permission="'ai:tool:delete'"
+                  link
+                  type="danger"
+                  @click="handleDeleteTool(row)"
+                >
+                  删除
+                </el-button>
+              </div>
+            </template>
+          </el-table-column>
+        </DataTable>
       </el-tab-pane>
 
       <!-- ==================== 调用日志 ==================== -->
@@ -197,65 +188,55 @@
           </el-form>
         </el-card>
 
-        <el-card class="table-card" shadow="never">
-          <template #header>
-            <span>调用日志列表</span>
-          </template>
-          <el-table
-            :data="toolStore.callLogs"
-            v-loading="toolStore.callLogLoading"
-            :size="isCompactTable ? 'small' : 'default'"
-            border
-            stripe
-          >
-            <el-table-column prop="id" label="ID" width="80" align="center" />
-            <el-table-column prop="toolCode" label="工具编码" min-width="130" />
-            <el-table-column prop="toolName" label="工具名称" min-width="130" />
-            <el-table-column prop="requestSceneType" label="场景类型" width="120" align="center" />
-            <el-table-column
-              prop="requestSummary"
-              label="请求摘要"
-              min-width="180"
-              show-overflow-tooltip
-            />
-            <el-table-column
-              prop="responseSummary"
-              label="响应摘要"
-              min-width="180"
-              show-overflow-tooltip
-            />
-            <el-table-column label="执行状态" width="100" align="center">
-              <template #default="{ row }">
-                <el-tag :type="row.successStatus === 1 ? 'success' : 'danger'">
-                  {{ formatAiSuccessStatus(row.successStatus) }}
-                </el-tag>
-              </template>
-            </el-table-column>
-            <el-table-column prop="elapsedMs" label="耗时(ms)" width="100" align="center" />
-            <el-table-column
-              prop="errorMessage"
-              label="错误信息"
-              min-width="180"
-              show-overflow-tooltip
-            />
-            <el-table-column label="创建时间" min-width="170" align="center">
-              <template #default="{ row }">
-                {{ formatAiDate(row.createdAt) }}
-              </template>
-            </el-table-column>
-          </el-table>
-          <div class="pagination-area">
-            <el-pagination
-              v-model:current-page="logPagination.current"
-              v-model:page-size="logPagination.size"
-              :total="toolStore.callLogTotal"
-              :page-sizes="[10, 20, 50]"
-              :layout="paginationLayout"
-              @size-change="handleLogSizeChange"
-              @current-change="handleLogCurrentChange"
-            />
-          </div>
-        </el-card>
+        <DataTable
+          :data="toolStore.callLogs"
+          :loading="toolStore.callLogLoading"
+          :total="toolStore.callLogTotal"
+          v-model:current-page="logPagination.current"
+          v-model:page-size="logPagination.size"
+          :page-sizes="[10, 20, 50]"
+          :pagination-layout="paginationLayout"
+          :compact="isCompactTable"
+          title="调用日志列表"
+          @size-change="handleLogSizeChange"
+          @page-change="handleLogCurrentChange"
+        >
+          <el-table-column prop="id" label="ID" width="80" align="center" />
+          <el-table-column prop="toolCode" label="工具编码" min-width="130" />
+          <el-table-column prop="toolName" label="工具名称" min-width="130" />
+          <el-table-column prop="requestSceneType" label="场景类型" width="120" align="center" />
+          <el-table-column
+            prop="requestSummary"
+            label="请求摘要"
+            min-width="180"
+            show-overflow-tooltip
+          />
+          <el-table-column
+            prop="responseSummary"
+            label="响应摘要"
+            min-width="180"
+            show-overflow-tooltip
+          />
+          <el-table-column label="执行状态" width="100" align="center">
+            <template #default="{ row }">
+              <el-tag :type="row.successStatus === 1 ? 'success' : 'danger'">
+                {{ formatAiSuccessStatus(row.successStatus) }}
+              </el-tag>
+            </template>
+          </el-table-column>
+          <el-table-column prop="elapsedMs" label="耗时(ms)" width="100" align="center" />
+          <el-table-column
+            prop="errorMessage"
+            label="错误信息"
+            min-width="180"
+            show-overflow-tooltip
+          />
+          <el-table-column label="创建时间" min-width="170" align="center">
+            <template #default="{ row }">
+              {{ formatAiDate(row.createdAt) }}
+            </template>
+          </el-table-column>
+        </DataTable>
       </el-tab-pane>
 
       <!-- ==================== 工具授权 ==================== -->
@@ -306,92 +287,83 @@
           </el-form>
         </el-card>
 
-        <el-card class="table-card" shadow="never">
-          <template #header>
-            <div class="card-header">
-              <span>工具授权列表</span>
-              <el-button
-                v-permission="'ai:tool:create'"
-                type="primary"
-                @click="handleAddAuth"
-              >
-                <el-icon><Plus /></el-icon>
-                新增授权
-              </el-button>
-            </div>
+        <DataTable
+          :data="toolStore.authorizations"
+          :loading="toolStore.authLoading"
+          :total="toolStore.authTotal"
+          v-model:current-page="authPagination.current"
+          v-model:page-size="authPagination.size"
+          :page-sizes="[10, 20, 50]"
+          :pagination-layout="paginationLayout"
+          :compact="isCompactTable"
+          title="工具授权列表"
+          @size-change="handleAuthSizeChange"
+          @page-change="handleAuthCurrentChange"
+        >
+          <template #header-extra>
+            <el-button
+              v-permission="'ai:tool:create'"
+              type="primary"
+              @click="handleAddAuth"
+            >
+              <el-icon><Plus /></el-icon>
+              新增授权
+            </el-button>
           </template>
-          <el-table
-            :data="toolStore.authorizations"
-            v-loading="toolStore.authLoading"
-            :size="isCompactTable ? 'small' : 'default'"
-            border
-            stripe
-          >
-            <el-table-column prop="id" label="ID" width="80" align="center" />
-            <el-table-column prop="toolId" label="工具 ID" width="100" align="center" />
-            <el-table-column label="授权类型" width="110" align="center">
-              <template #default="{ row }">
-                <el-tag>{{ formatAiAuthType(row.authorizationType) }}</el-tag>
-              </template>
-            </el-table-column>
-            <el-table-column prop="authorizationKey" label="授权标识" min-width="160" />
-            <el-table-column
-              prop="dataScope"
-              label="数据范围"
-              min-width="160"
-              show-overflow-tooltip
-            />
-            <el-table-column label="启用" width="100" align="center">
-              <template #default="{ row }">
-                <el-switch
-                  v-permission.disable="'ai:tool:update'"
-                  v-model="row.enabled"
-                  :active-value="1"
-                  :inactive-value="0"
-                  @change="handleAuthToggle(row)"
-                />
-              </template>
-            </el-table-column>
-            <el-table-column label="创建时间" min-width="170" align="center">
-              <template #default="{ row }">
-                {{ formatAiDate(row.createdAt) }}
-              </template>
-            </el-table-column>
-            <el-table-column label="操作" width="150" align="center" fixed="right">
-              <template #default="{ row }">
-                <div class="table-actions" :class="{ 'table-actions--compact': isCompactTable }">
-                  <el-button
-                    v-permission="'ai:tool:update'"
-                    link
-                    type="primary"
-                    @click="handleEditAuth(row)"
-                  >
-                    编辑
-                  </el-button>
-                  <el-button
-                    v-permission="'ai:tool:delete'"
-                    link
-                    type="danger"
-                    @click="handleDeleteAuth(row)"
-                  >
-                    删除
-                  </el-button>
-                </div>
-              </template>
-            </el-table-column>
-          </el-table>
-          <div class="pagination-area">
-            <el-pagination
-              v-model:current-page="authPagination.current"
-              v-model:page-size="authPagination.size"
-              :total="toolStore.authTotal"
-              :page-sizes="[10, 20, 50]"
-              :layout="paginationLayout"
-              @size-change="handleAuthSizeChange"
-              @current-change="handleAuthCurrentChange"
-            />
-          </div>
-        </el-card>
+
+          <el-table-column prop="id" label="ID" width="80" align="center" />
+          <el-table-column prop="toolId" label="工具 ID" width="100" align="center" />
+          <el-table-column label="授权类型" width="110" align="center">
+            <template #default="{ row }">
+              <el-tag>{{ formatAiAuthType(row.authorizationType) }}</el-tag>
+            </template>
+          </el-table-column>
+          <el-table-column prop="authorizationKey" label="授权标识" min-width="160" />
+          <el-table-column
+            prop="dataScope"
+            label="数据范围"
+            min-width="160"
+            show-overflow-tooltip
+          />
+          <el-table-column label="启用" width="100" align="center">
+            <template #default="{ row }">
+              <el-switch
+                v-permission.disable="'ai:tool:update'"
+                v-model="row.enabled"
+                :active-value="1"
+                :inactive-value="0"
+                @change="handleAuthToggle(row)"
+              />
+            </template>
+          </el-table-column>
+          <el-table-column label="创建时间" min-width="170" align="center">
+            <template #default="{ row }">
+              {{ formatAiDate(row.createdAt) }}
+            </template>
+          </el-table-column>
+          <el-table-column label="操作" width="150" align="center" fixed="right">
+            <template #default="{ row }">
+              <div class="table-actions" :class="{ 'table-actions--compact': isCompactTable }">
+                <el-button
+                  v-permission="'ai:tool:update'"
+                  link
+                  type="primary"
+                  @click="handleEditAuth(row)"
+                >
+                  编辑
+                </el-button>
+                <el-button
+                  v-permission="'ai:tool:delete'"
+                  link
+                  type="danger"
+                  @click="handleDeleteAuth(row)"
+                >
+                  删除
+                </el-button>
+              </div>
+            </template>
+          </el-table-column>
+        </DataTable>
       </el-tab-pane>
     </el-tabs>
 
@@ -415,6 +387,7 @@ import { ElMessage, ElMessageBox } from 'element-plus'
 import { Plus } from '@element-plus/icons-vue'
 import { useAiToolStore } from '@/stores'
 import { useContentAdmin } from '@/composables/useContentAdmin'
+import DataTable from '@/components/common/DataTable.vue'
 import {
   AI_TOOL_SOURCE_TYPE_OPTIONS,
   AI_TOOL_RISK_LEVEL_OPTIONS,
@@ -719,22 +692,6 @@ onMounted(() => {
 
 .search-card {
   margin-bottom: 16px;
-}
-
-.table-card {
-  margin-bottom: 16px;
-}
-
-.card-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.pagination-area {
-  display: flex;
-  justify-content: flex-end;
-  margin-top: 16px;
 }
 
 .table-actions {

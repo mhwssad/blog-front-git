@@ -98,12 +98,17 @@ api/sys/ai.ts (AiUsageStore, AiChannelStore) */
             </el-form-item>
           </el-form>
 
-          <el-table
-            v-loading="usageStore.usageLogLoading"
+          <DataTable
             :data="usageStore.usageLogs"
-            table-layout="auto"
-            border
-            stripe
+            :loading="usageStore.usageLogLoading"
+            :total="usageStore.usageLogTotal"
+            v-model:current-page="logPagination.current"
+            v-model:page-size="logPagination.size"
+            :page-sizes="[10, 20, 50]"
+            pagination-layout="total, sizes, prev, pager, next, jumper"
+            :show-card="false"
+            @size-change="handleLogSizeChange"
+            @page-change="handleLogPageChange"
           >
             <el-table-column prop="id" label="ID" width="70" align="center" />
             <el-table-column prop="userId" label="用户ID" width="80" align="center" />
@@ -153,19 +158,7 @@ api/sys/ai.ts (AiUsageStore, AiChannelStore) */
                 {{ formatAiDate(row.createdAt) }}
               </template>
             </el-table-column>
-          </el-table>
-
-          <div class="pagination">
-            <el-pagination
-              v-model:current-page="logPagination.current"
-              v-model:page-size="logPagination.size"
-              :total="usageStore.usageLogTotal"
-              :page-sizes="[10, 20, 50]"
-              layout="total, sizes, prev, pager, next, jumper"
-              @size-change="handleLogSizeChange"
-              @current-change="handleLogPageChange"
-            />
-          </div>
+          </DataTable>
         </el-tab-pane>
 
         <!-- 会话管理 Tab -->
@@ -227,12 +220,17 @@ api/sys/ai.ts (AiUsageStore, AiChannelStore) */
             </el-form-item>
           </el-form>
 
-          <el-table
-            v-loading="usageStore.sessionLoading"
+          <DataTable
             :data="usageStore.sessions"
-            table-layout="auto"
-            border
-            stripe
+            :loading="usageStore.sessionLoading"
+            :total="usageStore.sessionTotal"
+            v-model:current-page="sessionPagination.current"
+            v-model:page-size="sessionPagination.size"
+            :page-sizes="[10, 20, 50]"
+            pagination-layout="total, sizes, prev, pager, next, jumper"
+            :show-card="false"
+            @size-change="handleSessionSizeChange"
+            @page-change="handleSessionPageChange"
           >
             <el-table-column prop="id" label="ID" width="70" align="center" />
             <el-table-column prop="userId" label="用户ID" width="80" align="center" />
@@ -270,19 +268,7 @@ api/sys/ai.ts (AiUsageStore, AiChannelStore) */
                 {{ formatAiDate(row.createdAt) }}
               </template>
             </el-table-column>
-          </el-table>
-
-          <div class="pagination">
-            <el-pagination
-              v-model:current-page="sessionPagination.current"
-              v-model:page-size="sessionPagination.size"
-              :total="usageStore.sessionTotal"
-              :page-sizes="[10, 20, 50]"
-              layout="total, sizes, prev, pager, next, jumper"
-              @size-change="handleSessionSizeChange"
-              @current-change="handleSessionPageChange"
-            />
-          </div>
+          </DataTable>
         </el-tab-pane>
       </el-tabs>
     </el-card>
@@ -292,6 +278,7 @@ api/sys/ai.ts (AiUsageStore, AiChannelStore) */
 <script lang="ts" setup>
 import { computed, onMounted, reactive, ref } from 'vue'
 import { useAiUsageStore, useAiChannelStore } from '@/stores'
+import DataTable from '@/components/common/DataTable.vue'
 import {
   AI_SUCCESS_STATUS_OPTIONS,
   AI_SESSION_STATUS_OPTIONS,
@@ -525,11 +512,5 @@ onMounted(async () => {
 
 .search-form :deep(.el-form-item) {
   margin-bottom: 8px;
-}
-
-.pagination {
-  display: flex;
-  justify-content: center;
-  margin-top: 16px;
 }
 </style>
