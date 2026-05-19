@@ -29,15 +29,35 @@ VALUES (1810, 1800, '0,1800', '会话治理', 'M', 'CommunityChat', '/admin/chat
        (1813, 1810, '0,1800,1810', '撤回消息', 'B', NULL, NULL, NULL, 'content:chat:revoke', 0, 0, 1, 3, NULL, NULL,
         NOW(), NOW(), NULL);
 
--- 大厅管理
+-- 大厅管理（目录）
 INSERT INTO `sys_menu` (`id`, `parent_id`, `tree_path`, `name`, `type`, `route_name`, `route_path`, `component`, `perm`,
                         `always_show`, `keep_alive`, `visible`, `sort`, `icon`, `redirect`, `create_time`,
                         `update_time`, `params`)
-VALUES (1820, 1800, '0,1800', '大厅管理', 'M', 'CommunityLobby', '/admin/chat/lobby', 'admin/chat/LobbyManagement', NULL, 0, 1,
-        1, 2, 'guide', NULL, NOW(), NOW(), NULL),
-       (1821, 1820, '0,1800,1820', '大厅设置', 'B', NULL, NULL, NULL, 'content:chat:update', 0, 0, 1, 1, NULL, NULL,
+VALUES (1820, 1800, '0,1800', '大厅管理', 'C', 'CommunityLobby', '/admin/chat/lobby', NULL, NULL, 0, 0,
+        1, 2, 'guide', '/admin/chat/lobby/settings', NOW(), NOW(), NULL),
+       -- 大厅设置
+       (1821, 1820, '0,1800,1820', '大厅设置', 'M', 'LobbySettings', '/admin/chat/lobby/settings', 'admin/chat/LobbySettings', NULL, 0, 1,
+        1, 1, NULL, NULL, NOW(), NOW(), NULL),
+       (18211, 1821, '0,1800,1820,1821', '保存设置', 'B', NULL, NULL, NULL, 'content:chat:update', 0, 0, 1, 1, NULL, NULL,
         NOW(), NOW(), NULL),
-       (1822, 1820, '0,1800,1820', '成员治理', 'B', NULL, NULL, NULL, 'content:chat:update', 0, 0, 1, 2, NULL, NULL,
+       -- 置顶消息
+       (1822, 1820, '0,1800,1820', '置顶消息', 'M', 'LobbyPinnedMessages', '/admin/chat/lobby/pinned', 'admin/chat/LobbyPinnedMessages', NULL, 0, 1,
+        1, 2, NULL, NULL, NOW(), NOW(), NULL),
+       (18221, 1822, '0,1800,1820,1822', '取消置顶', 'B', NULL, NULL, NULL, 'content:chat:update', 0, 0, 1, 1, NULL, NULL,
+        NOW(), NOW(), NULL),
+       -- 消息管理
+       (1823, 1820, '0,1800,1820', '消息管理', 'M', 'LobbyMessages', '/admin/chat/lobby/messages', 'admin/chat/LobbyMessages', NULL, 0, 1,
+        1, 3, NULL, NULL, NOW(), NOW(), NULL),
+       (18231, 1823, '0,1800,1820,1823', '置顶消息', 'B', NULL, NULL, NULL, 'content:chat:update', 0, 0, 1, 1, NULL, NULL,
+        NOW(), NOW(), NULL),
+       (18232, 1823, '0,1800,1820,1823', '撤回消息', 'B', NULL, NULL, NULL, 'content:chat:revoke', 0, 0, 1, 2, NULL, NULL,
+        NOW(), NOW(), NULL),
+       -- 成员管理
+       (1824, 1820, '0,1800,1820', '成员管理', 'M', 'LobbyMembers', '/admin/chat/lobby/members', 'admin/chat/LobbyMembers', NULL, 0, 1,
+        1, 4, NULL, NULL, NOW(), NOW(), NULL),
+       (18241, 1824, '0,1800,1820,1824', '禁言成员', 'B', NULL, NULL, NULL, 'content:chat:update', 0, 0, 1, 1, NULL, NULL,
+        NOW(), NOW(), NULL),
+       (18242, 1824, '0,1800,1820,1824', '踢出成员', 'B', NULL, NULL, NULL, 'content:chat:update', 0, 0, 1, 2, NULL, NULL,
         NOW(), NOW(), NULL);
 
 -- 频道管理
