@@ -10,8 +10,8 @@ export const apiConfig = {
   // API 基础 URL，从环境变量读取
   baseURL: import.meta.env.VITE_API_BASE_URL || '/api',
 
-  // 请求超时时间（毫秒）
-  timeout: 15000,
+  // 请求超时时间（毫秒），可通过 VITE_API_TIMEOUT 环境变量覆盖
+  timeout: Number(import.meta.env.VITE_API_TIMEOUT) || 15000,
 
   // 是否启用请求日志
   enableRequestLog: import.meta.env.DEV,

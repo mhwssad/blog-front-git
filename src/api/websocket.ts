@@ -1,6 +1,7 @@
 /**
  * 聊天 WebSocket 连接管理
  * 基于 websocket-api.md 文档
+ * @see docs/api文档/websocket-api.md
  *
  * 功能：自动重连、心跳保活、Token 鉴权、消息分发
  */
