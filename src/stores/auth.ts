@@ -5,7 +5,7 @@
 
 import { ref, computed } from 'vue'
 import { defineStore } from 'pinia'
-import { authApi } from '@/api/auth'
+import { AuthApi } from '@/api/auth'
 import { normalizeAuthMenus } from '@/router/menu'
 import {
   hasAllPermissions as checkAllPermissions,
@@ -155,7 +155,7 @@ export const useAuthStore = defineStore('auth', () => {
   async function login(data: LoginRequest): Promise<void> {
     loading.value = true
     try {
-      const response = await authApi.login(data)
+      const response = await AuthApi.login(data)
       const token = response.data.data
 
       applyToken(token)
@@ -171,7 +171,7 @@ export const useAuthStore = defineStore('auth', () => {
    * 发送邮箱验证码
    */
   async function sendEmailCode(data: SendEmailCodeRequest): Promise<void> {
-    await authApi.sendEmailCode(data)
+    await AuthApi.sendEmailCode(data)
   }
 
   /**
@@ -180,7 +180,7 @@ export const useAuthStore = defineStore('auth', () => {
   async function emailLogin(data: EmailLoginRequest): Promise<void> {
     loading.value = true
     try {
-      const response = await authApi.emailLogin(data)
+      const response = await AuthApi.emailLogin(data)
       const token = response.data.data
 
       applyToken(token)
@@ -198,7 +198,7 @@ export const useAuthStore = defineStore('auth', () => {
   async function register(data: RegisterRequest): Promise<{ autoLoggedIn: boolean }> {
     loading.value = true
     try {
-      const response = await authApi.register(data)
+      const response = await AuthApi.register(data)
       const token = response.data.data
 
       if (token?.accessToken && token?.refreshToken) {
@@ -224,7 +224,7 @@ export const useAuthStore = defineStore('auth', () => {
     if (!refreshToken.value) return false
 
     try {
-      const response = await authApi.refreshToken({
+      const response = await AuthApi.refreshToken({
         refreshToken: refreshToken.value
       })
       const token = response.data.data
@@ -243,7 +243,7 @@ export const useAuthStore = defineStore('auth', () => {
    */
   async function logout(): Promise<void> {
     try {
-      await authApi.logout(accessToken.value || undefined)
+      await AuthApi.logout(accessToken.value || undefined)
     } finally {
       clearTokens()
       initialized.value = true
@@ -257,7 +257,7 @@ export const useAuthStore = defineStore('auth', () => {
     if (!isLoggedIn.value) return null
 
     try {
-      const response = await authApi.getCurrentUser()
+      const response = await AuthApi.getCurrentUser()
       currentUser.value = response.data.data
       return currentUser.value
     } catch {
@@ -273,7 +273,7 @@ export const useAuthStore = defineStore('auth', () => {
     if (!isLoggedIn.value) return []
 
     try {
-      const response = await authApi.getCurrentUserMenus()
+      const response = await AuthApi.getCurrentUserMenus()
       userMenus.value = normalizeAuthMenus(response.data.data ?? [])
       return userMenus.value
     } catch {
@@ -322,7 +322,7 @@ export const useAuthStore = defineStore('auth', () => {
    */
   async function sendPasswordResetCode(data: PasswordResetCodeRequest): Promise<boolean> {
     try {
-      await authApi.sendPasswordResetCode(data)
+      await AuthApi.sendPasswordResetCode(data)
       return true
     } catch {
       return false
@@ -334,7 +334,7 @@ export const useAuthStore = defineStore('auth', () => {
    */
   async function resetPassword(data: PasswordResetSelfRequest): Promise<boolean> {
     try {
-      await authApi.resetPassword(data)
+      await AuthApi.resetPassword(data)
       return true
     } catch {
       return false
@@ -346,7 +346,7 @@ export const useAuthStore = defineStore('auth', () => {
    */
   async function searchUsers(params?: { keyword?: string; current?: number; size?: number }): Promise<UserSearchVO[]> {
     try {
-      const response = await authApi.searchUsers(params)
+      const response = await AuthApi.searchUsers(params)
       return response.data.data?.records ?? []
     } catch {
       return []

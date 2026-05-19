@@ -5,7 +5,7 @@
 
 import { ref } from 'vue'
 import { defineStore } from 'pinia'
-import { aiSysApi } from '@/api/sys/ai'
+import { AiSysApi } from '@/api/sys/ai'
 import type {
   AiMcpServerVO,
   AiMcpServerSaveRequest,
@@ -29,7 +29,7 @@ export const useAiMcpStore = defineStore('admin-ai-mcp', () => {
   async function fetchServers(params?: AiMcpServerQueryRequest): Promise<void> {
     loading.value = true
     try {
-      const response = await aiSysApi.getMcpServers(params)
+      const response = await AiSysApi.getMcpServers(params)
       const data = response.data.data
       servers.value = data.records
       serverTotal.value = data.total
@@ -40,7 +40,7 @@ export const useAiMcpStore = defineStore('admin-ai-mcp', () => {
 
   async function fetchServerById(id: number): Promise<AiMcpServerVO | null> {
     try {
-      const response = await aiSysApi.getMcpServerById(id)
+      const response = await AiSysApi.getMcpServerById(id)
       currentServer.value = response.data.data
       return currentServer.value
     } catch {
@@ -50,7 +50,7 @@ export const useAiMcpStore = defineStore('admin-ai-mcp', () => {
 
   async function createServer(data: AiMcpServerSaveRequest): Promise<boolean> {
     try {
-      await aiSysApi.createMcpServer(data)
+      await AiSysApi.createMcpServer(data)
       return true
     } catch {
       return false
@@ -59,7 +59,7 @@ export const useAiMcpStore = defineStore('admin-ai-mcp', () => {
 
   async function updateServer(id: number, data: AiMcpServerSaveRequest): Promise<boolean> {
     try {
-      await aiSysApi.updateMcpServer(id, data)
+      await AiSysApi.updateMcpServer(id, data)
       return true
     } catch {
       return false
@@ -68,7 +68,7 @@ export const useAiMcpStore = defineStore('admin-ai-mcp', () => {
 
   async function updateServerStatus(id: number, enabled: number): Promise<boolean> {
     try {
-      await aiSysApi.updateMcpServerStatus(id, enabled)
+      await AiSysApi.updateMcpServerStatus(id, enabled)
       return true
     } catch {
       return false
@@ -77,7 +77,7 @@ export const useAiMcpStore = defineStore('admin-ai-mcp', () => {
 
   async function deleteServer(id: number): Promise<boolean> {
     try {
-      await aiSysApi.deleteMcpServer(id)
+      await AiSysApi.deleteMcpServer(id)
       return true
     } catch {
       return false
@@ -88,7 +88,7 @@ export const useAiMcpStore = defineStore('admin-ai-mcp', () => {
 
   async function discoverTools(id: number): Promise<AiMcpDiscoverResultVO | null> {
     try {
-      const response = await aiSysApi.discoverMcpTools(id)
+      const response = await AiSysApi.discoverMcpTools(id)
       return response.data.data
     } catch {
       return null
@@ -98,7 +98,7 @@ export const useAiMcpStore = defineStore('admin-ai-mcp', () => {
   async function getServerTools(id: number): Promise<void> {
     toolLoading.value = true
     try {
-      const response = await aiSysApi.getMcpServerTools(id)
+      const response = await AiSysApi.getMcpServerTools(id)
       toolSnapshots.value = response.data.data ?? []
     } finally {
       toolLoading.value = false
@@ -107,7 +107,7 @@ export const useAiMcpStore = defineStore('admin-ai-mcp', () => {
 
   async function getServerHealth(id: number): Promise<AiMcpHealthVO | null> {
     try {
-      const response = await aiSysApi.getMcpServerHealth(id)
+      const response = await AiSysApi.getMcpServerHealth(id)
       return response.data.data
     } catch {
       return null

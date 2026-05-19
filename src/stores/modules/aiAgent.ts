@@ -5,7 +5,7 @@
 
 import { ref } from 'vue'
 import { defineStore } from 'pinia'
-import { aiSysApi } from '@/api/sys/ai'
+import { AiSysApi } from '@/api/sys/ai'
 import type {
   AiAgentDefinitionVO,
   AiAgentDefinitionSaveRequest,
@@ -29,7 +29,7 @@ export const useAiAgentStore = defineStore('admin-ai-agent', () => {
   async function fetchDefinitions(params?: AiAgentDefinitionQueryRequest): Promise<void> {
     loading.value = true
     try {
-      const response = await aiSysApi.getAgentDefinitions(params)
+      const response = await AiSysApi.getAgentDefinitions(params)
       const data = response.data.data
       definitions.value = data.records
       definitionTotal.value = data.total
@@ -40,7 +40,7 @@ export const useAiAgentStore = defineStore('admin-ai-agent', () => {
 
   async function fetchDefinitionById(id: number): Promise<AiAgentDefinitionVO | null> {
     try {
-      const response = await aiSysApi.getAgentDefinitionById(id)
+      const response = await AiSysApi.getAgentDefinitionById(id)
       currentDefinition.value = response.data.data
       return currentDefinition.value
     } catch {
@@ -50,7 +50,7 @@ export const useAiAgentStore = defineStore('admin-ai-agent', () => {
 
   async function createDefinition(data: AiAgentDefinitionSaveRequest): Promise<boolean> {
     try {
-      await aiSysApi.createAgentDefinition(data)
+      await AiSysApi.createAgentDefinition(data)
       return true
     } catch {
       return false
@@ -59,7 +59,7 @@ export const useAiAgentStore = defineStore('admin-ai-agent', () => {
 
   async function updateDefinition(id: number, data: AiAgentDefinitionSaveRequest): Promise<boolean> {
     try {
-      await aiSysApi.updateAgentDefinition(id, data)
+      await AiSysApi.updateAgentDefinition(id, data)
       return true
     } catch {
       return false
@@ -68,7 +68,7 @@ export const useAiAgentStore = defineStore('admin-ai-agent', () => {
 
   async function toggleDefinition(id: number, enabled: number): Promise<boolean> {
     try {
-      await aiSysApi.toggleAgentDefinition(id, enabled)
+      await AiSysApi.toggleAgentDefinition(id, enabled)
       return true
     } catch {
       return false
@@ -77,7 +77,7 @@ export const useAiAgentStore = defineStore('admin-ai-agent', () => {
 
   async function deleteDefinition(id: number): Promise<boolean> {
     try {
-      await aiSysApi.deleteAgentDefinition(id)
+      await AiSysApi.deleteAgentDefinition(id)
       return true
     } catch {
       return false
@@ -89,7 +89,7 @@ export const useAiAgentStore = defineStore('admin-ai-agent', () => {
   async function fetchTasks(params?: AiAgentTaskQueryRequest): Promise<void> {
     taskLoading.value = true
     try {
-      const response = await aiSysApi.getAgentTasks(params)
+      const response = await AiSysApi.getAgentTasks(params)
       const data = response.data.data
       tasks.value = data.records
       taskTotal.value = data.total
@@ -100,7 +100,7 @@ export const useAiAgentStore = defineStore('admin-ai-agent', () => {
 
   async function fetchTaskById(id: number): Promise<AiAgentTaskVO | null> {
     try {
-      const response = await aiSysApi.getAgentTaskById(id)
+      const response = await AiSysApi.getAgentTaskById(id)
       return response.data.data
     } catch {
       return null

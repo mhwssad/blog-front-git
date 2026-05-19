@@ -1,6 +1,6 @@
 import { ref } from 'vue'
 import { defineStore } from 'pinia'
-import { aiSysApi } from '@/api/sys/ai'
+import { AiSysApi } from '@/api/sys/ai'
 import type {
   AiSessionAdminVO,
   AiUsageLogVO,
@@ -33,7 +33,7 @@ export const useAiUsageStore = defineStore('aiUsage', () => {
   }): Promise<void> {
     usageLogLoading.value = true
     try {
-      const response = await aiSysApi.getUsageLogs(params)
+      const response = await AiSysApi.getUsageLogs(params)
       const data = response.data.data
       usageLogs.value = data.records
       usageLogTotal.value = data.total
@@ -51,7 +51,7 @@ export const useAiUsageStore = defineStore('aiUsage', () => {
   }): Promise<void> {
     statsLoading.value = true
     try {
-      const response = await aiSysApi.getUsageStats(params)
+      const response = await AiSysApi.getUsageStats(params)
       usageStats.value = response.data.data
     } finally {
       statsLoading.value = false
@@ -69,7 +69,7 @@ export const useAiUsageStore = defineStore('aiUsage', () => {
   }): Promise<void> {
     sessionLoading.value = true
     try {
-      const response = await aiSysApi.getSessions(params)
+      const response = await AiSysApi.getSessions(params)
       const data = response.data.data
       sessions.value = data.records
       sessionTotal.value = data.total
@@ -80,7 +80,7 @@ export const useAiUsageStore = defineStore('aiUsage', () => {
 
   async function fetchSessionById(id: number): Promise<AiSessionAdminVO | null> {
     try {
-      const response = await aiSysApi.getSessionById(id)
+      const response = await AiSysApi.getSessionById(id)
       return response.data.data
     } catch {
       return null

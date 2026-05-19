@@ -1,6 +1,6 @@
 import { ref } from 'vue'
 import { defineStore } from 'pinia'
-import { aiUserApi } from '@/api/user/ai'
+import { AiUserApi } from '@/api/user/ai'
 import type {
   AiSessionCreateRequest,
   AiSessionVO,
@@ -22,8 +22,8 @@ export const useUserAiStore = defineStore('userAi', () => {
 
   async function refreshSessionState(sessionId: number): Promise<void> {
     const [detailResponse, msgResponse] = await Promise.all([
-      aiUserApi.getSessionById(sessionId),
-      aiUserApi.getSessionMessages(sessionId, { current: 1, size: 100 }),
+      AiUserApi.getSessionById(sessionId),
+      AiUserApi.getSessionMessages(sessionId, { current: 1, size: 100 }),
     ])
 
     currentSession.value = detailResponse.data.data
@@ -48,7 +48,7 @@ export const useUserAiStore = defineStore('userAi', () => {
   async function fetchSessions(params?: { current?: number; size?: number }): Promise<void> {
     loading.value = true
     try {
-      const response = await aiUserApi.getSessions(params)
+      const response = await AiUserApi.getSessions(params)
       const data = response.data.data
       sessions.value = data.records
       sessionTotal.value = data.total
@@ -59,7 +59,7 @@ export const useUserAiStore = defineStore('userAi', () => {
 
   async function createSession(data: AiSessionCreateRequest): Promise<AiSessionVO | null> {
     try {
-      const response = await aiUserApi.createSession(data)
+      const response = await AiUserApi.createSession(data)
       const session = response.data.data
       sessions.value.unshift(session)
       return session
@@ -82,7 +82,7 @@ export const useUserAiStore = defineStore('userAi', () => {
     params?: { current?: number; size?: number },
   ): Promise<void> {
     try {
-      const response = await aiUserApi.getSessionMessages(sessionId, params)
+      const response = await AiUserApi.getSessionMessages(sessionId, params)
       const data = response.data.data
       messages.value = data.records
       messageTotal.value = data.total
@@ -97,7 +97,7 @@ export const useUserAiStore = defineStore('userAi', () => {
   ): Promise<AiMessageVO | null> {
     sending.value = true
     try {
-      const response = await aiUserApi.sendMessage(sessionId, data)
+      const response = await AiUserApi.sendMessage(sessionId, data)
       await refreshSessionState(sessionId)
       return response.data.data
     } catch {
@@ -109,7 +109,7 @@ export const useUserAiStore = defineStore('userAi', () => {
 
   async function closeSession(id: number): Promise<boolean> {
     try {
-      await aiUserApi.closeSession(id)
+      await AiUserApi.closeSession(id)
       const session = sessions.value.find(s => s.id === id)
       if (session) session.status = 0
       if (currentSession.value?.id === id) {
@@ -124,7 +124,7 @@ export const useUserAiStore = defineStore('userAi', () => {
 
   async function fetchQuota(): Promise<void> {
     try {
-      const response = await aiUserApi.getQuota()
+      const response = await AiUserApi.getQuota()
       quota.value = response.data.data
     } catch {
       // ignore

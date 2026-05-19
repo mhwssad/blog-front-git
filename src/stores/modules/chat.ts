@@ -108,6 +108,9 @@ export const useChatStore = defineStore('admin-chat', () => {
   const pinnedTotal = ref(0)
   const pinnedLoading = ref(false)
 
+  const lobbyInfo = ref<ChatConversationVO | null>(null)
+  const lobbyInfoLoading = ref(false)
+
   const channelApplications = ref<SysChannelApplicationVO[]>([])
   const channelAppTotal = ref(0)
   const channelAppDetail = ref<SysChannelApplicationVO | null>(null)
@@ -310,6 +313,7 @@ export const useChatStore = defineStore('admin-chat', () => {
     receiptTotal.value = 0
     pinnedMessages.value = []
     pinnedTotal.value = 0
+    lobbyInfo.value = null
     channelApplications.value = []
     channelAppTotal.value = 0
     channelAppDetail.value = null
@@ -320,6 +324,22 @@ export const useChatStore = defineStore('admin-chat', () => {
   }
 
   // ==================== 大厅频道管理 ====================
+
+  async function fetchLobbyInfo(): Promise<ChatConversationVO | null> {
+    lobbyInfoLoading.value = true
+    try {
+      await fetchConversations({ size: 100 })
+      const hall = conversations.value.find((c) => c.sceneType === 'hall_channel')
+      if (hall) {
+        const detail = await fetchConversationDetail(hall.id)
+        lobbyInfo.value = detail
+        return detail
+      }
+      return null
+    } finally {
+      lobbyInfoLoading.value = false
+    }
+  }
 
   async function updateLobbySettings(data: ChatLobbySettingsUpdateRequest): Promise<boolean> {
     try {
@@ -529,6 +549,8 @@ export const useChatStore = defineStore('admin-chat', () => {
     pinnedMessages,
     pinnedTotal,
     pinnedLoading,
+    lobbyInfo,
+    lobbyInfoLoading,
     channelApplications,
     channelAppTotal,
     channelAppDetail,
@@ -552,6 +574,7 @@ export const useChatStore = defineStore('admin-chat', () => {
     revokeMessage,
     updateConversationStatus,
     clearConversationContext,
+    fetchLobbyInfo,
     updateLobbySettings,
     pinLobbyMessage,
     unpinLobbyMessage,

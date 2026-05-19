@@ -1,6 +1,6 @@
 import { ref } from 'vue'
 import { defineStore } from 'pinia'
-import { aiSysApi } from '@/api/sys/ai'
+import { AiSysApi } from '@/api/sys/ai'
 import type {
   AiChannelConfigVO,
   AiChannelConfigSaveRequest,
@@ -28,7 +28,7 @@ export const useAiChannelStore = defineStore('aiChannel', () => {
   }): Promise<void> {
     loading.value = true
     try {
-      const response = await aiSysApi.getChannels(params)
+      const response = await AiSysApi.getChannels(params)
       const data = response.data.data
       channels.value = data.records
       total.value = data.total
@@ -41,7 +41,7 @@ export const useAiChannelStore = defineStore('aiChannel', () => {
 
   async function fetchChannelById(id: number): Promise<AiChannelConfigVO | null> {
     try {
-      const response = await aiSysApi.getChannelById(id)
+      const response = await AiSysApi.getChannelById(id)
       return response.data.data
     } catch {
       return null
@@ -50,7 +50,7 @@ export const useAiChannelStore = defineStore('aiChannel', () => {
 
   async function createChannel(data: AiChannelConfigSaveRequest): Promise<boolean> {
     try {
-      await aiSysApi.createChannel(data)
+      await AiSysApi.createChannel(data)
       return true
     } catch {
       return false
@@ -59,7 +59,7 @@ export const useAiChannelStore = defineStore('aiChannel', () => {
 
   async function updateChannel(id: number, data: AiChannelConfigSaveRequest): Promise<boolean> {
     try {
-      await aiSysApi.updateChannel(id, data)
+      await AiSysApi.updateChannel(id, data)
       return true
     } catch {
       return false
@@ -68,7 +68,7 @@ export const useAiChannelStore = defineStore('aiChannel', () => {
 
   async function updateChannelStatus(id: number, data: AiChannelStatusRequest): Promise<boolean> {
     try {
-      await aiSysApi.updateChannelStatus(id, data)
+      await AiSysApi.updateChannelStatus(id, data)
       return true
     } catch {
       return false
@@ -77,7 +77,7 @@ export const useAiChannelStore = defineStore('aiChannel', () => {
 
   async function deleteChannel(id: number): Promise<boolean> {
     try {
-      await aiSysApi.deleteChannel(id)
+      await AiSysApi.deleteChannel(id)
       return true
     } catch {
       return false
@@ -97,7 +97,7 @@ export const useAiChannelStore = defineStore('aiChannel', () => {
   async function fetchChannelAccounts(channelId: number, params?: { current?: number; size?: number }): Promise<void> {
     accountLoading.value = true
     try {
-      const response = await aiSysApi.getChannelAccounts(channelId, params)
+      const response = await AiSysApi.getChannelAccounts(channelId, params)
       const data = response.data.data
       accounts.value = data.records
       accountTotal.value = data.total
@@ -108,7 +108,7 @@ export const useAiChannelStore = defineStore('aiChannel', () => {
 
   async function fetchChannelAccountById(channelId: number, id: number): Promise<AiChannelAccountVO | null> {
     try {
-      const response = await aiSysApi.getChannelAccountById(channelId, id)
+      const response = await AiSysApi.getChannelAccountById(channelId, id)
       return response.data.data
     } catch {
       return null
@@ -117,7 +117,7 @@ export const useAiChannelStore = defineStore('aiChannel', () => {
 
   async function createChannelAccount(channelId: number, data: AiChannelAccountSaveRequest): Promise<boolean> {
     try {
-      await aiSysApi.createChannelAccount(channelId, data)
+      await AiSysApi.createChannelAccount(channelId, data)
       return true
     } catch {
       return false
@@ -126,7 +126,7 @@ export const useAiChannelStore = defineStore('aiChannel', () => {
 
   async function updateChannelAccount(channelId: number, id: number, data: AiChannelAccountSaveRequest): Promise<boolean> {
     try {
-      await aiSysApi.updateChannelAccount(channelId, id, data)
+      await AiSysApi.updateChannelAccount(channelId, id, data)
       return true
     } catch {
       return false
@@ -135,7 +135,7 @@ export const useAiChannelStore = defineStore('aiChannel', () => {
 
   async function updateChannelAccountStatus(channelId: number, id: number, data: { status: number }): Promise<boolean> {
     try {
-      await aiSysApi.updateChannelAccountStatus(channelId, id, data)
+      await AiSysApi.updateChannelAccountStatus(channelId, id, data)
       return true
     } catch {
       return false
@@ -144,7 +144,7 @@ export const useAiChannelStore = defineStore('aiChannel', () => {
 
   async function deleteChannelAccount(channelId: number, id: number): Promise<boolean> {
     try {
-      await aiSysApi.deleteChannelAccount(channelId, id)
+      await AiSysApi.deleteChannelAccount(channelId, id)
       return true
     } catch {
       return false

@@ -5,7 +5,7 @@
 
 import { ref } from 'vue'
 import { defineStore } from 'pinia'
-import { aiSysApi } from '@/api/sys/ai'
+import { AiSysApi } from '@/api/sys/ai'
 import type {
   AiKnowledgeSourceConfigVO,
   AiKnowledgeSourceConfigUpdateRequest,
@@ -33,7 +33,7 @@ export const useAiKnowledgeStore = defineStore('admin-ai-knowledge', () => {
   async function fetchSourceConfigs(): Promise<void> {
     sourceConfigLoading.value = true
     try {
-      const response = await aiSysApi.getKnowledgeSourceConfigs()
+      const response = await AiSysApi.getKnowledgeSourceConfigs()
       sourceConfigs.value = response.data.data ?? []
     } finally {
       sourceConfigLoading.value = false
@@ -42,7 +42,7 @@ export const useAiKnowledgeStore = defineStore('admin-ai-knowledge', () => {
 
   async function updateSourceConfig(id: number, data: AiKnowledgeSourceConfigUpdateRequest): Promise<boolean> {
     try {
-      await aiSysApi.updateKnowledgeSourceConfig(id, data)
+      await AiSysApi.updateKnowledgeSourceConfig(id, data)
       return true
     } catch {
       return false
@@ -51,7 +51,7 @@ export const useAiKnowledgeStore = defineStore('admin-ai-knowledge', () => {
 
   async function toggleSourceConfig(id: number, enabled: number): Promise<boolean> {
     try {
-      await aiSysApi.toggleKnowledgeSourceConfig(id, enabled)
+      await AiSysApi.toggleKnowledgeSourceConfig(id, enabled)
       return true
     } catch {
       return false
@@ -63,7 +63,7 @@ export const useAiKnowledgeStore = defineStore('admin-ai-knowledge', () => {
   async function fetchEntries(params?: AiKnowledgeEntryQueryRequest): Promise<void> {
     loading.value = true
     try {
-      const response = await aiSysApi.getKnowledgeEntries(params)
+      const response = await AiSysApi.getKnowledgeEntries(params)
       const data = response.data.data
       entries.value = data.records
       entryTotal.value = data.total
@@ -74,7 +74,7 @@ export const useAiKnowledgeStore = defineStore('admin-ai-knowledge', () => {
 
   async function fetchEntryById(id: number): Promise<AiKnowledgeEntryVO | null> {
     try {
-      const response = await aiSysApi.getKnowledgeEntryById(id)
+      const response = await AiSysApi.getKnowledgeEntryById(id)
       return response.data.data
     } catch {
       return null
@@ -83,7 +83,7 @@ export const useAiKnowledgeStore = defineStore('admin-ai-knowledge', () => {
 
   async function updateEntryStatus(id: number, status: number): Promise<boolean> {
     try {
-      await aiSysApi.updateKnowledgeEntryStatus(id, status)
+      await AiSysApi.updateKnowledgeEntryStatus(id, status)
       return true
     } catch {
       return false
@@ -94,7 +94,7 @@ export const useAiKnowledgeStore = defineStore('admin-ai-knowledge', () => {
 
   async function triggerSync(data: AiKnowledgeSyncRequest): Promise<boolean> {
     try {
-      await aiSysApi.triggerKnowledgeSync(data)
+      await AiSysApi.triggerKnowledgeSync(data)
       return true
     } catch {
       return false
@@ -104,7 +104,7 @@ export const useAiKnowledgeStore = defineStore('admin-ai-knowledge', () => {
   async function fetchSyncTasks(params?: AiKnowledgeSyncTaskQueryRequest): Promise<void> {
     syncTaskLoading.value = true
     try {
-      const response = await aiSysApi.getKnowledgeSyncTasks(params)
+      const response = await AiSysApi.getKnowledgeSyncTasks(params)
       const data = response.data.data
       syncTasks.value = data.records
       syncTaskTotal.value = data.total
@@ -115,7 +115,7 @@ export const useAiKnowledgeStore = defineStore('admin-ai-knowledge', () => {
 
   async function fetchSyncTaskById(taskId: number): Promise<AiKnowledgeSyncTaskVO | null> {
     try {
-      const response = await aiSysApi.getKnowledgeSyncTaskById(taskId)
+      const response = await AiSysApi.getKnowledgeSyncTaskById(taskId)
       return response.data.data
     } catch {
       return null
@@ -124,7 +124,7 @@ export const useAiKnowledgeStore = defineStore('admin-ai-knowledge', () => {
 
   async function retrySyncTask(taskId: number): Promise<boolean> {
     try {
-      await aiSysApi.retryKnowledgeSyncTask(taskId)
+      await AiSysApi.retryKnowledgeSyncTask(taskId)
       return true
     } catch {
       return false

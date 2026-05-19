@@ -5,7 +5,7 @@
 
 import { ref } from 'vue'
 import { defineStore } from 'pinia'
-import { aiSysApi } from '@/api/sys/ai'
+import { AiSysApi } from '@/api/sys/ai'
 import type {
   AiToolVO,
   AiToolSaveRequest,
@@ -38,7 +38,7 @@ export const useAiToolStore = defineStore('admin-ai-tool', () => {
   async function fetchTools(params?: AiToolQueryRequest): Promise<void> {
     loading.value = true
     try {
-      const response = await aiSysApi.getTools(params)
+      const response = await AiSysApi.getTools(params)
       const data = response.data.data
       tools.value = data.records
       toolTotal.value = data.total
@@ -49,7 +49,7 @@ export const useAiToolStore = defineStore('admin-ai-tool', () => {
 
   async function fetchToolById(id: number): Promise<AiToolVO | null> {
     try {
-      const response = await aiSysApi.getToolById(id)
+      const response = await AiSysApi.getToolById(id)
       currentTool.value = response.data.data
       return currentTool.value
     } catch {
@@ -59,7 +59,7 @@ export const useAiToolStore = defineStore('admin-ai-tool', () => {
 
   async function createTool(data: AiToolSaveRequest): Promise<boolean> {
     try {
-      await aiSysApi.createTool(data)
+      await AiSysApi.createTool(data)
       return true
     } catch {
       return false
@@ -68,7 +68,7 @@ export const useAiToolStore = defineStore('admin-ai-tool', () => {
 
   async function updateTool(id: number, data: AiToolSaveRequest): Promise<boolean> {
     try {
-      await aiSysApi.updateTool(id, data)
+      await AiSysApi.updateTool(id, data)
       return true
     } catch {
       return false
@@ -77,7 +77,7 @@ export const useAiToolStore = defineStore('admin-ai-tool', () => {
 
   async function updateToolStatus(id: number, enabled: number): Promise<boolean> {
     try {
-      await aiSysApi.updateToolStatus(id, enabled)
+      await AiSysApi.updateToolStatus(id, enabled)
       return true
     } catch {
       return false
@@ -86,7 +86,7 @@ export const useAiToolStore = defineStore('admin-ai-tool', () => {
 
   async function deleteTool(id: number): Promise<boolean> {
     try {
-      await aiSysApi.deleteTool(id)
+      await AiSysApi.deleteTool(id)
       return true
     } catch {
       return false
@@ -95,7 +95,7 @@ export const useAiToolStore = defineStore('admin-ai-tool', () => {
 
   async function executeTool(id: number, data: AiToolExecuteRequest): Promise<AiToolExecuteResultVO | null> {
     try {
-      const response = await aiSysApi.executeTool(id, data)
+      const response = await AiSysApi.executeTool(id, data)
       return response.data.data
     } catch {
       return null
@@ -107,7 +107,7 @@ export const useAiToolStore = defineStore('admin-ai-tool', () => {
   async function fetchCallLogs(params?: AiToolCallLogQueryRequest): Promise<void> {
     callLogLoading.value = true
     try {
-      const response = await aiSysApi.getToolCallLogs(params)
+      const response = await AiSysApi.getToolCallLogs(params)
       const data = response.data.data
       callLogs.value = data.records
       callLogTotal.value = data.total
@@ -121,7 +121,7 @@ export const useAiToolStore = defineStore('admin-ai-tool', () => {
   async function fetchAuthorizations(params?: AiToolAuthorizationQueryRequest): Promise<void> {
     authLoading.value = true
     try {
-      const response = await aiSysApi.getToolAuthorizations(params)
+      const response = await AiSysApi.getToolAuthorizations(params)
       const data = response.data.data
       authorizations.value = data.records
       authTotal.value = data.total
@@ -132,7 +132,7 @@ export const useAiToolStore = defineStore('admin-ai-tool', () => {
 
   async function createAuthorization(data: AiToolAuthorizationSaveRequest): Promise<boolean> {
     try {
-      await aiSysApi.createToolAuthorization(data)
+      await AiSysApi.createToolAuthorization(data)
       return true
     } catch {
       return false
@@ -141,7 +141,7 @@ export const useAiToolStore = defineStore('admin-ai-tool', () => {
 
   async function updateAuthorization(id: number, data: AiToolAuthorizationSaveRequest): Promise<boolean> {
     try {
-      await aiSysApi.updateToolAuthorization(id, data)
+      await AiSysApi.updateToolAuthorization(id, data)
       return true
     } catch {
       return false
@@ -150,7 +150,7 @@ export const useAiToolStore = defineStore('admin-ai-tool', () => {
 
   async function deleteAuthorization(id: number): Promise<boolean> {
     try {
-      await aiSysApi.deleteToolAuthorization(id)
+      await AiSysApi.deleteToolAuthorization(id)
       return true
     } catch {
       return false

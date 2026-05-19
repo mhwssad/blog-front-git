@@ -5,7 +5,7 @@
 
 import { ref } from 'vue'
 import { defineStore } from 'pinia'
-import { reportSysApi } from '@/api/sys/report'
+import { ReportSysApi } from '@/api/sys/report'
 import type {
   ReportAdminVO,
   ReportHandleLogVO,
@@ -32,7 +32,7 @@ export const useReportStore = defineStore('report', () => {
   }): Promise<void> {
     loading.value = true
     try {
-      const response = await reportSysApi.getReports(params)
+      const response = await ReportSysApi.getReports(params)
       const data = response.data.data
       reports.value = data.records
       total.value = data.total
@@ -45,7 +45,7 @@ export const useReportStore = defineStore('report', () => {
 
   async function getReportById(id: number): Promise<ReportAdminVO | null> {
     try {
-      const response = await reportSysApi.getReportById(id)
+      const response = await ReportSysApi.getReportById(id)
       return response.data.data
     } catch {
       return null
@@ -54,7 +54,7 @@ export const useReportStore = defineStore('report', () => {
 
   async function takeReport(id: number): Promise<boolean> {
     try {
-      await reportSysApi.takeReport(id)
+      await ReportSysApi.takeReport(id)
       return true
     } catch {
       return false
@@ -63,7 +63,7 @@ export const useReportStore = defineStore('report', () => {
 
   async function handleReport(id: number, data: ReportHandleRequest): Promise<boolean> {
     try {
-      await reportSysApi.handleReport(id, data)
+      await ReportSysApi.handleReport(id, data)
       return true
     } catch {
       return false
@@ -72,7 +72,7 @@ export const useReportStore = defineStore('report', () => {
 
   async function rejectReport(id: number, data: ReportRejectRequest): Promise<boolean> {
     try {
-      await reportSysApi.rejectReport(id, data)
+      await ReportSysApi.rejectReport(id, data)
       return true
     } catch {
       return false
@@ -81,7 +81,7 @@ export const useReportStore = defineStore('report', () => {
 
   async function getReportLogs(id: number): Promise<ReportHandleLogVO[]> {
     try {
-      const response = await reportSysApi.getReportLogs(id)
+      const response = await ReportSysApi.getReportLogs(id)
       return response.data.data ?? []
     } catch {
       return []
@@ -90,7 +90,7 @@ export const useReportStore = defineStore('report', () => {
 
   async function repairReport(id: number, data: ReportRepairRequest): Promise<boolean> {
     try {
-      await reportSysApi.repairReport(id, data)
+      await ReportSysApi.repairReport(id, data)
       return true
     } catch {
       return false
@@ -99,7 +99,7 @@ export const useReportStore = defineStore('report', () => {
 
   async function overrideReport(id: number): Promise<boolean> {
     try {
-      await reportSysApi.overrideReport(id)
+      await ReportSysApi.overrideReport(id)
       return true
     } catch {
       return false
