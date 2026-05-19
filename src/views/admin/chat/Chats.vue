@@ -70,118 +70,105 @@
       </el-form>
     </el-card>
 
-    <el-card class="table-card" shadow="never">
-      <template #header>
-        <div class="card-header">
-          <span>会话治理</span>
-          <el-button
-            v-permission="'content:chat:query'"
-            link
-            type="primary"
-            @click="fetchConversations"
-          >
-            刷新
-          </el-button>
-        </div>
+    <DataTable
+      title="会话治理"
+      :data="chatStore.conversations"
+      :loading="chatStore.conversationLoading"
+      :total="chatStore.conversationTotal"
+      v-model:current-page="pagination.current"
+      v-model:page-size="pagination.size"
+      :page-sizes="[10, 20, 50, 100]"
+      :pagination-layout="paginationLayout"
+      :compact="isCompactTable"
+      @page-change="handleCurrentChange"
+      @size-change="handleSizeChange"
+    >
+      <template #header-extra>
+        <el-button
+          v-permission="'content:chat:query'"
+          link
+          type="primary"
+          @click="fetchConversations"
+        >
+          刷新
+        </el-button>
       </template>
 
-      <el-table
-        v-loading="chatStore.conversationLoading"
-        :data="chatStore.conversations"
-        :size="isCompactTable ? 'small' : 'default'"
-        border
-        stripe
-        table-layout="auto"
-      >
-        <el-table-column prop="id" label="会话 ID" min-width="90" align="center" />
-        <el-table-column label="会话信息" min-width="240" align="center">
-          <template #default="{ row }">
-            <div class="conversation-info">
-              <el-avatar :size="36" :src="row.avatar || undefined">
-                {{ resolveConversationName(row).slice(0, 1) }}
-              </el-avatar>
-              <div class="conversation-info__text">
-                <div>{{ resolveConversationName(row) }}</div>
-                <div class="sub-text">{{ formatLastMessage(row.lastMessage) }}</div>
-              </div>
+      <el-table-column prop="id" label="会话 ID" min-width="90" align="center" />
+      <el-table-column label="会话信息" min-width="240" align="center">
+        <template #default="{ row }">
+          <div class="conversation-info">
+            <el-avatar :size="36" :src="row.avatar || undefined">
+              {{ resolveConversationName(row).slice(0, 1) }}
+            </el-avatar>
+            <div class="conversation-info__text">
+              <div>{{ resolveConversationName(row) }}</div>
+              <div class="sub-text">{{ formatLastMessage(row.lastMessage) }}</div>
             </div>
-          </template>
-        </el-table-column>
-        <el-table-column label="类型" min-width="96" align="center">
-          <template #default="{ row }">
-            {{ formatChatConversationType(row.conversationType) }}
-          </template>
-        </el-table-column>
-        <el-table-column label="场景" min-width="110" align="center">
-          <template #default="{ row }">
-            {{ formatChatSceneType(row.sceneType) }}
-          </template>
-        </el-table-column>
-        <el-table-column label="可见范围" min-width="110" align="center">
-          <template #default="{ row }">
-            {{ formatChatVisibilityScope(row.visibilityScope) }}
-          </template>
-        </el-table-column>
-        <el-table-column label="加入规则" min-width="100" align="center">
-          <template #default="{ row }">
-            {{ formatChatJoinRule(row.joinRule) }}
-          </template>
-        </el-table-column>
-        <el-table-column label="发言等级" min-width="90" align="center">
-          <template #default="{ row }">
-            {{ row.speakLevelLimit ?? '—' }}
-          </template>
-        </el-table-column>
-        <el-table-column label="慢速模式" min-width="90" align="center">
-          <template #default="{ row }">
-            {{ row.slowModeSeconds ? `${row.slowModeSeconds}s` : '关闭' }}
-          </template>
-        </el-table-column>
-        <el-table-column label="状态" min-width="96" align="center">
-          <template #default="{ row }">
-            <el-tag :type="row.status === 1 ? 'success' : 'warning'">
-              {{ formatChatConversationStatus(row.status) }}
-            </el-tag>
-          </template>
-        </el-table-column>
-        <el-table-column prop="memberCount" label="成员数" min-width="90" align="center" />
-        <el-table-column label="创建时间" min-width="168" align="center">
-          <template #default="{ row }">
-            {{ formatCreatedAt(row.createdAt) }}
-          </template>
-        </el-table-column>
-        <el-table-column label="操作" :min-width="isCompactTable ? 180 : 220" align="center">
-          <template #default="{ row }">
-            <div class="table-actions">
-              <el-button link type="primary" @click="handleSelectConversation(row.id)"
-                >进入治理</el-button
-              >
-              <el-button
-                v-permission="'content:chat:update'"
-                link
-                :type="row.status === 1 ? 'warning' : 'success'"
-                @click="handleConversationStatusChange(row.id, row.status === 1 ? 0 : 1)"
-              >
-                {{ row.status === 1 ? '冻结' : '启用' }}
-              </el-button>
-            </div>
-          </template>
-        </el-table-column>
-      </el-table>
-
-      <div class="pagination">
-        <el-pagination
-          v-model:current-page="pagination.current"
-          v-model:page-size="pagination.size"
-          :total="chatStore.conversationTotal"
-          :page-sizes="[10, 20, 50, 100]"
-          :layout="paginationLayout"
-          :small="isCompactTable"
-          @current-change="handleCurrentChange"
-          @size-change="handleSizeChange"
-        />
-      </div>
-    </el-card>
+          </div>
+        </template>
+      </el-table-column>
+      <el-table-column label="类型" min-width="96" align="center">
+        <template #default="{ row }">
+          {{ formatChatConversationType(row.conversationType) }}
+        </template>
+      </el-table-column>
+      <el-table-column label="场景" min-width="110" align="center">
+        <template #default="{ row }">
+          {{ formatChatSceneType(row.sceneType) }}
+        </template>
+      </el-table-column>
+      <el-table-column label="可见范围" min-width="110" align="center">
+        <template #default="{ row }">
+          {{ formatChatVisibilityScope(row.visibilityScope) }}
+        </template>
+      </el-table-column>
+      <el-table-column label="加入规则" min-width="100" align="center">
+        <template #default="{ row }">
+          {{ formatChatJoinRule(row.joinRule) }}
+        </template>
+      </el-table-column>
+      <el-table-column label="发言等级" min-width="90" align="center">
+        <template #default="{ row }">
+          {{ row.speakLevelLimit ?? '—' }}
+        </template>
+      </el-table-column>
+      <el-table-column label="慢速模式" min-width="90" align="center">
+        <template #default="{ row }">
+          {{ row.slowModeSeconds ? `${row.slowModeSeconds}s` : '关闭' }}
+        </template>
+      </el-table-column>
+      <el-table-column label="状态" min-width="96" align="center">
+        <template #default="{ row }">
+          <el-tag :type="row.status === 1 ? 'success' : 'warning'">
+            {{ formatChatConversationStatus(row.status) }}
+          </el-tag>
+        </template>
+      </el-table-column>
+      <el-table-column prop="memberCount" label="成员数" min-width="90" align="center" />
+      <el-table-column label="创建时间" min-width="168" align="center">
+        <template #default="{ row }">
+          {{ formatCreatedAt(row.createdAt) }}
+        </template>
+      </el-table-column>
+      <el-table-column label="操作" :min-width="isCompactTable ? 180 : 220" align="center">
+        <template #default="{ row }">
+          <div class="table-actions">
+            <el-button link type="primary" @click="handleSelectConversation(row.id)"
+              >进入治理</el-button
+            >
+            <el-button
+              v-permission="'content:chat:update'"
+              link
+              :type="row.status === 1 ? 'warning' : 'success'"
+              @click="handleConversationStatusChange(row.id, row.status === 1 ? 0 : 1)"
+            >
+              {{ row.status === 1 ? '冻结' : '启用' }}
+            </el-button>
+          </div>
+        </template>
+      </el-table-column>
+    </DataTable>
 
     <el-alert
       v-if="!selectedConversationId"
@@ -266,220 +253,214 @@
 
       <el-row :gutter="16" class="detail-row">
         <el-col :lg="10" :span="24">
-          <el-card class="detail-card" shadow="never">
-            <template #header>
-              <div class="card-header">
-                <span>成员管理</span>
-                <el-button link type="primary" @click="refreshMembers">刷新</el-button>
-              </div>
+          <DataTable
+            title="成员管理"
+            :data="chatStore.members"
+            :loading="chatStore.memberLoading"
+            :compact="isCompactTable"
+          >
+            <template #header-extra>
+              <el-button link type="primary" @click="refreshMembers">刷新</el-button>
             </template>
 
-            <el-table
-              v-loading="chatStore.memberLoading"
-              :data="chatStore.members"
-              border
-              stripe
-              table-layout="auto"
-            >
-              <el-table-column prop="userId" label="用户 ID" min-width="90" align="center" />
-              <el-table-column label="成员信息" min-width="160" align="center">
-                <template #default="{ row }">
-                  <div>{{ row.nickname || row.username || '-' }}</div>
-                  <div class="sub-text">{{ row.username || '-' }}</div>
-                </template>
-              </el-table-column>
-              <el-table-column label="角色" min-width="140" align="center">
-                <template #default="{ row }">
-                  <el-select
-                    v-permission.disable="'content:chat:update'"
-                    :model-value="row.role"
-                    class="inline-select"
-                    @change="value => handleMemberRoleChange(row.userId, String(value))"
-                  >
-                    <el-option
-                      v-for="option in CHAT_MEMBER_ROLE_OPTIONS"
-                      :key="option.value"
-                      :label="option.label"
-                      :value="option.value"
-                    />
-                  </el-select>
-                </template>
-              </el-table-column>
-              <el-table-column label="状态" min-width="120" align="center">
-                <template #default="{ row }">
-                  <el-switch
-                    v-permission.disable="'content:chat:update'"
-                    :model-value="row.status"
-                    :active-value="1"
-                    :inactive-value="0"
-                    @change="value => handleMemberStatusChange(row.userId, Number(value))"
-                  />
-                </template>
-              </el-table-column>
-              <el-table-column label="禁言至" min-width="160" align="center">
-                <template #default="{ row }">
-                  {{ formatCreatedAt(row.muteUntil) }}
-                </template>
-              </el-table-column>
-              <el-table-column label="操作" min-width="120" align="center">
-                <template #default="{ row }">
-                  <el-button
-                    v-permission="'content:chat:update'"
-                    link
-                    type="warning"
-                    @click="handleMemberMute(row.userId, row.muteUntil ? null : '24h')"
-                  >
-                    {{ row.muteUntil ? '解除禁言' : '禁言 24h' }}
-                  </el-button>
-                </template>
-              </el-table-column>
-            </el-table>
-          </el-card>
-        </el-col>
-
-        <el-col :lg="14" :span="24">
-          <el-card class="detail-card" shadow="never">
-            <template #header>
-              <div class="card-header">
-                <span>消息管理</span>
-                <el-button link type="primary" @click="refreshMessages">刷新</el-button>
-              </div>
-            </template>
-
-            <el-form :model="messageSearchForm" inline class="inner-search-form">
-              <el-form-item label="发送者">
-                <el-input-number
-                  v-model="messageSearchForm.senderId"
-                  :min="1"
-                  class="inner-control"
-                />
-              </el-form-item>
-              <el-form-item label="类型">
+            <el-table-column prop="userId" label="用户 ID" min-width="90" align="center" />
+            <el-table-column label="成员信息" min-width="160" align="center">
+              <template #default="{ row }">
+                <div>{{ row.nickname || row.username || '-' }}</div>
+                <div class="sub-text">{{ row.username || '-' }}</div>
+              </template>
+            </el-table-column>
+            <el-table-column label="角色" min-width="140" align="center">
+              <template #default="{ row }">
                 <el-select
-                  v-model="messageSearchForm.messageType"
-                  clearable
-                  class="inner-control"
-                  placeholder="全部"
+                  v-permission.disable="'content:chat:update'"
+                  :model-value="row.role"
+                  class="inline-select"
+                  @change="value => handleMemberRoleChange(row.userId, String(value))"
                 >
                   <el-option
-                    v-for="option in CHAT_MESSAGE_TYPE_OPTIONS"
+                    v-for="option in CHAT_MEMBER_ROLE_OPTIONS"
                     :key="option.value"
                     :label="option.label"
                     :value="option.value"
                   />
                 </el-select>
-              </el-form-item>
-              <el-form-item label="关键词">
-                <el-input
-                  v-model="messageSearchForm.keyword"
-                  class="inner-control"
-                  clearable
-                  placeholder="消息内容"
+              </template>
+            </el-table-column>
+            <el-table-column label="状态" min-width="120" align="center">
+              <template #default="{ row }">
+                <el-switch
+                  v-permission.disable="'content:chat:update'"
+                  :model-value="row.status"
+                  :active-value="1"
+                  :inactive-value="0"
+                  @change="value => handleMemberStatusChange(row.userId, Number(value))"
                 />
-              </el-form-item>
-              <el-form-item class="search-actions">
-                <el-button type="primary" @click="handleMessageSearch">查询</el-button>
-                <el-button @click="handleMessageReset">重置</el-button>
-              </el-form-item>
-            </el-form>
+              </template>
+            </el-table-column>
+            <el-table-column label="禁言至" min-width="160" align="center">
+              <template #default="{ row }">
+                {{ formatCreatedAt(row.muteUntil) }}
+              </template>
+            </el-table-column>
+            <el-table-column label="操作" min-width="120" align="center">
+              <template #default="{ row }">
+                <el-button
+                  v-permission="'content:chat:update'"
+                  link
+                  type="warning"
+                  @click="handleMemberMute(row.userId, row.muteUntil ? null : '24h')"
+                >
+                  {{ row.muteUntil ? '解除禁言' : '禁言 24h' }}
+                </el-button>
+              </template>
+            </el-table-column>
+          </DataTable>
+        </el-col>
 
-            <el-table
-              v-loading="chatStore.messageLoading"
-              :data="chatStore.messages"
-              border
-              stripe
-              table-layout="auto"
-            >
-              <el-table-column prop="id" label="消息 ID" min-width="90" align="center" />
-              <el-table-column label="发送者" min-width="140" align="center">
-                <template #default="{ row }">
-                  #{{ row.senderId }} / {{ row.senderNickname || row.senderUsername || '-' }}
-                </template>
-              </el-table-column>
-              <el-table-column label="类型" min-width="100" align="center">
-                <template #default="{ row }">
-                  {{ formatChatMessageType(row.messageType) }}
-                </template>
-              </el-table-column>
-              <el-table-column label="内容" min-width="220" align="center" show-overflow-tooltip>
-                <template #default="{ row }">
-                  {{ formatMessagePreview(row) }}
-                </template>
-              </el-table-column>
-              <el-table-column label="回执" min-width="120" align="center">
-                <template #default="{ row }">
-                  {{ row.readRecipientCount ?? 0 }}/{{ row.totalRecipientCount ?? 0 }}
-                </template>
-              </el-table-column>
-              <el-table-column label="状态" min-width="90" align="center">
-                <template #default="{ row }">
-                  <el-tag :type="row.revoked ? 'danger' : 'success'">
-                    {{ row.revoked ? '已撤回' : '正常' }}
-                  </el-tag>
-                </template>
-              </el-table-column>
-              <el-table-column label="已编辑" min-width="70" align="center">
-                <template #default="{ row }">
-                  {{ row.edited ? '是' : '否' }}
-                </template>
-              </el-table-column>
-              <el-table-column label="发送时间" min-width="168" align="center">
-                <template #default="{ row }">
-                  {{ formatCreatedAt(row.createdAt) }}
-                </template>
-              </el-table-column>
-              <el-table-column label="操作" min-width="180" align="center">
-                <template #default="{ row }">
-                  <div class="table-actions">
-                    <el-button link type="primary" @click="handleViewMessageDetail(row.id)"
-                      >详情</el-button
-                    >
-                    <el-button link type="success" @click="handleViewReceipts(row.id)"
-                      >回执</el-button
-                    >
-                    <el-button
-                      v-permission="'content:chat:revoke'"
-                      link
-                      type="danger"
-                      :disabled="row.revoked"
-                      @click="handleRevokeMessage(row.id)"
-                    >
-                      撤回
-                    </el-button>
-                  </div>
-                </template>
-              </el-table-column>
-            </el-table>
+        <el-col :lg="14" :span="24">
+          <DataTable
+            title="消息管理"
+            :data="chatStore.messages"
+            :loading="chatStore.messageLoading"
+            :total="chatStore.messageTotal"
+            v-model:current-page="messagePagination.current"
+            v-model:page-size="messagePagination.size"
+            :page-sizes="[10, 20, 50]"
+            pagination-layout="total, sizes, prev, pager, next"
+            :compact="isCompactTable"
+            @page-change="handleMessagePageChange"
+            @size-change="handleMessageSizeChange"
+          >
+            <template #header-extra>
+              <el-button link type="primary" @click="refreshMessages">刷新</el-button>
+            </template>
 
-            <div class="pagination">
-              <el-pagination
-                v-model:current-page="messagePagination.current"
-                v-model:page-size="messagePagination.size"
-                :total="chatStore.messageTotal"
-                :page-sizes="[10, 20, 50]"
-                layout="total, sizes, prev, pager, next"
-                @current-change="handleMessagePageChange"
-                @size-change="handleMessageSizeChange"
-              />
-            </div>
-          </el-card>
+            <template #toolbar>
+              <el-form :model="messageSearchForm" inline class="inner-search-form">
+                <el-form-item label="发送者">
+                  <el-input-number
+                    v-model="messageSearchForm.senderId"
+                    :min="1"
+                    class="inner-control"
+                  />
+                </el-form-item>
+                <el-form-item label="类型">
+                  <el-select
+                    v-model="messageSearchForm.messageType"
+                    clearable
+                    class="inner-control"
+                    placeholder="全部"
+                  >
+                    <el-option
+                      v-for="option in CHAT_MESSAGE_TYPE_OPTIONS"
+                      :key="option.value"
+                      :label="option.label"
+                      :value="option.value"
+                    />
+                  </el-select>
+                </el-form-item>
+                <el-form-item label="关键词">
+                  <el-input
+                    v-model="messageSearchForm.keyword"
+                    class="inner-control"
+                    clearable
+                    placeholder="消息内容"
+                  />
+                </el-form-item>
+                <el-form-item class="search-actions">
+                  <el-button type="primary" @click="handleMessageSearch">查询</el-button>
+                  <el-button @click="handleMessageReset">重置</el-button>
+                </el-form-item>
+              </el-form>
+            </template>
+
+            <el-table-column prop="id" label="消息 ID" min-width="90" align="center" />
+            <el-table-column label="发送者" min-width="140" align="center">
+              <template #default="{ row }">
+                #{{ row.senderId }} / {{ row.senderNickname || row.senderUsername || '-' }}
+              </template>
+            </el-table-column>
+            <el-table-column label="类型" min-width="100" align="center">
+              <template #default="{ row }">
+                {{ formatChatMessageType(row.messageType) }}
+              </template>
+            </el-table-column>
+            <el-table-column label="内容" min-width="220" align="center" show-overflow-tooltip>
+              <template #default="{ row }">
+                {{ formatMessagePreview(row) }}
+              </template>
+            </el-table-column>
+            <el-table-column label="回执" min-width="120" align="center">
+              <template #default="{ row }">
+                {{ row.readRecipientCount ?? 0 }}/{{ row.totalRecipientCount ?? 0 }}
+              </template>
+            </el-table-column>
+            <el-table-column label="状态" min-width="90" align="center">
+              <template #default="{ row }">
+                <el-tag :type="row.revoked ? 'danger' : 'success'">
+                  {{ row.revoked ? '已撤回' : '正常' }}
+                </el-tag>
+              </template>
+            </el-table-column>
+            <el-table-column label="已编辑" min-width="70" align="center">
+              <template #default="{ row }">
+                {{ row.edited ? '是' : '否' }}
+              </template>
+            </el-table-column>
+            <el-table-column label="发送时间" min-width="168" align="center">
+              <template #default="{ row }">
+                {{ formatCreatedAt(row.createdAt) }}
+              </template>
+            </el-table-column>
+            <el-table-column label="操作" min-width="180" align="center">
+              <template #default="{ row }">
+                <div class="table-actions">
+                  <el-button link type="primary" @click="handleViewMessageDetail(row.id)"
+                    >详情</el-button
+                  >
+                  <el-button link type="success" @click="handleViewReceipts(row.id)"
+                    >回执</el-button
+                  >
+                  <el-button
+                    v-permission="'content:chat:revoke'"
+                    link
+                    type="danger"
+                    :disabled="row.revoked"
+                    @click="handleRevokeMessage(row.id)"
+                  >
+                    撤回
+                  </el-button>
+                </div>
+              </template>
+            </el-table-column>
+          </DataTable>
         </el-col>
       </el-row>
 
-      <el-card class="detail-card" shadow="never">
-        <template #header>
-          <div class="card-header">
-            <span>消息回执</span>
-            <span class="sub-text">
-              {{ selectedMessageId ? `当前消息 #${selectedMessageId}` : '请选择消息查看回执' }}
-            </span>
-          </div>
+      <DataTable
+        title="消息回执"
+        :data="chatStore.receipts"
+        :loading="chatStore.receiptLoading"
+        :total="selectedMessageId ? chatStore.receiptTotal : 0"
+        v-model:current-page="receiptPagination.current"
+        v-model:page-size="receiptPagination.size"
+        :page-sizes="[10, 20, 50]"
+        pagination-layout="total, sizes, prev, pager, next"
+        :compact="isCompactTable"
+        @page-change="handleReceiptPageChange"
+        @size-change="handleReceiptSizeChange"
+      >
+        <template #header-extra>
+          <span class="sub-text">
+            {{ selectedMessageId ? `当前消息 #${selectedMessageId}` : '请选择消息查看回执' }}
+          </span>
         </template>
 
-        <el-empty v-if="!selectedMessageId" description="从上方消息列表选择一条消息查看回执" />
+        <template #toolbar>
+          <el-empty v-if="!selectedMessageId" description="从上方消息列表选择一条消息查看回执" />
 
-        <template v-else>
-          <el-form :model="receiptSearchForm" inline class="inner-search-form">
+          <el-form v-else :model="receiptSearchForm" inline class="inner-search-form">
             <el-form-item label="接收人">
               <el-input-number
                 v-model="receiptSearchForm.recipientUserId"
@@ -522,60 +503,44 @@
               <el-button @click="handleReceiptReset">重置</el-button>
             </el-form-item>
           </el-form>
-
-          <el-table
-            v-loading="chatStore.receiptLoading"
-            :data="chatStore.receipts"
-            border
-            stripe
-            table-layout="auto"
-          >
-            <el-table-column
-              prop="recipientUserId"
-              label="接收人 ID"
-              min-width="96"
-              align="center"
-            />
-            <el-table-column label="接收人" min-width="160" align="center">
-              <template #default="{ row }">
-                {{ row.recipientNickname || row.recipientUsername || '-' }}
-              </template>
-            </el-table-column>
-            <el-table-column label="送达状态" min-width="110" align="center">
-              <template #default="{ row }">
-                {{ formatChatDeliveryStatus(row.deliveryStatus) }}
-              </template>
-            </el-table-column>
-            <el-table-column label="可见状态" min-width="110" align="center">
-              <template #default="{ row }">
-                {{ formatChatVisibleStatus(row.visibleStatus) }}
-              </template>
-            </el-table-column>
-            <el-table-column label="送达时间" min-width="168" align="center">
-              <template #default="{ row }">
-                {{ formatCreatedAt(row.deliveredAt) }}
-              </template>
-            </el-table-column>
-            <el-table-column label="阅读时间" min-width="168" align="center">
-              <template #default="{ row }">
-                {{ formatCreatedAt(row.readAt) }}
-              </template>
-            </el-table-column>
-          </el-table>
-
-          <div class="pagination">
-            <el-pagination
-              v-model:current-page="receiptPagination.current"
-              v-model:page-size="receiptPagination.size"
-              :total="chatStore.receiptTotal"
-              :page-sizes="[10, 20, 50]"
-              layout="total, sizes, prev, pager, next"
-              @current-change="handleReceiptPageChange"
-              @size-change="handleReceiptSizeChange"
-            />
-          </div>
         </template>
-      </el-card>
+
+        <template v-if="!selectedMessageId" #empty>
+          <el-empty description="从上方消息列表选择一条消息查看回执" />
+        </template>
+
+        <el-table-column
+          prop="recipientUserId"
+          label="接收人 ID"
+          min-width="96"
+          align="center"
+        />
+        <el-table-column label="接收人" min-width="160" align="center">
+          <template #default="{ row }">
+            {{ row.recipientNickname || row.recipientUsername || '-' }}
+          </template>
+        </el-table-column>
+        <el-table-column label="送达状态" min-width="110" align="center">
+          <template #default="{ row }">
+            {{ formatChatDeliveryStatus(row.deliveryStatus) }}
+          </template>
+        </el-table-column>
+        <el-table-column label="可见状态" min-width="110" align="center">
+          <template #default="{ row }">
+            {{ formatChatVisibleStatus(row.visibleStatus) }}
+          </template>
+        </el-table-column>
+        <el-table-column label="送达时间" min-width="168" align="center">
+          <template #default="{ row }">
+            {{ formatCreatedAt(row.deliveredAt) }}
+          </template>
+        </el-table-column>
+        <el-table-column label="阅读时间" min-width="168" align="center">
+          <template #default="{ row }">
+            {{ formatCreatedAt(row.readAt) }}
+          </template>
+        </el-table-column>
+      </DataTable>
     </template>
 
     <ChatMessageDetailDrawer
@@ -984,14 +949,6 @@ onMounted(() => {
   width: 220px;
 }
 
-.card-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  font-weight: 500;
-}
-
 .detail-row {
   margin: 0;
 }
@@ -1017,12 +974,6 @@ onMounted(() => {
 .sub-text {
   font-size: 12px;
   color: var(--el-text-color-secondary);
-}
-
-.pagination {
-  display: flex;
-  justify-content: center;
-  margin-top: 16px;
 }
 
 @media (max-width: 768px) {

@@ -68,18 +68,29 @@
     </el-card>
 
     <!-- 数据表格 -->
-    <el-card class="table-card" shadow="never">
-      <template #header>
-        <div class="card-header">
-          <div class="card-header__left">
-            <span>用户列表</span>
-            <div v-if="!userStore.loading && userStore.total > 0" class="stats-bar">
-              <span class="stats-item">
-                共 <strong>{{ userStore.total }}</strong> 人
-              </span>
-              <span class="stats-item stats-item--success"> 正常 {{ activeCount }} </span>
-              <span class="stats-item stats-item--danger"> 禁用 {{ disabledCount }} </span>
-            </div>
+    <DataTable
+      ref="dataTableRef"
+      title="用户列表"
+      :data="userStore.users"
+      :loading="userStore.loading"
+      :total="userStore.total"
+      :current-page="pagination.current"
+      :page-size="pagination.size"
+      :compact="isCompactTable"
+      :row-class-name="getRowClassName"
+      class="user-table"
+      @update:current-page="handleCurrentChange"
+      @update:page-size="handleSizeChange"
+      @selection-change="handleSelectionChange"
+    >
+      <template #header-extra>
+        <div class="stats-bar-wrapper">
+          <div v-if="!userStore.loading && userStore.total > 0" class="stats-bar">
+            <span class="stats-item">
+              共 <strong>{{ userStore.total }}</strong> 人
+            </span>
+            <span class="stats-item stats-item--success"> 正常 {{ activeCount }} </span>
+            <span class="stats-item stats-item--danger"> 禁用 {{ disabledCount }} </span>
           </div>
           <el-button v-permission="'sys:user:create'" type="primary" @click="handleAdd">
             <el-icon><Plus /></el-icon>
@@ -89,62 +100,50 @@
       </template>
 
       <!-- 批量操作栏 -->
-      <transition name="el-fade-in">
-        <div v-if="selectedRows.length > 0" class="batch-bar">
-          <span class="batch-bar__text">
-            已选择 <strong>{{ selectedRows.length }}</strong> 项
-          </span>
-          <el-button size="small" @click="clearSelection">取消选择</el-button>
-          <el-button
-            v-permission="'sys:user:update'"
-            size="small"
-            type="success"
-            plain
-            @click="handleBatchStatus(1)"
-          >
-            批量启用
-          </el-button>
-          <el-button
-            v-permission="'sys:user:update'"
-            size="small"
-            type="warning"
-            plain
-            @click="handleBatchStatus(0)"
-          >
-            批量禁用
-          </el-button>
-          <el-button
-            v-permission="'sys:user:delete'"
-            size="small"
-            type="danger"
-            plain
-            @click="handleBatchDelete"
-          >
-            批量删除
-          </el-button>
-        </div>
-      </transition>
-
-      <el-table
-        ref="tableRef"
-        v-loading="userStore.loading"
-        :data="userStore.users"
-        :size="isCompactTable ? 'small' : 'default'"
-        :row-class-name="getRowClassName"
-        table-layout="auto"
-        class="user-table"
-        border
-        stripe
-        @selection-change="handleSelectionChange"
-      >
-        <!-- 空数据 -->
-        <template #empty>
-          <div class="table-empty">
-            <el-empty description="暂无用户数据" :image-size="80" />
+      <template #toolbar>
+        <transition name="el-fade-in">
+          <div v-if="selectedRows.length > 0" class="batch-bar">
+            <span class="batch-bar__text">
+              已选择 <strong>{{ selectedRows.length }}</strong> 项
+            </span>
+            <el-button size="small" @click="clearSelection">取消选择</el-button>
+            <el-button
+              v-permission="'sys:user:update'"
+              size="small"
+              type="success"
+              plain
+              @click="handleBatchStatus(1)"
+            >
+              批量启用
+            </el-button>
+            <el-button
+              v-permission="'sys:user:update'"
+              size="small"
+              type="warning"
+              plain
+              @click="handleBatchStatus(0)"
+            >
+              批量禁用
+            </el-button>
+            <el-button
+              v-permission="'sys:user:delete'"
+              size="small"
+              type="danger"
+              plain
+              @click="handleBatchDelete"
+            >
+              批量删除
+            </el-button>
           </div>
-        </template>
-        <!-- 多选列 -->
-        <el-table-column v-if="!isCompactTable" type="selection" width="44" align="center" />
+        </transition>
+      </template>
+
+      <template #empty>
+        <el-empty description="暂无用户数据" :image-size="80" />
+      </template>
+
+      <!-- 多选列 -->
+      <el-table-column v-if="!isCompactTable" type="selection" width="44" align="center" />
 
         <!-- 紧凑模式：合并用户信息列 -->
         <el-table-column v-if="isCompactTable" label="用户信息" min-width="300" align="center">
@@ -298,22 +297,7 @@
             </div>
           </template>
         </el-table-column>
-      </el-table>
-
-      <!-- 分页 -->
-      <div class="pagination">
-        <el-pagination
-          v-model:current-page="pagination.current"
-          v-model:page-size="pagination.size"
-          :total="userStore.total"
-          :page-sizes="[10, 20, 50, 100]"
-          layout="total, sizes, prev, pager, next, jumper"
-          :small="isCompactTable"
-          @size-change="handleSizeChange"
-          @current-change="handleCurrentChange"
-        />
-      </div>
-    </el-card>
+    </DataTable>
 
     <!-- 新增/编辑用户对话框 -->
     <UserFormDialog
@@ -363,6 +347,7 @@ import { ElMessage, ElMessageBox } from 'element-plus'
 import { Plus, ArrowDown, Male, Female } from '@element-plus/icons-vue'
 import { useUserStore } from '@/stores/modules/user'
 import { useContentAdmin } from '@/composables/useContentAdmin'
+import DataTable from '@/components/common/DataTable.vue'
 import UserLevelBadge from '@/components/common/UserLevelBadge.vue'
 import type { SysUserAdminVO, UserQueryRequest } from '@/types/api-types'
 import UserFormDialog from './components/UserFormDialog.vue'
@@ -376,7 +361,7 @@ const LOG_PREFIX = '[UserManagement]'
 
 const userStore = useUserStore()
 
-const tableRef = ref()
+const dataTableRef = ref<InstanceType<typeof DataTable>>()
 
 // 搜索表单数据
 const searchForm = reactive({
@@ -497,6 +482,9 @@ function handleSizeChange(size: number) {
 /**
  * 当前页码变更
  */
+/**
+ * 当前页码变更
+ */
 function handleCurrentChange(current: number) {
   console.log(`${LOG_PREFIX} Page changed to: ${current}`)
   pagination.current = current
@@ -517,7 +505,7 @@ function handleSelectionChange(rows: SysUserAdminVO[]) {
  */
 function clearSelection() {
   console.debug(`${LOG_PREFIX} Clearing selection`)
-  tableRef.value?.clearSelection()
+  dataTableRef.value?.tableRef?.clearSelection()
 }
 
 /**
@@ -822,16 +810,6 @@ onMounted(() => {
   margin-right: auto;
 }
 
-.table-card {
-  display: flex;
-  flex-direction: column;
-}
-
-.table-card :deep(.el-card__body) {
-  display: flex;
-  flex-direction: column;
-}
-
 .user-table {
   width: 100%;
 }
@@ -848,11 +826,6 @@ onMounted(() => {
 
 .user-table :deep(.row-disabled .el-avatar) {
   opacity: 0.5;
-}
-
-/* 空数据 */
-.table-empty {
-  padding: 24px 0;
 }
 
 /* 下拉菜单危险操作 */
@@ -960,16 +933,7 @@ onMounted(() => {
   word-break: break-all;
 }
 
-.card-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 12px 16px;
-  font-weight: 500;
-}
-
-.card-header__left {
+.stats-bar-wrapper {
   display: flex;
   align-items: center;
   gap: 16px;
@@ -1000,14 +964,6 @@ onMounted(() => {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-}
-
-.pagination {
-  flex-shrink: 0;
-  display: flex;
-  justify-content: center;
-  margin-top: 20px;
-  padding: 12px 0 8px;
 }
 
 @media (max-width: 768px) {

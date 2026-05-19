@@ -27,81 +27,69 @@
       </el-form>
     </el-card>
 
-    <el-card class="table-card" shadow="never">
-      <template #header>
-        <span>入群申请列表</span>
-      </template>
-      <div>
-        <el-table
-          :data="tableData"
-          v-loading="loading"
-          :size="isCompactTable ? 'small' : 'default'"
-          border
-          stripe
-        >
-          <el-table-column prop="id" label="ID" width="80" align="center" />
-          <el-table-column prop="userId" label="用户ID" width="90" align="center" />
-          <el-table-column prop="conversationId" label="会话ID" width="100" align="center" />
-          <el-table-column prop="username" label="申请人" min-width="120" align="center" />
-          <el-table-column prop="nickname" label="昵称" min-width="120" align="center" />
-          <el-table-column
-            prop="applyMessage"
-            label="申请留言"
-            min-width="200"
-            show-overflow-tooltip
-          />
-          <el-table-column prop="applyStatus" label="状态" width="100" align="center">
-            <template #default="{ row }">
-              <el-tag :type="statusTagType(row.applyStatus)">{{
-                statusLabel(row.applyStatus)
-              }}</el-tag>
-            </template>
-          </el-table-column>
-          <el-table-column
-            prop="reviewComment"
-            label="审核备注"
-            min-width="180"
-            show-overflow-tooltip
-          >
-            <template #default="{ row }">
-              {{ row.reviewComment || '—' }}
-            </template>
-          </el-table-column>
-          <el-table-column prop="createdAt" label="申请时间" min-width="180" align="center">
-            <template #default="{ row }">
-              {{ formatCreatedAt(row.createdAt) }}
-            </template>
-          </el-table-column>
-          <el-table-column prop="reviewedAt" label="审核时间" min-width="180" align="center">
-            <template #default="{ row }">
-              {{ formatCreatedAt(row.reviewedAt) }}
-            </template>
-          </el-table-column>
-          <el-table-column label="操作" width="140" align="center">
-            <template #default="{ row }">
-              <template v-if="row.applyStatus === 0">
-                <el-button link type="primary" @click="handleApprove(row)">通过</el-button>
-                <el-button link type="danger" @click="handleReject(row)">拒绝</el-button>
-              </template>
-              <template v-else>
-                <el-button link type="primary" @click="handleView(row)">查看</el-button>
-              </template>
-            </template>
-          </el-table-column>
-        </el-table>
-      </div>
-      <div class="pagination-area">
-        <el-pagination
-          v-model:current-page="pagination.current"
-          v-model:page-size="pagination.size"
-          :total="pagination.total"
-          :page-sizes="[10, 20, 50]"
-          :layout="paginationLayout"
-          @size-change="handleSizeChange"
-          @current-change="handleCurrentChange"
-        />
-      </div>
-    </el-card>
+    <DataTable
+      :data="tableData"
+      :loading="loading"
+      :total="pagination.total"
+      v-model:current-page="pagination.current"
+      v-model:page-size="pagination.size"
+      :page-sizes="[10, 20, 50]"
+      :pagination-layout="paginationLayout"
+      :compact="isCompactTable"
+      title="入群申请列表"
+      @size-change="handleSizeChange"
+      @page-change="handleCurrentChange"
+    >
+      <el-table-column prop="id" label="ID" width="80" align="center" />
+      <el-table-column prop="userId" label="用户ID" width="90" align="center" />
+      <el-table-column prop="conversationId" label="会话ID" width="100" align="center" />
+      <el-table-column prop="username" label="申请人" min-width="120" align="center" />
+      <el-table-column prop="nickname" label="昵称" min-width="120" align="center" />
+      <el-table-column
+        prop="applyMessage"
+        label="申请留言"
+        min-width="200"
+        show-overflow-tooltip
+      />
+      <el-table-column prop="applyStatus" label="状态" width="100" align="center">
+        <template #default="{ row }">
+          <el-tag :type="statusTagType(row.applyStatus)">{{
+            statusLabel(row.applyStatus)
+          }}</el-tag>
+        </template>
+      </el-table-column>
+      <el-table-column
+        prop="reviewComment"
+        label="审核备注"
+        min-width="180"
+        show-overflow-tooltip
+      >
+        <template #default="{ row }">
+          {{ row.reviewComment || '—' }}
+        </template>
+      </el-table-column>
+      <el-table-column prop="createdAt" label="申请时间" min-width="180" align="center">
+        <template #default="{ row }">
+          {{ formatCreatedAt(row.createdAt) }}
+        </template>
+      </el-table-column>
+      <el-table-column prop="reviewedAt" label="审核时间" min-width="180" align="center">
+        <template #default="{ row }">
+          {{ formatCreatedAt(row.reviewedAt) }}
+        </template>
+      </el-table-column>
+      <el-table-column label="操作" width="140" align="center">
+        <template #default="{ row }">
+          <template v-if="row.applyStatus === 0">
+            <el-button link type="primary" @click="handleApprove(row)">通过</el-button>
+            <el-button link type="danger" @click="handleReject(row)">拒绝</el-button>
+          </template>
+          <template v-else>
+            <el-button link type="primary" @click="handleView(row)">查看</el-button>
+          </template>
+        </template>
+      </el-table-column>
+    </DataTable>
 
     <el-dialog v-model="detailVisible" title="申请详情" width="500px">
       <el-descriptions :column="1" border>
@@ -139,6 +127,7 @@ import { onMounted, reactive, ref } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { SysChatApi } from '@/api/sys/chat'
 import { useContentAdmin } from '@/composables/useContentAdmin'
+import DataTable from '@/components/common/DataTable.vue'
 import { formatCreatedAt } from '@/utils'
 import type { GroupJoinApplicationVO } from '@/types/api-types'
 
@@ -273,15 +262,5 @@ onMounted(() => {
 
 .search-card {
   margin-bottom: 16px;
-}
-
-.table-card {
-  margin-bottom: 16px;
-}
-
-.pagination-area {
-  display: flex;
-  justify-content: flex-end;
-  margin-top: 16px;
 }
 </style>

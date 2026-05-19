@@ -43,135 +43,124 @@
       </el-form>
     </el-card>
 
-    <el-card class="table-card" shadow="never">
-      <template #header>
-        <div class="card-header">
-          <span>举报列表</span>
-          <span class="card-header__meta">{{ pagination.total }} 条</span>
-        </div>
+    <DataTable
+      :data="tableData"
+      :loading="loading"
+      :total="pagination.total"
+      :current-page="pagination.current"
+      :page-size="pagination.size"
+      :page-sizes="[10, 20, 50, 100]"
+      :pagination-layout="paginationLayout"
+      :compact="isCompactTable"
+      title="举报列表"
+      @update:current-page="pagination.current = $event"
+      @update:page-size="pagination.size = $event"
+      @size-change="handleSizeChange"
+      @page-change="handleCurrentChange"
+    >
+      <template #header-extra>
+        <span class="card-header__meta">{{ pagination.total }} 条</span>
       </template>
 
-      <el-table
-        :data="tableData"
-        v-loading="loading"
-        :size="isCompactTable ? 'small' : 'default'"
-        table-layout="auto"
-        border
-        stripe
+      <el-table-column prop="id" label="ID" min-width="80" align="center" />
+      <el-table-column label="对象类型" min-width="100" align="center">
+        <template #default="{ row }">
+          <el-tag size="small">{{ targetTypeLabel(row.reportTargetType) }}</el-tag>
+        </template>
+      </el-table-column>
+      <el-table-column prop="reportTargetId" label="对象ID" min-width="80" align="center" />
+      <el-table-column prop="reporterUsername" label="举报人" min-width="100" align="center" />
+      <el-table-column
+        label="原因"
+        min-width="200"
+        align="center"
+        show-overflow-tooltip
       >
-        <el-table-column prop="id" label="ID" min-width="80" align="center" />
-        <el-table-column label="对象类型" min-width="100" align="center">
-          <template #default="{ row }">
-            <el-tag size="small">{{ targetTypeLabel(row.reportTargetType) }}</el-tag>
-          </template>
-        </el-table-column>
-        <el-table-column prop="reportTargetId" label="对象ID" min-width="80" align="center" />
-        <el-table-column prop="reporterUsername" label="举报人" min-width="100" align="center" />
-        <el-table-column
-          label="原因"
-          min-width="200"
-          align="center"
-          show-overflow-tooltip
-        >
-          <template #default="{ row }">
-            {{ row.reasonCode }}
-            <span v-if="row.reasonDetail" style="color: var(--el-text-color-secondary)">
-              ({{ row.reasonDetail }})
-            </span>
-          </template>
-        </el-table-column>
-        <el-table-column label="状态" min-width="100" align="center">
-          <template #default="{ row }">
-            <el-tag :type="statusTagType(row.status)" size="small">
-              {{ statusLabel(row.status) }}
-            </el-tag>
-          </template>
-        </el-table-column>
-        <el-table-column label="举报时间" min-width="160" align="center">
-          <template #default="{ row }">{{ row.reportedAt || '-' }}</template>
-        </el-table-column>
-        <el-table-column
-          label="操作"
-          :min-width="isCompactTable ? 140 : 200"
-          :fixed="isCompactTable ? false : 'right'"
-          class-name="action-column"
-          align="center"
-        >
-          <template #default="{ row }">
-            <div class="table-actions" :class="{ 'table-actions--compact': isCompactTable }">
-              <el-button link type="primary" @click="handleView(row)">详情</el-button>
-              <el-button
-                v-if="row.status === 0"
-                v-permission="'sys:report:handle'"
-                link
-                type="primary"
-                @click="handleTake(row)"
-              >
-                接手
-              </el-button>
-              <el-button
-                v-if="row.status <= 1"
-                v-permission="'sys:report:handle'"
-                link
-                type="success"
-                @click="openProcessDialog(row)"
-              >
-                处理
-              </el-button>
-              <el-button
-                v-if="row.status <= 1"
-                v-permission="'sys:report:handle'"
-                link
-                type="danger"
-                @click="handleReject(row)"
-              >
-                驳回
-              </el-button>
-              <el-button
-                v-if="row.status === 1"
-                v-permission="'sys:report:handle'"
-                link
-                type="warning"
-                @click="handleOverride(row)"
-              >
-                接管
-              </el-button>
-              <el-button
-                v-if="row.status >= 2 && row.resultType"
-                v-permission="'sys:report:handle'"
-                link
-                type="primary"
-                @click="handleEditProcess(row)"
-              >
-                修改处理
-              </el-button>
-              <el-button
-                v-if="row.status >= 2"
-                v-permission="'sys:report:repair'"
-                link
-                type="warning"
-                @click="handleRepair(row)"
-              >
-                修复
-              </el-button>
-            </div>
-          </template>
-        </el-table-column>
-      </el-table>
-
-      <div class="pagination">
-        <el-pagination
-          v-model:current-page="pagination.current"
-          v-model:page-size="pagination.size"
-          :total="pagination.total"
-          :page-sizes="[10, 20, 50, 100]"
-          :layout="paginationLayout"
-          :small="isCompactTable"
-          @size-change="handleSizeChange"
-          @current-change="handleCurrentChange"
-        />
-      </div>
-    </el-card>
+        <template #default="{ row }">
+          {{ row.reasonCode }}
+          <span v-if="row.reasonDetail" style="color: var(--el-text-color-secondary)">
+            ({{ row.reasonDetail }})
+          </span>
+        </template>
+      </el-table-column>
+      <el-table-column label="状态" min-width="100" align="center">
+        <template #default="{ row }">
+          <el-tag :type="statusTagType(row.status)" size="small">
+            {{ statusLabel(row.status) }}
+          </el-tag>
+        </template>
+      </el-table-column>
+      <el-table-column label="举报时间" min-width="160" align="center">
+        <template #default="{ row }">{{ row.reportedAt || '-' }}</template>
+      </el-table-column>
+      <el-table-column
+        label="操作"
+        :min-width="isCompactTable ? 140 : 200"
+        :fixed="isCompactTable ? false : 'right'"
+        class-name="action-column"
+        align="center"
+      >
+        <template #default="{ row }">
+          <div class="table-actions" :class="{ 'table-actions--compact': isCompactTable }">
+            <el-button link type="primary" @click="handleView(row)">详情</el-button>
+            <el-button
+              v-if="row.status === 0"
+              v-permission="'sys:report:handle'"
+              link
+              type="primary"
+              @click="handleTake(row)"
+            >
+              接手
+            </el-button>
+            <el-button
+              v-if="row.status <= 1"
+              v-permission="'sys:report:handle'"
+              link
+              type="success"
+              @click="openProcessDialog(row)"
+            >
+              处理
+            </el-button>
+            <el-button
+              v-if="row.status <= 1"
+              v-permission="'sys:report:handle'"
+              link
+              type="danger"
+              @click="handleReject(row)"
+            >
+              驳回
+            </el-button>
+            <el-button
+              v-if="row.status === 1"
+              v-permission="'sys:report:handle'"
+              link
+              type="warning"
+              @click="handleOverride(row)"
+            >
+              接管
+            </el-button>
+            <el-button
+              v-if="row.status >= 2 && row.resultType"
+              v-permission="'sys:report:handle'"
+              link
+              type="primary"
+              @click="handleEditProcess(row)"
+            >
+              修改处理
+            </el-button>
+            <el-button
+              v-if="row.status >= 2"
+              v-permission="'sys:report:repair'"
+              link
+              type="warning"
+              @click="handleRepair(row)"
+            >
+              修复
+            </el-button>
+          </div>
+        </template>
+      </el-table-column>
+    </DataTable>
 
     <el-dialog
       v-model="processDialogVisible"
@@ -706,19 +695,6 @@ onMounted(() => {
   margin-right: 0;
 }
 
-.card-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 12px;
-  font-weight: 500;
-}
-
-.card-header__meta {
-  color: var(--el-text-color-secondary);
-  font-size: 13px;
-}
-
 .action-column {
   border-left: 2px solid var(--el-border-color);
 }
@@ -738,12 +714,6 @@ onMounted(() => {
 
 .table-actions :deep(.el-button + .el-button) {
   margin-left: 0;
-}
-
-.pagination {
-  display: flex;
-  justify-content: center;
-  margin-top: 16px;
 }
 
 @media (max-width: 768px) {

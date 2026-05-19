@@ -76,81 +76,70 @@
       </el-col>
     </el-row>
 
-    <el-card class="table-card" shadow="never">
-      <template #header>
-        <div class="card-header">
-          <span>经验流水日志</span>
-          <span class="card-header__meta">{{ experienceStore.logTotal }} 条</span>
-        </div>
+    <DataTable
+      :data="experienceStore.logs"
+      :loading="experienceStore.loading"
+      :total="experienceStore.logTotal"
+      :current-page="pagination.current"
+      :page-size="pagination.size"
+      :page-sizes="[10, 20, 50]"
+      :pagination-layout="paginationLayout"
+      :compact="isCompactTable"
+      title="经验流水日志"
+      class="log-table"
+      @update:current-page="pagination.current = $event"
+      @update:page-size="pagination.size = $event"
+      @size-change="handleSizeChange"
+      @page-change="handleCurrentChange"
+    >
+      <template #header-extra>
+        <span class="card-header__meta">{{ experienceStore.logTotal }} 条</span>
       </template>
 
-      <el-table
-        v-loading="experienceStore.loading"
-        :data="experienceStore.logs"
-        :size="isCompactTable ? 'small' : 'default'"
-        table-layout="auto"
-        class="log-table"
-        border
-        stripe
+      <el-table-column prop="userId" label="用户ID" min-width="80" align="center" />
+      <el-table-column label="来源类型" min-width="100" align="center">
+        <template #default="{ row }">
+          <el-tag :type="sourceTagType(row.sourceType)" size="small">
+            {{ row.sourceTypeLabel || row.sourceType }}
+          </el-tag>
+        </template>
+      </el-table-column>
+      <el-table-column label="经验变化" min-width="100" align="center">
+        <template #default="{ row }">
+          <span :class="row.experienceChange > 0 ? 'exp-positive' : 'exp-negative'">
+            {{ row.experienceChange > 0 ? '+' : '' }}{{ row.experienceChange }}
+          </span>
+        </template>
+      </el-table-column>
+      <el-table-column label="等级变化" min-width="120" align="center">
+        <template #default="{ row }">
+          <template v-if="row.levelBefore !== row.levelAfter">
+            <el-tag size="small" type="info">Lv.{{ row.levelBefore }}</el-tag>
+            <span class="level-arrow">-&gt;</span>
+            <el-tag size="small" type="success">Lv.{{ row.levelAfter }}</el-tag>
+          </template>
+          <template v-else>
+            <span class="level-same">Lv.{{ row.levelBefore }}</span>
+          </template>
+        </template>
+      </el-table-column>
+      <el-table-column
+        prop="description"
+        label="描述"
+        min-width="180"
+        align="center"
+        show-overflow-tooltip
       >
-        <el-table-column prop="userId" label="用户ID" min-width="80" align="center" />
-        <el-table-column label="来源类型" min-width="100" align="center">
-          <template #default="{ row }">
-            <el-tag :type="sourceTagType(row.sourceType)" size="small">
-              {{ row.sourceTypeLabel || row.sourceType }}
-            </el-tag>
-          </template>
-        </el-table-column>
-        <el-table-column label="经验变化" min-width="100" align="center">
-          <template #default="{ row }">
-            <span :class="row.experienceChange > 0 ? 'exp-positive' : 'exp-negative'">
-              {{ row.experienceChange > 0 ? '+' : '' }}{{ row.experienceChange }}
-            </span>
-          </template>
-        </el-table-column>
-        <el-table-column label="等级变化" min-width="120" align="center">
-          <template #default="{ row }">
-            <template v-if="row.levelBefore !== row.levelAfter">
-              <el-tag size="small" type="info">Lv.{{ row.levelBefore }}</el-tag>
-              <span class="level-arrow">-&gt;</span>
-              <el-tag size="small" type="success">Lv.{{ row.levelAfter }}</el-tag>
-            </template>
-            <template v-else>
-              <span class="level-same">Lv.{{ row.levelBefore }}</span>
-            </template>
-          </template>
-        </el-table-column>
-        <el-table-column
-          prop="description"
-          label="描述"
-          min-width="180"
-          align="center"
-          show-overflow-tooltip
-        >
-          <template #default="{ row }">
-            {{ row.description || '-' }}
-          </template>
-        </el-table-column>
-        <el-table-column label="时间" min-width="160" align="center">
-          <template #default="{ row }">
-            {{ formatAiDate(row.createdAt) }}
-          </template>
-        </el-table-column>
-      </el-table>
-
-      <div class="pagination">
-        <el-pagination
-          v-model:current-page="pagination.current"
-          v-model:page-size="pagination.size"
-          :total="experienceStore.logTotal"
-          :page-sizes="[10, 20, 50]"
-          :layout="paginationLayout"
-          :small="isCompactTable"
-          @size-change="handleSizeChange"
-          @current-change="handleCurrentChange"
-        />
-      </div>
-    </el-card>
+        <template #default="{ row }">
+          {{ row.description || '-' }}
+        </template>
+      </el-table-column>
+      <el-table-column label="时间" min-width="160" align="center">
+        <template #default="{ row }">
+          {{ formatAiDate(row.createdAt) }}
+        </template>
+      </el-table-column>
+    </DataTable>
 
     <ExperienceRuleDialog v-model:visible="ruleDialogVisible" />
   </div>
@@ -328,25 +317,6 @@ onMounted(() => {
   font-size: 12px;
   font-weight: 400;
   color: var(--el-text-color-secondary);
-}
-
-.card-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 12px;
-  font-weight: 500;
-}
-
-.card-header__meta {
-  color: var(--el-text-color-secondary);
-  font-size: 13px;
-}
-
-.pagination {
-  display: flex;
-  justify-content: center;
-  margin-top: 16px;
 }
 
 .exp-positive {

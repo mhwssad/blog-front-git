@@ -39,109 +39,95 @@
       </el-form>
     </el-card>
 
-    <el-card class="table-card" shadow="never">
-      <template #header>
-        <div class="card-header">
-          <span>配置列表</span>
-          <el-button v-permission="'sys:config:create'" type="primary" @click="handleAdd">
-            <el-icon><Plus /></el-icon>
-            新增配置
-          </el-button>
-        </div>
+    <DataTable
+      :data="configStore.configs"
+      :loading="configStore.loading"
+      :total="configStore.total"
+      v-model:current-page="pagination.current"
+      v-model:page-size="pagination.size"
+      :page-sizes="[10, 20, 50, 100]"
+      :pagination-layout="paginationLayout"
+      title="配置列表"
+      :compact="isCompactTable"
+      @page-change="fetchConfigs"
+      @size-change="() => { pagination.current = 1; fetchConfigs() }"
+    >
+      <template #header-extra>
+        <el-button v-permission="'sys:config:create'" type="primary" @click="handleAdd">
+          <el-icon><Plus /></el-icon>
+          新增配置
+        </el-button>
       </template>
 
-      <el-table
-        v-loading="configStore.loading"
-        :data="configStore.configs"
-        :size="isCompactTable ? 'small' : 'default'"
-        table-layout="auto"
-        class="config-table"
-        border
-        stripe
+      <el-table-column prop="id" label="ID" min-width="80" align="center" />
+      <el-table-column
+        prop="configName"
+        label="配置名称"
+        min-width="160"
+        align="center"
+        show-overflow-tooltip
+      />
+      <el-table-column
+        prop="configKey"
+        label="配置键"
+        min-width="200"
+        align="center"
+        show-overflow-tooltip
+      />
+      <el-table-column
+        prop="configValue"
+        label="配置值"
+        min-width="220"
+        align="center"
+        show-overflow-tooltip
       >
-        <el-table-column prop="id" label="ID" min-width="80" align="center" />
-        <el-table-column
-          prop="configName"
-          label="配置名称"
-          min-width="160"
-          align="center"
-          show-overflow-tooltip
-        />
-        <el-table-column
-          prop="configKey"
-          label="配置键"
-          min-width="200"
-          align="center"
-          show-overflow-tooltip
-        />
-        <el-table-column
-          prop="configValue"
-          label="配置值"
-          min-width="220"
-          align="center"
-          show-overflow-tooltip
-        >
-          <template #default="{ row }">
-            {{ formatConfigPreview(row.configValue) }}
-          </template>
-        </el-table-column>
-        <el-table-column label="系统配置" min-width="100" align="center">
-          <template #default="{ row }">
-            {{ formatSystemFlag(row.isSystem) }}
-          </template>
-        </el-table-column>
-        <el-table-column
-          label="操作"
-          :min-width="isCompactTable ? 160 : 220"
-          :fixed="isCompactTable ? false : 'right'"
-          class-name="action-column"
-          align="center"
-        >
-          <template #default="{ row }">
-            <div class="table-actions" :class="{ 'table-actions--compact': isCompactTable }">
-              <el-button
-                v-permission="'sys:config:query'"
-                link
-                type="primary"
-                @click="handleViewDetail(row)"
-              >
-                查看详情
-              </el-button>
-              <el-button
-                v-permission="'sys:config:update'"
-                link
-                type="primary"
-                @click="handleEdit(row)"
-              >
-                编辑
-              </el-button>
-              <el-button
-                v-permission="'sys:config:delete'"
-                link
-                type="danger"
-                :disabled="row.isSystem === 1"
-                @click="handleDelete(row)"
-              >
-                删除
-              </el-button>
-            </div>
-          </template>
-        </el-table-column>
-      </el-table>
-
-      <div class="pagination">
-        <el-pagination
-          v-model:current-page="pagination.current"
-          v-model:page-size="pagination.size"
-          :total="configStore.total"
-          :page-sizes="[10, 20, 50, 100]"
-          :layout="paginationLayout"
-          :small="isCompactTable"
-          @size-change="handleSizeChange"
-          @current-change="handleCurrentChange"
-        />
-      </div>
-    </el-card>
+        <template #default="{ row }">
+          {{ formatConfigPreview(row.configValue) }}
+        </template>
+      </el-table-column>
+      <el-table-column label="系统配置" min-width="100" align="center">
+        <template #default="{ row }">
+          {{ formatSystemFlag(row.isSystem) }}
+        </template>
+      </el-table-column>
+      <el-table-column
+        label="操作"
+        :min-width="isCompactTable ? 160 : 220"
+        :fixed="isCompactTable ? false : 'right'"
+        class-name="action-column"
+        align="center"
+      >
+        <template #default="{ row }">
+          <div class="table-actions" :class="{ 'table-actions--compact': isCompactTable }">
+            <el-button
+              v-permission="'sys:config:query'"
+              link
+              type="primary"
+              @click="handleViewDetail(row)"
+            >
+              查看详情
+            </el-button>
+            <el-button
+              v-permission="'sys:config:update'"
+              link
+              type="primary"
+              @click="handleEdit(row)"
+            >
+              编辑
+            </el-button>
+            <el-button
+              v-permission="'sys:config:delete'"
+              link
+              type="danger"
+              :disabled="row.isSystem === 1"
+              @click="handleDelete(row)"
+            >
+              删除
+            </el-button>
+          </div>
+        </template>
+      </el-table-column>
+    </DataTable>
 
     <ConfigFormDialog
       v-model:visible="formDialogVisible"
@@ -197,6 +183,7 @@ import { ElMessage, ElMessageBox } from 'element-plus'
 import { Plus } from '@element-plus/icons-vue'
 import type { ConfigQueryRequest, SysConfigAdminVO } from '@/types/api-types'
 import { useContentAdmin } from '@/composables/useContentAdmin'
+import DataTable from '@/components/common/DataTable.vue'
 import { useConfigStore } from '@/stores'
 import { formatSystemFlag } from '@/utils'
 import ConfigFormDialog from './components/ConfigFormDialog.vue'
@@ -263,17 +250,6 @@ function handleReset(): void {
   createTimeRange.value = []
   pagination.current = 1
   pagination.size = 10
-  void fetchConfigs()
-}
-
-function handleSizeChange(size: number): void {
-  pagination.size = size
-  pagination.current = 1
-  void fetchConfigs()
-}
-
-function handleCurrentChange(current: number): void {
-  pagination.current = current
   void fetchConfigs()
 }
 
@@ -370,26 +346,6 @@ onMounted(() => {
   margin-right: 0;
 }
 
-.card-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 12px;
-  font-weight: 500;
-}
-
-.config-table {
-  width: 100%;
-}
-
-.config-table :deep(.action-column) {
-  border-left: 2px solid var(--el-border-color);
-}
-
-.config-table :deep(.el-table__cell .cell) {
-  text-align: center;
-}
-
 .table-actions {
   display: inline-flex;
   flex-wrap: wrap;
@@ -405,12 +361,6 @@ onMounted(() => {
 
 .table-actions :deep(.el-button + .el-button) {
   margin-left: 0;
-}
-
-.pagination {
-  display: flex;
-  justify-content: center;
-  margin-top: 16px;
 }
 
 .config-value-preview {

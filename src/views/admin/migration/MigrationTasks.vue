@@ -78,123 +78,112 @@
       </article>
     </section>
 
-    <el-card class="table-card" shadow="never">
-      <template #header>
-        <div class="card-header">
-          <span>迁移任务</span>
-          <span class="card-header__meta">{{ migrationStore.total }} 条</span>
-        </div>
+    <DataTable
+      :data="migrationStore.tasks"
+      :loading="migrationStore.loading"
+      :total="migrationStore.total"
+      :current-page="pagination.current"
+      :page-size="pagination.size"
+      :page-sizes="[10, 20, 50, 100]"
+      :pagination-layout="paginationLayout"
+      :compact="isCompactTable"
+      title="迁移任务"
+      @update:current-page="pagination.current = $event"
+      @update:page-size="pagination.size = $event"
+      @size-change="handleSizeChange"
+      @page-change="handleCurrentChange"
+    >
+      <template #header-extra>
+        <span class="card-header__meta">{{ migrationStore.total }} 条</span>
       </template>
 
-      <el-table
-        v-loading="migrationStore.loading"
-        :data="migrationStore.tasks"
-        :size="isCompactTable ? 'small' : 'default'"
-        border
-        stripe
-        table-layout="auto"
+      <el-table-column prop="id" label="任务 ID" min-width="88" align="center" />
+      <el-table-column label="来源平台" min-width="130" align="center">
+        <template #default="{ row }">
+          <el-tag effect="plain">{{ formatSourcePlatform(row.sourcePlatform) }}</el-tag>
+        </template>
+      </el-table-column>
+      <el-table-column label="作者 ID" min-width="96" align="center">
+        <template #default="{ row }"> #{{ row.authorId }} </template>
+      </el-table-column>
+      <el-table-column label="状态" min-width="116" align="center">
+        <template #default="{ row }">
+          <el-tag :type="getTaskStatusTagType(row.status)" effect="light">
+            {{ formatTaskStatus(row.status) }}
+          </el-tag>
+        </template>
+      </el-table-column>
+      <el-table-column label="处理进度" min-width="180" align="center">
+        <template #default="{ row }">
+          <div class="progress-cell">
+            <el-progress
+              :percentage="calculateTaskProgress(row)"
+              :status="row.status === MigrationTaskStatus.FAILED ? 'exception' : undefined"
+              :stroke-width="10"
+            />
+            <span class="progress-cell__meta">
+              {{ row.successCount }}/{{ row.totalCount || 0 }} 成功
+            </span>
+          </div>
+        </template>
+      </el-table-column>
+      <el-table-column prop="totalCount" label="总数" min-width="80" align="center" />
+      <el-table-column prop="successCount" label="成功" min-width="80" align="center" />
+      <el-table-column prop="failedCount" label="失败" min-width="80" align="center" />
+      <el-table-column prop="skippedCount" label="跳过" min-width="80" align="center" />
+      <el-table-column label="创建时间" min-width="168" align="center">
+        <template #default="{ row }">
+          {{ formatCreateTime(row.createdAt) }}
+        </template>
+      </el-table-column>
+      <el-table-column
+        label="操作"
+        :fixed="isCompactTable ? false : 'right'"
+        :min-width="isCompactTable ? 220 : 320"
+        align="center"
+        class-name="action-column"
       >
-        <el-table-column prop="id" label="任务 ID" min-width="88" align="center" />
-        <el-table-column label="来源平台" min-width="130" align="center">
-          <template #default="{ row }">
-            <el-tag effect="plain">{{ formatSourcePlatform(row.sourcePlatform) }}</el-tag>
-          </template>
-        </el-table-column>
-        <el-table-column label="作者 ID" min-width="96" align="center">
-          <template #default="{ row }"> #{{ row.authorId }} </template>
-        </el-table-column>
-        <el-table-column label="状态" min-width="116" align="center">
-          <template #default="{ row }">
-            <el-tag :type="getTaskStatusTagType(row.status)" effect="light">
-              {{ formatTaskStatus(row.status) }}
-            </el-tag>
-          </template>
-        </el-table-column>
-        <el-table-column label="处理进度" min-width="180" align="center">
-          <template #default="{ row }">
-            <div class="progress-cell">
-              <el-progress
-                :percentage="calculateTaskProgress(row)"
-                :status="row.status === MigrationTaskStatus.FAILED ? 'exception' : undefined"
-                :stroke-width="10"
-              />
-              <span class="progress-cell__meta">
-                {{ row.successCount }}/{{ row.totalCount || 0 }} 成功
-              </span>
-            </div>
-          </template>
-        </el-table-column>
-        <el-table-column prop="totalCount" label="总数" min-width="80" align="center" />
-        <el-table-column prop="successCount" label="成功" min-width="80" align="center" />
-        <el-table-column prop="failedCount" label="失败" min-width="80" align="center" />
-        <el-table-column prop="skippedCount" label="跳过" min-width="80" align="center" />
-        <el-table-column label="创建时间" min-width="168" align="center">
-          <template #default="{ row }">
-            {{ formatCreateTime(row.createdAt) }}
-          </template>
-        </el-table-column>
-        <el-table-column
-          label="操作"
-          :fixed="isCompactTable ? false : 'right'"
-          :min-width="isCompactTable ? 220 : 320"
-          align="center"
-          class-name="action-column"
-        >
-          <template #default="{ row }">
-            <div class="table-actions" :class="{ 'table-actions--compact': isCompactTable }">
-              <el-button
-                v-permission="'content:migration:query'"
-                link
-                type="primary"
-                @click="handleViewDetail(row)"
-              >
-                详情
-              </el-button>
-              <el-button
-                v-permission="'content:migration:execute'"
-                link
-                type="warning"
-                :disabled="!canPrecheck(row)"
-                @click="handlePrecheck(row)"
-              >
-                预检
-              </el-button>
-              <el-button
-                v-permission="'content:migration:execute'"
-                link
-                type="success"
-                :disabled="!canExecute(row)"
-                @click="handleExecute(row)"
-              >
-                执行
-              </el-button>
-              <el-button
-                v-permission="'content:migration:export'"
-                link
-                type="danger"
-                :disabled="row.failedCount <= 0"
-                @click="handleExportFailures(row)"
-              >
-                导出失败
-              </el-button>
-            </div>
-          </template>
-        </el-table-column>
-      </el-table>
-
-      <div class="pagination">
-        <el-pagination
-          v-model:current-page="pagination.current"
-          v-model:page-size="pagination.size"
-          :total="migrationStore.total"
-          :page-sizes="[10, 20, 50, 100]"
-          :layout="paginationLayout"
-          :small="isCompactTable"
-          @current-change="handleCurrentChange"
-          @size-change="handleSizeChange"
-        />
-      </div>
-    </el-card>
+        <template #default="{ row }">
+          <div class="table-actions" :class="{ 'table-actions--compact': isCompactTable }">
+            <el-button
+              v-permission="'content:migration:query'"
+              link
+              type="primary"
+              @click="handleViewDetail(row)"
+            >
+              详情
+            </el-button>
+            <el-button
+              v-permission="'content:migration:execute'"
+              link
+              type="warning"
+              :disabled="!canPrecheck(row)"
+              @click="handlePrecheck(row)"
+            >
+              预检
+            </el-button>
+            <el-button
+              v-permission="'content:migration:execute'"
+              link
+              type="success"
+              :disabled="!canExecute(row)"
+              @click="handleExecute(row)"
+            >
+              执行
+            </el-button>
+            <el-button
+              v-permission="'content:migration:export'"
+              link
+              type="danger"
+              :disabled="row.failedCount <= 0"
+              @click="handleExportFailures(row)"
+            >
+              导出失败
+            </el-button>
+          </div>
+        </template>
+      </el-table-column>
+    </DataTable>
 
     <el-dialog
       v-model="createDialogVisible"
@@ -996,19 +985,17 @@ onMounted(() => {
   line-height: 1;
 }
 
-.card-header,
+.detail-section__subtitle,
+.progress-cell__meta {
+  color: var(--el-text-color-secondary);
+  font-size: 13px;
+}
+
 .detail-section__header {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-}
-
-.card-header__meta,
-.detail-section__subtitle,
-.progress-cell__meta {
-  color: var(--el-text-color-secondary);
-  font-size: 13px;
 }
 
 .table-actions {
@@ -1031,12 +1018,6 @@ onMounted(() => {
   display: flex;
   flex-direction: column;
   gap: 6px;
-}
-
-.pagination {
-  display: flex;
-  justify-content: center;
-  margin-top: 16px;
 }
 
 .create-form {
@@ -1122,6 +1103,8 @@ onMounted(() => {
 }
 
 .pagination--drawer {
+  display: flex;
+  justify-content: center;
   margin-top: 8px;
 }
 

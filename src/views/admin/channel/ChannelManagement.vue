@@ -74,117 +74,104 @@
       </el-form>
       </el-card>
 
-    <el-card class="table-card" shadow="never">
-      <template #header>
-        <div class="card-header">
-          <span>频道列表</span>
-          <el-button type="primary" @click="handleAdd">
-            <el-icon><Plus /></el-icon>
-            新增主题频道
-          </el-button>
-        </div>
+    <DataTable
+      :data="chatStore.conversations"
+      :loading="chatStore.conversationLoading"
+      :total="chatStore.conversationTotal"
+      v-model:current-page="pagination.current"
+      v-model:page-size="pagination.size"
+      :page-sizes="[10, 20, 50]"
+      :pagination-layout="paginationLayout"
+      title="频道列表"
+      :compact="isCompactTable"
+      @page-change="fetchList"
+      @size-change="() => { pagination.current = 1; fetchList() }"
+    >
+      <template #header-extra>
+        <el-button type="primary" @click="handleAdd">
+          <el-icon><Plus /></el-icon>
+          新增主题频道
+        </el-button>
       </template>
 
-      <el-table
-        v-loading="chatStore.conversationLoading"
-        :data="chatStore.conversations"
-        :size="isCompactTable ? 'small' : 'default'"
-        table-layout="auto"
-        border
-        stripe
-      >
-        <el-table-column prop="id" label="ID" width="80" align="center" />
-        <el-table-column label="频道信息" min-width="240" align="center">
-          <template #default="{ row }">
-            <div class="channel-info">
-              <el-avatar :size="36" :src="row.avatar || undefined">
-                {{ row.name?.slice(0, 1) || 'C' }}
-              </el-avatar>
-              <div class="channel-info__text">
-                <div class="channel-info__name">{{ row.name || '未命名频道' }}</div>
-                <div class="channel-info__sub">
-                  {{ formatOptionalText(row.notice) }}
-                </div>
+      <el-table-column prop="id" label="ID" width="80" align="center" />
+      <el-table-column label="频道信息" min-width="240" align="center">
+        <template #default="{ row }">
+          <div class="channel-info">
+            <el-avatar :size="36" :src="row.avatar || undefined">
+              {{ row.name?.slice(0, 1) || 'C' }}
+            </el-avatar>
+            <div class="channel-info__text">
+              <div class="channel-info__name">{{ row.name || '未命名频道' }}</div>
+              <div class="channel-info__sub">
+                {{ formatOptionalText(row.notice) }}
               </div>
             </div>
-          </template>
-        </el-table-column>
-        <el-table-column label="会话类型" min-width="100" align="center">
-          <template #default="{ row }">
-            {{ formatChatConversationType(row.conversationType) }}
-          </template>
-        </el-table-column>
-        <el-table-column label="场景类型" min-width="120" align="center">
-          <template #default="{ row }">
-            <el-tag :type="getSceneTagType(row.sceneType)" effect="light">
-              {{ formatSceneType(row.sceneType) }}
-            </el-tag>
-          </template>
-        </el-table-column>
-        <el-table-column prop="memberCount" label="成员数" min-width="90" align="center" />
-        <el-table-column label="可见范围" min-width="100" align="center">
-          <template #default="{ row }">
-            {{ formatVisibilityScope(row.visibilityScope) }}
-          </template>
-        </el-table-column>
-        <el-table-column label="加入规则" min-width="100" align="center">
-          <template #default="{ row }">
-            {{ formatJoinRule(row.joinRule) }}
-          </template>
-        </el-table-column>
-        <el-table-column label="发言等级" min-width="90" align="center">
-          <template #default="{ row }">
-            {{ row.speakLevelLimit ?? '—' }}
-          </template>
-        </el-table-column>
-        <el-table-column label="慢速模式" min-width="90" align="center">
-          <template #default="{ row }">
-            {{ row.slowModeSeconds ? `${row.slowModeSeconds}s` : '关闭' }}
-          </template>
-        </el-table-column>
-        <el-table-column label="状态" min-width="100" align="center">
-          <template #default="{ row }">
-            <el-switch
-              v-model="row.status"
-              :active-value="1"
-              :inactive-value="0"
-              inline-prompt
-              active-text="启用"
-              inactive-text="禁用"
-              @change="(val: string | number | boolean) => handleStatusChange(row, Number(val))"
-            />
-          </template>
-        </el-table-column>
-        <el-table-column label="创建时间" min-width="170" align="center">
-          <template #default="{ row }">
-            {{ formatCreatedAt(row.createdAt) }}
-          </template>
-        </el-table-column>
-        <el-table-column
-          label="操作"
-          :min-width="isCompactTable ? 100 : 120"
-          :fixed="isCompactTable ? false : 'right'"
-          align="center"
-        >
-          <template #default="{ row }">
-            <el-button link type="primary" @click="handleEdit(row)">编辑</el-button>
-          </template>
-        </el-table-column>
-      </el-table>
-
-      <div class="pagination">
-        <el-pagination
-          v-model:current-page="pagination.current"
-          v-model:page-size="pagination.size"
-          :total="chatStore.conversationTotal"
-          :page-sizes="[10, 20, 50]"
-          :layout="paginationLayout"
-          :small="isCompactTable"
-          @size-change="handleSizeChange"
-          @current-change="handleCurrentChange"
-        />
-      </div>
-    </el-card>
+          </div>
+        </template>
+      </el-table-column>
+      <el-table-column label="会话类型" min-width="100" align="center">
+        <template #default="{ row }">
+          {{ formatChatConversationType(row.conversationType) }}
+        </template>
+      </el-table-column>
+      <el-table-column label="场景类型" min-width="120" align="center">
+        <template #default="{ row }">
+          <el-tag :type="getSceneTagType(row.sceneType)" effect="light">
+            {{ formatSceneType(row.sceneType) }}
+          </el-tag>
+        </template>
+      </el-table-column>
+      <el-table-column prop="memberCount" label="成员数" min-width="90" align="center" />
+      <el-table-column label="可见范围" min-width="100" align="center">
+        <template #default="{ row }">
+          {{ formatVisibilityScope(row.visibilityScope) }}
+        </template>
+      </el-table-column>
+      <el-table-column label="加入规则" min-width="100" align="center">
+        <template #default="{ row }">
+          {{ formatJoinRule(row.joinRule) }}
+        </template>
+      </el-table-column>
+      <el-table-column label="发言等级" min-width="90" align="center">
+        <template #default="{ row }">
+          {{ row.speakLevelLimit ?? '—' }}
+        </template>
+      </el-table-column>
+      <el-table-column label="慢速模式" min-width="90" align="center">
+        <template #default="{ row }">
+          {{ row.slowModeSeconds ? `${row.slowModeSeconds}s` : '关闭' }}
+        </template>
+      </el-table-column>
+      <el-table-column label="状态" min-width="100" align="center">
+        <template #default="{ row }">
+          <el-switch
+            v-model="row.status"
+            :active-value="1"
+            :inactive-value="0"
+            inline-prompt
+            active-text="启用"
+            inactive-text="禁用"
+            @change="(val: string | number | boolean) => handleStatusChange(row, Number(val))"
+          />
+        </template>
+      </el-table-column>
+      <el-table-column label="创建时间" min-width="170" align="center">
+        <template #default="{ row }">
+          {{ formatCreatedAt(row.createdAt) }}
+        </template>
+      </el-table-column>
+      <el-table-column
+        label="操作"
+        :min-width="isCompactTable ? 100 : 120"
+        :fixed="isCompactTable ? false : 'right'"
+        align="center"
+      >
+        <template #default="{ row }">
+          <el-button link type="primary" @click="handleEdit(row)">编辑</el-button>
+        </template>
+      </el-table-column>
+    </DataTable>
 
     <el-dialog
       v-model="formDialogVisible"
@@ -258,6 +245,7 @@ import { onMounted, reactive, ref } from 'vue'
 import { ElMessage } from 'element-plus'
 import { Plus } from '@element-plus/icons-vue'
 import { useContentAdmin } from '@/composables/useContentAdmin'
+import DataTable from '@/components/common/DataTable.vue'
 import {
   BOOLEAN_TEXT_OPTIONS,
   CHAT_CONVERSATION_TYPE_OPTIONS,
@@ -364,17 +352,6 @@ function handleReset(): void {
   searchForm.isAllSite = undefined
   pagination.current = 1
   pagination.size = 10
-  void fetchList()
-}
-
-function handleSizeChange(size: number): void {
-  pagination.size = size
-  pagination.current = 1
-  void fetchList()
-}
-
-function handleCurrentChange(current: number): void {
-  pagination.current = current
   void fetchList()
 }
 
@@ -498,14 +475,6 @@ onMounted(() => {
   margin-right: 0;
 }
 
-.card-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 12px;
-  font-weight: 500;
-}
-
 .channel-info {
   display: flex;
   align-items: center;
@@ -525,12 +494,6 @@ onMounted(() => {
   margin-top: 4px;
   font-size: 12px;
   color: var(--el-text-color-secondary);
-}
-
-.pagination {
-  display: flex;
-  justify-content: center;
-  margin-top: 16px;
 }
 
 .unit-text {

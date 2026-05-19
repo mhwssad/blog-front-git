@@ -95,29 +95,33 @@
       </el-form>
     </el-card>
 
-    <el-card class="table-card" shadow="never">
-      <template #header>
-        <div class="card-header">
-          <span>足迹记录</span>
-          <el-button
-            v-permission="'content:footprint:query'"
-            type="primary"
-            link
-            size="small"
-            @click="fetchFootprints"
-          >
-            刷新
-          </el-button>
-        </div>
+    <DataTable
+      :data="footprintStore.footprints"
+      :loading="footprintStore.loading"
+      :total="footprintStore.total"
+      :current-page="pagination.current"
+      :page-size="pagination.size"
+      :page-sizes="[10, 20, 50, 100]"
+      :pagination-layout="paginationLayout"
+      :compact="isCompactTable"
+      title="足迹记录"
+      @update:current-page="(val: number) => { pagination.current = val; void fetchFootprints() }"
+      @update:page-size="(val: number) => { pagination.size = val; pagination.current = 1; void fetchFootprints() }"
+    >
+      <template #header-extra>
+        <el-button
+          v-permission="'content:footprint:query'"
+          type="primary"
+          link
+          size="small"
+          @click="fetchFootprints"
+        >
+          刷新
+        </el-button>
       </template>
 
       <el-table
-        v-loading="footprintStore.loading"
-        :data="footprintStore.footprints"
         :size="isCompactTable ? 'small' : 'default'"
-        stripe
-        border
-        table-layout="auto"
       >
         <el-table-column prop="id" label="ID" width="80" align="center" />
         <el-table-column prop="userId" label="用户 ID" width="100" align="center" />
@@ -167,20 +171,7 @@
           </template>
         </el-table-column>
       </el-table>
-
-      <div class="pagination">
-        <el-pagination
-          v-model:current-page="pagination.current"
-          v-model:page-size="pagination.size"
-          :total="footprintStore.total"
-          :page-sizes="[10, 20, 50, 100]"
-          :layout="paginationLayout"
-          :small="isCompactTable"
-          @current-change="handleCurrentChange"
-          @size-change="handleSizeChange"
-        />
-      </div>
-    </el-card>
+    </DataTable>
   </div>
 </template>
 
@@ -193,6 +184,7 @@ import { ElMessage, ElMessageBox } from 'element-plus'
 import type { FootprintQueryRequest } from '@/types/api-types'
 import { useContentAdmin } from '@/composables/useContentAdmin'
 import { useFootprintStore } from '@/stores'
+import DataTable from '@/components/common/DataTable.vue'
 import { TARGET_TYPE_OPTIONS, formatOptionalText, formatTargetType, formatVisitedAt } from '@/utils'
 
 const footprintStore = useFootprintStore()
@@ -241,17 +233,6 @@ function handleReset(): void {
   searchForm.targetType = ''
   searchForm.visitedAtStart = ''
   searchForm.visitedAtEnd = ''
-  pagination.current = 1
-  void fetchFootprints()
-}
-
-function handleCurrentChange(current: number): void {
-  pagination.current = current
-  void fetchFootprints()
-}
-
-function handleSizeChange(size: number): void {
-  pagination.size = size
   pagination.current = 1
   void fetchFootprints()
 }
@@ -343,9 +324,4 @@ onMounted(() => {
   gap: 8px;
 }
 
-.pagination {
-  display: flex;
-  justify-content: center;
-  margin-top: 16px;
-}
 </style>

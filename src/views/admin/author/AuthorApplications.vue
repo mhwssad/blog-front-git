@@ -40,97 +40,86 @@
       </el-form>
     </el-card>
 
-    <el-card class="table-card" shadow="never">
-      <template #header>
-        <div class="card-header">
-          <span>作者申请列表</span>
-          <span class="card-header__meta">{{ store.total }} 条</span>
-        </div>
+    <DataTable
+      :data="store.applications"
+      :loading="store.loading"
+      :total="store.total"
+      :current-page="pagination.current"
+      :page-size="pagination.size"
+      :page-sizes="[10, 20, 50]"
+      :pagination-layout="paginationLayout"
+      :compact="isCompactTable"
+      title="作者申请列表"
+      @update:current-page="pagination.current = $event"
+      @update:page-size="pagination.size = $event"
+      @size-change="handleSizeChange"
+      @page-change="handlePageChange"
+    >
+      <template #header-extra>
+        <span class="card-header__meta">{{ store.total }} 条</span>
       </template>
 
-      <el-table
-        v-loading="store.loading"
-        :data="store.applications"
-        :size="isCompactTable ? 'small' : 'default'"
-        table-layout="auto"
-        border
-        stripe
+      <el-table-column prop="userId" label="用户ID" min-width="80" align="center" />
+      <el-table-column prop="username" label="用户名" min-width="100" align="center" />
+      <el-table-column prop="nickname" label="昵称" min-width="100" align="center" />
+      <el-table-column
+        prop="contentDirection"
+        label="擅长方向"
+        min-width="140"
+        align="center"
+        show-overflow-tooltip
+      />
+      <el-table-column label="状态" min-width="100" align="center">
+        <template #default="{ row }">
+          <el-tag :type="statusTagType(row.applyStatus)" size="small">
+            {{ row.applyStatusLabel || STATUS_LABELS[row.applyStatus] }}
+          </el-tag>
+        </template>
+      </el-table-column>
+      <el-table-column label="申请时间" min-width="160" align="center">
+        <template #default="{ row }">{{ row.submittedAt || '-' }}</template>
+      </el-table-column>
+      <el-table-column
+        label="操作"
+        :min-width="isCompactTable ? 140 : 200"
+        :fixed="isCompactTable ? false : 'right'"
+        class-name="action-column"
+        align="center"
       >
-        <el-table-column prop="userId" label="用户ID" min-width="80" align="center" />
-        <el-table-column prop="username" label="用户名" min-width="100" align="center" />
-        <el-table-column prop="nickname" label="昵称" min-width="100" align="center" />
-        <el-table-column
-          prop="contentDirection"
-          label="擅长方向"
-          min-width="140"
-          align="center"
-          show-overflow-tooltip
-        />
-        <el-table-column label="状态" min-width="100" align="center">
-          <template #default="{ row }">
-            <el-tag :type="statusTagType(row.applyStatus)" size="small">
-              {{ row.applyStatusLabel || STATUS_LABELS[row.applyStatus] }}
-            </el-tag>
-          </template>
-        </el-table-column>
-        <el-table-column label="申请时间" min-width="160" align="center">
-          <template #default="{ row }">{{ row.submittedAt || '-' }}</template>
-        </el-table-column>
-        <el-table-column
-          label="操作"
-          :min-width="isCompactTable ? 140 : 200"
-          :fixed="isCompactTable ? false : 'right'"
-          class-name="action-column"
-          align="center"
-        >
-          <template #default="{ row }">
-            <div class="table-actions" :class="{ 'table-actions--compact': isCompactTable }">
-              <el-button link type="primary" @click="handleView(row)">详情</el-button>
-              <template v-if="row.applyStatus === 0">
-                <el-button
-                  v-permission="'sys:author-application:review'"
-                  link
-                  type="success"
-                  @click="handleReview(row, 1)"
-                >
-                  通过
-                </el-button>
-                <el-button
-                  v-permission="'sys:author-application:review'"
-                  link
-                  type="danger"
-                  @click="handleReview(row, 2)"
-                >
-                  拒绝
-                </el-button>
-              </template>
+        <template #default="{ row }">
+          <div class="table-actions" :class="{ 'table-actions--compact': isCompactTable }">
+            <el-button link type="primary" @click="handleView(row)">详情</el-button>
+            <template v-if="row.applyStatus === 0">
               <el-button
-                v-if="row.applyStatus !== 0"
-                v-permission="'sys:author-application:repair'"
+                v-permission="'sys:author-application:review'"
                 link
-                type="warning"
-                @click="handleRepair(row)"
+                type="success"
+                @click="handleReview(row, 1)"
               >
-                修复
+                通过
               </el-button>
-            </div>
-          </template>
-        </el-table-column>
-      </el-table>
-
-      <div class="pagination">
-        <el-pagination
-          v-model:current-page="pagination.current"
-          v-model:page-size="pagination.size"
-          :total="store.total"
-          :page-sizes="[10, 20, 50]"
-          :layout="paginationLayout"
-          :small="isCompactTable"
-          @size-change="handleSizeChange"
-          @current-change="handlePageChange"
-        />
-      </div>
-    </el-card>
+              <el-button
+                v-permission="'sys:author-application:review'"
+                link
+                type="danger"
+                @click="handleReview(row, 2)"
+              >
+                拒绝
+              </el-button>
+            </template>
+            <el-button
+              v-if="row.applyStatus !== 0"
+              v-permission="'sys:author-application:repair'"
+              link
+              type="warning"
+              @click="handleRepair(row)"
+            >
+              修复
+            </el-button>
+          </div>
+        </template>
+      </el-table-column>
+    </DataTable>
 
     <el-dialog v-model="detailVisible" title="申请详情" width="600px" align-center>
       <el-descriptions v-if="currentRow" :column="1" border size="small">
@@ -396,19 +385,6 @@ onMounted(() => {
   margin-right: 0;
 }
 
-.card-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 12px;
-  font-weight: 500;
-}
-
-.card-header__meta {
-  color: var(--el-text-color-secondary);
-  font-size: 13px;
-}
-
 .action-column {
   border-left: 2px solid var(--el-border-color);
 }
@@ -428,12 +404,6 @@ onMounted(() => {
 
 .table-actions :deep(.el-button + .el-button) {
   margin-left: 0;
-}
-
-.pagination {
-  display: flex;
-  justify-content: center;
-  margin-top: 16px;
 }
 
 .sample-link {

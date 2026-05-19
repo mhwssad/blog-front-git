@@ -1,122 +1,115 @@
 <template>
   <div class="lobby-messages-page">
-    <el-card shadow="never">
-      <template #header>
-        <div class="card-header">
-          <span>大厅消息</span>
-        </div>
+    <DataTable
+      :data="chatStore.messages"
+      :loading="chatStore.messageLoading"
+      :total="chatStore.messageTotal"
+      v-model:current-page="pagination.current"
+      v-model:page-size="pagination.size"
+      :page-sizes="[10, 20]"
+      :pagination-layout="paginationLayout"
+      title="大厅消息"
+      @page-change="fetchMessages"
+      @size-change="handleSizeChange"
+    >
+      <template #toolbar>
+        <el-form :model="searchForm" inline class="search-form">
+          <el-form-item label="关键词">
+            <el-input
+              v-model="searchForm.keyword"
+              class="filter-control"
+              clearable
+              placeholder="消息内容"
+            />
+          </el-form-item>
+          <el-form-item label="发送者 ID">
+            <el-input-number
+              v-model="searchForm.senderId"
+              :min="1"
+              controls-position="right"
+              class="filter-control"
+            />
+          </el-form-item>
+          <el-form-item label="消息类型">
+            <el-select
+              v-model="searchForm.messageType"
+              clearable
+              class="filter-control"
+              placeholder="全部"
+            >
+              <el-option
+                v-for="opt in CHAT_MESSAGE_TYPE_OPTIONS"
+                :key="opt.value"
+                :label="opt.label"
+                :value="opt.value"
+              />
+            </el-select>
+          </el-form-item>
+          <el-form-item class="search-actions">
+            <el-button type="primary" @click="handleSearch">查询</el-button>
+            <el-button @click="handleReset">重置</el-button>
+          </el-form-item>
+        </el-form>
       </template>
 
-      <el-form :model="searchForm" inline class="search-form">
-        <el-form-item label="关键词">
-          <el-input
-            v-model="searchForm.keyword"
-            class="filter-control"
-            clearable
-            placeholder="消息内容"
-          />
-        </el-form-item>
-        <el-form-item label="发送者 ID">
-          <el-input-number
-            v-model="searchForm.senderId"
-            :min="1"
-            controls-position="right"
-            class="filter-control"
-          />
-        </el-form-item>
-        <el-form-item label="消息类型">
-          <el-select
-            v-model="searchForm.messageType"
-            clearable
-            class="filter-control"
-            placeholder="全部"
+      <el-table-column prop="id" label="ID" width="70" align="center" />
+      <el-table-column label="消息内容" min-width="200" show-overflow-tooltip>
+        <template #default="{ row }">
+          <template v-if="row.revoked">
+            <el-text type="info">（消息已撤回）</el-text>
+          </template>
+          <template v-else>
+            {{ row.content || row.file?.originalName || '-' }}
+          </template>
+        </template>
+      </el-table-column>
+      <el-table-column label="发送者" width="120" align="center">
+        <template #default="{ row }">
+          {{ row.senderNickname || row.senderUsername || '-' }}
+        </template>
+      </el-table-column>
+      <el-table-column label="类型" width="80" align="center">
+        <template #default="{ row }">
+          {{ formatChatMessageType(row.messageType) }}
+        </template>
+      </el-table-column>
+      <el-table-column label="发送时间" width="170" align="center">
+        <template #default="{ row }">
+          {{ formatCreatedAt(row.createdAt) }}
+        </template>
+      </el-table-column>
+      <el-table-column label="操作" width="160" align="center">
+        <template #default="{ row }">
+          <el-button
+            v-if="!isPinned(row.id)"
+            v-permission="'content:chat:update'"
+            link
+            type="primary"
+            @click="handlePin(row.id)"
           >
-            <el-option
-              v-for="opt in CHAT_MESSAGE_TYPE_OPTIONS"
-              :key="opt.value"
-              :label="opt.label"
-              :value="opt.value"
-            />
-          </el-select>
-        </el-form-item>
-        <el-form-item class="search-actions">
-          <el-button type="primary" @click="handleSearch">查询</el-button>
-          <el-button @click="handleReset">重置</el-button>
-        </el-form-item>
-      </el-form>
-
-      <el-table v-loading="chatStore.messageLoading" :data="chatStore.messages" border stripe>
-        <el-table-column prop="id" label="ID" width="70" align="center" />
-        <el-table-column label="消息内容" min-width="200" show-overflow-tooltip>
-          <template #default="{ row }">
-            <template v-if="row.revoked">
-              <el-text type="info">（消息已撤回）</el-text>
-            </template>
-            <template v-else>
-              {{ row.content || row.file?.originalName || '-' }}
-            </template>
-          </template>
-        </el-table-column>
-        <el-table-column label="发送者" width="120" align="center">
-          <template #default="{ row }">
-            {{ row.senderNickname || row.senderUsername || '-' }}
-          </template>
-        </el-table-column>
-        <el-table-column label="类型" width="80" align="center">
-          <template #default="{ row }">
-            {{ formatChatMessageType(row.messageType) }}
-          </template>
-        </el-table-column>
-        <el-table-column label="发送时间" width="170" align="center">
-          <template #default="{ row }">
-            {{ formatCreatedAt(row.createdAt) }}
-          </template>
-        </el-table-column>
-        <el-table-column label="操作" width="160" align="center">
-          <template #default="{ row }">
-            <el-button
-              v-if="!isPinned(row.id)"
-              v-permission="'content:chat:update'"
-              link
-              type="primary"
-              @click="handlePin(row.id)"
-            >
-              置顶
-            </el-button>
-            <el-button
-              v-else
-              v-permission="'content:chat:update'"
-              link
-              type="warning"
-              @click="handleUnpin(row.id)"
-            >
-              取消置顶
-            </el-button>
-            <el-button
-              v-if="!row.revoked"
-              v-permission="'content:chat:revoke'"
-              link
-              type="danger"
-              @click="handleRevoke(row.id)"
-            >
-              撤回
-            </el-button>
-          </template>
-        </el-table-column>
-      </el-table>
-
-      <div class="pagination-area">
-        <el-pagination
-          v-model:current-page="pagination.current"
-          v-model:page-size="pagination.size"
-          :total="chatStore.messageTotal"
-          :page-sizes="[10, 20]"
-          :layout="paginationLayout"
-          @current-change="fetchMessages"
-          @size-change="handleSizeChange"
-        />
-      </div>
-    </el-card>
+            置顶
+          </el-button>
+          <el-button
+            v-else
+            v-permission="'content:chat:update'"
+            link
+            type="warning"
+            @click="handleUnpin(row.id)"
+          >
+            取消置顶
+          </el-button>
+          <el-button
+            v-if="!row.revoked"
+            v-permission="'content:chat:revoke'"
+            link
+            type="danger"
+            @click="handleRevoke(row.id)"
+          >
+            撤回
+          </el-button>
+        </template>
+      </el-table-column>
+    </DataTable>
   </div>
 </template>
 
@@ -127,6 +120,7 @@ import { useLobbyAdmin } from '@/composables/useLobbyAdmin'
 import { useContentAdmin } from '@/composables/useContentAdmin'
 import { formatCreatedAt } from '@/utils'
 import { CHAT_MESSAGE_TYPE_OPTIONS, formatChatMessageType } from '@/utils/contentAdmin'
+import DataTable from '@/components/common/DataTable.vue'
 
 const { chatStore, lobbyConvId, ensureLobbyLoaded } = useLobbyAdmin()
 const { paginationLayout } = useContentAdmin()
@@ -214,11 +208,8 @@ onMounted(async () => {
 </script>
 
 <style scoped>
-.card-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  font-weight: 500;
+.lobby-messages-page {
+  padding: 20px;
 }
 
 .search-form {
@@ -227,11 +218,5 @@ onMounted(async () => {
 
 .filter-control {
   width: 180px;
-}
-
-.pagination-area {
-  display: flex;
-  justify-content: flex-end;
-  margin-top: 16px;
 }
 </style>

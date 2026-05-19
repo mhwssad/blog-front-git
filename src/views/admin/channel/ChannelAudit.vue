@@ -29,64 +29,51 @@
       </el-form>
     </el-card>
 
-    <el-card class="table-card" shadow="never">
-      <template #header>
-        <div style="display: flex; justify-content: space-between; align-items: center">
-          <span>频道申请列表</span>
-        </div>
-      </template>
-      <el-table
-        v-loading="chatStore.channelAppLoading"
-        :data="chatStore.channelApplications"
-        :size="isCompactTable ? 'small' : 'default'"
-        border
-        stripe
-        table-layout="auto"
-      >
-        <el-table-column prop="username" label="用户名" min-width="120" align="center" />
-        <el-table-column prop="nickname" label="昵称" min-width="120" align="center" />
-        <el-table-column prop="desiredName" label="频道名" min-width="140" align="center" />
-        <el-table-column label="场景类型" min-width="120" align="center">
-          <template #default="{ row }">
-            {{ formatSceneType(row.desiredSceneType) }}
+    <DataTable
+      :data="chatStore.channelApplications"
+      :loading="chatStore.channelAppLoading"
+      :total="chatStore.channelAppTotal"
+      v-model:current-page="pagination.current"
+      v-model:page-size="pagination.size"
+      :page-sizes="[10, 20, 50]"
+      :pagination-layout="paginationLayout"
+      :compact="isCompactTable"
+      title="频道申请列表"
+      @size-change="handleSearch"
+      @page-change="handleSearch"
+    >
+      <el-table-column prop="username" label="用户名" min-width="120" align="center" />
+      <el-table-column prop="nickname" label="昵称" min-width="120" align="center" />
+      <el-table-column prop="desiredName" label="频道名" min-width="140" align="center" />
+      <el-table-column label="场景类型" min-width="120" align="center">
+        <template #default="{ row }">
+          {{ formatSceneType(row.desiredSceneType) }}
+        </template>
+      </el-table-column>
+      <el-table-column prop="desiredCategoryCode" label="分类编码" min-width="120" align="center" />
+      <el-table-column label="状态" min-width="100" align="center">
+        <template #default="{ row }">
+          <el-tag :type="statusTagType(row.applyStatus)">
+            {{ statusLabel(row.applyStatus) }}
+          </el-tag>
+        </template>
+      </el-table-column>
+      <el-table-column prop="reviewerNickname" label="审核人" min-width="120" align="center" />
+      <el-table-column label="申请时间" min-width="180" align="center">
+        <template #default="{ row }">
+          {{ formatCreatedAt(row.createdAt) }}
+        </template>
+      </el-table-column>
+      <el-table-column label="操作" min-width="200" align="center">
+        <template #default="{ row }">
+          <template v-if="row.applyStatus === 0">
+            <el-button link type="success" @click="handleApprove(row)">通过</el-button>
+            <el-button link type="danger" @click="handleReject(row)">拒绝</el-button>
           </template>
-        </el-table-column>
-        <el-table-column prop="desiredCategoryCode" label="分类编码" min-width="120" align="center" />
-        <el-table-column label="状态" min-width="100" align="center">
-          <template #default="{ row }">
-            <el-tag :type="statusTagType(row.applyStatus)">
-              {{ statusLabel(row.applyStatus) }}
-            </el-tag>
-          </template>
-        </el-table-column>
-        <el-table-column prop="reviewerNickname" label="审核人" min-width="120" align="center" />
-        <el-table-column label="申请时间" min-width="180" align="center">
-          <template #default="{ row }">
-            {{ formatCreatedAt(row.createdAt) }}
-          </template>
-        </el-table-column>
-        <el-table-column label="操作" min-width="200" align="center">
-          <template #default="{ row }">
-            <template v-if="row.applyStatus === 0">
-              <el-button link type="success" @click="handleApprove(row)">通过</el-button>
-              <el-button link type="danger" @click="handleReject(row)">拒绝</el-button>
-            </template>
-            <el-button link type="primary" @click="handleView(row)">查看</el-button>
-          </template>
-        </el-table-column>
-      </el-table>
-      <div class="pagination-area">
-        <el-pagination
-          v-model:current-page="pagination.current"
-          v-model:page-size="pagination.size"
-          :total="chatStore.channelAppTotal"
-          :page-sizes="[10, 20, 50]"
-          :layout="paginationLayout"
-          @size-change="handleSearch"
-          @current-change="handleSearch"
-        />
-      </div>
-    </el-card>
+          <el-button link type="primary" @click="handleView(row)">查看</el-button>
+        </template>
+      </el-table-column>
+    </DataTable>
 
     <el-dialog v-model="detailVisible" title="申请详情" width="560px">
       <div v-loading="detailLoading">
@@ -134,6 +121,7 @@ import { onMounted, reactive, ref } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { useChatStore } from '@/stores'
 import { useContentAdmin } from '@/composables/useContentAdmin'
+import DataTable from '@/components/common/DataTable.vue'
 import { formatCreatedAt, formatChatSceneType } from '@/utils'
 import type { SysChannelApplicationVO, SysChannelApplicationReviewRequest } from '@/types/api-types'
 
@@ -251,15 +239,5 @@ onMounted(() => {
 
 .search-card {
   margin-bottom: 16px;
-}
-
-.table-card {
-  margin-bottom: 16px;
-}
-
-.pagination-area {
-  display: flex;
-  justify-content: flex-end;
-  margin-top: 16px;
 }
 </style>

@@ -79,136 +79,123 @@
       </el-form>
     </el-card>
 
-    <el-card class="table-card" shadow="never">
-      <template #header>
-        <div class="card-header">
-          <span>日志列表</span>
-          <span class="card-header__meta">{{ logStore.total }} 条</span>
-        </div>
+    <DataTable
+      class="log-table"
+      title="日志列表"
+      :data="logStore.logs"
+      :loading="logStore.loading"
+      :total="logStore.total"
+      v-model:current-page="pagination.current"
+      v-model:page-size="pagination.size"
+      :page-sizes="[10, 20, 50, 100]"
+      :pagination-layout="paginationLayout"
+      :compact="isCompactTable"
+      @page-change="handleCurrentChange"
+      @size-change="handleSizeChange"
+    >
+      <template #header-extra>
+        <span class="header-count">{{ logStore.total }} 条</span>
       </template>
 
-      <el-table
-        v-loading="logStore.loading"
-        :data="logStore.logs"
-        :size="isCompactTable ? 'small' : 'default'"
-        table-layout="auto"
-        class="log-table"
-        border
-        stripe
+      <el-table-column prop="id" label="ID" min-width="60" align="center" />
+      <el-table-column
+        prop="module"
+        label="模块"
+        min-width="100"
+        align="center"
+        show-overflow-tooltip
+      />
+      <el-table-column
+        prop="description"
+        label="操作描述"
+        min-width="180"
+        align="center"
+        show-overflow-tooltip
+      />
+      <el-table-column
+        prop="username"
+        label="操作人"
+        min-width="90"
+        align="center"
+        show-overflow-tooltip
+      />
+      <el-table-column label="请求方法" min-width="90" align="center">
+        <template #default="{ row }">
+          <el-tag :type="getMethodTagType(row.requestMethod)" effect="light" size="small">
+            {{ row.requestMethod || '-' }}
+          </el-tag>
+        </template>
+      </el-table-column>
+      <el-table-column
+        label="请求地址"
+        min-width="180"
+        align="center"
+        show-overflow-tooltip
       >
-        <el-table-column prop="id" label="ID" min-width="60" align="center" />
-        <el-table-column
-          prop="module"
-          label="模块"
-          min-width="100"
-          align="center"
-          show-overflow-tooltip
-        />
-        <el-table-column
-          prop="description"
-          label="操作描述"
-          min-width="180"
-          align="center"
-          show-overflow-tooltip
-        />
-        <el-table-column
-          prop="username"
-          label="操作人"
-          min-width="90"
-          align="center"
-          show-overflow-tooltip
-        />
-        <el-table-column label="请求方法" min-width="90" align="center">
-          <template #default="{ row }">
-            <el-tag :type="getMethodTagType(row.requestMethod)" effect="light" size="small">
-              {{ row.requestMethod || '-' }}
-            </el-tag>
-          </template>
-        </el-table-column>
-        <el-table-column
-          label="请求地址"
-          min-width="180"
-          align="center"
-          show-overflow-tooltip
-        >
-          <template #default="{ row }">
-            {{ row.requestUrl || row.requestUri || '-' }}
-          </template>
-        </el-table-column>
-        <el-table-column
-          prop="ip"
-          label="IP"
-          min-width="120"
-          align="center"
-          show-overflow-tooltip
-        />
-        <el-table-column
-          prop="location"
-          label="地理位置"
-          min-width="140"
-          align="center"
-          show-overflow-tooltip
-        />
-        <el-table-column label="执行耗时" min-width="90" align="center">
-          <template #default="{ row }">
-            {{ formatExecuteTime(row.executeTime) }}
-          </template>
-        </el-table-column>
-        <el-table-column label="状态" min-width="70" align="center">
-          <template #default="{ row }">
-            <el-tag :type="row.status === 1 ? 'success' : 'danger'" effect="light" size="small">
-              {{ formatLogStatus(row.status) }}
-            </el-tag>
-          </template>
-        </el-table-column>
-        <el-table-column label="创建时间" min-width="160" align="center">
-          <template #default="{ row }">
-            {{ formatCreateTime(row.createTime) }}
-          </template>
-        </el-table-column>
-        <el-table-column
-          label="操作"
-          :min-width="isCompactTable ? 140 : 180"
-          :fixed="isCompactTable ? false : 'right'"
-          class-name="action-column"
-          align="center"
-        >
-          <template #default="{ row }">
-            <div class="table-actions" :class="{ 'table-actions--compact': isCompactTable }">
-              <el-button
-                v-permission="'sys:log:query'"
-                link
-                type="primary"
-                @click="handleViewDetail(row)"
-              >
-                详情
-              </el-button>
-              <el-button
-                v-permission="'sys:log:delete'"
-                link
-                type="danger"
-                @click="handleDelete(row)"
-              >
-                删除
-              </el-button>
-            </div>
-          </template>
-        </el-table-column>
-      </el-table>
-
-      <div class="pagination">
-        <el-pagination
-          v-model:current-page="pagination.current"
-          v-model:page-size="pagination.size"
-          :total="logStore.total"
-          :page-sizes="[10, 20, 50, 100]"
-          :layout="paginationLayout"
-          :small="isCompactTable"
-          @size-change="handleSizeChange"
-          @current-change="handleCurrentChange"
-        />
-      </div>
-    </el-card>
+        <template #default="{ row }">
+          {{ row.requestUrl || row.requestUri || '-' }}
+        </template>
+      </el-table-column>
+      <el-table-column
+        prop="ip"
+        label="IP"
+        min-width="120"
+        align="center"
+        show-overflow-tooltip
+      />
+      <el-table-column
+        prop="location"
+        label="地理位置"
+        min-width="140"
+        align="center"
+        show-overflow-tooltip
+      />
+      <el-table-column label="执行耗时" min-width="90" align="center">
+        <template #default="{ row }">
+          {{ formatExecuteTime(row.executeTime) }}
+        </template>
+      </el-table-column>
+      <el-table-column label="状态" min-width="70" align="center">
+        <template #default="{ row }">
+          <el-tag :type="row.status === 1 ? 'success' : 'danger'" effect="light" size="small">
+            {{ formatLogStatus(row.status) }}
+          </el-tag>
+        </template>
+      </el-table-column>
+      <el-table-column label="创建时间" min-width="160" align="center">
+        <template #default="{ row }">
+          {{ formatCreateTime(row.createTime) }}
+        </template>
+      </el-table-column>
+      <el-table-column
+        label="操作"
+        :min-width="isCompactTable ? 140 : 180"
+        :fixed="isCompactTable ? false : 'right'"
+        class-name="action-column"
+        align="center"
+      >
+        <template #default="{ row }">
+          <div class="table-actions" :class="{ 'table-actions--compact': isCompactTable }">
+            <el-button
+              v-permission="'sys:log:query'"
+              link
+              type="primary"
+              @click="handleViewDetail(row)"
+            >
+              详情
+            </el-button>
+            <el-button
+              v-permission="'sys:log:delete'"
+              link
+              type="danger"
+              @click="handleDelete(row)"
+            >
+              删除
+            </el-button>
+          </div>
+        </template>
+      </el-table-column>
+    </DataTable>
 
     <LogDetailDialog v-model:visible="detailDialogVisible" :log="currentLog" />
   </div>
@@ -441,19 +428,6 @@ onMounted(() => {
   transform: rotate(180deg);
 }
 
-.card-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 12px;
-  font-weight: 500;
-}
-
-.card-header__meta {
-  color: var(--el-text-color-secondary);
-  font-size: 13px;
-}
-
 .log-table {
   width: 100%;
 }
@@ -477,12 +451,6 @@ onMounted(() => {
 
 .table-actions :deep(.el-button + .el-button) {
   margin-left: 0;
-}
-
-.pagination {
-  display: flex;
-  justify-content: center;
-  margin-top: 16px;
 }
 
 @media (max-width: 768px) {

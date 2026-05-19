@@ -148,31 +148,29 @@
       </el-form>
     </el-card>
 
-    <el-card class="table-card" shadow="never">
-      <template #header>
-        <div class="card-header">
-          <span>文件管理</span>
-          <el-button
-            v-permission="'content:file:query'"
-            link
-            type="primary"
-            @click="refreshActiveTab"
-          >
-            刷新
-          </el-button>
-        </div>
-      </template>
-
-      <el-tabs v-model="activeTab" @tab-change="handleTabChange">
-        <el-tab-pane label="文件库" name="files">
-          <el-table
-            v-loading="fileStore.loading"
-            :data="fileStore.files"
-            :size="fileCompact ? 'small' : 'default'"
-            border
-            stripe
-            table-layout="auto"
-          >
+    <el-tabs v-model="activeTab" class="file-tabs" @tab-change="handleTabChange">
+      <el-tab-pane label="文件库" name="files">
+        <DataTable
+          title="文件库"
+          :data="fileStore.files"
+          :loading="fileStore.loading"
+          :total="fileStore.fileTotal"
+          :current-page="filePagination.current"
+          :page-size="filePagination.size"
+          :compact="fileCompact"
+          @update:current-page="handleFilePageChange"
+          @update:page-size="handleFileSizeChange"
+        >
+          <template #header-extra>
+            <el-button
+              v-permission="'content:file:query'"
+              link
+              type="primary"
+              @click="refreshActiveTab"
+            >
+              刷新
+            </el-button>
+          </template>
             <el-table-column prop="id" label="文件 ID" min-width="90" align="center" />
             <el-table-column
               prop="originalName"
@@ -243,30 +241,20 @@
                 </div>
               </template>
             </el-table-column>
-          </el-table>
-
-          <div class="pagination">
-            <el-pagination
-              v-model:current-page="filePagination.current"
-              v-model:page-size="filePagination.size"
-              :total="fileStore.fileTotal"
-              :page-sizes="[10, 20, 50, 100]"
-              :layout="filePaginationLayout"
-              :small="fileCompact"
-              @current-change="handleFilePageChange"
-              @size-change="handleFileSizeChange"
-            />
-          </div>
-        </el-tab-pane>
+        </DataTable>
+      </el-tab-pane>
 
         <el-tab-pane label="上传任务" name="tasks">
-          <el-table
-            v-loading="fileStore.loading"
+          <DataTable
+            title="上传任务"
             :data="fileStore.uploadTasks"
-            :size="taskCompact ? 'small' : 'default'"
-            border
-            stripe
-            table-layout="auto"
+            :loading="fileStore.loading"
+            :total="fileStore.taskTotal"
+            :current-page="taskPagination.current"
+            :page-size="taskPagination.size"
+            :compact="taskCompact"
+            @update:current-page="handleTaskPageChange"
+            @update:page-size="handleTaskSizeChange"
           >
             <el-table-column prop="id" label="任务 ID" min-width="90" align="center" />
             <el-table-column
@@ -329,23 +317,9 @@
                 {{ formatOptionalText(row.errorMessage) }}
               </template>
             </el-table-column>
-          </el-table>
-
-          <div class="pagination">
-            <el-pagination
-              v-model:current-page="taskPagination.current"
-              v-model:page-size="taskPagination.size"
-              :total="fileStore.taskTotal"
-              :page-sizes="[10, 20, 50, 100]"
-              :layout="taskPaginationLayout"
-              :small="taskCompact"
-              @current-change="handleTaskPageChange"
-              @size-change="handleTaskSizeChange"
-            />
-          </div>
+          </DataTable>
         </el-tab-pane>
       </el-tabs>
-    </el-card>
 
     <FileDetailDrawer
       v-model="detailVisible"
@@ -361,6 +335,7 @@ api/sys/file.ts */
 <script lang="ts" setup>
 import { onMounted, reactive, ref } from 'vue'
 import { ElMessage, ElMessageBox, type TabPaneName } from 'element-plus'
+import DataTable from '@/components/common/DataTable.vue'
 import { useContentAdmin } from '@/composables/useContentAdmin'
 import { useFileStore } from '@/stores'
 import {
@@ -422,8 +397,8 @@ const taskPagination = reactive({
   size: 10,
 })
 
-const { isCompactTable: fileCompact, paginationLayout: filePaginationLayout } = useContentAdmin()
-const { isCompactTable: taskCompact, paginationLayout: taskPaginationLayout } = useContentAdmin()
+const { isCompactTable: fileCompact } = useContentAdmin()
+const { isCompactTable: taskCompact } = useContentAdmin()
 
 function buildFileQuery() {
   return {
@@ -638,18 +613,8 @@ onMounted(() => {
   margin-right: 0;
 }
 
-.card-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  font-weight: 500;
-}
-
-.pagination {
-  display: flex;
-  justify-content: center;
-  margin-top: 16px;
+.file-tabs {
+  margin-top: 0;
 }
 
 .table-actions {

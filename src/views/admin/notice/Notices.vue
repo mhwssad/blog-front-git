@@ -72,121 +72,107 @@
       </el-form>
     </el-card>
 
-    <el-card class="table-card" shadow="never">
-      <template #header>
-        <div class="card-header">
-          <span>通知列表</span>
-          <el-button v-permission="'sys:notice:create'" type="primary" @click="handleAdd">
-            <el-icon><Plus /></el-icon>
-            新增通知
-          </el-button>
-        </div>
+    <DataTable
+      :data="noticeStore.notices"
+      :loading="noticeStore.loading"
+      :total="noticeStore.total"
+      v-model:current-page="pagination.current"
+      v-model:page-size="pagination.size"
+      :page-sizes="[10, 20, 50, 100]"
+      :pagination-layout="paginationLayout"
+      title="通知列表"
+      :compact="isCompactTable"
+      @page-change="fetchNotices"
+      @size-change="() => { pagination.current = 1; fetchNotices() }"
+    >
+      <template #header-extra>
+        <el-button v-permission="'sys:notice:create'" type="primary" @click="handleAdd">
+          <el-icon><Plus /></el-icon>
+          新增通知
+        </el-button>
       </template>
 
-      <el-table
-        v-loading="noticeStore.loading"
-        :data="noticeStore.notices"
-        :size="isCompactTable ? 'small' : 'default'"
-        table-layout="auto"
-        class="notice-table"
-        border
-        stripe
+      <el-table-column prop="id" label="ID" min-width="80" align="center" />
+      <el-table-column
+        prop="title"
+        label="通知标题"
+        min-width="220"
+        align="center"
+        show-overflow-tooltip
+      />
+      <el-table-column label="通知类型" min-width="120" align="center">
+        <template #default="{ row }">
+          {{ formatNoticeType(row.type) }}
+        </template>
+      </el-table-column>
+      <el-table-column label="通知状态" min-width="120" align="center">
+        <template #default="{ row }">
+          <el-tag :type="getNoticeStatusTagType(row.status)" effect="light">
+            {{ formatNoticeStatus(row.status) }}
+          </el-tag>
+        </template>
+      </el-table-column>
+      <el-table-column label="发布时间" min-width="180" align="center">
+        <template #default="{ row }">
+          {{ formatSystemDate(row.publishTime) }}
+        </template>
+      </el-table-column>
+      <el-table-column
+        label="操作"
+        :min-width="isCompactTable ? 180 : 280"
+        :fixed="isCompactTable ? false : 'right'"
+        class-name="action-column"
+        align="center"
       >
-        <el-table-column prop="id" label="ID" min-width="80" align="center" />
-        <el-table-column
-          prop="title"
-          label="通知标题"
-          min-width="220"
-          align="center"
-          show-overflow-tooltip
-        />
-        <el-table-column label="通知类型" min-width="120" align="center">
-          <template #default="{ row }">
-            {{ formatNoticeType(row.type) }}
-          </template>
-        </el-table-column>
-        <el-table-column label="通知状态" min-width="120" align="center">
-          <template #default="{ row }">
-            <el-tag :type="getNoticeStatusTagType(row.status)" effect="light">
-              {{ formatNoticeStatus(row.status) }}
-            </el-tag>
-          </template>
-        </el-table-column>
-        <el-table-column label="发布时间" min-width="180" align="center">
-          <template #default="{ row }">
-            {{ formatSystemDate(row.publishTime) }}
-          </template>
-        </el-table-column>
-        <el-table-column
-          label="操作"
-          :min-width="isCompactTable ? 180 : 280"
-          :fixed="isCompactTable ? false : 'right'"
-          class-name="action-column"
-          align="center"
-        >
-          <template #default="{ row }">
-            <div class="table-actions" :class="{ 'table-actions--compact': isCompactTable }">
-              <el-button
-                v-permission="'sys:notice:query'"
-                link
-                type="primary"
-                @click="handleViewDetail(row)"
-              >
-                详情
-              </el-button>
-              <el-button
-                v-if="canEditNotice(row.status)"
-                v-permission="'sys:notice:update'"
-                link
-                type="primary"
-                @click="handleEdit(row)"
-              >
-                编辑
-              </el-button>
-              <el-button
-                v-if="canPublishNotice(row.status)"
-                v-permission="'sys:notice:publish'"
-                link
-                type="success"
-                @click="handlePublish(row)"
-              >
-                发布
-              </el-button>
-              <el-button
-                v-if="canRevokeNotice(row.status)"
-                v-permission="'sys:notice:revoke'"
-                link
-                type="warning"
-                @click="handleRevoke(row)"
-              >
-                撤回
-              </el-button>
-              <el-button
-                v-permission="'sys:notice:delete'"
-                link
-                type="danger"
-                @click="handleDelete(row)"
-              >
-                删除
-              </el-button>
-            </div>
-          </template>
-        </el-table-column>
-      </el-table>
-
-      <div class="pagination">
-        <el-pagination
-          v-model:current-page="pagination.current"
-          v-model:page-size="pagination.size"
-          :total="noticeStore.total"
-          :page-sizes="[10, 20, 50, 100]"
-          :layout="paginationLayout"
-          :small="isCompactTable"
-          @size-change="handleSizeChange"
-          @current-change="handleCurrentChange"
-        />
-      </div>
-    </el-card>
+        <template #default="{ row }">
+          <div class="table-actions" :class="{ 'table-actions--compact': isCompactTable }">
+            <el-button
+              v-permission="'sys:notice:query'"
+              link
+              type="primary"
+              @click="handleViewDetail(row)"
+            >
+              详情
+            </el-button>
+            <el-button
+              v-if="canEditNotice(row.status)"
+              v-permission="'sys:notice:update'"
+              link
+              type="primary"
+              @click="handleEdit(row)"
+            >
+              编辑
+            </el-button>
+            <el-button
+              v-if="canPublishNotice(row.status)"
+              v-permission="'sys:notice:publish'"
+              link
+              type="success"
+              @click="handlePublish(row)"
+            >
+              发布
+            </el-button>
+            <el-button
+              v-if="canRevokeNotice(row.status)"
+              v-permission="'sys:notice:revoke'"
+              link
+              type="warning"
+              @click="handleRevoke(row)"
+            >
+              撤回
+            </el-button>
+            <el-button
+              v-permission="'sys:notice:delete'"
+              link
+              type="danger"
+              @click="handleDelete(row)"
+            >
+              删除
+            </el-button>
+          </div>
+        </template>
+      </el-table-column>
+    </DataTable>
 
     <NoticeFormDialog
       v-model:visible="formDialogVisible"
@@ -207,6 +193,7 @@ import { ElMessage, ElMessageBox } from 'element-plus'
 import { ArrowDown, Plus } from '@element-plus/icons-vue'
 import type { NoticeQueryRequest, SysNoticeAdminVO } from '@/types/api-types'
 import { useContentAdmin } from '@/composables/useContentAdmin'
+import DataTable from '@/components/common/DataTable.vue'
 import { useNoticeStore } from '@/stores'
 import {
   NOTICE_STATUS_OPTIONS,
@@ -303,17 +290,6 @@ function handleReset(): void {
   })
   pagination.current = 1
   pagination.size = 10
-  void fetchNotices()
-}
-
-function handleSizeChange(size: number): void {
-  pagination.size = size
-  pagination.current = 1
-  void fetchNotices()
-}
-
-function handleCurrentChange(current: number): void {
-  pagination.current = current
   void fetchNotices()
 }
 
@@ -452,26 +428,6 @@ onMounted(() => {
   transform: rotate(180deg);
 }
 
-.card-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 12px;
-  font-weight: 500;
-}
-
-.notice-table {
-  width: 100%;
-}
-
-.notice-table :deep(.action-column) {
-  border-left: 2px solid var(--el-border-color);
-}
-
-.notice-table :deep(.el-table__cell .cell) {
-  text-align: center;
-}
-
 .table-actions {
   display: inline-flex;
   flex-wrap: wrap;
@@ -487,12 +443,6 @@ onMounted(() => {
 
 .table-actions :deep(.el-button + .el-button) {
   margin-left: 0;
-}
-
-.pagination {
-  display: flex;
-  justify-content: center;
-  margin-top: 16px;
 }
 
 @media (max-width: 768px) {

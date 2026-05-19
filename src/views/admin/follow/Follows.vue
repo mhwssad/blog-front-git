@@ -67,34 +67,32 @@
       </el-form>
     </el-card>
 
-    <el-card class="table-card" shadow="never">
-      <template #header>
-        <div class="card-header">
-          <span>关注关系管理</span>
-          <div class="card-header__actions">
-            <el-button
-              v-permission="'content:follow:clean'"
-              type="warning"
-              size="small"
-              @click="cleanDialogVisible = true"
-            >
-              异常清理
-            </el-button>
-            <el-button v-permission="'content:follow:query'" size="small" @click="fetchRelations">
-              <el-icon><Refresh /></el-icon>
-              刷新
-            </el-button>
-          </div>
-        </div>
+    <DataTable
+      title="关注关系管理"
+      :data="followStore.relations"
+      :loading="followStore.loading"
+      :total="followStore.total"
+      v-model:current-page="pagination.current"
+      v-model:page-size="pagination.size"
+      :page-sizes="[10, 20, 50, 100]"
+      :pagination-layout="paginationLayout"
+      @page-change="handleCurrentChange"
+      @size-change="handleSizeChange"
+    >
+      <template #header-extra>
+        <el-button
+          v-permission="'content:follow:clean'"
+          type="warning"
+          size="small"
+          @click="cleanDialogVisible = true"
+        >
+          异常清理
+        </el-button>
+        <el-button v-permission="'content:follow:query'" size="small" @click="fetchRelations">
+          <el-icon><Refresh /></el-icon>
+          刷新
+        </el-button>
       </template>
-
-      <el-table
-        v-loading="followStore.loading"
-        :data="followStore.relations"
-        border
-        stripe
-        table-layout="auto"
-      >
         <el-table-column label="关注者" min-width="160" align="center">
           <template #default="{ row }">
             <div>{{ row.followerNickname || row.followerUsername }}</div>
@@ -131,22 +129,7 @@
             <el-button link type="primary" @click="openDetail(row)">详情</el-button>
           </template>
         </el-table-column>
-      </el-table>
-
-      <div class="pagination">
-        <el-pagination
-          v-model:current-page="pagination.current"
-          v-model:page-size="pagination.size"
-          :total="followStore.total"
-          :page-sizes="[10, 20, 50, 100]"
-          :layout="paginationLayout"
-          background
-          small
-          @current-change="handleCurrentChange"
-          @size-change="handleSizeChange"
-        />
-      </div>
-    </el-card>
+    </DataTable>
 
     <FollowDetailDialog
       v-model:visible="detailVisible"
@@ -296,29 +279,10 @@ onMounted(() => {
   margin-left: auto;
 }
 
-.card-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  font-weight: 500;
-}
-
-.card-header__actions {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
 .sub-text {
   margin-top: 4px;
   font-size: 12px;
   color: var(--el-text-color-secondary);
-}
-
-.pagination {
-  display: flex;
-  justify-content: center;
-  margin-top: 16px;
 }
 
 @media (max-width: 768px) {

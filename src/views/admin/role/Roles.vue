@@ -28,106 +28,92 @@
       </el-form>
     </el-card>
 
-    <el-card class="table-card" shadow="never">
-      <template #header>
-        <div class="card-header">
-          <span>角色列表</span>
-          <el-button v-permission="'sys:role:create'" type="primary" @click="handleAdd">
-            <el-icon><Plus /></el-icon>
-            新增角色
-          </el-button>
-        </div>
+    <DataTable
+      :data="tableData"
+      :loading="loading"
+      :total="pagination.total"
+      v-model:current-page="pagination.current"
+      v-model:page-size="pagination.size"
+      :page-sizes="[10, 20, 50, 100]"
+      :pagination-layout="paginationLayout"
+      title="角色列表"
+      :compact="isCompactTable"
+      @page-change="fetchRoles"
+      @size-change="() => { pagination.current = 1; fetchRoles() }"
+    >
+      <template #header-extra>
+        <el-button v-permission="'sys:role:create'" type="primary" @click="handleAdd">
+          <el-icon><Plus /></el-icon>
+          新增角色
+        </el-button>
       </template>
 
-      <el-table
-        v-loading="loading"
-        :data="tableData"
-        :size="isCompactTable ? 'small' : 'default'"
-        table-layout="auto"
-        class="role-table"
-        border
-        stripe
-      >
-        <el-table-column prop="id" label="ID" min-width="80" align="center" />
-        <el-table-column
-          prop="name"
-          label="角色名称"
-          min-width="160"
-          align="center"
-          show-overflow-tooltip
-        />
-        <el-table-column
-          prop="code"
-          label="角色编码"
-          min-width="180"
-          align="center"
-          show-overflow-tooltip
-        />
-        <el-table-column prop="sort" label="排序" min-width="90" align="center" />
-        <el-table-column label="状态" min-width="100" align="center">
-          <template #default="{ row }">
-            <el-switch
-              v-permission.disable="'sys:role:update'"
-              v-model="row.status"
-              :active-value="1"
-              :inactive-value="0"
-              @change="handleStatusChange(row)"
-            />
-          </template>
-        </el-table-column>
-        <el-table-column
-          prop="remark"
-          label="备注"
-          min-width="220"
-          align="center"
-          show-overflow-tooltip
-        />
-        <el-table-column label="操作" min-width="250" fixed="right" align="center">
-          <template #default="{ row }">
-            <div class="table-actions">
-              <el-button link type="primary" @click="handleView(row)"> 查看 </el-button>
-              <el-button
-                v-permission="'sys:role:update'"
-                link
-                type="primary"
-                @click="handleEdit(row)"
-              >
-                编辑
-              </el-button>
-              <el-button
-                v-permission="'sys:role:assign-menu'"
-                link
-                type="primary"
-                @click="handleAssignMenus(row)"
-              >
-                分配菜单
-              </el-button>
-              <el-button
-                v-permission="'sys:role:delete'"
-                link
-                type="danger"
-                @click="handleDelete(row)"
-              >
-                删除
-              </el-button>
-            </div>
-          </template>
-        </el-table-column>
-      </el-table>
-
-      <div class="pagination">
-        <el-pagination
-          v-model:current-page="pagination.current"
-          v-model:page-size="pagination.size"
-          :total="pagination.total"
-          :page-sizes="[10, 20, 50, 100]"
-          :layout="paginationLayout"
-          :small="isCompactTable"
-          @size-change="handleSizeChange"
-          @current-change="handleCurrentChange"
-        />
-      </div>
-    </el-card>
+      <el-table-column prop="id" label="ID" min-width="80" align="center" />
+      <el-table-column
+        prop="name"
+        label="角色名称"
+        min-width="160"
+        align="center"
+        show-overflow-tooltip
+      />
+      <el-table-column
+        prop="code"
+        label="角色编码"
+        min-width="180"
+        align="center"
+        show-overflow-tooltip
+      />
+      <el-table-column prop="sort" label="排序" min-width="90" align="center" />
+      <el-table-column label="状态" min-width="100" align="center">
+        <template #default="{ row }">
+          <el-switch
+            v-permission.disable="'sys:role:update'"
+            v-model="row.status"
+            :active-value="1"
+            :inactive-value="0"
+            @change="handleStatusChange(row)"
+          />
+        </template>
+      </el-table-column>
+      <el-table-column
+        prop="remark"
+        label="备注"
+        min-width="220"
+        align="center"
+        show-overflow-tooltip
+      />
+      <el-table-column label="操作" min-width="250" fixed="right" align="center">
+        <template #default="{ row }">
+          <div class="table-actions">
+            <el-button link type="primary" @click="handleView(row)"> 查看 </el-button>
+            <el-button
+              v-permission="'sys:role:update'"
+              link
+              type="primary"
+              @click="handleEdit(row)"
+            >
+              编辑
+            </el-button>
+            <el-button
+              v-permission="'sys:role:assign-menu'"
+              link
+              type="primary"
+              @click="handleAssignMenus(row)"
+            >
+              分配菜单
+            </el-button>
+            <el-button
+              v-permission="'sys:role:delete'"
+              link
+              type="danger"
+              @click="handleDelete(row)"
+            >
+              删除
+            </el-button>
+          </div>
+        </template>
+      </el-table-column>
+    </DataTable>
 
     <RoleFormDialog
       v-model:visible="formDialogVisible"
@@ -156,6 +142,7 @@ import { Plus } from '@element-plus/icons-vue'
 import { RoleApi } from '@/api/sys/role'
 import type { RoleQueryRequest, SysRoleAdminVO } from '@/types/api-types'
 import { useContentAdmin } from '@/composables/useContentAdmin'
+import DataTable from '@/components/common/DataTable.vue'
 import RoleFormDialog from './components/RoleFormDialog.vue'
 import AssignMenusDialog from './components/AssignMenusDialog.vue'
 import RoleDetailDialog from './components/RoleDetailDialog.vue'
@@ -222,17 +209,6 @@ function handleReset(): void {
   })
   pagination.current = 1
   pagination.size = 10
-  void fetchRoles()
-}
-
-function handleSizeChange(size: number): void {
-  pagination.size = size
-  pagination.current = 1
-  void fetchRoles()
-}
-
-function handleCurrentChange(current: number): void {
-  pagination.current = current
   void fetchRoles()
 }
 
@@ -313,17 +289,6 @@ onMounted(() => {
   margin-bottom: 0;
 }
 
-.card-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  font-weight: 500;
-}
-
-.role-table {
-  width: 100%;
-}
-
 .table-actions {
   display: inline-flex;
   flex-wrap: wrap;
@@ -334,12 +299,6 @@ onMounted(() => {
 
 .table-actions :deep(.el-button + .el-button) {
   margin-left: 0;
-}
-
-.pagination {
-  display: flex;
-  justify-content: center;
-  margin-top: 16px;
 }
 
 .filter-control {

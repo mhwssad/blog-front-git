@@ -35,109 +35,98 @@
       </el-form>
     </el-card>
 
-    <el-card class="table-card" shadow="never">
-      <template #header>
-        <div class="card-header">
-          <span>审计日志列表</span>
-          <span class="card-header__meta">{{ auditLogStore.total }} 条</span>
-        </div>
+    <DataTable
+      :data="auditLogStore.logs"
+      :loading="auditLogStore.loading"
+      :total="auditLogStore.total"
+      :current-page="pagination.current"
+      :page-size="pagination.size"
+      :page-sizes="[10, 20, 50, 100]"
+      :pagination-layout="paginationLayout"
+      :compact="isCompactTable"
+      title="审计日志列表"
+      class="audit-table"
+      @update:current-page="pagination.current = $event"
+      @update:page-size="pagination.size = $event"
+      @size-change="handleSizeChange"
+      @page-change="handleCurrentChange"
+    >
+      <template #header-extra>
+        <span class="card-header__meta">{{ auditLogStore.total }} 条</span>
       </template>
 
-      <el-table
-        v-loading="auditLogStore.loading"
-        :data="auditLogStore.logs"
-        :size="isCompactTable ? 'small' : 'default'"
-        table-layout="auto"
-        class="audit-table"
-        border
-        stripe
+      <el-table-column prop="id" label="ID" min-width="70" align="center" />
+      <el-table-column label="操作人" min-width="160" align="center" show-overflow-tooltip>
+        <template #default="{ row }">
+          <div class="cell-stack">
+            <span>{{ row.operatorUsername }}</span>
+            <span class="cell-subtext">ID: {{ row.operatorUserId }}</span>
+          </div>
+        </template>
+      </el-table-column>
+      <el-table-column label="目标用户" min-width="160" align="center" show-overflow-tooltip>
+        <template #default="{ row }">
+          <div class="cell-stack">
+            <span>{{ row.targetUsername || '-' }}</span>
+            <span class="cell-subtext">ID: {{ row.targetUserId ?? '-' }}</span>
+          </div>
+        </template>
+      </el-table-column>
+      <el-table-column label="目标对象" min-width="140" align="center" show-overflow-tooltip>
+        <template #default="{ row }">
+          {{ formatTargetObject(row) }}
+        </template>
+      </el-table-column>
+      <el-table-column label="操作类型" min-width="140" align="center" show-overflow-tooltip>
+        <template #default="{ row }">
+          <el-tag :type="getOperationTagType(row.operationTypeDesc || row.operationType)">
+            {{ row.operationTypeDesc || row.operationType || '-' }}
+          </el-tag>
+        </template>
+      </el-table-column>
+      <el-table-column label="请求 IP" min-width="130" align="center" show-overflow-tooltip>
+        <template #default="{ row }">
+          {{ row.requestIp || '-' }}
+        </template>
+      </el-table-column>
+      <el-table-column label="MFA" min-width="90" align="center">
+        <template #default="{ row }">
+          <el-tag :type="getMfaTagType(row.mfaPassed)" effect="light" size="small">
+            {{ formatMfaPassed(row.mfaPassed) }}
+          </el-tag>
+        </template>
+      </el-table-column>
+      <el-table-column
+        prop="remark"
+        label="备注"
+        min-width="220"
+        align="center"
+        show-overflow-tooltip
+      />
+      <el-table-column label="创建时间" min-width="160" align="center">
+        <template #default="{ row }">
+          {{ formatCreateTime(row.createdAt) }}
+        </template>
+      </el-table-column>
+      <el-table-column
+        label="操作"
+        :min-width="isCompactTable ? 120 : 140"
+        :fixed="isCompactTable ? false : 'right'"
+        class-name="action-column"
+        align="center"
       >
-        <el-table-column prop="id" label="ID" min-width="70" align="center" />
-        <el-table-column label="操作人" min-width="160" align="center" show-overflow-tooltip>
-          <template #default="{ row }">
-            <div class="cell-stack">
-              <span>{{ row.operatorUsername }}</span>
-              <span class="cell-subtext">ID: {{ row.operatorUserId }}</span>
-            </div>
-          </template>
-        </el-table-column>
-        <el-table-column label="目标用户" min-width="160" align="center" show-overflow-tooltip>
-          <template #default="{ row }">
-            <div class="cell-stack">
-              <span>{{ row.targetUsername || '-' }}</span>
-              <span class="cell-subtext">ID: {{ row.targetUserId ?? '-' }}</span>
-            </div>
-          </template>
-        </el-table-column>
-        <el-table-column label="目标对象" min-width="140" align="center" show-overflow-tooltip>
-          <template #default="{ row }">
-            {{ formatTargetObject(row) }}
-          </template>
-        </el-table-column>
-        <el-table-column label="操作类型" min-width="140" align="center" show-overflow-tooltip>
-          <template #default="{ row }">
-            <el-tag :type="getOperationTagType(row.operationTypeDesc || row.operationType)">
-              {{ row.operationTypeDesc || row.operationType || '-' }}
-            </el-tag>
-          </template>
-        </el-table-column>
-        <el-table-column label="请求 IP" min-width="130" align="center" show-overflow-tooltip>
-          <template #default="{ row }">
-            {{ row.requestIp || '-' }}
-          </template>
-        </el-table-column>
-        <el-table-column label="MFA" min-width="90" align="center">
-          <template #default="{ row }">
-            <el-tag :type="getMfaTagType(row.mfaPassed)" effect="light" size="small">
-              {{ formatMfaPassed(row.mfaPassed) }}
-            </el-tag>
-          </template>
-        </el-table-column>
-        <el-table-column
-          prop="remark"
-          label="备注"
-          min-width="220"
-          align="center"
-          show-overflow-tooltip
-        />
-        <el-table-column label="创建时间" min-width="160" align="center">
-          <template #default="{ row }">
-            {{ formatCreateTime(row.createdAt) }}
-          </template>
-        </el-table-column>
-        <el-table-column
-          label="操作"
-          :min-width="isCompactTable ? 120 : 140"
-          :fixed="isCompactTable ? false : 'right'"
-          class-name="action-column"
-          align="center"
-        >
-          <template #default="{ row }">
-            <el-button
-              v-permission="'sys:audit:query'"
-              link
-              type="primary"
-              @click="handleViewDetail(row)"
-            >
-              详情
-            </el-button>
-          </template>
-        </el-table-column>
-      </el-table>
-
-      <div class="pagination">
-        <el-pagination
-          v-model:current-page="pagination.current"
-          v-model:page-size="pagination.size"
-          :total="auditLogStore.total"
-          :page-sizes="[10, 20, 50, 100]"
-          :layout="paginationLayout"
-          :small="isCompactTable"
-          @size-change="handleSizeChange"
-          @current-change="handleCurrentChange"
-        />
-      </div>
-    </el-card>
+        <template #default="{ row }">
+          <el-button
+            v-permission="'sys:audit:query'"
+            link
+            type="primary"
+            @click="handleViewDetail(row)"
+          >
+            详情
+          </el-button>
+        </template>
+      </el-table-column>
+    </DataTable>
 
     <AuditLogDetailDialog v-model:visible="detailVisible" :log="currentLog" />
   </div>
@@ -280,10 +269,6 @@ onMounted(() => {
   margin-bottom: 16px;
 }
 
-.table-card {
-  margin-bottom: 16px;
-}
-
 .search-form {
   display: flex;
   flex-wrap: wrap;
@@ -309,19 +294,6 @@ onMounted(() => {
   margin-right: 0;
 }
 
-.card-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 12px;
-  font-weight: 500;
-}
-
-.card-header__meta {
-  color: var(--el-text-color-secondary);
-  font-size: 13px;
-}
-
 .audit-table {
   width: 100%;
 }
@@ -344,12 +316,6 @@ onMounted(() => {
   color: var(--el-text-color-secondary);
   font-size: 12px;
   line-height: 1.2;
-}
-
-.pagination {
-  display: flex;
-  justify-content: center;
-  margin-top: 16px;
 }
 
 @media (max-width: 768px) {
