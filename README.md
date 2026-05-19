@@ -40,9 +40,15 @@ src/
 │   ├── front/       # 前台用户页面
 │   └── common/      # 登录、注册、错误页
 ├── components/      # 全局通用组件
+│   ├── common/      # 通用业务组件
+│   └── editor/      # 编辑器组件
 ├── layouts/         # 布局组件（AdminLayouts 等）
 ├── api/             # 接口层
 │   ├── auth.ts      # 认证接口
+│   ├── content.ts   # 公开内容接口
+│   ├── follow.ts    # 公开关注接口
+│   ├── forum.ts     # 公开论坛接口
+│   ├── websocket.ts # WebSocket 连接
 │   ├── request/     # Axios 实例 + 拦截器
 │   ├── sys/         # 后台管理接口
 │   └── user/        # 用户侧接口
@@ -53,6 +59,8 @@ src/
 ├── plugins/         # v-permission 指令、Element Plus 图标
 ├── composables/     # 组合式函数
 ├── utils/           # 工具函数
+├── constants/       # 常量定义
+├── i18n/            # 国际化
 └── styles/          # 全局样式
 ```
 

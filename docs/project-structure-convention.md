@@ -16,14 +16,14 @@
 
 本文档不替代以下文档：
 
-- `CLAUDE.md`：仓库级开发摘要、命令、基础协作要求
+- `AGENTS.md` / `CLAUDE.md`：仓库级开发摘要、命令、基础协作要求
 - `docs/code-writing-convention.md`：约束代码书写风格、组件写法、命名规范等
 - `docs/api文档/*`：约束接口路由、字段和业务行为
 
 优先级说明：
 
 - 目录、文件放置、模块职责、扩展落点以本文档为准
-- 仓库命令、基础开发流程和通用工程说明以 `CLAUDE.md` 为准
+- 仓库命令、基础开发流程和通用工程说明以 `AGENTS.md` / `CLAUDE.md` 为准
 - 代码风格、Vue/TypeScript 细节、文件命名以 `docs/code-writing-convention.md` 为准
 - 接口字段和请求方式以 API 文档为准
 
@@ -65,6 +65,8 @@
 - `src/plugins/`：应用级插件注册（v-permission 指令、Element Plus 图标）
 - `src/config/`：应用配置聚合
 - `src/utils/`：基础工具、格式化、日志、存储等工具能力
+- `src/constants/`：常量定义
+- `src/i18n/`：国际化配置
 - `src/styles/`：全局样式、变量和主题相关样式
 - `src/assets/`：需经过构建处理的静态资源
 
@@ -90,28 +92,29 @@
 
 | 目录 | 说明 | 页面文件 |
 | ------ | ------ | --------- |
-| `admin/Dashboard.vue` | 后台首页（固定路由） | Dashboard.vue |
-| `admin/user/` | 用户管理 | Users.vue, UserLevels.vue |
-| `admin/article/` | 文章管理 | Articles.vue, ArticleReview.vue |
-| `admin/role/` | 角色管理 | Roles.vue |
+| `admin/dashboard/` | 后台首页（固定路由） | Dashboard.vue |
+| `admin/user/` | 用户管理 | Users.vue |
+| `admin/user-level/` | 用户等级管理 | UserLevels.vue |
+| `admin/article/` | 文章管理 | Articles.vue |
 | `admin/category/` | 分类管理 | Categories.vue |
 | `admin/tag/` | 标签管理 | Tags.vue |
 | `admin/comment/` | 评论管理 | Comments.vue |
+| `admin/role/` | 角色管理 | Roles.vue |
+| `admin/menu/` | 菜单管理 | Menus.vue |
+| `admin/config/` | 配置管理 | Configs.vue |
 | `admin/notice/` | 通知管理 | Notices.vue |
 | `admin/log/` | 日志管理 | Logs.vue |
-| `admin/config/` | 配置管理 | Configs.vue |
-| `admin/menu/` | 菜单管理 | Menus.vue |
-| `admin/ai/` | AI 配置与统计 | AiConfigCenter.vue, AiUsageStats.vue |
-| `admin/audit/` | 审计日志 | AuditLog.vue |
-| `admin/author/` | 作者申请管理 | AuthorApplications.vue |
-| `admin/channel/` | 频道管理 | ChannelManagement.vue, ChannelAudit.vue |
-| `admin/chat/` | 聊天管理 | Chats.vue |
-| `admin/collection/` | 收藏管理 | Collections.vue |
 | `admin/file/` | 文件管理 | Files.vue |
+| `admin/chat/` | 聊天管理 | Chats.vue |
 | `admin/follow/` | 关注关系管理 | Follows.vue |
 | `admin/footprint/` | 足迹管理 | Footprints.vue |
+| `admin/collection/` | 收藏管理 | Collections.vue |
 | `admin/interaction/` | 互动管理 | Interactions.vue |
-| `admin/forum/` | 论坛管理 | ForumSections.vue, ForumPosts.vue, ForumReplies.vue |
+| `admin/ai/` | AI 配置与统计 | AiConfigCenter.vue |
+| `admin/audit/` | 审计日志 | AuditLog.vue |
+| `admin/author/` | 作者申请管理 | AuthorApplications.vue |
+| `admin/channel/` | 频道管理 | ChannelManagement.vue |
+| `admin/forum/` | 论坛管理 | ForumSections.vue |
 | `admin/migration/` | 博客迁移管理 | MigrationTasks.vue |
 | `admin/report/` | 举报管理 | ReportList.vue |
 
@@ -122,33 +125,34 @@
 | 目录 | 说明 | 页面文件 |
 | ------ | ------ | --------- |
 | `front/home/` | 首页 | HomeView.vue |
+| `front/articles/` | 文章列表 | ArticlesView.vue, ArticleListCard.vue |
 | `front/article/` | 文章详情 | ArticleDetail.vue |
-| `front/about/` | 关于页 | AboutView.vue |
-| `front/ai/` | AI 助手 | AiAssistant.vue |
-| `front/author/` | 作者申请 | AuthorApply.vue |
 | `front/category/` | 分类浏览 | CategoryView.vue |
-| `front/channel/` | 频道 | ChannelList.vue, ChannelDetail.vue, ChannelApply.vue |
-| `front/chat/` | 聊天 | ChatView.vue, GroupSettings.vue, JoinRequestsView.vue |
-| `front/collection/` | 收藏 | CollectionsView.vue |
-| `front/file/` | 用户文件 | UserFilesView.vue |
-| `front/footprint/` | 足迹 | FootprintsView.vue |
-| `front/friends/` | 好友 | FriendsView.vue |
-| `front/forum/` | 论坛 | ForumHome.vue, ForumSection.vue, ForumPost.vue, ForumCreate.vue, ForumEdit.vue, MyForumPosts.vue |
-| `front/hall/` | 大厅 | HallView.vue |
-| `front/notice/` | 通知 | NoticesView.vue |
-| `front/notification/` | 通知设置 | NotificationSettings.vue |
-| `front/profile/` | 用户主页 | ProfileView.vue |
-| `front/search/` | 搜索 | SearchView.vue |
-| `front/series/` | 系列 | SeriesList.vue, SeriesDetail.vue |
-| `front/settings/` | 用户设置 | UserSettings.vue |
 | `front/tag/` | 标签 | TagDetailView.vue |
 | `front/user/` | 用户资料 | UserProfileView.vue |
+| `front/profile/` | 用户主页 | ProfileView.vue |
+| `front/settings/` | 用户设置 | UserSettings.vue |
+| `front/ai/` | AI 助手 | AiAssistant.vue |
+| `front/author/` | 作者申请 | AuthorApply.vue |
+| `front/chat/` | 聊天 | ChatView.vue |
+| `front/collection/` | 收藏 | CollectionsView.vue |
+| `front/footprint/` | 足迹 | FootprintsView.vue |
+| `front/friends/` | 好友 | FriendsView.vue |
+| `front/file/` | 用户文件 | UserFilesView.vue |
+| `front/notice/` | 通知 | NoticesView.vue |
+| `front/notification/` | 通知设置 | NotificationSettings.vue |
+| `front/series/` | 系列 | SeriesList.vue |
+| `front/channel/` | 频道 | ChannelList.vue |
+| `front/forum/` | 论坛 | ForumHome.vue, ForumSection.vue, ForumPost.vue |
+| `front/hall/` | 大厅 | HallView.vue |
+| `front/search/` | 搜索 | SearchView.vue |
+| `front/about/` | 关于页 | AboutView.vue |
 
 #### 3.2.3 公共页面
 
 | 目录 | 说明 | 页面文件 |
 | ------ | ------ | --------- |
-| `common/auth/` | 认证页面 | Login.vue, Register.vue, ForgotPassword.vue |
+| `common/auth/` | 认证页面 | Login.vue, Register.vue |
 | `common/err/` | 错误页面 | NotFound.vue, Forbidden.vue, ServerError.vue |
 
 ### 3.3 页面目录约束
@@ -174,15 +178,18 @@
 src/components/
 ├── common/         # 通用业务组件
 │   ├── AuthorBadge.vue         # 作者标识
-│   ├── ExperienceBar.vue       # 经验值进度条
-│   ├── LevelRequirementTip.vue # 等级要求提示
+│   ├── ExperienceBar.vue        # 经验值进度条
+│   ├── FeaturePlaceholder.vue  # 功能占位组件
+│   ├── IconPicker.vue          # 图标选择器
+│   ├── ImageUpload.vue          # 图片上传组件
+│   ├── LevelRequirementTip.vue  # 等级要求提示
 │   ├── ReportDialog.vue        # 举报弹窗
 │   ├── RiskConfirmDialog.vue   # 危险操作确认弹窗
 │   ├── TwoFactorDialog.vue     # 二次验证弹窗
 │   └── UserLevelBadge.vue      # 用户等级徽章
 └── editor/         # 编辑器组件
     └── HtmlCodeEditor.vue      # CodeMirror HTML 编辑器
-```text
+```
 
 只有被多个页面或多个业务域复用时，组件才允许进入 `src/components/`。页面私有组件优先就近放置，不上提到全局目录。
 
@@ -191,23 +198,13 @@ src/components/
 ```text
 src/layouts/
 ├── AdminLayouts.vue         # 后台壳布局
-├── FrontLayout.vue          # 前台壳布局
+├── FrontLayout.vue         # 前台壳布局
 └── components/
-    ├── LayoutHeader/        # 后台头部
-    │   ├── index.vue
-    │   ├── HeaderActions.vue
-    │   ├── HeaderBreadcrumb.vue
-    │   ├── HeaderFullscreen.vue
-    │   ├── HeaderNotice.vue
-    │   └── HeaderUser.vue
-    ├── LayoutSidebar/       # 后台侧栏
-    │   ├── index.vue
-    │   ├── SidebarMenu.vue
-    │   └── SidebarMenuItem.vue
-    ├── LayoutTabs/          # 后台标签页
-    │   └── index.vue
-    └── LayoutLogo.vue       # Logo 组件
-```text
+    ├── LayoutHeader/       # 后台头部
+    ├── LayoutSidebar/      # 后台侧栏
+    ├── LayoutTabs/         # 后台标签页
+    └── LayoutLogo.vue      # Logo 组件
+```
 
 - `src/layouts/` 只允许放应用布局层组件
 - 布局私有组件放在 `src/layouts/components/` 下
@@ -219,16 +216,19 @@ src/layouts/
 ```text
 src/api/
 ├── auth.ts               # 认证接口 (登录、注册、Token 刷新、退出)
-├── content.ts            # 公开内容接口 (文章/分类/标签/评论的公开查询，class 风格)
-├── follow.ts             # 公开关注接口 (关注列表、粉丝列表，class 风格)
+├── content.ts            # 公开内容接口 (文章/分类/标签/评论的公开查询)
+├── follow.ts             # 公开关注接口 (关注列表、粉丝列表)
+├── forum.ts              # 公开论坛接口
+├── websocket.ts          # WebSocket 连接
 ├── request/              # Axios 实例、请求工具
 │   ├── index.ts          # Axios 实例和请求方法
 │   ├── utils.ts          # 请求工具函数
-│   └── interceptors/     # 三层拦截器
+│   └── interceptors/    # 三层拦截器
 │       ├── request.ts    # 请求拦截器
-│       ├── response.ts   # 响应拦截器
+│       ├── response.ts  # 响应拦截器
 │       └── refresh.ts    # Token 刷新拦截器
 ├── sys/                  # 后台管理接口
+│   ├── admin.ts          # 管理员接口
 │   ├── article.ts        # 文章管理
 │   ├── category.ts       # 分类管理
 │   ├── tag.ts            # 标签管理
@@ -245,8 +245,15 @@ src/api/
 │   ├── footprint.ts      # 足迹管理
 │   ├── collection.ts     # 收藏管理
 │   ├── interaction.ts    # 互动管理
-│   ├── ai.ts             # AI 渠道配置与会话管理
-│   └── report.ts         # 举报管理
+│   ├── ai.ts             # AI 配置管理
+│   ├── auditLog.ts       # 审计日志
+│   ├── authorApplication.ts # 作者申请管理
+│   ├── report.ts         # 举报管理
+│   ├── dashboard.ts      # 仪表盘统计
+│   ├── experience.ts    # 经验值管理
+│   ├── friendLink.ts     # 友情链接管理
+│   ├── forum.ts         # 论坛管理
+│   └── migration.ts     # 迁移管理
 └── user/                 # 用户侧接口
     ├── content.ts        # 用户内容操作
     ├── chat.ts           # 用户聊天
@@ -254,14 +261,20 @@ src/api/
     ├── follow.ts         # 用户关注
     ├── notice.ts         # 用户通知
     ├── ai.ts             # 用户 AI 会话
-    └── report.ts         # 用户举报
-```text
+    ├── report.ts         # 用户举报
+    ├── profile.ts        # 用户资料
+    ├── authorApplication.ts # 用户作者申请
+    ├── experience.ts     # 用户经验值
+    ├── forum.ts          # 用户论坛
+    ├── notificationSettings.ts # 通知设置
+    └── footprint.ts      # 用户足迹
+```
 
 约束如下：
 
 - API 模块只负责请求发起、响应类型和必要的兼容归一化
 - 禁止在 API 文件里写页面状态处理
-- 公开接口放顶层（`auth.ts`、`content.ts`、`follow.ts`）
+- 公开接口放顶层（`auth.ts`、`content.ts`、`follow.ts`、`forum.ts`、`websocket.ts`）
 - 用户接口放 `user/`，后台接口放 `sys/`
 - **禁止将用户侧和后台侧 API 混在同一个顶层文件中**（必须拆分到 `user/` 和 `sys/`）
 - 统一复用 `src/types/api-types.ts` 中的公共类型（通过 `@/types/api-types` 引入）
@@ -275,7 +288,7 @@ src/types/
 ├── api-types.ts          # 所有接口类型定义（请求/响应 VO、分页、枚举等）
 ├── auto-imports.d.ts     # 自动导入类型（自动生成）
 └── element-plus.d.ts     # Element Plus 类型扩展
-```text
+```
 
 约束如下：
 
@@ -293,15 +306,50 @@ src/stores/
 ├── auth.ts               # 认证状态 (登录态、Token、用户信息)
 ├── tabs.ts               # 后台标签页管理
 └── modules/              # 业务域 Store
-    ├── article.ts, category.ts, tag.ts, comment.ts
-    ├── user.ts, role.ts, menu.ts, config.ts
-    ├── notice.ts, log.ts
-    ├── chat.ts, file.ts, follow.ts, footprint.ts
-    ├── collection.ts, interaction.ts
-    ├── frontContent.ts                # 前台内容
-    ├── userChat.ts, userContent.ts, userFile.ts
-    ├── userFollow.ts, userNotice.ts
-```text
+    ├── admin.ts          # 管理员状态
+    ├── article.ts        # 文章状态
+    ├── category.ts       # 分类状态
+    ├── tag.ts            # 标签状态
+    ├── comment.ts        # 评论状态
+    ├── user.ts           # 用户状态
+    ├── role.ts           # 角色状态
+    ├── menu.ts           # 菜单状态
+    ├── config.ts         # 配置状态
+    ├── notice.ts         # 通知状态
+    ├── log.ts            # 日志状态
+    ├── chat.ts           # 聊天状态
+    ├── file.ts           # 文件状态
+    ├── follow.ts         # 关注状态
+    ├── footprint.ts      # 足迹状态
+    ├── collection.ts     # 收藏状态
+    ├── interaction.ts    # 互动状态
+    ├── aiAgent.ts        # AI 助手状态
+    ├── aiChannel.ts      # AI 渠道状态
+    ├── aiKnowledge.ts    # AI 知识库状态
+    ├── aiMcp.ts          # AI MCP 状态
+    ├── aiTool.ts         # AI 工具状态
+    ├── aiUsage.ts        # AI 使用统计
+    ├── auditLog.ts       # 审计日志状态
+    ├── authorApplication.ts # 作者申请状态
+    ├── dashboard.ts      # 仪表盘状态
+    ├── experience.ts     # 经验值状态
+    ├── friendLink.ts     # 友情链接状态
+    ├── forumAdmin.ts     # 后台论坛状态
+    ├── migration.ts      # 迁移任务状态
+    ├── notificationSettings.ts # 通知设置状态
+    ├── profile.ts        # 用户资料状态
+    ├── report.ts          # 举报状态
+    ├── frontContent.ts   # 前台内容状态
+    ├── userAi.ts         # 用户 AI 状态
+    ├── userAuthorApplication.ts # 用户作者申请状态
+    ├── userChat.ts       # 用户聊天状态
+    ├── userContent.ts    # 用户内容状态
+    ├── userExperience.ts # 用户经验值状态
+    ├── userFile.ts       # 用户文件状态
+    ├── userFollow.ts     # 用户关注状态
+    ├── userForum.ts      # 用户论坛状态
+    └── userNotice.ts     # 用户通知状态
+```
 
 约束如下：
 
@@ -314,10 +362,11 @@ src/stores/
 
 ```text
 src/composables/
-├── useContentAdmin.ts    # 后台内容管理页统一表格高度和分页布局
+├── useTableHeight.ts     # 表格高度自适应
 ├── usePermission.ts      # 权限检查
-└── useTableHeight.ts     # 表格高度自适应
-```text
+├── useContentAdmin.ts   # 后台内容管理页统一表格高度和分页布局
+└── useDebounceFn.ts     # 防抖函数
+```
 
 约束如下：
 
@@ -332,6 +381,7 @@ src/utils/
 ├── baseUtils.ts          # 基础工具
 ├── contentAdmin.ts       # 内容管理常量和格式化（后台内容域选项、状态格式化）
 ├── systemAdmin.ts        # 系统管理常量和格式化（菜单/通知/日志域选项、状态格式化）
+├── aiAdmin.ts            # AI 管理常量和格式化
 ├── dateUtils.ts          # 日期格式化
 ├── formatUtils.ts        # 通用格式化
 ├── stringUtils.ts        # 字符串工具
@@ -357,15 +407,14 @@ src/utils/
 ├── storage.ts            # 本地存储工具
 ├── iconUtils.ts          # Element Plus 图标工具
 ├── svgUtils.ts           # SVG 图标工具
-├── markdown.ts           # Markdown 与 HTML 互转
-└── contentAdmin.ts       # 内容管理常量和格式化
-```text
+└── markdown.ts           # Markdown 与 HTML 互转
+```
 
 约束如下：
 
 - `src/utils/` 只放无状态工具、格式化、基础设施工具
 - 禁止在 `utils` 中写页面强耦合逻辑
-- `contentAdmin.ts` 和 `systemAdmin.ts` 分别承载后台内容域和系统域的选项常量和格式化函数，按域拆分
+- `contentAdmin.ts`、`systemAdmin.ts`、`aiAdmin.ts` 分别承载后台内容域、系统域、AI 域的选项常量和格式化函数，按域拆分
 
 ### 3.8 `router`、`plugins`、`config` 约束
 
@@ -407,7 +456,7 @@ src/router/
 约束如下：
 
 - 路由定义、动态菜单映射、路由守卫只能放在 `src/router/`
-- 后台首页 (`/admin/dashboard`) 对应组件为 `src/views/admin/Dashboard.vue`
+- 后台首页 (`/admin/dashboard`) 对应组件为 `src/views/admin/dashboard/Dashboard.vue`
 - 固定路由配置集中维护在 `src/router/` 下，禁止在页面中绕过路由守卫
 
 #### 3.8.2 插件目录
@@ -415,8 +464,8 @@ src/router/
 ```text
 src/plugins/
 ├── element-plus.ts       # Element Plus 图标注册
-└── permission.ts         # v-permission 指令注册
-```text
+└── permission.ts        # v-permission 指令注册
+```
 
 - 应用级注册能力统一放在 `src/plugins/`
 - 禁止在页面内重复实现菜单解析、权限初始化或全局错误注册
@@ -426,7 +475,7 @@ src/plugins/
 ```text
 src/config/
 └── index.ts              # 应用配置聚合
-```text
+```
 
 - 环境无关配置集中放在 `src/config/`
 
@@ -437,8 +486,8 @@ src/styles/
 ├── index.css      # 全局样式引入
 ├── reset.css      # CSS 重置
 ├── variables.css  # CSS 变量
-└── dialog.css     # 弹窗样式
-```text
+└── dialog.css    # 弹窗样式
+```
 
 ## 4. 模块协作与落地规则
 
@@ -478,21 +527,41 @@ src/styles/
 
 - `auth.mock.ts`：认证相关 Mock
 - `public-content.mock.ts`：公开内容 Mock
+- `public-extra.mock.ts`：公开扩展内容 Mock
+- `public-forum.mock.ts`：公开论坛 Mock
+- `user-chat.mock.ts`：用户聊天 Mock
 - `user-content.mock.ts`：用户内容 Mock
+- `user-experience.mock.ts`：用户经验值 Mock
+- `user-file.mock.ts`：用户文件 Mock
+- `user-follow.mock.ts`：用户关注 Mock
+- `user-forum.mock.ts`：用户论坛 Mock
 - `user-notice.mock.ts`：用户通知 Mock
+- `user-notificationSettings.mock.ts`：用户通知设置 Mock
+- `user-profile.mock.ts`：用户资料 Mock
+- `user-report.mock.ts`：用户举报 Mock
+- `system-admin.mock.ts`：系统管理 Mock
+- `system-ai.mock.ts`：AI 模块 Mock
+- `system-auditLog.mock.ts`：审计日志 Mock
+- `system-author.mock.ts`：作者申请 Mock
 - `system-basic.mock.ts`：系统基础模块 Mock
-- `system-content.mock.ts`：系统内容模块 Mock
 - `system-chat.mock.ts`：聊天模块 Mock
+- `system-content.mock.ts`：系统内容模块 Mock
+- `system-dashboard.mock.ts`：仪表盘 Mock
+- `system-experience.mock.ts`：经验值 Mock
 - `system-file.mock.ts`：文件模块 Mock
 - `system-follow.mock.ts`：关注关系 Mock
+- `system-forum.mock.ts`：论坛管理 Mock
+- `system-friendLink.mock.ts`：友情链接 Mock
+- `system-migration.mock.ts`：迁移任务 Mock
+- `system-report.mock.ts`：举报管理 Mock
 - `shared.ts`：共用方法、分页工具、通用响应方法
-- `test-data.json`：可复用测试数据
+- `data/`：测试数据目录
 
 ### 5.2 Mock 约束
 
 - Mock 文件必须按业务域拆分，禁止重新合并成单个超大入口文件
 - 领域共用方法、分页工具、通用响应方法统一放在 `mock/shared.ts`
-- 可复用测试数据统一放在 `mock/test-data.json`
+- 可复用测试数据统一放在 `mock/data/` 目录
 - 业务域自己的 Mock 逻辑应写在对应的领域文件中
 - 禁止在每个 Mock 文件中重复维护同一份测试数据
 
@@ -511,15 +580,6 @@ src/styles/
 
 如果后续恢复真实后端联调，必须同步更新环境变量说明和 README，而不是只改本地环境文件。
 
-### 5.4 缺失的 Mock 文件
-
-以下 API 域已有接口文件但尚未补充对应 Mock：
-
-- `src/api/user/ai.ts` — 缺少 AI 用户侧 Mock
-- `src/api/sys/ai.ts` — 缺少 AI 后台 Mock
-- `src/api/user/report.ts` — 缺少举报用户侧 Mock
-- `src/api/sys/report.ts` — 缺少举报后台 Mock
-
 ## 6. 文档与配置规范
 
 ### 6.1 文档目录规范
@@ -527,9 +587,11 @@ src/styles/
 `docs/` 下文档职责固定如下：
 
 - `docs/api文档/`：接口文档
+- `docs/需求文档/`：产品需求文档
+- `docs/plans/`：开发计划文档
+- `docs/sql初始化脚本/`：数据库初始化脚本
+- `docs/设计图片/`：设计稿截图
 - `docs/*-convention.md`：规范类文档
-- `docs/task/`：任务协作文档
-- `docs/init.sql`：初始化数据说明
 
 约束如下：
 
@@ -571,4 +633,4 @@ src/styles/
 
 本文档以当前仓库真实结构为基准。后续如果项目发生目录级重构，应先更新本文档，再推进大规模结构调整，避免出现"代码已变、规范未变"或"规范已写、仓库未落地"的双轨状态。
 
-命令、提交流程、基础验证要求不在本文档重复展开，统一以 `CLAUDE.md` 为准；代码书写和组件实现细节统一以 `docs/code-writing-convention.md` 为准。
+命令、提交流程、基础验证要求不在本文档重复展开，统一以 `AGENTS.md` / `CLAUDE.md` 为准；代码书写和组件实现细节统一以 `docs/code-writing-convention.md` 为准。

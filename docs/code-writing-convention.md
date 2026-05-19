@@ -17,7 +17,7 @@
 
 - 代码风格、组件写法、TypeScript 用法以本文档为准
 - 目录结构、文件放置、模块边界以 `docs/project-structure-convention.md` 为准
-- 仓库命令、基础开发流程以 `CLAUDE.md` 为准
+- 仓库命令、基础开发流程以 `AGENTS.md` 和 `CLAUDE.md` 为准
 
 ## 2. 总体原则
 
@@ -35,7 +35,7 @@
 - UI：Element Plus + @element-plus/icons-vue
 - 状态管理：Pinia
 - 路由：Vue Router
-- 请求层：Axios（三层拦截器）
+- 请求层：Axios（三层拦截器）+ WebSocket
 - 校验与格式化：ESLint + Prettier
 - 提交规范：commitlint + commitizen + cz-git
 
