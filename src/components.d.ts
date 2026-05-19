@@ -11,7 +11,12 @@ export {}
 /* prettier-ignore */
 declare module 'vue' {
   export interface GlobalComponents {
+    ActionColumn: typeof import('./components/common/ActionColumn.vue')['default']
     AuthorBadge: typeof import('./components/common/AuthorBadge.vue')['default']
+    BatchToolbar: typeof import('./components/common/BatchToolbar.vue')['default']
+    CodeBlock: typeof import('./components/common/CodeBlock.vue')['default']
+    DataTable: typeof import('./components/common/DataTable.vue')['default']
+    DetailDialog: typeof import('./components/common/DetailDialog.vue')['default']
     ElAlert: typeof import('element-plus/es')['ElAlert']
     ElAvatar: typeof import('element-plus/es')['ElAvatar']
     ElBadge: typeof import('element-plus/es')['ElBadge']
@@ -73,17 +78,23 @@ declare module 'vue' {
     ElTree: typeof import('element-plus/es')['ElTree']
     ElTreeSelect: typeof import('element-plus/es')['ElTreeSelect']
     ElUpload: typeof import('element-plus/es')['ElUpload']
+    EmptyState: typeof import('./components/common/EmptyState.vue')['default']
     ExperienceBar: typeof import('./components/common/ExperienceBar.vue')['default']
     FeaturePlaceholder: typeof import('./components/common/FeaturePlaceholder.vue')['default']
+    FormDialog: typeof import('./components/common/FormDialog.vue')['default']
     HtmlCodeEditor: typeof import('./components/editor/HtmlCodeEditor.vue')['default']
     IconPicker: typeof import('./components/common/IconPicker.vue')['default']
+    ImagePreview: typeof import('./components/common/ImagePreview.vue')['default']
     ImageUpload: typeof import('./components/common/ImageUpload.vue')['default']
     LevelRequirementTip: typeof import('./components/common/LevelRequirementTip.vue')['default']
     ReportDialog: typeof import('./components/common/ReportDialog.vue')['default']
     RiskConfirmDialog: typeof import('./components/common/RiskConfirmDialog.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
+    SearchFilter: typeof import('./components/common/SearchFilter.vue')['default']
+    StatusSwitch: typeof import('./components/common/StatusSwitch.vue')['default']
     TwoFactorDialog: typeof import('./components/common/TwoFactorDialog.vue')['default']
+    UserCell: typeof import('./components/common/UserCell.vue')['default']
     UserLevelBadge: typeof import('./components/common/UserLevelBadge.vue')['default']
   }
   export interface GlobalDirectives {
