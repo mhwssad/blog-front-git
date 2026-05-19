@@ -1,6 +1,7 @@
 /**
  * 用户内容行为 API
  * 基于 content-api.md 文档，提供文章/评论的交互操作（点赞、评论、收藏、足迹、系列管理、审核）
+ * @see docs/api文档/content-api.md
  */
 
 import { http } from '../request'

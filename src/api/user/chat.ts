@@ -1,6 +1,7 @@
 /**
  * 用户聊天 API
  * 基于 chat-api.md 文档
+ * @see docs/api文档/chat-api.md
  */
 
 import { http } from '../request'

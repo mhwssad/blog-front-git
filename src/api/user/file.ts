@@ -1,6 +1,7 @@
 /**
  * 用户文件管理 API
  * 基于 file-api.md 文档
+ * @see docs/api文档/file-api.md
  */
 
 import { http } from '../request'

@@ -1,6 +1,7 @@
 /**
  * 用户作者申请 API
  * 基于 auth-api.md 文档第 6 节
+ * @see docs/api文档/auth-api.md
  */
 
 import { http } from '../request'

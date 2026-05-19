@@ -1,6 +1,7 @@
 /**
  * 用户经验等级 API
  * 基于 auth-api.md 文档 7.2 节
+ * @see docs/api文档/content-api.md
  */
 
 import { http } from '../request'

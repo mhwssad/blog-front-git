@@ -1,6 +1,7 @@
 /**
  * 用户通知中心模块 API
  * 基于 auth-api.md 文档 第7节
+ * @see docs/api文档/auth-api.md
  */
 
 import { http } from '../request'

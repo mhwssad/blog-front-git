@@ -1,6 +1,7 @@
 /**
  * 用户通知设置 API
  * 基于 auth-api.md 文档 7.1 节
+ * @see docs/api文档/auth-api.md
  */
 
 import { http } from '../request'

@@ -1,6 +1,7 @@
 /**
  * 举报用户侧 API
  * 基于 report-api.md 文档
+ * @see docs/api文档/report-api.md
  */
 
 import { http } from '../request'
@@ -10,25 +11,28 @@ import type {
   PageResult,
 } from '@/types/api-types'
 
-export const reportUserApi = {
+export class ReportUserApi {
   /**
    * 3.2 提交举报
    * POST /api/user/reports
    */
-  createReport: (data: ReportCreateRequest) =>
-    http.post<ReportVO>('/user/reports', data),
+  static createReport(data: ReportCreateRequest) {
+    return http.post<ReportVO>('/user/reports', data)
+  }
 
   /**
    * 3.3 查询我的举报记录
    * GET /api/user/reports
    */
-  getMyReports: (params?: { targetType?: string; current?: number; size?: number }) =>
-    http.get<PageResult<ReportVO>>('/user/reports', { params }),
+  static getMyReports(params?: { targetType?: string; current?: number; size?: number }) {
+    return http.get<PageResult<ReportVO>>('/user/reports', { params })
+  }
 
   /**
    * 3.4 查询举报详情
    * GET /api/user/reports/{id}
    */
-  getReportById: (id: number) =>
-    http.get<ReportVO>(`/user/reports/${id}`),
+  static getReportById(id: number) {
+    return http.get<ReportVO>(`/user/reports/${id}`)
+  }
 }
