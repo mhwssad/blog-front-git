@@ -521,6 +521,10 @@ export interface ChatLobbyMessageVO {
  * @description 超级管理员或厅主可更新大厅基本设置
  */
 export interface ChatLobbySettingsUpdateRequest {
+  /** 大厅名称 */
+  name?: string
+  /** 大厅公告 */
+  notice?: string
   /** 发言等级限制 */
   speakLevelLimit?: number
   /** 慢模式间隔（秒） */
