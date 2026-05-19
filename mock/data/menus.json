@@ -599,22 +599,70 @@
           "id": 1820,
           "parentId": 1800,
           "name": "大厅管理",
-          "type": "M",
+          "type": "C",
           "sort": 2,
           "visible": 1,
           "status": 1,
           "routeName": "CommunityLobby",
           "routePath": "/admin/chat/lobby",
-          "component": "admin/chat/LobbyManagement",
+          "component": null,
           "icon": "guide",
           "alwaysShow": 0,
-          "keepAlive": 1,
+          "keepAlive": 0,
           "perm": null,
-          "redirect": null,
+          "redirect": "/admin/chat/lobby/settings",
           "params": null,
           "children": [
-            { "id": 1821, "parentId": 1820, "name": "大厅设置", "type": "B", "sort": 1, "visible": 1, "status": 1, "perm": "content:chat:update", "routeName": "", "routePath": "", "component": null, "icon": null, "alwaysShow": 0, "keepAlive": 0, "redirect": null, "params": null, "children": [], "treePath": "0,1800,1820,1821" },
-            { "id": 1822, "parentId": 1820, "name": "成员治理", "type": "B", "sort": 2, "visible": 1, "status": 1, "perm": "content:chat:update", "routeName": "", "routePath": "", "component": null, "icon": null, "alwaysShow": 0, "keepAlive": 0, "redirect": null, "params": null, "children": [], "treePath": "0,1800,1820,1822" }
+            {
+              "id": 1821, "parentId": 1820, "name": "大厅设置", "type": "M", "sort": 1,
+              "visible": 1, "status": 1, "perm": null,
+              "routeName": "LobbySettings", "routePath": "/admin/chat/lobby/settings",
+              "component": "admin/chat/LobbySettings",
+              "icon": null, "alwaysShow": 0, "keepAlive": 1,
+              "redirect": null, "params": null,
+              "children": [
+                { "id": 18211, "parentId": 1821, "name": "保存设置", "type": "B", "sort": 1, "visible": 1, "status": 1, "perm": "content:chat:update", "routeName": "", "routePath": "", "component": null, "icon": null, "alwaysShow": 0, "keepAlive": 0, "redirect": null, "params": null, "children": [], "treePath": "0,1800,1820,1821,18211" }
+              ],
+              "treePath": "0,1800,1820,1821"
+            },
+            {
+              "id": 1822, "parentId": 1820, "name": "置顶消息", "type": "M", "sort": 2,
+              "visible": 1, "status": 1, "perm": null,
+              "routeName": "LobbyPinnedMessages", "routePath": "/admin/chat/lobby/pinned",
+              "component": "admin/chat/LobbyPinnedMessages",
+              "icon": null, "alwaysShow": 0, "keepAlive": 1,
+              "redirect": null, "params": null,
+              "children": [
+                { "id": 18221, "parentId": 1822, "name": "取消置顶", "type": "B", "sort": 1, "visible": 1, "status": 1, "perm": "content:chat:update", "routeName": "", "routePath": "", "component": null, "icon": null, "alwaysShow": 0, "keepAlive": 0, "redirect": null, "params": null, "children": [], "treePath": "0,1800,1820,1822,18221" }
+              ],
+              "treePath": "0,1800,1820,1822"
+            },
+            {
+              "id": 1823, "parentId": 1820, "name": "消息管理", "type": "M", "sort": 3,
+              "visible": 1, "status": 1, "perm": null,
+              "routeName": "LobbyMessages", "routePath": "/admin/chat/lobby/messages",
+              "component": "admin/chat/LobbyMessages",
+              "icon": null, "alwaysShow": 0, "keepAlive": 1,
+              "redirect": null, "params": null,
+              "children": [
+                { "id": 18231, "parentId": 1823, "name": "置顶消息", "type": "B", "sort": 1, "visible": 1, "status": 1, "perm": "content:chat:update", "routeName": "", "routePath": "", "component": null, "icon": null, "alwaysShow": 0, "keepAlive": 0, "redirect": null, "params": null, "children": [], "treePath": "0,1800,1820,1823,18231" },
+                { "id": 18232, "parentId": 1823, "name": "撤回消息", "type": "B", "sort": 2, "visible": 1, "status": 1, "perm": "content:chat:revoke", "routeName": "", "routePath": "", "component": null, "icon": null, "alwaysShow": 0, "keepAlive": 0, "redirect": null, "params": null, "children": [], "treePath": "0,1800,1820,1823,18232" }
+              ],
+              "treePath": "0,1800,1820,1823"
+            },
+            {
+              "id": 1824, "parentId": 1820, "name": "成员管理", "type": "M", "sort": 4,
+              "visible": 1, "status": 1, "perm": null,
+              "routeName": "LobbyMembers", "routePath": "/admin/chat/lobby/members",
+              "component": "admin/chat/LobbyMembers",
+              "icon": null, "alwaysShow": 0, "keepAlive": 1,
+              "redirect": null, "params": null,
+              "children": [
+                { "id": 18241, "parentId": 1824, "name": "禁言成员", "type": "B", "sort": 1, "visible": 1, "status": 1, "perm": "content:chat:update", "routeName": "", "routePath": "", "component": null, "icon": null, "alwaysShow": 0, "keepAlive": 0, "redirect": null, "params": null, "children": [], "treePath": "0,1800,1820,1824,18241" },
+                { "id": 18242, "parentId": 1824, "name": "踢出成员", "type": "B", "sort": 2, "visible": 1, "status": 1, "perm": "content:chat:update", "routeName": "", "routePath": "", "component": null, "icon": null, "alwaysShow": 0, "keepAlive": 0, "redirect": null, "params": null, "children": [], "treePath": "0,1800,1820,1824,18242" }
+              ],
+              "treePath": "0,1800,1820,1824"
+            }
           ],
           "treePath": "0,1800,1820"
         },
