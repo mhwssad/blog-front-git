@@ -44,193 +44,249 @@ import type {
   PageResult,
 } from '@/types/api-types'
 
-export const aiSysApi = {
+export class AiSysApi {
   // ==================== 渠道配置 ====================
-  getChannels: (params?: { channelName?: string; status?: number; current?: number; size?: number }) =>
-    http.get<PageResult<AiChannelConfigVO>>('/sys/ai/channels', params),
+  static getChannels(params?: { channelName?: string; status?: number; current?: number; size?: number }) {
+    return http.get<PageResult<AiChannelConfigVO>>('/sys/ai/channels', params)
+  }
 
-  getChannelById: (id: number) =>
-    http.get<AiChannelConfigVO>(`/sys/ai/channels/${id}`),
+  static getChannelById(id: number) {
+    return http.get<AiChannelConfigVO>(`/sys/ai/channels/${id}`)
+  }
 
-  createChannel: (data: AiChannelConfigSaveRequest) =>
-    http.post<AiChannelConfigVO>('/sys/ai/channels', data),
+  static createChannel(data: AiChannelConfigSaveRequest) {
+    return http.post<AiChannelConfigVO>('/sys/ai/channels', data)
+  }
 
-  updateChannel: (id: number, data: AiChannelConfigSaveRequest) =>
-    http.put<AiChannelConfigVO>(`/sys/ai/channels/${id}`, data),
+  static updateChannel(id: number, data: AiChannelConfigSaveRequest) {
+    return http.put<AiChannelConfigVO>(`/sys/ai/channels/${id}`, data)
+  }
 
-  updateChannelStatus: (id: number, data: AiChannelStatusRequest) =>
-    http.put<void>(`/sys/ai/channels/${id}/status`, data),
+  static updateChannelStatus(id: number, data: AiChannelStatusRequest) {
+    return http.put<void>(`/sys/ai/channels/${id}/status`, data)
+  }
 
-  deleteChannel: (id: number) =>
-    http.delete<void>(`/sys/ai/channels/${id}`),
+  static deleteChannel(id: number) {
+    return http.delete<void>(`/sys/ai/channels/${id}`)
+  }
 
   // ==================== 渠道账号池 ====================
-  getChannelAccounts: (channelId: number, params?: { current?: number; size?: number }) =>
-    http.get<PageResult<AiChannelAccountVO>>(`/sys/ai/channels/${channelId}/accounts`, params),
+  static getChannelAccounts(channelId: number, params?: { current?: number; size?: number }) {
+    return http.get<PageResult<AiChannelAccountVO>>(`/sys/ai/channels/${channelId}/accounts`, params)
+  }
 
-  getChannelAccountById: (channelId: number, id: number) =>
-    http.get<AiChannelAccountVO>(`/sys/ai/channels/${channelId}/accounts/${id}`),
+  static getChannelAccountById(channelId: number, id: number) {
+    return http.get<AiChannelAccountVO>(`/sys/ai/channels/${channelId}/accounts/${id}`)
+  }
 
-  createChannelAccount: (channelId: number, data: AiChannelAccountSaveRequest) =>
-    http.post<AiChannelAccountVO>(`/sys/ai/channels/${channelId}/accounts`, data),
+  static createChannelAccount(channelId: number, data: AiChannelAccountSaveRequest) {
+    return http.post<AiChannelAccountVO>(`/sys/ai/channels/${channelId}/accounts`, data)
+  }
 
-  updateChannelAccount: (channelId: number, id: number, data: AiChannelAccountSaveRequest) =>
-    http.put<AiChannelAccountVO>(`/sys/ai/channels/${channelId}/accounts/${id}`, data),
+  static updateChannelAccount(channelId: number, id: number, data: AiChannelAccountSaveRequest) {
+    return http.put<AiChannelAccountVO>(`/sys/ai/channels/${channelId}/accounts/${id}`, data)
+  }
 
-  updateChannelAccountStatus: (channelId: number, id: number, data: { status: number }) =>
-    http.put<void>(`/sys/ai/channels/${channelId}/accounts/${id}/status`, data),
+  static updateChannelAccountStatus(channelId: number, id: number, data: { status: number }) {
+    return http.put<void>(`/sys/ai/channels/${channelId}/accounts/${id}/status`, data)
+  }
 
-  deleteChannelAccount: (channelId: number, id: number) =>
-    http.delete<void>(`/sys/ai/channels/${channelId}/accounts/${id}`),
+  static deleteChannelAccount(channelId: number, id: number) {
+    return http.delete<void>(`/sys/ai/channels/${channelId}/accounts/${id}`)
+  }
 
   // ==================== 会话管理 ====================
-  getSessions: (params?: {
+  static getSessions(params?: {
     userId?: number; status?: number; channelConfigId?: number
     startTime?: string; endTime?: string; current?: number; size?: number
-  }) =>
-    http.get<PageResult<AiSessionAdminVO>>('/sys/ai/sessions', params),
+  }) {
+    return http.get<PageResult<AiSessionAdminVO>>('/sys/ai/sessions', params)
+  }
 
-  getSessionById: (id: number) =>
-    http.get<AiSessionAdminVO>(`/sys/ai/sessions/${id}`),
+  static getSessionById(id: number) {
+    return http.get<AiSessionAdminVO>(`/sys/ai/sessions/${id}`)
+  }
 
   // ==================== 使用日志 ====================
-  getUsageLogs: (params?: {
+  static getUsageLogs(params?: {
     userId?: number; channelConfigId?: number; startTime?: string
     endTime?: string; successStatus?: number; current?: number; size?: number
-  }) =>
-    http.get<PageResult<AiUsageLogVO>>('/sys/ai/usage-logs', params),
+  }) {
+    return http.get<PageResult<AiUsageLogVO>>('/sys/ai/usage-logs', params)
+  }
 
-  getUsageStats: (params?: {
+  static getUsageStats(params?: {
     userId?: number; channelConfigId?: number; startTime?: string
     endTime?: string; successStatus?: number
-  }) =>
-    http.get<AiUsageStatsVO>('/sys/ai/usage-logs/stats', params),
+  }) {
+    return http.get<AiUsageStatsVO>('/sys/ai/usage-logs/stats', params)
+  }
 
   // ==================== 知识源配置 ====================
-  getKnowledgeSourceConfigs: () =>
-    http.get<AiKnowledgeSourceConfigVO[]>('/sys/ai/knowledge/source-config'),
+  static getKnowledgeSourceConfigs() {
+    return http.get<AiKnowledgeSourceConfigVO[]>('/sys/ai/knowledge/source-config')
+  }
 
-  getKnowledgeSourceConfigById: (id: number) =>
-    http.get<AiKnowledgeSourceConfigVO>(`/sys/ai/knowledge/source-config/${id}`),
+  static getKnowledgeSourceConfigById(id: number) {
+    return http.get<AiKnowledgeSourceConfigVO>(`/sys/ai/knowledge/source-config/${id}`)
+  }
 
-  updateKnowledgeSourceConfig: (id: number, data: AiKnowledgeSourceConfigUpdateRequest) =>
-    http.put<AiKnowledgeSourceConfigVO>(`/sys/ai/knowledge/source-config/${id}`, data),
+  static updateKnowledgeSourceConfig(id: number, data: AiKnowledgeSourceConfigUpdateRequest) {
+    return http.put<AiKnowledgeSourceConfigVO>(`/sys/ai/knowledge/source-config/${id}`, data)
+  }
 
-  toggleKnowledgeSourceConfig: (id: number, enabled: number) =>
-    http.put<void>(`/sys/ai/knowledge/source-config/${id}/toggle`, undefined, { params: { enabled } }),
+  static toggleKnowledgeSourceConfig(id: number, enabled: number) {
+    return http.put<void>(`/sys/ai/knowledge/source-config/${id}/toggle`, undefined, { params: { enabled } })
+  }
 
   // ==================== 知识条目 ====================
-  getKnowledgeEntries: (params?: AiKnowledgeEntryQueryRequest) =>
-    http.get<PageResult<AiKnowledgeEntryVO>>('/sys/ai/knowledge/entries', params),
+  static getKnowledgeEntries(params?: AiKnowledgeEntryQueryRequest) {
+    return http.get<PageResult<AiKnowledgeEntryVO>>('/sys/ai/knowledge/entries', params)
+  }
 
-  getKnowledgeEntryById: (id: number) =>
-    http.get<AiKnowledgeEntryVO>(`/sys/ai/knowledge/entries/${id}`),
+  static getKnowledgeEntryById(id: number) {
+    return http.get<AiKnowledgeEntryVO>(`/sys/ai/knowledge/entries/${id}`)
+  }
 
-  updateKnowledgeEntryStatus: (id: number, status: number) =>
-    http.put<void>(`/sys/ai/knowledge/entries/${id}/status`, undefined, { params: { status } }),
+  static updateKnowledgeEntryStatus(id: number, status: number) {
+    return http.put<void>(`/sys/ai/knowledge/entries/${id}/status`, undefined, { params: { status } })
+  }
 
-  triggerKnowledgeSync: (data: AiKnowledgeSyncRequest) =>
-    http.post<void>('/sys/ai/knowledge/entries/sync', data),
+  static triggerKnowledgeSync(data: AiKnowledgeSyncRequest) {
+    return http.post<void>('/sys/ai/knowledge/entries/sync', data)
+  }
 
-  getKnowledgeSyncTasks: (params?: AiKnowledgeSyncTaskQueryRequest) =>
-    http.get<PageResult<AiKnowledgeSyncTaskVO>>('/sys/ai/knowledge/entries/sync/tasks', params),
+  static getKnowledgeSyncTasks(params?: AiKnowledgeSyncTaskQueryRequest) {
+    return http.get<PageResult<AiKnowledgeSyncTaskVO>>('/sys/ai/knowledge/entries/sync/tasks', params)
+  }
 
-  getKnowledgeSyncTaskById: (taskId: number) =>
-    http.get<AiKnowledgeSyncTaskVO>(`/sys/ai/knowledge/entries/sync/tasks/${taskId}`),
+  static getKnowledgeSyncTaskById(taskId: number) {
+    return http.get<AiKnowledgeSyncTaskVO>(`/sys/ai/knowledge/entries/sync/tasks/${taskId}`)
+  }
 
-  retryKnowledgeSyncTask: (taskId: number) =>
-    http.post<void>(`/sys/ai/knowledge/entries/sync/tasks/${taskId}/retry`),
+  static retryKnowledgeSyncTask(taskId: number) {
+    return http.post<void>(`/sys/ai/knowledge/entries/sync/tasks/${taskId}/retry`)
+  }
 
   // ==================== Agent 定义 ====================
-  getAgentDefinitions: (params?: AiAgentDefinitionQueryRequest) =>
-    http.get<PageResult<AiAgentDefinitionVO>>('/sys/ai/agents/definitions', params),
+  static getAgentDefinitions(params?: AiAgentDefinitionQueryRequest) {
+    return http.get<PageResult<AiAgentDefinitionVO>>('/sys/ai/agents/definitions', params)
+  }
 
-  getAgentDefinitionById: (id: number) =>
-    http.get<AiAgentDefinitionVO>(`/sys/ai/agents/definitions/${id}`),
+  static getAgentDefinitionById(id: number) {
+    return http.get<AiAgentDefinitionVO>(`/sys/ai/agents/definitions/${id}`)
+  }
 
-  createAgentDefinition: (data: AiAgentDefinitionSaveRequest) =>
-    http.post<AiAgentDefinitionVO>('/sys/ai/agents/definitions', data),
+  static createAgentDefinition(data: AiAgentDefinitionSaveRequest) {
+    return http.post<AiAgentDefinitionVO>('/sys/ai/agents/definitions', data)
+  }
 
-  updateAgentDefinition: (id: number, data: AiAgentDefinitionSaveRequest) =>
-    http.put<AiAgentDefinitionVO>(`/sys/ai/agents/definitions/${id}`, data),
+  static updateAgentDefinition(id: number, data: AiAgentDefinitionSaveRequest) {
+    return http.put<AiAgentDefinitionVO>(`/sys/ai/agents/definitions/${id}`, data)
+  }
 
-  toggleAgentDefinition: (id: number, enabled: number) =>
-    http.put<void>(`/sys/ai/agents/definitions/${id}/toggle`, undefined, { params: { enabled } }),
+  static toggleAgentDefinition(id: number, enabled: number) {
+    return http.put<void>(`/sys/ai/agents/definitions/${id}/toggle`, undefined, { params: { enabled } })
+  }
 
-  deleteAgentDefinition: (id: number) =>
-    http.delete<void>(`/sys/ai/agents/definitions/${id}`),
+  static deleteAgentDefinition(id: number) {
+    return http.delete<void>(`/sys/ai/agents/definitions/${id}`)
+  }
 
   // ==================== Agent 任务（后台） ====================
-  getAgentTasks: (params?: AiAgentTaskQueryRequest) =>
-    http.get<PageResult<AiAgentTaskVO>>('/sys/ai/agents/tasks', params),
+  static getAgentTasks(params?: AiAgentTaskQueryRequest) {
+    return http.get<PageResult<AiAgentTaskVO>>('/sys/ai/agents/tasks', params)
+  }
 
-  getAgentTaskById: (id: number) =>
-    http.get<AiAgentTaskVO>(`/sys/ai/agents/tasks/${id}`),
+  static getAgentTaskById(id: number) {
+    return http.get<AiAgentTaskVO>(`/sys/ai/agents/tasks/${id}`)
+  }
 
   // ==================== 工具管理 ====================
-  getTools: (params?: AiToolQueryRequest) =>
-    http.get<PageResult<AiToolVO>>('/sys/ai/tools', params),
+  static getTools(params?: AiToolQueryRequest) {
+    return http.get<PageResult<AiToolVO>>('/sys/ai/tools', params)
+  }
 
-  getToolById: (id: number) =>
-    http.get<AiToolVO>(`/sys/ai/tools/${id}`),
+  static getToolById(id: number) {
+    return http.get<AiToolVO>(`/sys/ai/tools/${id}`)
+  }
 
-  createTool: (data: AiToolSaveRequest) =>
-    http.post<AiToolVO>('/sys/ai/tools', data),
+  static createTool(data: AiToolSaveRequest) {
+    return http.post<AiToolVO>('/sys/ai/tools', data)
+  }
 
-  updateTool: (id: number, data: AiToolSaveRequest) =>
-    http.put<AiToolVO>(`/sys/ai/tools/${id}`, data),
+  static updateTool(id: number, data: AiToolSaveRequest) {
+    return http.put<AiToolVO>(`/sys/ai/tools/${id}`, data)
+  }
 
-  updateToolStatus: (id: number, enabled: number) =>
-    http.put<void>(`/sys/ai/tools/${id}/status`, undefined, { params: { enabled } }),
+  static updateToolStatus(id: number, enabled: number) {
+    return http.put<void>(`/sys/ai/tools/${id}/status`, undefined, { params: { enabled } })
+  }
 
-  deleteTool: (id: number) =>
-    http.delete<void>(`/sys/ai/tools/${id}`),
+  static deleteTool(id: number) {
+    return http.delete<void>(`/sys/ai/tools/${id}`)
+  }
 
-  executeTool: (id: number, data: AiToolExecuteRequest) =>
-    http.post<AiToolExecuteResultVO>(`/sys/ai/tools/${id}/execute`, data),
+  static executeTool(id: number, data: AiToolExecuteRequest) {
+    return http.post<AiToolExecuteResultVO>(`/sys/ai/tools/${id}/execute`, data)
+  }
 
   // ==================== 工具调用日志 ====================
-  getToolCallLogs: (params?: AiToolCallLogQueryRequest) =>
-    http.get<PageResult<AiToolCallLogVO>>('/sys/ai/tools/call-logs', params),
+  static getToolCallLogs(params?: AiToolCallLogQueryRequest) {
+    return http.get<PageResult<AiToolCallLogVO>>('/sys/ai/tools/call-logs', params)
+  }
 
   // ==================== 工具授权 ====================
-  getToolAuthorizations: (params?: AiToolAuthorizationQueryRequest) =>
-    http.get<PageResult<AiToolAuthorizationVO>>('/sys/ai/tools/authorizations', params),
+  static getToolAuthorizations(params?: AiToolAuthorizationQueryRequest) {
+    return http.get<PageResult<AiToolAuthorizationVO>>('/sys/ai/tools/authorizations', params)
+  }
 
-  createToolAuthorization: (data: AiToolAuthorizationSaveRequest) =>
-    http.post<AiToolAuthorizationVO>('/sys/ai/tools/authorizations', data),
+  static createToolAuthorization(data: AiToolAuthorizationSaveRequest) {
+    return http.post<AiToolAuthorizationVO>('/sys/ai/tools/authorizations', data)
+  }
 
-  updateToolAuthorization: (id: number, data: AiToolAuthorizationSaveRequest) =>
-    http.put<AiToolAuthorizationVO>(`/sys/ai/tools/authorizations/${id}`, data),
+  static updateToolAuthorization(id: number, data: AiToolAuthorizationSaveRequest) {
+    return http.put<AiToolAuthorizationVO>(`/sys/ai/tools/authorizations/${id}`, data)
+  }
 
-  deleteToolAuthorization: (id: number) =>
-    http.delete<void>(`/sys/ai/tools/authorizations/${id}`),
+  static deleteToolAuthorization(id: number) {
+    return http.delete<void>(`/sys/ai/tools/authorizations/${id}`)
+  }
 
   // ==================== MCP 服务管理 ====================
-  getMcpServers: (params?: AiMcpServerQueryRequest) =>
-    http.get<PageResult<AiMcpServerVO>>('/sys/ai/mcp-servers', params),
+  static getMcpServers(params?: AiMcpServerQueryRequest) {
+    return http.get<PageResult<AiMcpServerVO>>('/sys/ai/mcp-servers', params)
+  }
 
-  getMcpServerById: (id: number) =>
-    http.get<AiMcpServerVO>(`/sys/ai/mcp-servers/${id}`),
+  static getMcpServerById(id: number) {
+    return http.get<AiMcpServerVO>(`/sys/ai/mcp-servers/${id}`)
+  }
 
-  createMcpServer: (data: AiMcpServerSaveRequest) =>
-    http.post<AiMcpServerVO>('/sys/ai/mcp-servers', data),
+  static createMcpServer(data: AiMcpServerSaveRequest) {
+    return http.post<AiMcpServerVO>('/sys/ai/mcp-servers', data)
+  }
 
-  updateMcpServer: (id: number, data: AiMcpServerSaveRequest) =>
-    http.put<AiMcpServerVO>(`/sys/ai/mcp-servers/${id}`, data),
+  static updateMcpServer(id: number, data: AiMcpServerSaveRequest) {
+    return http.put<AiMcpServerVO>(`/sys/ai/mcp-servers/${id}`, data)
+  }
 
-  updateMcpServerStatus: (id: number, enabled: number) =>
-    http.put<void>(`/sys/ai/mcp-servers/${id}/status`, undefined, { params: { enabled } }),
+  static updateMcpServerStatus(id: number, enabled: number) {
+    return http.put<void>(`/sys/ai/mcp-servers/${id}/status`, undefined, { params: { enabled } })
+  }
 
-  deleteMcpServer: (id: number) =>
-    http.delete<void>(`/sys/ai/mcp-servers/${id}`),
+  static deleteMcpServer(id: number) {
+    return http.delete<void>(`/sys/ai/mcp-servers/${id}`)
+  }
 
-  discoverMcpTools: (id: number) =>
-    http.post<AiMcpDiscoverResultVO>(`/sys/ai/mcp-servers/${id}/discover`),
+  static discoverMcpTools(id: number) {
+    return http.post<AiMcpDiscoverResultVO>(`/sys/ai/mcp-servers/${id}/discover`)
+  }
 
-  getMcpServerTools: (id: number) =>
-    http.get<AiMcpToolSnapshotVO[]>(`/sys/ai/mcp-servers/${id}/tools`),
+  static getMcpServerTools(id: number) {
+    return http.get<AiMcpToolSnapshotVO[]>(`/sys/ai/mcp-servers/${id}/tools`)
+  }
 
-  getMcpServerHealth: (id: number) =>
-    http.get<AiMcpHealthVO>(`/sys/ai/mcp-servers/${id}/health`),
+  static getMcpServerHealth(id: number) {
+    return http.get<AiMcpHealthVO>(`/sys/ai/mcp-servers/${id}/health`)
+  }
 }
