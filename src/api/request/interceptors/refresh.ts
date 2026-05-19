@@ -6,7 +6,7 @@
 import { AxiosHeaders, type AxiosError, type AxiosInstance } from 'axios'
 import type { ApiResponse } from '@/types/api-types'
 import type { CustomAxiosRequestConfig, CustomInternalAxiosRequestConfig } from '../index'
-import { getRefreshToken, saveTokens, clearAuthData } from '../utils'
+import { getRefreshToken, saveTokens, clearAuthData } from '@/utils/http'
 
 /**
  * 刷新状态管理
@@ -127,9 +127,9 @@ async function refreshToken(): Promise<string> {
   }
 
   // 动态导入避免循环依赖
-  const { authApi } = await import('../../auth')
+  const { AuthApi } = await import('../../auth')
 
-  const response = await authApi.refreshToken({ refreshToken: refreshTokenValue })
+  const response = await AuthApi.refreshToken({ refreshToken: refreshTokenValue })
   const { accessToken, refreshToken: newRefreshToken, expiresIn } = response.data.data
 
   // 保存新令牌

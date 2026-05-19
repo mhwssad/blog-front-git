@@ -4,7 +4,7 @@
 
 import type { AxiosError, AxiosInstance, AxiosResponse } from 'axios'
 import type { ApiError, ApiResponse } from '@/types/api-types'
-import { logger, handleApiError } from '../utils'
+import { logger, handleApiError } from '@/utils/http'
 
 function createApiError(response: AxiosResponse<ApiResponse>): ApiError {
   const error = new Error(response.data.message || '请求失败') as ApiError

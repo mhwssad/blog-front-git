@@ -4,7 +4,7 @@
 
 import { AxiosHeaders, type AxiosInstance } from 'axios'
 import type { CustomInternalAxiosRequestConfig } from '../index'
-import { getAccessToken, logger } from '../utils'
+import { getAccessToken, logger } from '@/utils/http'
 
 /**
  * 生成请求 ID
