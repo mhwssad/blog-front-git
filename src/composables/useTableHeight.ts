@@ -66,8 +66,14 @@ export function useTableHeight(
     scheduleUpdate()
   })
 
+  function resetHeight(): void {
+    tableHeight.value = options.minHeight ?? 360
+    void updateTableHeight()
+  }
+
   return {
     tableHeight,
     updateTableHeight: scheduleUpdate,
+    resetHeight,
   }
 }

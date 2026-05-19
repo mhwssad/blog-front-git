@@ -26,6 +26,16 @@ export function useECharts() {
   let observer: ResizeObserver | null = null
 
   function init(el: HTMLElement) {
+    // 先销毁已有实例，支持重复调用 init（如组件重新激活）
+    if (chartRef.value) {
+      chartRef.value.dispose()
+      chartRef.value = null
+    }
+    if (observer) {
+      observer.disconnect()
+      observer = null
+    }
+
     container = el
     chartRef.value = echarts.init(el)
     observer = new ResizeObserver(() => {

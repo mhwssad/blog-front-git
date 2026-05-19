@@ -40,6 +40,14 @@ export interface UseFileUploadOptions {
   remark?: string
   // 并发上传的分片数（默认 3）
   concurrency?: number
+  // 分片大小（字节），默认 5MB
+  chunkSize?: number
+  // 触发分片上传的文件大小阈值（字节），默认 6MB
+  chunkSizeThreshold?: number
+  // 最大文件尺寸（字节），默认 100MB
+  maxFileSize?: number
+  // MD5 计算时的分块读取大小（字节），默认 2MB
+  md5BlockSize?: number
 }
 
 export interface UploadResult {
@@ -61,6 +69,14 @@ export function useFileUpload(defaultOptions?: UseFileUploadOptions) {
   const stage = ref<UploadStage>('idle')
   const fileName = ref('')
 
+  // 合并默认配置
+  const config = {
+    chunkSize: defaultOptions?.chunkSize ?? CHUNK_SIZE,
+    chunkSizeThreshold: defaultOptions?.chunkSizeThreshold ?? CHUNK_SIZE_THRESHOLD,
+    maxFileSize: defaultOptions?.maxFileSize ?? MAX_FILE_SIZE,
+    md5BlockSize: defaultOptions?.md5BlockSize ?? MD5_BLOCK_SIZE,
+  }
+
   // ==================== 内部方法 ====================
 
   /**
@@ -72,8 +88,8 @@ export function useFileUpload(defaultOptions?: UseFileUploadOptions) {
     return new Promise((resolve, reject) => {
       const spark = new SparkMD5.ArrayBuffer()
       const reader = new FileReader()
-      // 按 MD5_BLOCK_SIZE 分块读取，totalBlocks 为总块数
-      const totalBlocks = Math.ceil(file.size / MD5_BLOCK_SIZE)
+      // 按 md5BlockSize 分块读取，totalBlocks 为总块数
+      const totalBlocks = Math.ceil(file.size / config.md5BlockSize)
       let currentBlock = 0
 
       // 每块读取完成后追加到 MD5 计算器
@@ -93,8 +109,8 @@ export function useFileUpload(defaultOptions?: UseFileUploadOptions) {
 
       // 加载下一块
       function loadNext(): void {
-        const start = currentBlock * MD5_BLOCK_SIZE
-        const end = Math.min(start + MD5_BLOCK_SIZE, file.size)
+        const start = currentBlock * config.md5BlockSize
+        const end = Math.min(start + config.md5BlockSize, file.size)
         reader.readAsArrayBuffer(file.slice(start, end))
       }
 
@@ -241,11 +257,14 @@ export function useFileUpload(defaultOptions?: UseFileUploadOptions) {
     // 合并默认选项与传入选项
     const merged = { ...defaultOptions, ...options }
     const concurrency = merged.concurrency ?? 3
+    const maxFileSize = merged.maxFileSize ?? config.maxFileSize
+    const chunkSize = merged.chunkSize ?? config.chunkSize
+    const chunkSizeThreshold = merged.chunkSizeThreshold ?? config.chunkSizeThreshold
 
     // 文件大小校验
-    if (file.size > MAX_FILE_SIZE) {
+    if (file.size > maxFileSize) {
       throw new Error(
-        `文件大小 ${(file.size / 1024 / 1024).toFixed(1)}MB 超过最大限制 ${MAX_FILE_SIZE / 1024 / 1024}MB`,
+        `文件大小 ${(file.size / 1024 / 1024).toFixed(1)}MB 超过最大限制 ${maxFileSize / 1024 / 1024}MB`,
       )
     }
 
@@ -264,7 +283,7 @@ export function useFileUpload(defaultOptions?: UseFileUploadOptions) {
       // 阶段 2：初始化上传任务
       stage.value = 'init'
       // 超过阈值才启用分片上传，否则全量上传
-      const needChunk = file.size > CHUNK_SIZE_THRESHOLD
+      const needChunk = file.size > chunkSizeThreshold
 
       const initRequest: FileUploadInitRequest = {
         originalName: file.name,
@@ -276,8 +295,8 @@ export function useFileUpload(defaultOptions?: UseFileUploadOptions) {
         category: merged.category,
         isPublic: merged.isPublic,
         // 分片模式下才传分片相关参数
-        totalChunks: needChunk ? Math.ceil(file.size / CHUNK_SIZE) : undefined,
-        chunkSize: needChunk ? CHUNK_SIZE : undefined,
+        totalChunks: needChunk ? Math.ceil(file.size / chunkSize) : undefined,
+        chunkSize: needChunk ? chunkSize : undefined,
         remark: merged.remark,
       }
 
@@ -334,7 +353,7 @@ export function useFileUpload(defaultOptions?: UseFileUploadOptions) {
         result = await handleChunkedUpload(
           initData.uploadId,
           file,
-          initData.chunkSize ?? CHUNK_SIZE,
+          initData.chunkSize ?? chunkSize,
           initData.totalChunks,
           concurrency,
         )

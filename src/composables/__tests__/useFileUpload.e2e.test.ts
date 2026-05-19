@@ -13,7 +13,7 @@ import axios from 'axios'
 import { describe, it, expect, beforeAll, afterAll } from 'vitest'
 import { useFileUpload } from '../useFileUpload'
 import { http } from '@/api/request'
-import { authApi } from '@/api/auth'
+import { AuthApi } from '@/api/auth'
 import { saveTokens, clearAuthData } from '@/utils/http'
 import instance from '@/api/request'
 
@@ -85,7 +85,7 @@ describe('真实环境上传测试', () => {
     instance.defaults.baseURL = BASE_URL
 
     // 登录获取 token，供所有测试复用
-    const loginResp = await authApi.login({
+    const loginResp = await AuthApi.login({
       username: LOGIN_USERNAME,
       password: LOGIN_PASSWORD,
     })

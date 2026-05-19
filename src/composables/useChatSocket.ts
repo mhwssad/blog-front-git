@@ -1,6 +1,11 @@
 /**
  * 聊天 WebSocket 组合式函数
  * 管理连接生命周期，将 WebSocket 事件分发到 userChat store
+ *
+ * 设计决策：组件卸载时不主动断开 WebSocket 连接。
+ * 原因：聊天 WebSocket 是全局单例，需要跨页面导航保持活跃。
+ * 仅清理事件处理器（取消订阅），避免组件重复挂载时累积监听器。
+ * 如需显式断开，请调用 disconnect()。
  */
 
 import { onUnmounted, ref } from 'vue'

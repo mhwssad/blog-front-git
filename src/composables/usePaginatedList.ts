@@ -36,11 +36,12 @@ export function usePaginatedList(
     currentPage.value = 1
   }
 
-  if (options?.immediate !== false) {
-    onMounted(() => {
+  // 始终在 setup 阶段同步注册 onMounted，避免条件调用导致的 Vue 警告
+  onMounted(() => {
+    if (options?.immediate !== false) {
       void loadData()
-    })
-  }
+    }
+  })
 
   return { currentPage, loadData, reset }
 }

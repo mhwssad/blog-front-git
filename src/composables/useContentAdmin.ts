@@ -16,7 +16,7 @@ export function useContentAdmin(options: UseContentAdminOptions = {}) {
   const paginationRef = ref<HTMLElement | null>(null)
   const isCompactTable = ref(false)
 
-  const { tableHeight, updateTableHeight } = useTableHeight(tableWrapperRef, paginationRef, {
+  const { tableHeight, updateTableHeight, resetHeight } = useTableHeight(tableWrapperRef, paginationRef, {
     minHeight: options.minHeight ?? 360,
     bottomOffset: options.bottomOffset ?? 16,
   })
@@ -55,6 +55,7 @@ export function useContentAdmin(options: UseContentAdminOptions = {}) {
     paginationLayout,
     tableHeight,
     updateTableHeight,
+    resetHeight,
     updateViewportState,
   }
 }
