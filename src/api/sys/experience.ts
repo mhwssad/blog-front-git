@@ -1,6 +1,7 @@
 /**
  * 经验体系管理 API
  * 基于 auth-api.md 文档 8.8 节
+ * @see docs/api文档/content-api.md
  */
 
 import { http } from '../request'

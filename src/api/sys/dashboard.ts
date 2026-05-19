@@ -1,6 +1,7 @@
 /**
  * 后台数据看板 API
  * 基于 dashboard-api.md 文档
+ * @see docs/api文档/dashboard-api.md
  */
 
 import { http } from '../request'

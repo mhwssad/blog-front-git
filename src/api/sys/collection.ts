@@ -1,6 +1,7 @@
 /**
  * 收藏管理模块 API
  * 基于 content-api.md 文档
+ * @see docs/api文档/content-api.md
  */
 
 import { http } from '../request'

@@ -1,6 +1,7 @@
 /**
  * 关注关系管理模块 API
  * 基于 follow-api.md 文档
+ * @see docs/api文档/follow-api.md
  */
 
 import { http } from '../request'

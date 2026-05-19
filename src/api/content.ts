@@ -1,6 +1,7 @@
 /**
  * 公开内容模块 API
  * 基于 content-api.md 文档，提供文章、分类、标签、评论的公开查询接口
+ * @see docs/api文档/content-api.md
  */
 
 import { http } from './request'
