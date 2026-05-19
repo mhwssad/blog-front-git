@@ -101,29 +101,27 @@
       </el-form>
     </el-card>
 
-    <el-card class="table-card" shadow="never">
-      <template #header>
-        <div class="card-header">
-          <span>论坛帖子列表</span>
-          <div class="card-header__actions">
-            <span class="card-header__meta">{{ forumStore.postTotal }} 条</span>
-            <el-button link type="primary" @click="handleRefresh">
-              <el-icon><RefreshRight /></el-icon>
-              刷新
-            </el-button>
-          </div>
-        </div>
+    <DataTable
+      class="post-table"
+      title="论坛帖子列表"
+      :data="forumStore.posts"
+      :loading="forumStore.postLoading"
+      :total="forumStore.postTotal"
+      v-model:current-page="pagination.current"
+      v-model:page-size="pagination.size"
+      :page-sizes="[10, 20, 50, 100]"
+      :pagination-layout="paginationLayout"
+      :compact="isCompactTable"
+      @page-change="handleCurrentChange"
+      @size-change="handleSizeChange"
+    >
+      <template #header-extra>
+        <span class="header-count">{{ forumStore.postTotal }} 条</span>
+        <el-button link type="primary" @click="handleRefresh">
+          <el-icon><RefreshRight /></el-icon>
+          刷新
+        </el-button>
       </template>
-
-      <el-table
-        v-loading="forumStore.postLoading"
-        :data="forumStore.posts"
-        :size="isCompactTable ? 'small' : 'default'"
-        table-layout="auto"
-        class="post-table"
-        border
-        stripe
-      >
         <el-table-column prop="id" label="ID" width="80" align="center" />
         <el-table-column label="帖子信息" min-width="260" show-overflow-tooltip>
           <template #default="{ row }">
@@ -256,21 +254,7 @@
             </div>
           </template>
         </el-table-column>
-      </el-table>
-
-      <div class="pagination">
-        <el-pagination
-          v-model:current-page="pagination.current"
-          v-model:page-size="pagination.size"
-          :total="forumStore.postTotal"
-          :page-sizes="[10, 20, 50, 100]"
-          :layout="paginationLayout"
-          :small="isCompactTable"
-          @size-change="handleSizeChange"
-          @current-change="handleCurrentChange"
-        />
-      </div>
-    </el-card>
+    </DataTable>
 
     <el-drawer v-model="detailVisible" title="帖子详情" size="640px" destroy-on-close>
       <el-skeleton v-if="detailLoading" animated :rows="8" />
@@ -567,10 +551,6 @@ onMounted(() => {
   margin-bottom: 16px;
 }
 
-.table-card {
-  margin-bottom: 16px;
-}
-
 .search-form {
   display: flex;
   flex-wrap: wrap;
@@ -613,21 +593,7 @@ onMounted(() => {
   transform: rotate(180deg);
 }
 
-.card-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 12px;
-  font-weight: 500;
-}
-
-.card-header__actions {
-  display: inline-flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.card-header__meta {
+.header-count {
   color: var(--el-text-color-secondary);
   font-size: 13px;
 }
@@ -686,12 +652,6 @@ onMounted(() => {
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 4px 8px;
   justify-items: center;
-}
-
-.pagination {
-  display: flex;
-  justify-content: center;
-  margin-top: 16px;
 }
 
 .detail-section {

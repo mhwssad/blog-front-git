@@ -58,28 +58,26 @@
       </el-form>
     </el-card>
 
-    <el-card class="table-card" shadow="never">
-      <template #header>
-        <div class="card-header">
-          <span>收藏管理</span>
-          <el-button v-permission="'content:collection:query'" @click="refreshActiveTab">
-            <el-icon><Refresh /></el-icon>
-            刷新
-          </el-button>
-        </div>
-      </template>
-
-      <el-tabs v-model="activeTab" @tab-change="handleTabChange">
-        <el-tab-pane label="收藏记录" name="records">
-          <el-table
-            v-loading="collectionStore.loading"
-            :data="collectionStore.collections"
-            row-key="id"
-            border
-            stripe
-            table-layout="auto"
-            class="collection-table"
-          >
+    <el-tabs v-model="activeTab" class="collection-tabs" @tab-change="handleTabChange">
+      <el-tab-pane label="收藏记录" name="records">
+        <DataTable
+          title="收藏记录"
+          :data="collectionStore.collections"
+          :loading="collectionStore.loading"
+          :total="collectionStore.collectionTotal"
+          :current-page="recordPagination.current"
+          :page-size="recordPagination.size"
+          :compact="true"
+          row-key="id"
+          @update:current-page="handleRecordPageChange"
+          @update:page-size="handleRecordSizeChange"
+        >
+          <template #header-extra>
+            <el-button v-permission="'content:collection:query'" @click="refreshActiveTab">
+              <el-icon><Refresh /></el-icon>
+              刷新
+            </el-button>
+          </template>
             <el-table-column label="目标标题" min-width="240" align="left" show-overflow-tooltip>
               <template #default="{ row }">
                 {{ row.targetTitle || '—' }}
@@ -119,32 +117,21 @@
                 </div>
               </template>
             </el-table-column>
-          </el-table>
-
-          <div class="pagination">
-            <el-pagination
-              v-model:current-page="recordPagination.current"
-              v-model:page-size="recordPagination.size"
-              :total="collectionStore.collectionTotal"
-              :page-sizes="[10, 20, 50, 100]"
-              :layout="recordPaginationLayout"
-              background
-              small
-              @size-change="handleRecordSizeChange"
-              @current-change="handleRecordPageChange"
-            />
-          </div>
-        </el-tab-pane>
+        </DataTable>
+      </el-tab-pane>
 
         <el-tab-pane label="收藏夹" name="folders">
-          <el-table
-            v-loading="collectionStore.loading"
+          <DataTable
+            title="收藏夹"
             :data="collectionStore.folders"
+            :loading="collectionStore.loading"
+            :total="collectionStore.folderTotal"
+            :current-page="folderPagination.current"
+            :page-size="folderPagination.size"
+            :compact="true"
             row-key="id"
-            border
-            stripe
-            table-layout="auto"
-            class="collection-table"
+            @update:current-page="handleFolderPageChange"
+            @update:page-size="handleFolderSizeChange"
           >
             <el-table-column
               prop="folderName"
@@ -174,24 +161,9 @@
                 </div>
               </template>
             </el-table-column>
-          </el-table>
-
-          <div class="pagination">
-            <el-pagination
-              v-model:current-page="folderPagination.current"
-              v-model:page-size="folderPagination.size"
-              :total="collectionStore.folderTotal"
-              :page-sizes="[10, 20, 50, 100]"
-              :layout="folderPaginationLayout"
-              background
-              small
-              @size-change="handleFolderSizeChange"
-              @current-change="handleFolderPageChange"
-            />
-          </div>
+          </DataTable>
         </el-tab-pane>
       </el-tabs>
-    </el-card>
 
     <CollectionRecordDetailDialog
       v-model:visible="recordDetailVisible"
@@ -210,7 +182,7 @@
 import { onMounted, reactive, ref } from 'vue'
 import { ElMessage, ElMessageBox, type TabPaneName } from 'element-plus'
 import { Refresh, ArrowDown } from '@element-plus/icons-vue'
-import { useContentAdmin } from '@/composables/useContentAdmin'
+import DataTable from '@/components/common/DataTable.vue'
 import { useCollectionStore } from '@/stores'
 import { TARGET_TYPE_OPTIONS, formatCreatedAt, formatTargetType } from '@/utils'
 import CollectionRecordDetailDialog from './components/CollectionRecordDetailDialog.vue'
@@ -232,8 +204,6 @@ const searchForm = reactive({
 
 const recordPagination = reactive({ current: 1, size: 10 })
 const folderPagination = reactive({ current: 1, size: 10 })
-const { paginationLayout: recordPaginationLayout } = useContentAdmin()
-const { paginationLayout: folderPaginationLayout } = useContentAdmin()
 
 const recordDetailVisible = ref(false)
 const recordDetail = ref<CollectionVO | null>(null)
@@ -373,6 +343,10 @@ onMounted(() => {
   margin-bottom: 16px;
 }
 
+.collection-tabs {
+  margin-top: 16px;
+}
+
 .search-form {
   display: flex;
   flex-wrap: wrap;
@@ -400,31 +374,10 @@ onMounted(() => {
   margin-left: auto;
 }
 
-.card-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  font-weight: 500;
-}
-
-.collection-tabs :deep(.el-tabs__content) {
-  overflow: visible;
-}
-
-.collection-table {
-  width: 100%;
-}
-
 .table-actions {
   display: inline-flex;
   justify-content: center;
   gap: 4px 8px;
-}
-
-.pagination {
-  display: flex;
-  justify-content: center;
-  margin-top: 16px;
 }
 
 @media (max-width: 768px) {

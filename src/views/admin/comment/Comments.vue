@@ -85,29 +85,26 @@
       </el-form>
     </el-card>
 
-    <el-card class="table-card" shadow="never">
-      <template #header>
-        <div class="card-header">
-          <span>评论列表</span>
-          <div class="card-header__actions">
-            <span class="card-header__count">{{ commentStore.total }} 条评论</span>
-            <el-button v-permission="'content:comment:query'" @click="fetchComments">
-              <el-icon><Refresh /></el-icon>
-              刷新
-            </el-button>
-          </div>
-        </div>
+    <DataTable
+      title="评论列表"
+      :data="commentStore.comments"
+      :loading="commentStore.loading"
+      :total="pagination.total"
+      v-model:current-page="pagination.current"
+      v-model:page-size="pagination.size"
+      :page-sizes="[10, 20, 50, 100]"
+      :pagination-layout="paginationLayout"
+      row-key="id"
+      @page-change="handleCurrentChange"
+      @size-change="handleSizeChange"
+    >
+      <template #header-extra>
+        <span class="header-count">{{ commentStore.total }} 条评论</span>
+        <el-button v-permission="'content:comment:query'" @click="fetchComments">
+          <el-icon><Refresh /></el-icon>
+          刷新
+        </el-button>
       </template>
-
-      <el-table
-        v-loading="commentStore.loading"
-        :data="commentStore.comments"
-        row-key="id"
-        border
-        stripe
-        table-layout="auto"
-        class="comment-table"
-      >
         <el-table-column label="用户" min-width="160" align="center">
           <template #default="{ row }">
             <div class="user-cell">
@@ -168,20 +165,7 @@
             </div>
           </template>
         </el-table-column>
-      </el-table>
-
-      <div class="pagination">
-        <el-pagination
-          v-model:current-page="pagination.current"
-          v-model:page-size="pagination.size"
-          :total="pagination.total"
-          :page-sizes="[10, 20, 50, 100]"
-          :layout="paginationLayout"
-          @current-change="handleCurrentChange"
-          @size-change="handleSizeChange"
-        />
-      </div>
-    </el-card>
+    </DataTable>
 
     <CommentDetailDialog
       v-model:visible="detailDialogVisible"
@@ -432,21 +416,7 @@ onMounted(() => {
   margin-left: auto;
 }
 
-.card-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  font-weight: 500;
-}
-
-.card-header__actions {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.card-header__count {
+.header-count {
   font-size: 13px;
   color: var(--el-text-color-secondary);
 }
@@ -485,12 +455,6 @@ onMounted(() => {
 
 .table-actions :deep(.el-button + .el-button) {
   margin-left: 0;
-}
-
-.pagination {
-  display: flex;
-  justify-content: center;
-  margin-top: 16px;
 }
 
 @media (max-width: 768px) {

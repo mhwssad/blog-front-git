@@ -65,80 +65,66 @@
       </el-form>
     </el-card>
 
-    <el-card class="table-card" shadow="never">
-      <template #header>
-        <div class="card-header">
-          <span>互动记录</span>
-          <el-button v-permission="'content:interaction:query'" @click="fetchInteractions">
-            <el-icon><Refresh /></el-icon>
-            刷新
-          </el-button>
-        </div>
+    <DataTable
+      :data="interactionStore.interactions"
+      :loading="interactionStore.loading"
+      :total="interactionStore.total"
+      v-model:current-page="pagination.current"
+      v-model:page-size="pagination.size"
+      :page-sizes="[10, 20, 50, 100]"
+      :pagination-layout="paginationLayout"
+      title="互动记录"
+      :compact="true"
+      @page-change="fetchInteractions"
+      @size-change="() => { pagination.current = 1; fetchInteractions() }"
+    >
+      <template #header-extra>
+        <el-button v-permission="'content:interaction:query'" @click="fetchInteractions">
+          <el-icon><Refresh /></el-icon>
+          刷新
+        </el-button>
       </template>
 
-      <el-table
-        v-loading="interactionStore.loading"
-        :data="interactionStore.interactions"
-        stripe
-        border
-        table-layout="auto"
-        class="behaviors-table"
-      >
-        <el-table-column label="用户" min-width="150" align="center">
-          <template #default="{ row }">
-            <div class="user-cell">
-              <el-avatar v-if="row.userAvatar" :src="row.userAvatar" :size="24" />
-              <span>{{ row.userNickname || `用户 ${row.userId}` }}</span>
-            </div>
-          </template>
-        </el-table-column>
-        <el-table-column label="目标" min-width="200" align="left" show-overflow-tooltip>
-          <template #default="{ row }">
-            <el-tag size="small" effect="plain">{{ formatTargetType(row.targetType) }}</el-tag>
-            <span style="margin-left: 6px">{{ row.targetTitle || `ID: ${row.targetId}` }}</span>
-          </template>
-        </el-table-column>
-        <el-table-column label="互动类型" min-width="100" align="center">
-          <template #default="{ row }">
-            {{ formatInteractionType(row.actionType) }}
-          </template>
-        </el-table-column>
-        <el-table-column label="互动时间" min-width="170" align="center">
-          <template #default="{ row }">
-            {{ formatContentDate(row.createdAt) }}
-          </template>
-        </el-table-column>
-        <el-table-column label="操作" width="150" align="center" fixed="right">
-          <template #default="{ row }">
-            <div class="table-actions">
-              <el-button link type="primary" @click="openDetail(row)">详情</el-button>
-              <el-button
-                v-permission="'content:interaction:delete'"
-                link
-                type="danger"
-                @click="handleDeleteInteraction(row.id)"
-              >
-                删除
-              </el-button>
-            </div>
-          </template>
-        </el-table-column>
-      </el-table>
-
-      <div class="pagination">
-        <el-pagination
-          v-model:current-page="pagination.current"
-          v-model:page-size="pagination.size"
-          :total="interactionStore.total"
-          :page-sizes="[10, 20, 50, 100]"
-          :layout="paginationLayout"
-          background
-          small
-          @size-change="handleSizeChange"
-          @current-change="handleCurrentChange"
-        />
-      </div>
-    </el-card>
+      <el-table-column label="用户" min-width="150" align="center">
+        <template #default="{ row }">
+          <div class="user-cell">
+            <el-avatar v-if="row.userAvatar" :src="row.userAvatar" :size="24" />
+            <span>{{ row.userNickname || `用户 ${row.userId}` }}</span>
+          </div>
+        </template>
+      </el-table-column>
+      <el-table-column label="目标" min-width="200" align="left" show-overflow-tooltip>
+        <template #default="{ row }">
+          <el-tag size="small" effect="plain">{{ formatTargetType(row.targetType) }}</el-tag>
+          <span style="margin-left: 6px">{{ row.targetTitle || `ID: ${row.targetId}` }}</span>
+        </template>
+      </el-table-column>
+      <el-table-column label="互动类型" min-width="100" align="center">
+        <template #default="{ row }">
+          {{ formatInteractionType(row.actionType) }}
+        </template>
+      </el-table-column>
+      <el-table-column label="互动时间" min-width="170" align="center">
+        <template #default="{ row }">
+          {{ formatContentDate(row.createdAt) }}
+        </template>
+      </el-table-column>
+      <el-table-column label="操作" width="150" align="center" fixed="right">
+        <template #default="{ row }">
+          <div class="table-actions">
+            <el-button link type="primary" @click="openDetail(row)">详情</el-button>
+            <el-button
+              v-permission="'content:interaction:delete'"
+              link
+              type="danger"
+              @click="handleDeleteInteraction(row.id)"
+            >
+              删除
+            </el-button>
+          </div>
+        </template>
+      </el-table-column>
+    </DataTable>
 
     <InteractionDetailDialog
       v-model:visible="detailVisible"
@@ -153,6 +139,7 @@ import { ElMessage, ElMessageBox } from 'element-plus'
 import { Refresh, ArrowDown } from '@element-plus/icons-vue'
 import { useInteractionStore } from '@/stores'
 import { useContentAdmin } from '@/composables/useContentAdmin'
+import DataTable from '@/components/common/DataTable.vue'
 import {
   formatContentDate,
   formatInteractionType,
@@ -202,17 +189,6 @@ function handleReset(): void {
   searchForm.targetType = ''
   searchForm.actionType = ''
   pagination.current = 1
-  void fetchInteractions()
-}
-
-function handleSizeChange(size: number): void {
-  pagination.size = size
-  pagination.current = 1
-  void fetchInteractions()
-}
-
-function handleCurrentChange(current: number): void {
-  pagination.current = current
   void fetchInteractions()
 }
 
@@ -285,17 +261,6 @@ onMounted(() => {
   margin-left: auto;
 }
 
-.card-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  font-weight: 500;
-}
-
-.behaviors-table {
-  width: 100%;
-}
-
 .user-cell {
   display: inline-flex;
   align-items: center;
@@ -306,12 +271,6 @@ onMounted(() => {
   display: inline-flex;
   justify-content: center;
   gap: 4px 8px;
-}
-
-.pagination {
-  display: flex;
-  justify-content: center;
-  margin-top: 16px;
 }
 
 @media (max-width: 768px) {

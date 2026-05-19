@@ -16,48 +16,41 @@
       </el-form>
     </el-card>
 
-    <el-card class="table-card" shadow="never">
-      <template #header>
-        <div style="display: flex; justify-content: space-between; align-items: center">
-          <span>文章审核列表</span>
-        </div>
-      </template>
-      <el-table :data="tableData" v-loading="loading" border stripe>
-        <el-table-column prop="id" label="ID" width="80" align="center" />
-        <el-table-column prop="title" label="标题" min-width="200" show-overflow-tooltip />
-        <el-table-column prop="authorName" label="作者" min-width="120" align="center" />
-        <el-table-column label="审核状态" min-width="100" align="center">
-          <template #default="{ row }">
-            <el-tag :type="reviewStatusTagType(row.reviewStatus)">
-              {{ reviewStatusLabel(row.reviewStatus) }}
-            </el-tag>
+    <DataTable
+      :data="tableData"
+      :loading="loading"
+      :total="pagination.total"
+      v-model:current-page="pagination.current"
+      v-model:page-size="pagination.size"
+      :page-sizes="[10, 20, 50]"
+      pagination-layout="total, sizes, prev, pager, next"
+      title="文章审核列表"
+      @size-change="handleQuery"
+      @page-change="handleQuery"
+    >
+      <el-table-column prop="id" label="ID" width="80" align="center" />
+      <el-table-column prop="title" label="标题" min-width="200" show-overflow-tooltip />
+      <el-table-column prop="authorName" label="作者" min-width="120" align="center" />
+      <el-table-column label="审核状态" min-width="100" align="center">
+        <template #default="{ row }">
+          <el-tag :type="reviewStatusTagType(row.reviewStatus)">
+            {{ reviewStatusLabel(row.reviewStatus) }}
+          </el-tag>
+        </template>
+      </el-table-column>
+      <el-table-column prop="createdAt" label="提交时间" min-width="180" align="center" />
+      <el-table-column label="操作" min-width="120" align="center">
+        <template #default="{ row }">
+          <el-button v-if="row.reviewStatus === 1" link type="primary" @click="handleReview(row)">
+            审核
+          </el-button>
+          <template v-else>
+            <el-button link type="primary" @click="handleView(row)">查看</el-button>
+            <el-button link type="warning" @click="handleRepair(row)">修复状态</el-button>
           </template>
-        </el-table-column>
-        <el-table-column prop="createdAt" label="提交时间" min-width="180" align="center" />
-        <el-table-column label="操作" min-width="120" align="center">
-          <template #default="{ row }">
-            <el-button v-if="row.reviewStatus === 1" link type="primary" @click="handleReview(row)">
-              审核
-            </el-button>
-            <template v-else>
-              <el-button link type="primary" @click="handleView(row)">查看</el-button>
-              <el-button link type="warning" @click="handleRepair(row)">修复状态</el-button>
-            </template>
-          </template>
-        </el-table-column>
-      </el-table>
-      <div class="pagination-area">
-        <el-pagination
-          v-model:current-page="pagination.current"
-          v-model:page-size="pagination.size"
-          :total="pagination.total"
-          :page-sizes="[10, 20, 50]"
-          layout="total, sizes, prev, pager, next"
-          @size-change="handleQuery"
-          @current-change="handleQuery"
-        />
-      </div>
-    </el-card>
+        </template>
+      </el-table-column>
+    </DataTable>
 
     <el-dialog
       v-model="detailVisible"
@@ -171,6 +164,7 @@ import { onMounted, reactive, ref } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { ArticleApi } from '@/api/sys/article'
 import { useArticleStore } from '@/stores'
+import DataTable from '@/components/common/DataTable.vue'
 import type { ArticleAdminVO, ArticleReviewAdminDetailVO } from '@/types/api-types'
 
 // Store 实例
@@ -408,16 +402,6 @@ onMounted(() => {
 
 .search-card {
   margin-bottom: 16px;
-}
-
-.table-card {
-  margin-bottom: 16px;
-}
-
-.pagination-area {
-  display: flex;
-  justify-content: flex-end;
-  margin-top: 16px;
 }
 
 .content-preview {

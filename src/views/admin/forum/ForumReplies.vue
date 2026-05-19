@@ -51,128 +51,113 @@
       </el-form>
     </el-card>
 
-    <el-card class="table-card" shadow="never">
-      <template #header>
-        <div class="card-header">
-          <span>论坛回复列表</span>
-          <div class="card-header__actions">
-            <span class="card-header__meta">{{ forumStore.replyTotal }} 条</span>
-            <el-button link type="primary" @click="handleRefresh">
-              <el-icon><RefreshRight /></el-icon>
-              刷新
-            </el-button>
-          </div>
-        </div>
+    <DataTable
+      class="reply-table"
+      title="论坛回复列表"
+      :data="forumStore.replies"
+      :loading="forumStore.replyLoading"
+      :total="forumStore.replyTotal"
+      v-model:current-page="pagination.current"
+      v-model:page-size="pagination.size"
+      :page-sizes="[10, 20, 50, 100]"
+      :pagination-layout="paginationLayout"
+      :compact="isCompactTable"
+      @page-change="handleCurrentChange"
+      @size-change="handleSizeChange"
+    >
+      <template #header-extra>
+        <span class="header-count">{{ forumStore.replyTotal }} 条</span>
+        <el-button link type="primary" @click="handleRefresh">
+          <el-icon><RefreshRight /></el-icon>
+          刷新
+        </el-button>
       </template>
 
-      <el-table
-        v-loading="forumStore.replyLoading"
-        :data="forumStore.replies"
-        :size="isCompactTable ? 'small' : 'default'"
-        table-layout="auto"
-        class="reply-table"
-        border
-        stripe
+      <el-table-column prop="id" label="ID" width="80" align="center" />
+      <el-table-column label="帖子" min-width="220" show-overflow-tooltip>
+        <template #default="{ row }">
+          <div class="cell-stack">
+            <span>{{ row.postTitle }}</span>
+            <span class="cell-subtext">#{{ row.postId }}</span>
+          </div>
+        </template>
+      </el-table-column>
+      <el-table-column label="回复人" min-width="150" align="center" show-overflow-tooltip>
+        <template #default="{ row }">
+          <div class="cell-stack">
+            <span>{{ row.userName }}</span>
+            <span class="cell-subtext">ID: {{ row.userId }}</span>
+          </div>
+        </template>
+      </el-table-column>
+      <el-table-column
+        prop="content"
+        label="内容"
+        min-width="280"
+        show-overflow-tooltip
+      />
+      <el-table-column label="状态" min-width="100" align="center">
+        <template #default="{ row }">
+          <el-tag :type="getReplyStatusTagType(row.status)" effect="light" size="small">
+            {{ row.statusName || getReplyStatusText(row.status) }}
+          </el-tag>
+        </template>
+      </el-table-column>
+      <el-table-column prop="floorNo" label="楼层" min-width="80" align="center" />
+      <el-table-column prop="likeCount" label="点赞" min-width="80" align="center" />
+      <el-table-column prop="replyCount" label="子回复" min-width="90" align="center" />
+      <el-table-column label="创建时间" min-width="170" align="center">
+        <template #default="{ row }">
+          {{ formatCreatedAt(row.createdAt) }}
+        </template>
+      </el-table-column>
+      <el-table-column label="更新时间" min-width="170" align="center">
+        <template #default="{ row }">
+          {{ formatUpdatedAt(row.updatedAt) }}
+        </template>
+      </el-table-column>
+      <el-table-column
+        label="操作"
+        :min-width="isCompactTable ? 180 : 220"
+        :fixed="isCompactTable ? false : 'right'"
+        class-name="action-column"
+        align="center"
       >
-        <el-table-column prop="id" label="ID" width="80" align="center" />
-        <el-table-column label="帖子" min-width="220" show-overflow-tooltip>
-          <template #default="{ row }">
-            <div class="cell-stack">
-              <span>{{ row.postTitle }}</span>
-              <span class="cell-subtext">#{{ row.postId }}</span>
-            </div>
-          </template>
-        </el-table-column>
-        <el-table-column label="回复人" min-width="150" align="center" show-overflow-tooltip>
-          <template #default="{ row }">
-            <div class="cell-stack">
-              <span>{{ row.userName }}</span>
-              <span class="cell-subtext">ID: {{ row.userId }}</span>
-            </div>
-          </template>
-        </el-table-column>
-        <el-table-column
-          prop="content"
-          label="内容"
-          min-width="280"
-          show-overflow-tooltip
-        />
-        <el-table-column label="状态" min-width="100" align="center">
-          <template #default="{ row }">
-            <el-tag :type="getReplyStatusTagType(row.status)" effect="light" size="small">
-              {{ row.statusName || getReplyStatusText(row.status) }}
-            </el-tag>
-          </template>
-        </el-table-column>
-        <el-table-column prop="floorNo" label="楼层" min-width="80" align="center" />
-        <el-table-column prop="likeCount" label="点赞" min-width="80" align="center" />
-        <el-table-column prop="replyCount" label="子回复" min-width="90" align="center" />
-        <el-table-column label="创建时间" min-width="170" align="center">
-          <template #default="{ row }">
-            {{ formatCreatedAt(row.createdAt) }}
-          </template>
-        </el-table-column>
-        <el-table-column label="更新时间" min-width="170" align="center">
-          <template #default="{ row }">
-            {{ formatUpdatedAt(row.updatedAt) }}
-          </template>
-        </el-table-column>
-        <el-table-column
-          label="操作"
-          :min-width="isCompactTable ? 180 : 220"
-          :fixed="isCompactTable ? false : 'right'"
-          class-name="action-column"
-          align="center"
-        >
-          <template #default="{ row }">
-            <div class="table-actions" :class="{ 'table-actions--compact': isCompactTable }">
-              <el-button v-permission="'content:forum:query'" link type="primary" @click="handleView(row)">
-                详情
-              </el-button>
-              <el-button
-                v-if="row.status === 2"
-                v-permission="'content:forum:update'"
-                link
-                type="success"
-                @click="handleRestore(row)"
-              >
-                恢复
-              </el-button>
-              <el-button
-                v-else-if="row.status === 1"
-                v-permission="'content:forum:update'"
-                link
-                type="warning"
-                @click="handleHide(row)"
-              >
-                隐藏
-              </el-button>
-              <el-button
-                v-permission="'content:forum:delete'"
-                link
-                type="danger"
-                @click="handleDelete(row)"
-              >
-                删除
-              </el-button>
-            </div>
-          </template>
-        </el-table-column>
-      </el-table>
-
-      <div class="pagination">
-        <el-pagination
-          v-model:current-page="pagination.current"
-          v-model:page-size="pagination.size"
-          :total="forumStore.replyTotal"
-          :page-sizes="[10, 20, 50, 100]"
-          :layout="paginationLayout"
-          :small="isCompactTable"
-          @size-change="handleSizeChange"
-          @current-change="handleCurrentChange"
-        />
-      </div>
-    </el-card>
+        <template #default="{ row }">
+          <div class="table-actions" :class="{ 'table-actions--compact': isCompactTable }">
+            <el-button v-permission="'content:forum:query'" link type="primary" @click="handleView(row)">
+              详情
+            </el-button>
+            <el-button
+              v-if="row.status === 2"
+              v-permission="'content:forum:update'"
+              link
+              type="success"
+              @click="handleRestore(row)"
+            >
+              恢复
+            </el-button>
+            <el-button
+              v-else-if="row.status === 1"
+              v-permission="'content:forum:update'"
+              link
+              type="warning"
+              @click="handleHide(row)"
+            >
+              隐藏
+            </el-button>
+            <el-button
+              v-permission="'content:forum:delete'"
+              link
+              type="danger"
+              @click="handleDelete(row)"
+            >
+              删除
+            </el-button>
+          </div>
+        </template>
+      </el-table-column>
+    </DataTable>
 
     <el-dialog v-model="detailVisible" title="回复详情" width="640px" destroy-on-close align-center>
       <el-descriptions v-if="currentReply" :column="1" border>
@@ -383,10 +368,6 @@ onMounted(() => {
   margin-bottom: 16px;
 }
 
-.table-card {
-  margin-bottom: 16px;
-}
-
 .search-form {
   display: flex;
   flex-wrap: wrap;
@@ -410,25 +391,6 @@ onMounted(() => {
 .search-actions {
   margin-left: 0;
   margin-right: 0;
-}
-
-.card-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 12px;
-  font-weight: 500;
-}
-
-.card-header__actions {
-  display: inline-flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.card-header__meta {
-  color: var(--el-text-color-secondary);
-  font-size: 13px;
 }
 
 .reply-table {
@@ -470,12 +432,6 @@ onMounted(() => {
   color: var(--el-text-color-secondary);
   font-size: 12px;
   line-height: 1.2;
-}
-
-.pagination {
-  display: flex;
-  justify-content: center;
-  margin-top: 16px;
 }
 
 .detail-section {

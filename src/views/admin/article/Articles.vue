@@ -157,26 +157,24 @@
         </el-form>
       </el-card>
 
-      <el-card class="table-card" shadow="never">
-        <template #header>
-          <div class="card-header">
-            <span>文章列表</span>
-            <el-button v-permission="'content:article:create'" type="primary" @click="handleAdd">
-              <el-icon><Plus /></el-icon>
-              新增文章
-            </el-button>
-          </div>
+      <DataTable
+        title="文章列表"
+        :data="articleStore.articles"
+        :loading="articleStore.loading"
+        :total="articleStore.total"
+        :current-page="pagination.current"
+        :page-size="pagination.size"
+        :compact="isCompactTable"
+        class="article-table"
+        @update:current-page="handleCurrentChange"
+        @update:page-size="handleSizeChange"
+      >
+        <template #header-extra>
+          <el-button v-permission="'content:article:create'" type="primary" @click="handleAdd">
+            <el-icon><Plus /></el-icon>
+            新增文章
+          </el-button>
         </template>
-
-        <el-table
-          v-loading="articleStore.loading"
-          :data="articleStore.articles"
-          :size="isCompactTable ? 'small' : 'default'"
-          table-layout="auto"
-          class="article-table"
-          border
-          stripe
-        >
           <el-table-column v-if="isCompactTable" label="文章信息" min-width="300" align="center">
             <template #default="{ row }">
               <div class="article-summary">
@@ -292,21 +290,7 @@
               </div>
             </template>
           </el-table-column>
-        </el-table>
-
-        <div class="pagination">
-          <el-pagination
-            v-model:current-page="pagination.current"
-            v-model:page-size="pagination.size"
-            :total="articleStore.total"
-            :page-sizes="[10, 20, 50, 100]"
-            :layout="paginationLayout"
-            :small="isCompactTable"
-            @size-change="handleSizeChange"
-            @current-change="handleCurrentChange"
-          />
-        </div>
-      </el-card>
+      </DataTable>
     </template>
 
     <ArticleAccessDialog
@@ -329,6 +313,7 @@ import { computed, onMounted, reactive, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { Plus, ArrowDown } from '@element-plus/icons-vue'
+import DataTable from '@/components/common/DataTable.vue'
 import type { ArticleAdminVO, ArticleDetailVO, ArticleQueryRequest, CategoryAdminVO } from '@/types/api-types'
 import { useContentAdmin } from '@/composables/useContentAdmin'
 import { useArticleStore, useCategoryStore, useTagStore } from '@/stores'
@@ -394,7 +379,7 @@ const currentArticleId = ref(0)
 const currentArticleTitle = ref('')
 
 // 表格高度自适应和分页布局
-const { isCompactTable, paginationLayout } = useContentAdmin()
+const { isCompactTable } = useContentAdmin()
 
 /**
  * 将分类树扁平化为下拉选项列表
@@ -734,15 +719,6 @@ onMounted(async () => {
   margin-right: 0;
 }
 
-.card-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 12px 16px;
-  font-weight: 500;
-}
-
 .article-table {
   width: 100%;
 }
@@ -810,12 +786,6 @@ onMounted(async () => {
 
 .table-actions :deep(.el-button + .el-button) {
   margin-left: 0;
-}
-
-.pagination {
-  display: flex;
-  justify-content: center;
-  margin-top: 16px;
 }
 
 @media (max-width: 768px) {

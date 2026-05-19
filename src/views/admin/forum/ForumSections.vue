@@ -45,129 +45,114 @@
       </el-form>
     </el-card>
 
-    <el-card class="table-card" shadow="never">
-      <template #header>
-        <div class="card-header">
-          <span>论坛版块列表</span>
-          <div class="card-header__actions">
-            <span class="card-header__meta">{{ forumStore.sectionTotal }} 条</span>
-            <el-button v-permission="'content:forum:create'" type="primary" @click="handleCreate">
-              <el-icon><Plus /></el-icon>
-              新增版块
-            </el-button>
-          </div>
-        </div>
+    <DataTable
+      class="section-table"
+      title="论坛版块列表"
+      :data="forumStore.sections"
+      :loading="forumStore.sectionLoading"
+      :total="forumStore.sectionTotal"
+      v-model:current-page="pagination.current"
+      v-model:page-size="pagination.size"
+      :page-sizes="[10, 20, 50, 100]"
+      :pagination-layout="paginationLayout"
+      :compact="isCompactTable"
+      @page-change="handleCurrentChange"
+      @size-change="handleSizeChange"
+    >
+      <template #header-extra>
+        <span class="header-count">{{ forumStore.sectionTotal }} 条</span>
+        <el-button v-permission="'content:forum:create'" type="primary" @click="handleCreate">
+          <el-icon><Plus /></el-icon>
+          新增版块
+        </el-button>
       </template>
 
-      <el-table
-        v-loading="forumStore.sectionLoading"
-        :data="forumStore.sections"
-        :size="isCompactTable ? 'small' : 'default'"
-        table-layout="auto"
-        class="section-table"
-        border
-        stripe
+      <el-table-column prop="id" label="ID" width="80" align="center" />
+      <el-table-column label="版块名称" min-width="180" show-overflow-tooltip>
+        <template #default="{ row }">
+          <div class="cell-stack">
+            <span>{{ row.name }}</span>
+            <span class="cell-subtext">#{{ row.id }}</span>
+          </div>
+        </template>
+      </el-table-column>
+      <el-table-column
+        prop="description"
+        label="简介"
+        min-width="240"
+        show-overflow-tooltip
+      />
+      <el-table-column prop="sortOrder" label="排序" width="90" align="center" />
+      <el-table-column label="可见范围" min-width="110" align="center">
+        <template #default="{ row }">
+          <el-tag :type="getVisibilityTagType(row.visibilityScope)" effect="light" size="small">
+            {{ formatVisibility(row.visibilityScope) }}
+          </el-tag>
+        </template>
+      </el-table-column>
+      <el-table-column prop="postLevelLimit" label="发帖等级" min-width="100" align="center" />
+      <el-table-column label="状态" min-width="100" align="center">
+        <template #default="{ row }">
+          <el-tag :type="getSectionStatusTagType(row.status)" effect="light" size="small">
+            {{ getSectionStatusText(row.status) }}
+          </el-tag>
+        </template>
+      </el-table-column>
+      <el-table-column label="创建时间" min-width="170" align="center">
+        <template #default="{ row }">
+          {{ formatCreatedAt(row.createdAt) }}
+        </template>
+      </el-table-column>
+      <el-table-column label="更新时间" min-width="170" align="center">
+        <template #default="{ row }">
+          {{ formatUpdatedAt(row.updatedAt) }}
+        </template>
+      </el-table-column>
+      <el-table-column
+        label="操作"
+        :min-width="isCompactTable ? 180 : 220"
+        :fixed="isCompactTable ? false : 'right'"
+        class-name="action-column"
+        align="center"
       >
-        <el-table-column prop="id" label="ID" width="80" align="center" />
-        <el-table-column label="版块名称" min-width="180" show-overflow-tooltip>
-          <template #default="{ row }">
-            <div class="cell-stack">
-              <span>{{ row.name }}</span>
-              <span class="cell-subtext">#{{ row.id }}</span>
-            </div>
-          </template>
-        </el-table-column>
-        <el-table-column
-          prop="description"
-          label="简介"
-          min-width="240"
-          show-overflow-tooltip
-        />
-        <el-table-column prop="sortOrder" label="排序" width="90" align="center" />
-        <el-table-column label="可见范围" min-width="110" align="center">
-          <template #default="{ row }">
-            <el-tag :type="getVisibilityTagType(row.visibilityScope)" effect="light" size="small">
-              {{ formatVisibility(row.visibilityScope) }}
-            </el-tag>
-          </template>
-        </el-table-column>
-        <el-table-column prop="postLevelLimit" label="发帖等级" min-width="100" align="center" />
-        <el-table-column label="状态" min-width="100" align="center">
-          <template #default="{ row }">
-            <el-tag :type="getSectionStatusTagType(row.status)" effect="light" size="small">
-              {{ getSectionStatusText(row.status) }}
-            </el-tag>
-          </template>
-        </el-table-column>
-        <el-table-column label="创建时间" min-width="170" align="center">
-          <template #default="{ row }">
-            {{ formatCreatedAt(row.createdAt) }}
-          </template>
-        </el-table-column>
-        <el-table-column label="更新时间" min-width="170" align="center">
-          <template #default="{ row }">
-            {{ formatUpdatedAt(row.updatedAt) }}
-          </template>
-        </el-table-column>
-        <el-table-column
-          label="操作"
-          :min-width="isCompactTable ? 180 : 220"
-          :fixed="isCompactTable ? false : 'right'"
-          class-name="action-column"
-          align="center"
-        >
-          <template #default="{ row }">
-            <div class="table-actions" :class="{ 'table-actions--compact': isCompactTable }">
-              <el-button
-                v-permission="'content:forum:query'"
-                link
-                type="primary"
-                @click="handleView(row)"
-              >
-                详情
-              </el-button>
-              <el-button
-                v-permission="'content:forum:update'"
-                link
-                type="primary"
-                @click="handleEdit(row)"
-              >
-                编辑
-              </el-button>
-              <el-button
-                v-permission="'content:forum:update'"
-                link
-                :type="row.status === 1 ? 'warning' : 'success'"
-                @click="handleToggleStatus(row)"
-              >
-                {{ row.status === 1 ? '禁用' : '启用' }}
-              </el-button>
-              <el-button
-                v-permission="'content:forum:delete'"
-                link
-                type="danger"
-                @click="handleDelete(row)"
-              >
-                删除
-              </el-button>
-            </div>
-          </template>
-        </el-table-column>
-      </el-table>
-
-      <div class="pagination">
-        <el-pagination
-          v-model:current-page="pagination.current"
-          v-model:page-size="pagination.size"
-          :total="forumStore.sectionTotal"
-          :page-sizes="[10, 20, 50, 100]"
-          :layout="paginationLayout"
-          :small="isCompactTable"
-          @size-change="handleSizeChange"
-          @current-change="handleCurrentChange"
-        />
-      </div>
-    </el-card>
+        <template #default="{ row }">
+          <div class="table-actions" :class="{ 'table-actions--compact': isCompactTable }">
+            <el-button
+              v-permission="'content:forum:query'"
+              link
+              type="primary"
+              @click="handleView(row)"
+            >
+              详情
+            </el-button>
+            <el-button
+              v-permission="'content:forum:update'"
+              link
+              type="primary"
+              @click="handleEdit(row)"
+            >
+              编辑
+            </el-button>
+            <el-button
+              v-permission="'content:forum:update'"
+              link
+              :type="row.status === 1 ? 'warning' : 'success'"
+              @click="handleToggleStatus(row)"
+            >
+              {{ row.status === 1 ? '禁用' : '启用' }}
+            </el-button>
+            <el-button
+              v-permission="'content:forum:delete'"
+              link
+              type="danger"
+              @click="handleDelete(row)"
+            >
+              删除
+            </el-button>
+          </div>
+        </template>
+      </el-table-column>
+    </DataTable>
 
     <el-dialog
       v-model="formVisible"
@@ -534,10 +519,6 @@ onMounted(() => {
   margin-bottom: 16px;
 }
 
-.table-card {
-  margin-bottom: 16px;
-}
-
 .search-form {
   display: flex;
   flex-wrap: wrap;
@@ -563,21 +544,7 @@ onMounted(() => {
   margin-right: 0;
 }
 
-.card-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 12px;
-  font-weight: 500;
-}
-
-.card-header__actions {
-  display: inline-flex;
-  align-items: center;
-  gap: 12px;
-}
-
-.card-header__meta {
+.header-count {
   color: var(--el-text-color-secondary);
   font-size: 13px;
 }
@@ -621,12 +588,6 @@ onMounted(() => {
   color: var(--el-text-color-secondary);
   font-size: 12px;
   line-height: 1.2;
-}
-
-.pagination {
-  display: flex;
-  justify-content: center;
-  margin-top: 16px;
 }
 
 .dialog-control,
