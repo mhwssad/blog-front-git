@@ -166,12 +166,12 @@
       </el-tabs>
 
     <CollectionRecordDetailDialog
-      v-model:visible="recordDetailVisible"
+      v-model="recordDetailVisible"
       :detail="recordDetail"
     />
 
     <CollectionFolderDetailDialog
-      v-model:visible="folderDetailVisible"
+      v-model="folderDetailVisible"
       :detail="folderDetail"
       @view-records="goToFolderRecordsById"
     />

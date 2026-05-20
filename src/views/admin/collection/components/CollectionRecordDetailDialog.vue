@@ -1,40 +1,36 @@
 <template>
-  <el-dialog v-model="visible" title="收藏记录详情" width="560px" align-center destroy-on-close>
-    <template v-if="detail">
+  <DetailDialog v-model="modelValue" :detail="detail" title="收藏记录详情" width="560px">
+    <template #default="{ detail: detail_ }">
       <el-descriptions :column="2" border size="small">
-        <el-descriptions-item label="记录 ID">{{ detail.id }}</el-descriptions-item>
-        <el-descriptions-item label="用户 ID">{{ detail.userId }}</el-descriptions-item>
-        <el-descriptions-item label="收藏夹 ID">{{ detail.folderId }}</el-descriptions-item>
+        <el-descriptions-item label="记录 ID">{{ detail_.id }}</el-descriptions-item>
+        <el-descriptions-item label="用户 ID">{{ detail_.userId }}</el-descriptions-item>
+        <el-descriptions-item label="收藏夹 ID">{{ detail_.folderId }}</el-descriptions-item>
         <el-descriptions-item label="目标类型">
-          <el-tag size="small" effect="plain">{{ formatTargetType(detail.targetType) }}</el-tag>
+          <el-tag size="small" effect="plain">{{ formatTargetType(detail_.targetType) }}</el-tag>
         </el-descriptions-item>
-        <el-descriptions-item label="目标 ID">{{ detail.targetId }}</el-descriptions-item>
-        <el-descriptions-item label="收藏时间">{{ formatDate(detail.createdAt) }}</el-descriptions-item>
-        <el-descriptions-item v-if="detail.targetTitle" label="目标标题" :span="2">
-          {{ detail.targetTitle }}
+        <el-descriptions-item label="目标 ID">{{ detail_.targetId }}</el-descriptions-item>
+        <el-descriptions-item label="收藏时间">{{ formatDate(detail_.createdAt) }}</el-descriptions-item>
+        <el-descriptions-item v-if="detail_.targetTitle" label="目标标题" :span="2">
+          {{ detail_.targetTitle }}
         </el-descriptions-item>
-        <el-descriptions-item v-if="detail.targetUrl" label="目标地址" :span="2">
-          <a :href="detail.targetUrl" target="_blank" rel="noopener" class="detail-link">
-            {{ detail.targetUrl }}
+        <el-descriptions-item v-if="detail_.targetUrl" label="目标地址" :span="2">
+          <a :href="detail_.targetUrl" target="_blank" rel="noopener" class="detail-link">
+            {{ detail_.targetUrl }}
           </a>
         </el-descriptions-item>
-        <el-descriptions-item v-if="detail.remark" label="备注" :span="2">
-          {{ detail.remark }}
+        <el-descriptions-item v-if="detail_.remark" label="备注" :span="2">
+          {{ detail_.remark }}
         </el-descriptions-item>
       </el-descriptions>
     </template>
-
-    <div v-else style="text-align: center; padding: 32px; color: var(--el-text-color-secondary)">
-      暂无数据
-    </div>
 
     <template #footer>
       <el-button v-if="detail?.targetUrl" type="primary" @click="handleViewTarget">
         查看目标页面
       </el-button>
-      <el-button @click="visible = false">关闭</el-button>
+      <el-button @click="modelValue = false">关闭</el-button>
     </template>
-  </el-dialog>
+  </DetailDialog>
 </template>
 
 <script lang="ts" setup>
@@ -44,17 +40,17 @@ import { formatTargetType } from '@/utils'
 import { DateUtils } from '@/utils/dateUtils'
 
 const props = defineProps<{
-  visible: boolean
+  modelValue: boolean
   detail: CollectionVO | null
 }>()
 
 const emit = defineEmits<{
-  'update:visible': [value: boolean]
+  'update:modelValue': [value: boolean]
 }>()
 
-const visible = computed({
-  get: () => props.visible,
-  set: (val) => emit('update:visible', val),
+const modelValue = computed({
+  get: () => props.modelValue,
+  set: (val) => emit('update:modelValue', val),
 })
 
 function formatDate(value?: string | null): string {

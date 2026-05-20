@@ -319,6 +319,7 @@ import { computed, onMounted, reactive, ref } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { ArrowDown, RefreshRight, Search } from '@element-plus/icons-vue'
 import { useContentAdmin } from '@/composables/useContentAdmin'
+import { useAdminPagination } from '@/composables/useAdminPagination'
 import { useForumAdminStore } from '@/stores'
 import type {
   ForumPostAdminVO,
@@ -331,8 +332,6 @@ const forumStore = useForumAdminStore()
 const { isCompactTable, paginationLayout } = useContentAdmin()
 
 const searchForm = reactive<ForumPostAdminQueryRequest>({
-  current: 1,
-  size: 10,
   keyword: undefined,
   sectionId: undefined,
   authorId: undefined,
@@ -343,9 +342,22 @@ const searchForm = reactive<ForumPostAdminQueryRequest>({
   createdAtEnd: undefined,
 })
 
-const pagination = reactive({
-  current: 1,
-  size: 10,
+const { pagination, fetch: fetchPosts, handleSearch, handleSizeChange, handleCurrentChange } = useAdminPagination({
+  fetchFn: forumStore.fetchPosts,
+  buildParams: () => {
+    const [createdAtStart, createdAtEnd] = publishTimeRange.value
+    return {
+      keyword: searchForm.keyword?.trim() || undefined,
+      sectionId: searchForm.sectionId,
+      authorId: searchForm.authorId,
+      status: searchForm.status,
+      isTop: searchForm.isTop,
+      isEssence: searchForm.isEssence,
+      createdAtStart: createdAtStart || undefined,
+      createdAtEnd: createdAtEnd || undefined,
+    }
+  },
+  persistSizeKey: 'forum-posts-page-size',
 })
 
 const publishTimeRange = ref<[string, string] | []>([])
@@ -386,36 +398,8 @@ async function fetchSections(): Promise<void> {
   await forumStore.fetchSections({ current: 1, size: 1000 })
 }
 
-async function fetchPosts(): Promise<void> {
-  const [createdAtStart, createdAtEnd] = publishTimeRange.value
-
-  await forumStore.fetchPosts({
-    current: pagination.current,
-    size: pagination.size,
-    keyword: searchForm.keyword?.trim() || undefined,
-    sectionId: searchForm.sectionId,
-    authorId: searchForm.authorId,
-    status: searchForm.status,
-    isTop: searchForm.isTop,
-    isEssence: searchForm.isEssence,
-    createdAtStart: createdAtStart || undefined,
-    createdAtEnd: createdAtEnd || undefined,
-  })
-}
-
-async function handleRefresh(): Promise<void> {
-  await Promise.all([fetchSections(), fetchPosts()])
-}
-
-function handleSearch(): void {
-  pagination.current = 1
-  void fetchPosts()
-}
-
 function handleReset(): void {
   Object.assign(searchForm, {
-    current: 1,
-    size: 10,
     keyword: undefined,
     sectionId: undefined,
     authorId: undefined,
@@ -426,20 +410,11 @@ function handleReset(): void {
     createdAtEnd: undefined,
   })
   publishTimeRange.value = []
-  pagination.current = 1
-  pagination.size = 10
   void fetchPosts()
 }
 
-function handleSizeChange(size: number): void {
-  pagination.size = size
-  pagination.current = 1
-  void fetchPosts()
-}
-
-function handleCurrentChange(current: number): void {
-  pagination.current = current
-  void fetchPosts()
+async function handleRefresh(): Promise<void> {
+  await Promise.all([fetchSections(), fetchPosts()])
 }
 
 async function handleView(row: ForumPostAdminVO): Promise<void> {
@@ -536,7 +511,7 @@ async function handleDelete(row: ForumPostAdminVO): Promise<void> {
 }
 
 onMounted(() => {
-  void handleRefresh()
+  void fetchSections()
 })
 </script>
 

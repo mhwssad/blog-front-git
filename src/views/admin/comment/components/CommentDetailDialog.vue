@@ -1,29 +1,18 @@
 <template>
-  <el-dialog
-    v-model="dialogVisible"
-    title="评论详情"
-    width="720px"
-    destroy-on-close
-    align-center
-    @close="handleClose"
-  >
-    <div v-if="!comment" style="text-align: center; padding: 32px; color: var(--el-text-color-secondary)">
-      暂无数据
-    </div>
-
-    <template v-else>
+  <DetailDialog v-model="dialogVisible" title="评论详情" :detail="comment" width="720px">
+    <template #default="{ detail }">
       <div class="detail-user">
-        <el-avatar v-if="comment.userAvatar" :src="comment.userAvatar" :size="40" />
+        <el-avatar v-if="detail.userAvatar" :src="detail.userAvatar" :size="40" />
         <div class="detail-user__info">
-          <span class="detail-user__name">{{ comment.userNickname || '匿名用户' }}</span>
-          <span class="detail-user__meta">ID {{ comment.userId }} · {{ formatCreatedAt(comment.createdAt) }}</span>
+          <span class="detail-user__name">{{ detail.userNickname || '匿名用户' }}</span>
+          <span class="detail-user__meta">ID {{ detail.userId }} · {{ formatCreatedAt(detail.createdAt) }}</span>
         </div>
         <el-tag
           size="small"
-          :type="comment.status === 1 ? 'success' : comment.status === 2 ? 'warning' : 'info'"
+          :type="detail.status === 1 ? 'success' : detail.status === 2 ? 'warning' : 'info'"
           style="margin-left: auto"
         >
-          {{ formatCommentStatus(comment.status) }}
+          {{ formatCommentStatus(detail.status) }}
         </el-tag>
       </div>
 
@@ -37,74 +26,76 @@
           </div>
           <p class="parent-content">{{ parentComment.content }}</p>
           <div v-if="parentComment.images?.length" class="parent-images">
-            <el-image
+            <ImagePreview
               v-for="(image, index) in parentComment.images"
               :key="index"
-              class="parent-image"
               :src="image"
-              fit="cover"
               :preview-src-list="parentComment.images"
+              :width="60"
+              :height="60"
+              fit="cover"
             />
           </div>
         </div>
       </div>
 
       <div class="detail-content">
-        <p>{{ comment.content }}</p>
-        <div v-if="comment.images?.length" class="detail-images">
-          <el-image
-            v-for="(image, index) in comment.images"
+        <p>{{ detail.content }}</p>
+        <div v-if="detail.images?.length" class="detail-images">
+          <ImagePreview
+            v-for="(image, index) in detail.images"
             :key="index"
-            class="detail-image"
             :src="image"
+            :preview-src-list="detail.images"
+            :width="80"
+            :height="80"
             fit="cover"
-            :preview-src-list="comment.images"
           />
         </div>
       </div>
 
       <el-descriptions :column="3" border size="small">
         <el-descriptions-item label="评论目标">
-          <el-tag size="small" effect="plain">{{ formatTargetType(comment.targetType) }}</el-tag>
-          <span style="margin-left: 6px; color: var(--el-text-color-secondary)">编号 {{ comment.targetId }}</span>
+          <el-tag size="small" effect="plain">{{ formatTargetType(detail.targetType) }}</el-tag>
+          <span style="margin-left: 6px; color: var(--el-text-color-secondary)">编号 {{ detail.targetId }}</span>
         </el-descriptions-item>
         <el-descriptions-item label="评论层级">
-          <template v-if="comment.rootId">
-            <span>属于讨论 #{{ comment.rootId }}</span>
-            <template v-if="comment.parentId && comment.parentId !== comment.rootId">
+          <template v-if="detail.rootId">
+            <span>属于讨论 #{{ detail.rootId }}</span>
+            <template v-if="detail.parentId && detail.parentId !== detail.rootId">
               <el-divider direction="vertical" />
-              <span>回复 #{{ comment.parentId }}</span>
+              <span>回复 #{{ detail.parentId }}</span>
             </template>
           </template>
           <span v-else>顶级评论</span>
         </el-descriptions-item>
         <el-descriptions-item label="状态">
-          <el-tag size="small" :type="comment.status === 1 ? 'success' : comment.status === 2 ? 'warning' : 'info'">
-            {{ formatCommentStatus(comment.status) }}
+          <el-tag size="small" :type="detail.status === 1 ? 'success' : detail.status === 2 ? 'warning' : 'info'">
+            {{ formatCommentStatus(detail.status) }}
           </el-tag>
         </el-descriptions-item>
         <el-descriptions-item label="点赞数">
           <span class="stat-value">
             <el-icon :size="14" style="vertical-align: middle; margin-right: 2px"><Star /></el-icon>
-            {{ comment.likeCount }}
+            {{ detail.likeCount }}
           </span>
         </el-descriptions-item>
         <el-descriptions-item label="回复数">
           <span class="stat-value">
             <el-icon :size="14" style="vertical-align: middle; margin-right: 2px"><ChatDotRound /></el-icon>
-            {{ comment.replyCount }}
+            {{ detail.replyCount }}
           </span>
         </el-descriptions-item>
         <el-descriptions-item label="评论编号">
-          #{{ comment.id }}
+          #{{ detail.id }}
         </el-descriptions-item>
         <el-descriptions-item label="发表时间" :span="2">
-          {{ formatCreatedAt(comment.createdAt) }}
+          {{ formatCreatedAt(detail.createdAt) }}
         </el-descriptions-item>
       </el-descriptions>
 
       <div v-if="replyTree.length" class="reply-section">
-        <div class="section-title">回复 ({{ comment.replyCount }})</div>
+        <div class="section-title">回复 ({{ detail.replyCount }})</div>
         <el-tree
           class="reply-tree"
           :data="replyTree"
@@ -128,15 +119,11 @@
         </el-tree>
       </div>
     </template>
-
-    <template #footer>
-      <el-button @click="handleClose">关闭</el-button>
-    </template>
-  </el-dialog>
+  </DetailDialog>
 </template>
 
 <script lang="ts" setup>
-import { computed, type PropType } from 'vue'
+import { computed, watch, type PropType } from 'vue'
 import { Star, ChatDotRound } from '@element-plus/icons-vue'
 import type { CommentVO } from '@/types/api-types'
 import { formatCommentStatus, formatCreatedAt, formatTargetType } from '@/utils/contentAdmin'
@@ -175,9 +162,14 @@ const replyTree = computed(() => {
   return buildReplyTree(props.comment.children)
 })
 
-function handleClose(): void {
-  dialogVisible.value = false
-}
+watch(
+  () => props.visible,
+  val => {
+    if (!val) {
+      // Reset state when dialog closes
+    }
+  },
+)
 </script>
 
 <style scoped>

@@ -1,57 +1,57 @@
 <template>
-  <el-dialog
+  <DetailDialog
     v-model="dialogVisible"
     title="审计日志详情"
     width="860px"
+    :detail="log"
     class="audit-log-detail-dialog"
-    :close-on-click-modal="false"
-    align-center
-    center
   >
-    <el-descriptions :column="2" border size="small" label-width="120px">
-      <el-descriptions-item label="操作人">
-        {{ log?.operatorUsername || '-' }}
-      </el-descriptions-item>
-      <el-descriptions-item label="操作人ID">
-        {{ log?.operatorUserId ?? '-' }}
-      </el-descriptions-item>
-      <el-descriptions-item label="目标用户">
-        {{ log?.targetUsername || '-' }}
-      </el-descriptions-item>
-      <el-descriptions-item label="目标用户ID">
-        {{ log?.targetUserId ?? '-' }}
-      </el-descriptions-item>
-      <el-descriptions-item label="目标对象">
-        {{ formatTargetObject(log) }}
-      </el-descriptions-item>
-      <el-descriptions-item label="操作类型">
-        {{ log?.operationTypeDesc || log?.operationType || '-' }}
-      </el-descriptions-item>
-      <el-descriptions-item label="MFA">
-        <el-tag :type="getMfaTagType(log?.mfaPassed)" effect="light" size="small">
-          {{ formatMfaPassed(log?.mfaPassed) }}
-        </el-tag>
-      </el-descriptions-item>
-      <el-descriptions-item label="请求 IP">
-        {{ log?.requestIp || '-' }}
-      </el-descriptions-item>
-      <el-descriptions-item label="User-Agent" :span="2">
-        <span class="break-all">{{ log?.userAgent || '-' }}</span>
-      </el-descriptions-item>
-      <el-descriptions-item label="操作前状态" :span="2">
-        <pre class="audit-description">{{ log?.beforeState || '-' }}</pre>
-      </el-descriptions-item>
-      <el-descriptions-item label="操作后状态" :span="2">
-        <pre class="audit-description">{{ log?.afterState || '-' }}</pre>
-      </el-descriptions-item>
-      <el-descriptions-item label="备注" :span="2">
-        <pre class="audit-description">{{ log?.remark || '-' }}</pre>
-      </el-descriptions-item>
-      <el-descriptions-item label="创建时间" :span="2">
-        {{ formatCreateTime(log?.createdAt) }}
-      </el-descriptions-item>
-    </el-descriptions>
-  </el-dialog>
+    <template #default="{ detail: log }">
+      <el-descriptions :column="2" border size="small" label-width="120px">
+        <el-descriptions-item label="操作人">
+          {{ log?.operatorUsername || '-' }}
+        </el-descriptions-item>
+        <el-descriptions-item label="操作人ID">
+          {{ log?.operatorUserId ?? '-' }}
+        </el-descriptions-item>
+        <el-descriptions-item label="目标用户">
+          {{ log?.targetUsername || '-' }}
+        </el-descriptions-item>
+        <el-descriptions-item label="目标用户ID">
+          {{ log?.targetUserId ?? '-' }}
+        </el-descriptions-item>
+        <el-descriptions-item label="目标对象">
+          {{ formatTargetObject(log) }}
+        </el-descriptions-item>
+        <el-descriptions-item label="操作类型">
+          {{ log?.operationTypeDesc || log?.operationType || '-' }}
+        </el-descriptions-item>
+        <el-descriptions-item label="MFA">
+          <el-tag :type="getMfaTagType(log?.mfaPassed)" effect="light" size="small">
+            {{ formatMfaPassed(log?.mfaPassed) }}
+          </el-tag>
+        </el-descriptions-item>
+        <el-descriptions-item label="请求 IP">
+          {{ log?.requestIp || '-' }}
+        </el-descriptions-item>
+        <el-descriptions-item label="User-Agent" :span="2">
+          <span class="break-all">{{ log?.userAgent || '-' }}</span>
+        </el-descriptions-item>
+        <el-descriptions-item label="操作前状态" :span="2">
+          <pre class="audit-description">{{ log?.beforeState || '-' }}</pre>
+        </el-descriptions-item>
+        <el-descriptions-item label="操作后状态" :span="2">
+          <pre class="audit-description">{{ log?.afterState || '-' }}</pre>
+        </el-descriptions-item>
+        <el-descriptions-item label="备注" :span="2">
+          <pre class="audit-description">{{ log?.remark || '-' }}</pre>
+        </el-descriptions-item>
+        <el-descriptions-item label="创建时间" :span="2">
+          {{ formatCreateTime(log?.createdAt) }}
+        </el-descriptions-item>
+      </el-descriptions>
+    </template>
+  </DetailDialog>
 </template>
 
 <script lang="ts" setup>

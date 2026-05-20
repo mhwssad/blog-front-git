@@ -79,12 +79,12 @@
         </div>
 
         <el-pagination
-          v-if="store.postTotal > pageSize"
+          v-if="store.postTotal > pagination.size"
           background
           layout="prev, pager, next"
           :total="store.postTotal"
-          :page-size="pageSize"
-          :current-page="currentPage"
+          :page-size="pagination.size"
+          :current-page="pagination.current"
           @current-change="handlePageChange"
         />
       </main>
@@ -154,6 +154,7 @@
 import { computed, onMounted, ref } from 'vue'
 import { Search, Expand, Fold, Grid } from '@element-plus/icons-vue'
 import { useUserForumStore, useAuthStore } from '@/stores'
+import { useAdminPagination } from '@/composables/useAdminPagination'
 import ForumPostCard from './components/ForumPostCard.vue'
 
 const store = useUserForumStore()
@@ -163,8 +164,16 @@ const sidebarOpen = ref(false)
 const keyword = ref('')
 const sort = ref<'latest' | 'hot'>('latest')
 const selectedSectionId = ref<number | undefined>(undefined)
-const currentPage = ref(1)
-const pageSize = 10
+
+const { pagination, fetch, handleSearch, handleCurrentChange } =
+  useAdminPagination({
+    fetchFn: store.fetchPosts,
+    buildParams: () => ({
+      keyword: keyword.value || undefined,
+      sectionId: selectedSectionId.value,
+      sort: sort.value,
+    }),
+  })
 
 const hotPosts = computed(() =>
   [...store.posts].sort((a, b) => b.replyCount - a.replyCount).slice(0, 5),
@@ -177,45 +186,22 @@ function rankClass(idx: number): string {
   return ''
 }
 
-function buildParams() {
-  return {
-    current: currentPage.value,
-    size: pageSize,
-    keyword: keyword.value || undefined,
-    sectionId: selectedSectionId.value,
-    sort: sort.value,
-  }
-}
-
-async function fetchPosts() {
-  await store.fetchPosts(buildParams())
-}
-
 function handleSectionClick(sectionId: number | undefined) {
   selectedSectionId.value = sectionId
-  currentPage.value = 1
-  fetchPosts()
+  handleSearch()
 }
 
 function handleSortChange() {
-  currentPage.value = 1
-  fetchPosts()
-}
-
-function handleSearch() {
-  currentPage.value = 1
-  fetchPosts()
+  handleSearch()
 }
 
 function handlePageChange(page: number) {
-  currentPage.value = page
-  fetchPosts()
+  handleCurrentChange(page)
   window.scrollTo({ top: 0, behavior: 'smooth' })
 }
 
-onMounted(async () => {
-  await store.fetchSections()
-  await fetchPosts()
+onMounted(() => {
+  store.fetchSections()
 })
 </script>
 

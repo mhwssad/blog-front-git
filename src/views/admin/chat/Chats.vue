@@ -65,7 +65,7 @@
           <el-button v-permission="'content:chat:query'" type="primary" @click="handleSearch"
             >查询</el-button
           >
-          <el-button @click="handleReset">重置</el-button>
+          <el-button @click="handleConversationReset">重置</el-button>
         </el-form-item>
       </el-form>
     </el-card>
@@ -552,10 +552,11 @@
 </template>
 
 <script lang="ts" setup>
-import { computed, onMounted, reactive, ref } from 'vue'
+import { computed, reactive, ref } from 'vue'
 import { ElMessage } from 'element-plus'
 import type { ChatConversationVO, ChatMessageVO } from '@/types/api-types'
 import { useContentAdmin } from '@/composables/useContentAdmin'
+import { useAdminPagination } from '@/composables/useAdminPagination'
 import { useChatStore } from '@/stores'
 import { DateUtils } from '@/utils'
 import {
@@ -606,26 +607,30 @@ const receiptSearchForm = reactive({
   visibleStatus: undefined as number | undefined,
 })
 
-const pagination = reactive({ current: 1, size: 10 })
-const messagePagination = reactive({ current: 1, size: 10 })
-const receiptPagination = reactive({ current: 1, size: 10 })
-
-const { paginationLayout, isCompactTable } = useContentAdmin()
-
-const selectedConversation = computed(() => chatStore.conversationDetail)
-
-function buildConversationQuery() {
-  return {
-    current: pagination.current,
-    size: pagination.size,
+const {
+  pagination,
+  fetch: fetchConversations,
+  handleSearch,
+  handleSizeChange,
+  handleCurrentChange,
+} = useAdminPagination({
+  fetchFn: chatStore.fetchConversations,
+  buildParams: () => ({
     keyword: searchForm.keyword.trim() || undefined,
     conversationType: searchForm.conversationType || undefined,
     status: searchForm.status,
     ownerId: searchForm.ownerId,
     memberUserId: searchForm.memberUserId,
     isAllSite: searchForm.isAllSite,
-  }
-}
+  }),
+  persistSizeKey: 'chat-conversations-page-size',
+})
+const messagePagination = reactive({ current: 1, size: 10 })
+const receiptPagination = reactive({ current: 1, size: 10 })
+
+const { paginationLayout, isCompactTable } = useContentAdmin()
+
+const selectedConversation = computed(() => chatStore.conversationDetail)
 
 function buildMessageQuery() {
   return {
@@ -645,10 +650,6 @@ function buildReceiptQuery() {
     deliveryStatus: receiptSearchForm.deliveryStatus,
     visibleStatus: receiptSearchForm.visibleStatus,
   }
-}
-
-async function fetchConversations(): Promise<void> {
-  await chatStore.fetchConversations(buildConversationQuery())
 }
 
 async function refreshMembers(): Promise<void> {
@@ -673,30 +674,13 @@ async function refreshReceipts(): Promise<void> {
   }
 }
 
-function handleSearch(): void {
-  pagination.current = 1
-  void fetchConversations()
-}
-
-function handleReset(): void {
+function handleConversationReset(): void {
   searchForm.keyword = ''
   searchForm.conversationType = ''
   searchForm.status = undefined
   searchForm.ownerId = undefined
   searchForm.memberUserId = undefined
   searchForm.isAllSite = undefined
-  pagination.current = 1
-  void fetchConversations()
-}
-
-function handleCurrentChange(current: number): void {
-  pagination.current = current
-  void fetchConversations()
-}
-
-function handleSizeChange(size: number): void {
-  pagination.size = size
-  pagination.current = 1
   void fetchConversations()
 }
 
@@ -917,10 +901,6 @@ function formatMessagePreview(message: ChatMessageVO): string {
     message.content || (message.file?.originalName ? `[附件] ${message.file.originalName}` : '-')
   )
 }
-
-onMounted(() => {
-  void fetchConversations()
-})
 </script>
 
 <style scoped>

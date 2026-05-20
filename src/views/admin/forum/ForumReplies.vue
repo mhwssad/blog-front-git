@@ -193,10 +193,11 @@
 </template>
 
 <script lang="ts" setup>
-import { onMounted, reactive, ref } from 'vue'
+import { reactive, ref } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { RefreshRight, Search } from '@element-plus/icons-vue'
 import { useContentAdmin } from '@/composables/useContentAdmin'
+import { useAdminPagination } from '@/composables/useAdminPagination'
 import { useForumAdminStore } from '@/stores'
 import type { ForumReplyAdminQueryRequest, ForumReplyAdminVO } from '@/types/api-types'
 import { formatCreatedAt, formatUpdatedAt } from '@/utils'
@@ -205,17 +206,27 @@ const forumStore = useForumAdminStore()
 const { isCompactTable, paginationLayout } = useContentAdmin()
 
 const searchForm = reactive<ForumReplyAdminQueryRequest>({
-  current: 1,
-  size: 10,
   keyword: undefined,
   postId: undefined,
   userId: undefined,
   status: undefined,
 })
 
-const pagination = reactive({
-  current: 1,
-  size: 10,
+const {
+  pagination,
+  fetch: fetchReplies,
+  handleSearch,
+  handleSizeChange,
+  handleCurrentChange,
+} = useAdminPagination({
+  fetchFn: forumStore.fetchReplies,
+  buildParams: () => ({
+    keyword: searchForm.keyword?.trim() || undefined,
+    postId: searchForm.postId,
+    userId: searchForm.userId,
+    status: searchForm.status,
+  }),
+  persistSizeKey: 'forum-replies-page-size',
 })
 
 const detailVisible = ref(false)
@@ -247,48 +258,17 @@ function getReplyStatusTagType(value?: number): 'success' | 'warning' | 'danger'
   }
 }
 
-async function fetchReplies(): Promise<void> {
-  await forumStore.fetchReplies({
-    current: pagination.current,
-    size: pagination.size,
-    keyword: searchForm.keyword?.trim() || undefined,
-    postId: searchForm.postId,
-    userId: searchForm.userId,
-    status: searchForm.status,
-  })
-}
-
-async function handleRefresh(): Promise<void> {
-  await fetchReplies()
-}
-
-function handleSearch(): void {
-  pagination.current = 1
-  void fetchReplies()
+function handleRefresh(): Promise<void> {
+  return fetchReplies()
 }
 
 function handleReset(): void {
   Object.assign(searchForm, {
-    current: 1,
-    size: 10,
     keyword: undefined,
     postId: undefined,
     userId: undefined,
     status: undefined,
   })
-  pagination.current = 1
-  pagination.size = 10
-  void fetchReplies()
-}
-
-function handleSizeChange(size: number): void {
-  pagination.size = size
-  pagination.current = 1
-  void fetchReplies()
-}
-
-function handleCurrentChange(current: number): void {
-  pagination.current = current
   void fetchReplies()
 }
 
@@ -351,10 +331,6 @@ async function handleDelete(row: ForumReplyAdminVO): Promise<void> {
     // cancelled or failed
   }
 }
-
-onMounted(() => {
-  void fetchReplies()
-})
 </script>
 
 <style scoped>

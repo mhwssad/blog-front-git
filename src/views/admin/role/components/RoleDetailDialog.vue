@@ -1,13 +1,5 @@
 <template>
-  <el-dialog
-    v-model="dialogVisible"
-    title="角色详情"
-    class="role-detail-dialog"
-    width="520px"
-    destroy-on-close
-    align-center
-    @close="handleClose"
-  >
+  <DetailDialog v-model="dialogVisible" :detail="role" title="角色详情" width="520px">
     <div v-if="loading" class="detail-loading">
       <el-icon class="is-loading" :size="28"><Loading /></el-icon>
       <span>加载中...</span>
@@ -63,11 +55,7 @@
         </el-descriptions-item>
       </el-descriptions>
     </template>
-
-    <template #footer>
-      <el-button @click="handleClose">关闭</el-button>
-    </template>
-  </el-dialog>
+  </DetailDialog>
 </template>
 
 /** * 角色详情对话框 * @description 展示角色的完整信息，包括基本资料、已分配菜单等 * @module
@@ -124,7 +112,12 @@ function flattenMenus(tree: SysMenuAdminVO[]): Map<number, string> {
 watch(
   () => props.visible,
   async visible => {
-    if (!visible || !props.role) return
+    if (!visible) {
+      detailRole.value = null
+      menuNames.value = []
+      return
+    }
+    if (!props.role) return
     loading.value = true
     try {
       const [roleResp, menusResp, menuTreeResp] = await Promise.all([
@@ -144,12 +137,6 @@ watch(
     }
   }
 )
-
-function handleClose() {
-  detailRole.value = null
-  menuNames.value = []
-  emit('update:visible', false)
-}
 </script>
 
 <style scoped>
@@ -209,14 +196,14 @@ function handleClose() {
   text-overflow: ellipsis;
 }
 
-:deep(.role-detail-dialog .el-dialog__body) {
+:deep(.el-dialog__body) {
   padding-top: 12px;
   max-height: calc(100vh - 220px);
   overflow-y: auto;
 }
 
 @media (max-width: 768px) {
-  :deep(.role-detail-dialog) {
+  :deep(.el-dialog) {
     width: calc(100vw - 24px) !important;
   }
 }

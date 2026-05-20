@@ -1,6 +1,11 @@
 <template>
-  <el-dialog v-model="dialogVisible" :title="notice?.title" width="560px">
-    <template v-if="notice">
+  <DetailDialog
+    v-model="dialogVisible"
+    :title="notice?.title ?? '通知详情'"
+    width="560px"
+    :detail="notice"
+  >
+    <template #default="{ detail: notice }">
       <div class="detail-meta">
         <span class="detail-time">{{ notice.publishTime ?? notice.createTime }}</span>
         <el-tag v-if="notice.isRead === 0" size="small" type="danger">未读</el-tag>
@@ -8,7 +13,7 @@
       </div>
       <div class="detail-content">{{ notice.content }}</div>
     </template>
-  </el-dialog>
+  </DetailDialog>
 </template>
 
 <script lang="ts" setup>

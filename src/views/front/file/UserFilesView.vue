@@ -12,10 +12,10 @@
         clearable
         size="small"
         style="width: 200px"
-        @clear="loadFiles"
-        @keyup.enter="loadFiles"
+        @clear="fetch"
+        @keyup.enter="fetch"
       />
-      <el-button size="small" @click="loadFiles">搜索</el-button>
+      <el-button size="small" @click="fetch">搜索</el-button>
     </div>
 
     <div v-if="store.loading" class="loading-area">
@@ -48,13 +48,13 @@
         </el-table-column>
       </el-table>
 
-      <div v-if="store.fileTotal > store.fileSize" class="pagination-area">
+      <div v-if="store.fileTotal > pagination.size" class="pagination-area">
         <el-pagination
-          v-model:current-page="currentPage"
-          :page-size="store.fileSize"
+          v-model:current-page="pagination.current"
+          :page-size="pagination.size"
           :total="store.fileTotal"
           layout="prev, pager, next"
-          @current-change="loadFiles"
+          @current-change="fetch"
         />
       </div>
     </template>
@@ -72,26 +72,26 @@
  * @module front/file/UserFilesView
  * @see ../../api/user/file.ts
  */
-import { ref, onMounted } from 'vue'
+import { ref } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { useUserFileStore } from '@/stores'
+import { useAdminPagination } from '@/composables/useAdminPagination'
 import FileUploadDialog from './components/FileUploadDialog.vue'
 
 const store = useUserFileStore()
 
 // 搜索关键词
 const keyword = ref('')
-const currentPage = ref(1)
 // 上传弹窗是否显示
 const uploadVisible = ref(false)
 
-async function loadFiles(): Promise<void> {
-  await store.fetchFiles({
-    current: currentPage.value,
-    size: store.fileSize,
+const { pagination, fetch, handleReset } = useAdminPagination({
+  fetchFn: store.fetchFiles,
+  buildParams: () => ({
     keyword: keyword.value || undefined,
-  })
-}
+  }),
+  defaultSize: store.fileSize,
+})
 
 function formatSize(bytes: number): string {
   if (bytes < 1024) return bytes + ' B'
@@ -111,7 +111,7 @@ async function handleDelete(businessId: number): Promise<void> {
     const success = await store.deleteFile(businessId)
     if (success) {
       ElMessage.success('已删除')
-      await loadFiles()
+      await fetch()
     }
   } catch {
     // cancelled
@@ -120,11 +120,8 @@ async function handleDelete(businessId: number): Promise<void> {
 
 async function handleUploadSuccess(): Promise<void> {
   uploadVisible.value = false
-  currentPage.value = 1
-  await loadFiles()
+  handleReset(() => {})
 }
-
-onMounted(loadFiles)
 </script>
 
 <style scoped>

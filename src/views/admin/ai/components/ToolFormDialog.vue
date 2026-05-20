@@ -1,11 +1,14 @@
 <template>
-  <el-dialog
+  <FormDialog
     v-model="dialogVisible"
-    :title="isEdit ? '编辑工具' : '新增工具'"
+    add-title="新增工具"
+    edit-title="编辑工具"
+    :is-edit="isEdit"
     width="760px"
-    :close-on-click-modal="false"
-    align-center
-    @closed="handleClosed"
+    :loading="submitting"
+    :confirm-permission="submitPermission"
+    :confirm-text="isEdit ? '保存' : '创建'"
+    @submit="handleSubmit"
   >
     <el-form
       ref="formRef"
@@ -124,19 +127,7 @@
         <el-switch v-model="formData.enabled" :active-value="1" :inactive-value="0" />
       </el-form-item>
     </el-form>
-
-    <template #footer>
-      <el-button @click="dialogVisible = false">取消</el-button>
-      <el-button
-        v-permission="submitPermission"
-        type="primary"
-        :loading="submitting"
-        @click="handleSubmit"
-      >
-        {{ isEdit ? '保存' : '创建' }}
-      </el-button>
-    </template>
-  </el-dialog>
+  </FormDialog>
 </template>
 
 <script lang="ts" setup>
@@ -281,10 +272,6 @@ async function handleSubmit(): Promise<void> {
   } finally {
     submitting.value = false
   }
-}
-
-function handleClosed(): void {
-  resetForm()
 }
 
 watch(

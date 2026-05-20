@@ -34,10 +34,10 @@
         />
       </div>
 
-      <div v-if="store.total > store.size" class="pagination-area">
+      <div v-if="store.total > pagination.size" class="pagination-area">
         <el-pagination
-          v-model:current-page="currentPage"
-          :page-size="store.size"
+          v-model:current-page="pagination.current"
+          :page-size="pagination.size"
           :total="store.total"
           layout="prev, pager, next"
           @current-change="loadNotices"
@@ -61,6 +61,7 @@
 import { ref, onMounted } from 'vue'
 import { ElMessage } from 'element-plus'
 import { useUserNoticeStore } from '@/stores'
+import { useAdminPagination } from '@/composables/useAdminPagination'
 import type { UserNoticeVO } from '@/types/api-types'
 import NoticeItem from './components/NoticeItem.vue'
 import NoticeDetailDialog from './components/NoticeDetailDialog.vue'
@@ -69,22 +70,22 @@ const store = useUserNoticeStore()
 
 // 已读状态筛选（undefined-全部，0-未读，1-已读）
 const readFilter = ref<number | undefined>(undefined)
-const currentPage = ref(1)
 // 通知详情弹窗是否显示
 const detailVisible = ref(false)
 // 当前查看的通知详情
 const detailNotice = ref<UserNoticeVO | null>(null)
 
-async function loadNotices(): Promise<void> {
-  await store.fetchMyNotices({
-    current: currentPage.value,
-    size: store.size,
+const { pagination, fetch: loadNotices } = useAdminPagination({
+  fetchFn: store.fetchMyNotices,
+  buildParams: () => ({
     isRead: readFilter.value,
-  })
-}
+  }),
+  defaultSize: store.size,
+  immediate: false,
+})
 
 function handleFilterChange(): void {
-  currentPage.value = 1
+  pagination.current = 1
   loadNotices()
 }
 

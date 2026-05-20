@@ -133,28 +133,32 @@
 </template>
 
 <script lang="ts" setup>
-import { onMounted, reactive, ref } from 'vue'
+import { reactive, ref } from 'vue'
 import { ElMessage } from 'element-plus'
 import { useAuditLogStore } from '@/stores'
-import type { AuditLogQueryRequest, AuditLogVO } from '@/types/api-types'
+import type { AuditLogVO } from '@/types/api-types'
 import { useContentAdmin } from '@/composables/useContentAdmin'
+import { useAdminPagination } from '@/composables/useAdminPagination'
 import { formatCreateTime } from '@/utils'
 import AuditLogDetailDialog from './components/AuditLogDetailDialog.vue'
 
 const auditLogStore = useAuditLogStore()
 const { isCompactTable, paginationLayout } = useContentAdmin()
 
-const searchForm = reactive<AuditLogQueryRequest>({
-  current: 1,
-  size: 10,
-  operatorUserId: undefined,
-  targetUserId: undefined,
-  operationType: undefined,
+const searchForm = reactive({
+  operatorUserId: undefined as number | undefined,
+  targetUserId: undefined as number | undefined,
+  operationType: undefined as string | undefined,
 })
 
-const pagination = reactive({
-  current: 1,
-  size: 10,
+const { pagination, fetch, handleSearch, handleSizeChange, handleCurrentChange } = useAdminPagination({
+  fetchFn: auditLogStore.fetchLogs,
+  buildParams: () => ({
+    operatorUserId: searchForm.operatorUserId || undefined,
+    targetUserId: searchForm.targetUserId || undefined,
+    operationType: searchForm.operationType?.trim() || undefined,
+  }),
+  persistSizeKey: 'audit-log-page-size',
 })
 
 const detailVisible = ref(false)
@@ -199,47 +203,13 @@ function formatTargetObject(row: AuditLogVO): string {
   return '-'
 }
 
-async function fetchLogs(): Promise<void> {
-  try {
-    await auditLogStore.fetchLogs({
-      current: pagination.current,
-      size: pagination.size,
-      operatorUserId: searchForm.operatorUserId || undefined,
-      targetUserId: searchForm.targetUserId || undefined,
-      operationType: searchForm.operationType?.trim() || undefined,
-    })
-  } catch {
-    ElMessage.error('获取审计日志列表失败')
-  }
-}
-
-function handleSearch(): void {
-  pagination.current = 1
-  void fetchLogs()
-}
-
 function handleReset(): void {
-  Object.assign(searchForm, {
-    current: 1,
-    size: 10,
-    operatorUserId: undefined,
-    targetUserId: undefined,
-    operationType: undefined,
-  })
+  searchForm.operatorUserId = undefined
+  searchForm.targetUserId = undefined
+  searchForm.operationType = undefined
   pagination.current = 1
   pagination.size = 10
-  void fetchLogs()
-}
-
-function handleSizeChange(size: number): void {
-  pagination.size = size
-  pagination.current = 1
-  void fetchLogs()
-}
-
-function handleCurrentChange(current: number): void {
-  pagination.current = current
-  void fetchLogs()
+  void fetch()
 }
 
 async function handleViewDetail(row: AuditLogVO): Promise<void> {
@@ -253,9 +223,6 @@ async function handleViewDetail(row: AuditLogVO): Promise<void> {
   detailVisible.value = true
 }
 
-onMounted(() => {
-  void fetchLogs()
-})
 </script>
 
 <style scoped>

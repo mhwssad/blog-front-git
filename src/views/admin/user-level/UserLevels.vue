@@ -146,10 +146,11 @@
 </template>
 
 <script lang="ts" setup>
-import { onMounted, reactive, ref, watch } from 'vue'
+import { reactive, ref, watch } from 'vue'
 import { ElMessage } from 'element-plus'
 import { useExperienceStore } from '@/stores'
 import { useContentAdmin } from '@/composables/useContentAdmin'
+import { useAdminPagination } from '@/composables/useAdminPagination'
 import { formatAiDate } from '@/utils'
 import ExperienceRuleDialog from './components/ExperienceRuleDialog.vue'
 
@@ -169,9 +170,13 @@ const query = reactive({
   sourceType: '' as string,
 })
 
-const pagination = reactive({
-  current: 1,
-  size: 10,
+const { pagination, fetch, handleSizeChange, handleCurrentChange } = useAdminPagination({
+  fetchFn: experienceStore.fetchLogs,
+  buildParams: () => ({
+    userId: query.userId,
+    sourceType: query.sourceType || undefined,
+  }),
+  persistSizeKey: 'user-level-page-size',
 })
 
 const { isCompactTable, paginationLayout } = useContentAdmin()
@@ -190,19 +195,6 @@ function sourceTagType(sourceType: string): 'success' | 'warning' | 'danger' | '
   return map[sourceType] ?? 'info'
 }
 
-async function fetchLogs(): Promise<void> {
-  try {
-    await experienceStore.fetchLogs({
-      current: pagination.current,
-      size: pagination.size,
-      userId: query.userId,
-      sourceType: query.sourceType || undefined,
-    })
-  } catch {
-    ElMessage.error('获取经验日志失败')
-  }
-}
-
 async function fetchSummary(): Promise<void> {
   if (!query.userId) {
     return
@@ -216,7 +208,7 @@ async function fetchSummary(): Promise<void> {
 
 function handleSearch(): void {
   pagination.current = 1
-  void fetchLogs()
+  void fetch()
   void fetchSummary()
 }
 
@@ -226,18 +218,7 @@ function handleReset(): void {
   pagination.current = 1
   pagination.size = 10
   experienceStore.userSummary = null
-  void fetchLogs()
-}
-
-function handleSizeChange(size: number): void {
-  pagination.size = size
-  pagination.current = 1
-  void fetchLogs()
-}
-
-function handleCurrentChange(current: number): void {
-  pagination.current = current
-  void fetchLogs()
+  void fetch()
 }
 
 watch(
@@ -251,9 +232,6 @@ watch(
   },
 )
 
-onMounted(() => {
-  void fetchLogs()
-})
 </script>
 
 <style scoped>

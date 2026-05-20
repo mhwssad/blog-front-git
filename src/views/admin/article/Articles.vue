@@ -146,7 +146,7 @@
             <el-button v-permission="'content:article:query'" type="primary" @click="handleSearch">
               查询
             </el-button>
-            <el-button @click="handleReset">重置</el-button>
+            <el-button @click="handleResetForm">重置</el-button>
             <el-button link type="primary" @click="searchExpanded = !searchExpanded">
               {{ searchExpanded ? '收起' : '更多' }}
               <el-icon class="expand-icon" :class="{ 'is-expanded': searchExpanded }">
@@ -301,7 +301,7 @@
     />
 
     <ArticleDetailDialog
-      v-model:visible="detailDialogVisible"
+      v-model="detailDialogVisible"
       :detail="detailArticle"
       @edit="handleEditFromDetail"
     />
@@ -316,6 +316,7 @@ import { Plus, ArrowDown } from '@element-plus/icons-vue'
 import DataTable from '@/components/common/DataTable.vue'
 import type { ArticleAdminVO, ArticleDetailVO, ArticleQueryRequest, CategoryAdminVO } from '@/types/api-types'
 import { useContentAdmin } from '@/composables/useContentAdmin'
+import { useAdminPagination } from '@/composables/useAdminPagination'
 import { useArticleStore, useCategoryStore, useTagStore } from '@/stores'
 import {
   ACCESS_LEVEL_OPTIONS,
@@ -344,8 +345,6 @@ const router = useRouter()
 
 // 搜索表单
 const searchForm = reactive<ArticleQueryRequest>({
-  current: 1,
-  size: 10,
   keyword: undefined,
   authorId: undefined,
   status: undefined,
@@ -355,12 +354,6 @@ const searchForm = reactive<ArticleQueryRequest>({
   isTop: undefined,
   publishTimeStart: undefined,
   publishTimeEnd: undefined,
-})
-
-// 分页配置
-const pagination = reactive({
-  current: 1,
-  size: 10,
 })
 
 // 发布时间范围
@@ -454,47 +447,24 @@ function reviewStatusLabel(status: number): string {
   return map[status] ?? '-'
 }
 
-// ==================== 数据获取 ====================
+// ==================== 分页配置 ====================
 
-/**
- * 获取文章列表
- */
-async function fetchArticles(): Promise<void> {
-  const [publishTimeStart, publishTimeEnd] = publishRange.value
+const { pagination, fetch: fetchArticles, handleSearch, handleReset, handleSizeChange, handleCurrentChange } = useAdminPagination({
+  fetchFn: articleStore.fetchArticles,
+  buildParams: () => {
+    const [publishTimeStart, publishTimeEnd] = publishRange.value
+    return {
+      ...searchForm,
+      publishTimeStart: publishTimeStart || undefined,
+      publishTimeEnd: publishTimeEnd || undefined,
+    }
+  },
+  immediate: false,
+  persistSizeKey: 'article-page-size',
+})
 
-  await articleStore.fetchArticles({
-    ...searchForm,
-    current: pagination.current,
-    size: pagination.size,
-    publishTimeStart: publishTimeStart || undefined,
-    publishTimeEnd: publishTimeEnd || undefined,
-  })
-}
-
-/**
- * 加载分类和标签数据
- */
-async function loadDependencies(): Promise<void> {
-  await Promise.all([categoryStore.fetchCategoryTree(), tagStore.fetchTags()])
-}
-
-// ==================== 搜索和重置 ====================
-
-/**
- * 搜索文章 - 重置到第一页
- */
-function handleSearch(): void {
-  pagination.current = 1
-  void fetchArticles()
-}
-
-/**
- * 重置搜索条件
- */
-function handleReset(): void {
+function resetSearchParams() {
   Object.assign(searchForm, {
-    current: 1,
-    size: 10,
     keyword: undefined,
     authorId: undefined,
     status: undefined,
@@ -508,30 +478,18 @@ function handleReset(): void {
     publishTimeEnd: undefined,
   })
   publishRange.value = []
-  pagination.current = 1
-  pagination.size = 10
-  void fetchArticles()
 }
 
-// ==================== 分页操作 ====================
-
-/**
- * 每页条数变更
- * @param size - 新的每页条数
- */
-function handleSizeChange(size: number): void {
-  pagination.size = size
-  pagination.current = 1
-  void fetchArticles()
+/** 模板重置按钮 */
+function handleResetForm(): void {
+  handleReset(resetSearchParams)
 }
 
 /**
- * 页码变更
- * @param current - 新的页码
+ * 加载分类和标签数据
  */
-function handleCurrentChange(current: number): void {
-  pagination.current = current
-  void fetchArticles()
+async function loadDependencies(): Promise<void> {
+  await Promise.all([categoryStore.fetchCategoryTree(), tagStore.fetchTags()])
 }
 
 // ==================== 表格操作 ====================
@@ -662,7 +620,7 @@ function handleEditFromDetail(detail: ArticleDetailVO): void {
 
 onMounted(async () => {
   await loadDependencies()
-  await fetchArticles()
+  void fetchArticles()
 })
 </script>
 

@@ -1,11 +1,13 @@
 <template>
-  <el-dialog
+  <FormDialog
     v-model="modalVisible"
-    :title="dialogTitle"
+    add-title="新增分类"
+    edit-title="编辑分类"
+    :is-edit="isEdit"
     width="540px"
-    destroy-on-close
-    :close-on-click-modal="false"
-    center
+    :loading="submitting"
+    :confirm-permission="submitPermission"
+    @submit="handleSubmit"
   >
     <ElForm
       ref="formRef"
@@ -72,19 +74,7 @@
         />
       </el-form-item>
     </ElForm>
-
-    <template #footer>
-      <el-button @click="handleCancel">取消</el-button>
-      <el-button
-        type="primary"
-        :loading="submitting"
-        v-permission="submitPermission"
-        @click="handleSubmit"
-      >
-        保存
-      </el-button>
-    </template>
-  </el-dialog>
+  </FormDialog>
 </template>
 
 <script lang="ts" setup>
@@ -155,7 +145,6 @@ const defaultState = (): CategoryFormState => ({
 const formState = reactive<CategoryFormState>(defaultState())
 
 const isEdit = computed(() => Boolean(props.category?.id))
-const dialogTitle = computed(() => (isEdit.value ? '编辑分类' : '新增分类'))
 const submitPermission = computed(() =>
   isEdit.value ? 'content:category:update' : 'content:category:create'
 )
@@ -311,12 +300,13 @@ async function handleSubmit(): Promise<void> {
   emit('update:visible', false)
 }
 
-function handleCancel(): void {
-  emit('update:visible', false)
-}
 </script>
 
 <style scoped>
+:deep(.el-dialog__header) {
+  text-align: center;
+}
+
 .category-form :deep(.el-form-item) {
   margin-bottom: 12px;
 }

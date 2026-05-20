@@ -50,14 +50,14 @@
                 </div>
                 <span class="user-time">{{ formatAiDate(user.followTime) }}</span>
               </div>
-              <div v-if="followTotal > pageSize" class="pagination-area">
+              <div v-if="followTotal > pagination.size" class="pagination-area">
                 <el-pagination
-                  v-model:current-page="currentPage"
-                  :page-size="pageSize"
+                  v-model:current-page="pagination.current"
+                  :page-size="pagination.size"
                   :total="followTotal"
                   layout="prev, pager, next"
                   small
-                  @current-change="loadData"
+                  @current-change="fetch"
                 />
               </div>
             </template>
@@ -83,14 +83,14 @@
                 </div>
                 <span class="user-time">{{ formatAiDate(user.followTime) }}</span>
               </div>
-              <div v-if="fanTotal > pageSize" class="pagination-area">
+              <div v-if="fanTotal > pagination.size" class="pagination-area">
                 <el-pagination
-                  v-model:current-page="currentPage"
-                  :page-size="pageSize"
+                  v-model:current-page="pagination.current"
+                  :page-size="pagination.size"
                   :total="fanTotal"
                   layout="prev, pager, next"
                   small
-                  @current-change="loadData"
+                  @current-change="fetch"
                 />
               </div>
             </template>
@@ -115,6 +115,7 @@ import { ElMessage } from 'element-plus'
 import { FollowApi } from '@/api/follow'
 import { useUserFollowStore } from '@/stores'
 import { useAuthStore } from '@/stores'
+import { useAdminPagination } from '@/composables/useAdminPagination'
 import { formatAiDate } from '@/utils'
 import type { PublicFollowUserVO } from '@/types/api-types'
 
@@ -130,8 +131,6 @@ const isSelf = computed(() => authStore.currentUser?.id === userId.value)
 const activeTab = ref('follow')
 // 用户列表（关注或粉丝）
 const users = ref<PublicFollowUserVO[]>([])
-const currentPage = ref(1)
-const pageSize = 10
 const loading = ref(false)
 // 关注总数和粉丝总数
 const followTotal = ref(0)
@@ -160,10 +159,9 @@ function updateProfileFromUser(user: PublicFollowUserVO | undefined): void {
   }
 }
 
-async function loadData(): Promise<void> {
+async function loadFollowData(params: { current: number; size: number }): Promise<void> {
   loading.value = true
   try {
-    const params = { current: currentPage.value, size: pageSize }
     if (activeTab.value === 'follow') {
       const response = await FollowApi.getUserFollows(userId.value, params)
       users.value = response.data.data.records
@@ -182,6 +180,12 @@ async function loadData(): Promise<void> {
   }
 }
 
+const { pagination, fetch, handleCurrentChange } = useAdminPagination({
+  fetchFn: loadFollowData,
+  buildParams: () => ({}),
+  immediate: false,
+})
+
 async function loadAllData(): Promise<void> {
   profileLoading.value = true
   loading.value = true
@@ -194,7 +198,7 @@ async function loadAllData(): Promise<void> {
     fanTotal.value = fanRes.data.data.total
     profileLoading.value = false
 
-    await loadData()
+    await fetch()
   } catch {
     profileLoading.value = false
   }
@@ -224,8 +228,8 @@ async function toggleFollow(): Promise<void> {
 }
 
 watch(activeTab, () => {
-  currentPage.value = 1
-  void loadData()
+  pagination.current = 1
+  void fetch()
 })
 
 watch(userId, () => {
@@ -234,7 +238,7 @@ watch(userId, () => {
   profile.avatar = null
   followTotal.value = 0
   fanTotal.value = 0
-  currentPage.value = 1
+  pagination.current = 1
   void loadAllData()
 })
 

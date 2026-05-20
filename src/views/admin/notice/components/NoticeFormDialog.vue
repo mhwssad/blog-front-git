@@ -1,13 +1,14 @@
 <template>
-  <el-dialog
+  <FormDialog
     v-model="dialogVisible"
-    :title="isEdit ? '编辑通知' : '新增通知'"
+    add-title="新增通知"
+    edit-title="编辑通知"
+    :is-edit="isEdit"
     width="680px"
-    class="notice-form-dialog"
-    :close-on-click-modal="false"
-    align-center
-    center
-    @closed="handleClosed"
+    :loading="submitting"
+    :confirm-permission="submitPermission"
+    :confirm-text="isEdit ? '保存' : '创建'"
+    @submit="handleSubmit"
   >
     <el-form
       ref="formRef"
@@ -35,19 +36,7 @@
         />
       </el-form-item>
     </el-form>
-
-    <template #footer>
-      <el-button @click="dialogVisible = false">取消</el-button>
-      <el-button
-        v-permission="submitPermission"
-        type="primary"
-        :loading="submitting"
-        @click="handleSubmit"
-      >
-        {{ isEdit ? '保存' : '创建' }}
-      </el-button>
-    </template>
-  </el-dialog>
+  </FormDialog>
 </template>
 
 /** * 通知表单对话框 * @description 新增/编辑通知的弹窗表单，包含通知标题、类型、内容等配置 *
@@ -147,10 +136,6 @@ async function handleSubmit(): Promise<void> {
   } finally {
     submitting.value = false
   }
-}
-
-function handleClosed(): void {
-  resetForm()
 }
 
 watch(

@@ -148,13 +148,13 @@
         </div>
       </div>
 
-      <div v-if="store.footprintTotal > store.footprintSize" class="pagination-area">
+      <div v-if="store.footprintTotal > pagination.size" class="pagination-area">
         <el-pagination
-          v-model:current-page="currentPage"
-          :page-size="store.footprintSize"
+          v-model:current-page="pagination.current"
+          :page-size="pagination.size"
           :total="store.footprintTotal"
           layout="prev, pager, next"
-          @current-change="handlePageChange"
+          @current-change="handleCurrentChange"
         />
       </div>
     </template>
@@ -171,10 +171,11 @@
 </template>
 
 <script lang="ts" setup>
-import { ref, computed, onMounted, watch } from 'vue'
+import { ref, computed, watch } from 'vue'
 import { ElMessage } from 'element-plus'
 import { Clock, Search, Delete, View, Document } from '@element-plus/icons-vue'
 import { useUserContentStore } from '@/stores'
+import { useAdminPagination } from '@/composables/useAdminPagination'
 import { formatTargetType } from '@/utils/contentAdmin'
 
 const store = useUserContentStore()
@@ -182,7 +183,21 @@ const store = useUserContentStore()
 const filterType = ref<string | undefined>(undefined)
 const timeRange = ref('all')
 const keyword = ref('')
-const currentPage = ref(1)
+
+const { pagination, fetch: loadFootprints, handleSearch, handleReset, handleCurrentChange } = useAdminPagination({
+  fetchFn: store.fetchFootprints,
+  buildParams: () => {
+    const { start, end } = getTimeRange(timeRange.value)
+    return {
+      targetType: filterType.value || undefined,
+      keyword: keyword.value || undefined,
+      visitedAtStart: start,
+      visitedAtEnd: end,
+    }
+  },
+  defaultSize: store.footprintSize,
+  immediate: true,
+})
 
 const typeOptions = [
   { label: '全部', value: undefined as string | undefined },
@@ -254,34 +269,12 @@ function formatTime(visitedAt: string): string {
   return parts[1] ?? visitedAt
 }
 
-async function loadFootprints(): Promise<void> {
-  const { start, end } = getTimeRange(timeRange.value)
-  await store.fetchFootprints({
-    current: currentPage.value,
-    size: store.footprintSize,
-    targetType: filterType.value || undefined,
-    keyword: keyword.value || undefined,
-    visitedAtStart: start,
-    visitedAtEnd: end,
-  })
-}
-
-function handlePageChange(page: number): void {
-  currentPage.value = page
-  loadFootprints()
-}
-
-function handleSearch(): void {
-  currentPage.value = 1
-  loadFootprints()
-}
-
 function resetFilters(): void {
-  filterType.value = undefined
-  timeRange.value = 'all'
-  keyword.value = ''
-  currentPage.value = 1
-  loadFootprints()
+  handleReset(() => {
+    filterType.value = undefined
+    timeRange.value = 'all'
+    keyword.value = ''
+  })
 }
 
 async function handleDelete(id: number): Promise<void> {
@@ -300,11 +293,9 @@ async function handleClearAll(): Promise<void> {
 }
 
 watch([filterType, timeRange], () => {
-  currentPage.value = 1
+  pagination.current = 1
   loadFootprints()
 })
-
-onMounted(loadFootprints)
 </script>
 
 <style scoped>

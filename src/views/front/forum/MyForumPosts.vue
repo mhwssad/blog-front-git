@@ -78,12 +78,12 @@
 
         <div class="posts-pagination">
           <el-pagination
-            v-model:current-page="currentPage"
-            :page-size="pageSize"
+            v-model:current-page="pagination.current"
+            :page-size="pagination.size"
             :total="store.postTotal"
             background
             layout="prev, pager, next"
-            @current-change="loadPosts"
+            @current-change="fetch"
           />
         </div>
       </template>
@@ -99,6 +99,7 @@ import { useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { Search } from '@element-plus/icons-vue'
 import { useUserForumStore } from '@/stores'
+import { useAdminPagination } from '@/composables/useAdminPagination'
 import ForumPostCard from './components/ForumPostCard.vue'
 import type { ForumPostVO } from '@/types/api-types'
 
@@ -107,8 +108,14 @@ const store = useUserForumStore()
 
 const keyword = ref('')
 const statusFilter = ref<number | ''>('')
-const currentPage = ref(1)
-const pageSize = 10
+
+const { pagination, fetch, handleSearch } = useAdminPagination({
+  fetchFn: store.getMyPosts,
+  buildParams: () => ({
+    keyword: keyword.value || undefined,
+    status: statusFilter.value === '' ? undefined : statusFilter.value,
+  }),
+})
 
 const statusOptions = [
   { label: '全部', value: '' },
@@ -119,18 +126,8 @@ const statusOptions = [
 const publishedCount = computed(() => store.posts.filter((p) => p.status === 1).length)
 const draftCount = computed(() => store.posts.filter((p) => p.status === 0).length)
 
-function loadPosts(): void {
-  store.getMyPosts({
-    current: currentPage.value,
-    size: pageSize,
-    keyword: keyword.value || undefined,
-    status: statusFilter.value === '' ? undefined : statusFilter.value,
-  })
-}
-
 function handleFilterChange(): void {
-  currentPage.value = 1
-  loadPosts()
+  handleSearch()
 }
 
 function handleEdit(postId: number): void {
@@ -147,7 +144,7 @@ async function handleDelete(post: ForumPostVO): Promise<void> {
     const ok = await store.deletePost(post.id)
     if (ok) {
       ElMessage.success('删除成功')
-      loadPosts()
+      await fetch()
     }
   } catch {
     // cancelled
@@ -156,7 +153,6 @@ async function handleDelete(post: ForumPostVO): Promise<void> {
 
 onMounted(() => {
   store.fetchSections()
-  loadPosts()
 })
 </script>
 

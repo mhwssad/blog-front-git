@@ -1,14 +1,14 @@
 <template>
-  <el-dialog
+  <FormDialog
     v-model="dialogVisible"
-    :title="isEdit ? '编辑用户' : '新增用户'"
-    class="user-form-dialog"
+    add-title="新增用户"
+    edit-title="编辑用户"
+    :is-edit="isEdit"
     width="680px"
-    :close-on-click-modal="false"
-    destroy-on-close
-    align-center
-    center
-    @close="handleClose"
+    :loading="submitting"
+    :confirm-permission="submitPermission"
+    :confirm-text="isEdit ? '保存' : '创建'"
+    @submit="handleSubmit"
   >
     <div v-if="detailLoading" class="form-loading">
       <el-icon class="is-loading" :size="28"><Loading /></el-icon>
@@ -131,19 +131,7 @@
         </el-form-item>
       </div>
     </el-form>
-
-    <template #footer>
-      <el-button @click="handleClose">取消</el-button>
-      <el-button
-        v-permission="submitPermission"
-        type="primary"
-        :loading="submitting"
-        @click="handleSubmit"
-      >
-        {{ isEdit ? '保存' : '创建' }}
-      </el-button>
-    </template>
-  </el-dialog>
+  </FormDialog>
 </template>
 
 <script lang="ts" setup>
@@ -269,19 +257,13 @@ async function handleSubmit() {
     }
 
     emit('success')
-    handleClose()
+    dialogVisible.value = false
   } catch (error) {
     console.error(`${LOG_PREFIX} Submit failed:`, error)
     // 验证失败或请求失败
   } finally {
     submitting.value = false
   }
-}
-
-function handleClose() {
-  console.log(`${LOG_PREFIX} Dialog closing, resetting form`)
-  resetForm()
-  emit('update:visible', false)
 }
 </script>
 
@@ -331,20 +313,20 @@ function handleClose() {
   margin-right: 0;
 }
 
-:deep(.user-form-dialog .el-dialog__header) {
+:deep(.el-dialog__header) {
   text-align: center;
 }
 
-:deep(.user-form-dialog .el-dialog__body) {
+:deep(.el-dialog__body) {
   padding-top: 12px;
 }
 
-:deep(.user-form-dialog .el-dialog__footer) {
+:deep(.el-dialog__footer) {
   text-align: center;
 }
 
 @media (max-height: 900px) {
-  :deep(.user-form-dialog .el-dialog__body) {
+  :deep(.el-dialog__body) {
     max-height: calc(100vh - 220px);
     overflow-y: auto;
   }
@@ -353,10 +335,6 @@ function handleClose() {
 @media (max-width: 768px) {
   .user-form {
     padding: 0;
-  }
-
-  :deep(.user-form-dialog) {
-    width: calc(100vw - 24px) !important;
   }
 }
 </style>

@@ -46,12 +46,12 @@
         </div>
 
         <el-pagination
-          v-if="store.postTotal > pageSize"
+          v-if="store.postTotal > pagination.size"
           background
           layout="prev, pager, next"
           :total="store.postTotal"
-          :page-size="pageSize"
-          :current-page="currentPage"
+          :page-size="pagination.size"
+          :current-page="pagination.current"
           @current-change="handlePageChange"
         />
       </main>
@@ -116,6 +116,7 @@ import { computed, onMounted, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import { Search, Expand, Fold } from '@element-plus/icons-vue'
 import { useUserForumStore, useAuthStore } from '@/stores'
+import { useAdminPagination } from '@/composables/useAdminPagination'
 import ForumPostCard from './components/ForumPostCard.vue'
 
 const route = useRoute()
@@ -135,8 +136,17 @@ const sectionDesc = computed(() => {
 
 const keyword = ref('')
 const sort = ref<'latest' | 'hot'>('latest')
-const currentPage = ref(1)
-const pageSize = 10
+
+const { pagination, fetch, handleSearch, handleCurrentChange } =
+  useAdminPagination({
+    fetchFn: store.fetchPosts,
+    buildParams: () => ({
+      keyword: keyword.value || undefined,
+      sectionId: sectionId.value,
+      sort: sort.value,
+    }),
+    immediate: false,
+  })
 
 const hotPosts = computed(() =>
   [...store.posts].sort((a, b) => b.replyCount - a.replyCount).slice(0, 5),
@@ -149,33 +159,12 @@ function rankClass(idx: number): string {
   return ''
 }
 
-function buildParams() {
-  return {
-    current: currentPage.value,
-    size: pageSize,
-    keyword: keyword.value || undefined,
-    sectionId: sectionId.value,
-    sort: sort.value,
-  }
-}
-
-async function fetchPosts() {
-  await store.fetchPosts(buildParams())
-}
-
 function handleSortChange() {
-  currentPage.value = 1
-  fetchPosts()
-}
-
-function handleSearch() {
-  currentPage.value = 1
-  fetchPosts()
+  handleSearch()
 }
 
 function handlePageChange(page: number) {
-  currentPage.value = page
-  fetchPosts()
+  handleCurrentChange(page)
   window.scrollTo({ top: 0, behavior: 'smooth' })
 }
 
@@ -185,15 +174,15 @@ watch(
     if (newId) {
       keyword.value = ''
       sort.value = 'latest'
-      currentPage.value = 1
-      await fetchPosts()
+      pagination.current = 1
+      await fetch()
     }
   },
 )
 
 onMounted(async () => {
   await store.fetchSections()
-  await fetchPosts()
+  await fetch()
 })
 </script>
 

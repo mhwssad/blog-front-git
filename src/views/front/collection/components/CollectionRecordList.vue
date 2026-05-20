@@ -33,12 +33,12 @@
 
       <div v-if="total > (pageSize ?? 10)" class="record-pagination">
         <el-pagination
-          v-model:current-page="currentPage"
+          v-model:current-page="pagination.current"
           :page-size="pageSize"
           :total="total"
           layout="prev, pager, next"
           small
-          @current-change="emit('page-change', currentPage)"
+          @current-change="handlePageChange"
         />
       </div>
     </template>
@@ -53,7 +53,7 @@
  * @description 展示某个收藏夹下的所有收藏内容，支持删除和分页
  * @module front/collection/components/CollectionRecordList
  */
-import { ref } from 'vue'
+import { useAdminPagination } from '@/composables/useAdminPagination'
 import type { CollectionVO } from '@/types/api-types'
 
 defineProps<{
@@ -69,8 +69,16 @@ const emit = defineEmits<{
   'page-change': [page: number]
 }>()
 
-const currentPage = ref(1)
-// 当前页码（用于分页组件）
+const { pagination } = useAdminPagination({
+  fetchFn: async () => {},
+  buildParams: () => ({}),
+  immediate: false,
+})
+
+function handlePageChange(page: number): void {
+  pagination.current = page
+  emit('page-change', page)
+}
 </script>
 
 <style scoped>

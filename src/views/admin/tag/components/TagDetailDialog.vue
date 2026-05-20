@@ -1,34 +1,24 @@
 <template>
-  <el-dialog v-model="visible" title="标签详情" width="480px" align-center destroy-on-close>
-    <template v-if="detail">
-      <el-descriptions :column="1" border size="small">
-        <el-descriptions-item label="标签ID">{{ detail.id }}</el-descriptions-item>
-        <el-descriptions-item label="标签名称">
-          <span style="font-weight: 600">{{ detail.name }}</span>
-        </el-descriptions-item>
-        <el-descriptions-item label="颜色">
-          <div class="tag-color">
-            <span class="color-block" :style="{ backgroundColor: detail.color || '#f5f5f5' }" />
-            <span>{{ detail.color || '—' }}</span>
-          </div>
-        </el-descriptions-item>
-        <el-descriptions-item label="创建时间">{{ formatDate(detail.createdAt) }}</el-descriptions-item>
-        <el-descriptions-item label="标签展示">
-          <span class="tag-preview" :style="tagPreviewStyle">
-            {{ detail.name }}
-          </span>
-        </el-descriptions-item>
-      </el-descriptions>
-    </template>
-
-    <div v-else style="text-align: center; padding: 32px; color: var(--el-text-color-secondary)">
-      暂无数据
-    </div>
-
-    <template #footer>
-      <el-button @click="visible = false">关闭</el-button>
-    </template>
-  </el-dialog>
+  <DetailDialog v-model="visible" title="标签详情" :detail="detail" width="480px">
+    <el-descriptions :column="1" border size="small">
+      <el-descriptions-item label="标签ID">{{ detail!.id }}</el-descriptions-item>
+      <el-descriptions-item label="标签名称">
+        <span style="font-weight: 600">{{ detail!.name }}</span>
+      </el-descriptions-item>
+      <el-descriptions-item label="颜色">
+        <div class="tag-color">
+          <span class="color-block" :style="{ backgroundColor: detail!.color || '#f5f5f5' }" />
+          <span>{{ detail!.color || '—' }}</span>
+        </div>
+      </el-descriptions-item>
+      <el-descriptions-item label="创建时间">{{ formatDate(detail!.createdAt) }}</el-descriptions-item>
+      <el-descriptions-item label="标签展示">
+        <span class="tag-preview" :style="tagPreviewStyle">
+          {{ detail!.name }}
+        </span>
+      </el-descriptions-item>
+    </el-descriptions>
+  </DetailDialog>
 </template>
 
 <script lang="ts" setup>

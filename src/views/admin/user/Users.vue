@@ -56,7 +56,7 @@
           <el-button v-permission="'sys:user:query'" type="primary" @click="handleSearch">
             查询
           </el-button>
-          <el-button @click="handleReset">重置</el-button>
+          <el-button @click="handleResetForm">重置</el-button>
           <el-button link type="primary" @click="searchExpanded = !searchExpanded">
             {{ searchExpanded ? '收起' : '更多' }}
             <el-icon class="expand-icon" :class="{ 'is-expanded': searchExpanded }">
@@ -101,41 +101,36 @@
 
       <!-- 批量操作栏 -->
       <template #toolbar>
-        <transition name="el-fade-in">
-          <div v-if="selectedRows.length > 0" class="batch-bar">
-            <span class="batch-bar__text">
-              已选择 <strong>{{ selectedRows.length }}</strong> 项
-            </span>
-            <el-button size="small" @click="clearSelection">取消选择</el-button>
-            <el-button
-              v-permission="'sys:user:update'"
-              size="small"
-              type="success"
-              plain
-              @click="handleBatchStatus(1)"
-            >
-              批量启用
-            </el-button>
-            <el-button
-              v-permission="'sys:user:update'"
-              size="small"
-              type="warning"
-              plain
-              @click="handleBatchStatus(0)"
-            >
-              批量禁用
-            </el-button>
-            <el-button
-              v-permission="'sys:user:delete'"
-              size="small"
-              type="danger"
-              plain
-              @click="handleBatchDelete"
-            >
-              批量删除
-            </el-button>
-          </div>
-        </transition>
+        <BatchToolbar :selected-count="selectedRows.length">
+          <el-button size="small" @click="clearSelection">取消选择</el-button>
+          <el-button
+            v-permission="'sys:user:update'"
+            size="small"
+            type="success"
+            plain
+            @click="handleBatchStatus(1)"
+          >
+            批量启用
+          </el-button>
+          <el-button
+            v-permission="'sys:user:update'"
+            size="small"
+            type="warning"
+            plain
+            @click="handleBatchStatus(0)"
+          >
+            批量禁用
+          </el-button>
+          <el-button
+            v-permission="'sys:user:delete'"
+            size="small"
+            type="danger"
+            plain
+            @click="handleBatchDelete"
+          >
+            批量删除
+          </el-button>
+        </BatchToolbar>
       </template>
 
       <template #empty>
@@ -342,14 +337,15 @@
 后台用户管理，支持用户查询、编辑、状态切换、角色分配、密码重置、封禁/解封等完整功能 * @module
 admin/user/Users * @see api/sys/user.ts */
 <script lang="ts" setup>
-import { computed, onMounted, reactive, ref } from 'vue'
+import { computed, reactive, ref } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { Plus, ArrowDown, Male, Female } from '@element-plus/icons-vue'
 import { useUserStore } from '@/stores/modules/user'
 import { useContentAdmin } from '@/composables/useContentAdmin'
+import { useAdminPagination } from '@/composables/useAdminPagination'
 import DataTable from '@/components/common/DataTable.vue'
 import UserLevelBadge from '@/components/common/UserLevelBadge.vue'
-import type { SysUserAdminVO, UserQueryRequest } from '@/types/api-types'
+import type { SysUserAdminVO } from '@/types/api-types'
 import UserFormDialog from './components/UserFormDialog.vue'
 import AssignRolesDialog from './components/AssignRolesDialog.vue'
 import ResetPasswordDialog from './components/ResetPasswordDialog.vue'
@@ -372,12 +368,6 @@ const searchForm = reactive({
   status: undefined as number | undefined,
 })
 const searchExpanded = ref(false)
-
-// 分页配置
-const pagination = reactive({
-  current: 1,
-  size: 10,
-})
 
 // 已选择的行（用于批量操作）
 const selectedRows = ref<SysUserAdminVO[]>([])
@@ -403,61 +393,21 @@ const { isCompactTable } = useContentAdmin()
 const activeCount = computed(() => userStore.users.filter(u => u.status === 1).length)
 const disabledCount = computed(() => userStore.users.filter(u => u.status === 0).length)
 
-/**
- * 构建查询参数
- * 仅包含有值的筛选条件，避免传递无意义的空参数
- */
-function buildParams(): UserQueryRequest {
-  console.debug(`${LOG_PREFIX} Building query params`, {
-    current: pagination.current,
-    size: pagination.size,
-  })
-  const params: UserQueryRequest = {
-    current: pagination.current,
-    size: pagination.size,
-  }
-  if (searchForm.username.trim()) params.username = searchForm.username.trim()
-  if (searchForm.nickname.trim()) params.nickname = searchForm.nickname.trim()
-  if (searchForm.email.trim()) params.email = searchForm.email.trim()
-  if (searchForm.phone.trim()) params.phone = searchForm.phone.trim()
-  if (searchForm.status !== undefined) params.status = searchForm.status
-  console.debug(`${LOG_PREFIX} Final params:`, params)
-  return params
-}
+const { pagination, fetch: fetchUsers, handleSearch, handleReset, handleSizeChange, handleCurrentChange } = useAdminPagination({
+  fetchFn: userStore.fetchUsers,
+  buildParams: () => {
+    const params: Record<string, unknown> = {}
+    if (searchForm.username.trim()) params.username = searchForm.username.trim()
+    if (searchForm.nickname.trim()) params.nickname = searchForm.nickname.trim()
+    if (searchForm.email.trim()) params.email = searchForm.email.trim()
+    if (searchForm.phone.trim()) params.phone = searchForm.phone.trim()
+    if (searchForm.status !== undefined) params.status = searchForm.status
+    return params
+  },
+  persistSizeKey: 'user-page-size',
+})
 
-/**
- * 获取用户列表
- * 从 store 中获取数据并同步分页状态
- */
-async function fetchUsers() {
-  console.log(`${LOG_PREFIX} Fetching users with params:`, buildParams())
-  try {
-    await userStore.fetchUsers(buildParams())
-    pagination.current = userStore.current
-    pagination.size = userStore.size
-    console.log(`${LOG_PREFIX} Fetched ${userStore.users.length} users, total: ${userStore.total}`)
-  } catch (error) {
-    console.error(`${LOG_PREFIX} Failed to fetch users:`, error)
-    ElMessage.error('获取用户列表失败')
-  }
-}
-
-/**
- * 搜索按钮点击处理
- * 重置到第一页后重新查询
- */
-function handleSearch() {
-  console.log(`${LOG_PREFIX} Search triggered, resetting to page 1`)
-  pagination.current = 1
-  fetchUsers()
-}
-
-/**
- * 重置搜索条件
- * 清空表单并重新加载第一页数据
- */
-function handleReset() {
-  console.log(`${LOG_PREFIX} Reset search form`)
+function resetSearchParams() {
   Object.assign(searchForm, {
     username: '',
     nickname: '',
@@ -465,30 +415,11 @@ function handleReset() {
     phone: '',
     status: undefined,
   })
-  pagination.current = 1
-  fetchUsers()
 }
 
-/**
- * 每页条数变更
- */
-function handleSizeChange(size: number) {
-  console.log(`${LOG_PREFIX} Page size changed to: ${size}`)
-  pagination.size = size
-  pagination.current = 1
-  fetchUsers()
-}
-
-/**
- * 当前页码变更
- */
-/**
- * 当前页码变更
- */
-function handleCurrentChange(current: number) {
-  console.log(`${LOG_PREFIX} Page changed to: ${current}`)
-  pagination.current = current
-  fetchUsers()
+/** 模板重置按钮：先清空搜索条件，再调用 composable 的 handleReset */
+function handleResetForm(): void {
+  handleReset(resetSearchParams)
 }
 
 /**
@@ -729,14 +660,6 @@ function handlePasswordSuccess() {
   ElMessage.success('密码重置成功')
 }
 
-/**
- * 页面初始化
- * 挂载时自动加载用户列表
- */
-onMounted(() => {
-  console.log(`${LOG_PREFIX} Component mounted, fetching initial user list`)
-  fetchUsers()
-})
 </script>
 
 <style scoped>
@@ -789,25 +712,6 @@ onMounted(() => {
 
 .expand-icon.is-expanded {
   transform: rotate(180deg);
-}
-
-/* 批量操作栏 */
-.batch-bar {
-  flex-shrink: 0;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 10px 12px;
-  margin-bottom: 12px;
-  background: var(--el-fill-color-light);
-  border-radius: 6px;
-  border: 1px solid var(--el-border-color-lighter);
-}
-
-.batch-bar__text {
-  font-size: 13px;
-  color: var(--el-text-color-regular);
-  margin-right: auto;
 }
 
 .user-table {

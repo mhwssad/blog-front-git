@@ -1,11 +1,13 @@
 <template>
-  <el-dialog
+  <FormDialog
     v-model="modalVisible"
-    :title="dialogTitle"
+    add-title="新增标签"
+    edit-title="编辑标签"
+    :is-edit="isEdit"
     width="480px"
-    destroy-on-close
-    :close-on-click-modal="false"
-    center
+    :loading="submitting"
+    :confirm-permission="submitPermission"
+    @submit="handleSubmit"
   >
     <ElForm
       ref="formRef"
@@ -29,19 +31,7 @@
         </div>
       </el-form-item>
     </ElForm>
-
-    <template #footer>
-      <el-button @click="handleCancel">取消</el-button>
-      <el-button
-        type="primary"
-        :loading="submitting"
-        v-permission="submitPermission"
-        @click="handleSubmit"
-      >
-        保存
-      </el-button>
-    </template>
-  </el-dialog>
+  </FormDialog>
 </template>
 
 <script lang="ts" setup>
@@ -77,7 +67,6 @@ const formRules = {
 }
 
 const isEdit = computed(() => Boolean(props.tag?.id))
-const dialogTitle = computed(() => (isEdit.value ? '编辑标签' : '新增标签'))
 const submitPermission = computed(() =>
   isEdit.value ? 'content:tag:update' : 'content:tag:create'
 )
@@ -139,12 +128,13 @@ async function handleSubmit(): Promise<void> {
   emit('update:visible', false)
 }
 
-function handleCancel(): void {
-  emit('update:visible', false)
-}
 </script>
 
 <style scoped>
+:deep(.el-dialog__header) {
+  text-align: center;
+}
+
 .tag-form :deep(.el-form-item) {
   margin-bottom: 16px;
 }

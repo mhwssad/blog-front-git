@@ -89,7 +89,7 @@
       title="评论列表"
       :data="commentStore.comments"
       :loading="commentStore.loading"
-      :total="pagination.total"
+      :total="commentStore.total"
       v-model:current-page="pagination.current"
       v-model:page-size="pagination.size"
       :page-sizes="[10, 20, 50, 100]"
@@ -176,12 +176,13 @@
 </template>
 
 <script lang="ts" setup>
-import { onMounted, reactive, ref, watch } from 'vue'
+import { reactive, ref, watch } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { Refresh, ArrowDown } from '@element-plus/icons-vue'
 import { useCommentStore } from '@/stores'
 import { useContentAdmin } from '@/composables/useContentAdmin'
-import type { CommentQueryRequest, CommentVO } from '@/types/api-types'
+import { useAdminPagination } from '@/composables/useAdminPagination'
+import type { CommentVO } from '@/types/api-types'
 import {
   COMMENT_STATUS_OPTIONS,
   TARGET_TYPE_OPTIONS,
@@ -203,10 +204,24 @@ const searchForm = reactive<CommentSearchForm>({
 })
 
 const searchExpanded = ref(false)
-const pagination = reactive({
-  current: 1,
-  size: 10,
-  total: 0,
+
+const { pagination, fetch: fetchComments, handleSearch, handleSizeChange, handleCurrentChange } = useAdminPagination({
+  fetchFn: commentStore.fetchComments,
+  buildParams: () => {
+    const params: Record<string, unknown> = {}
+    const targetId = normalizeNumber(searchForm.targetId)
+    if (targetId !== undefined) params.targetId = targetId
+    const userId = normalizeNumber(searchForm.userId)
+    if (userId !== undefined) params.userId = userId
+    const rootId = normalizeNumber(searchForm.rootId)
+    if (rootId !== undefined) params.rootId = rootId
+    const parentId = normalizeNumber(searchForm.parentId)
+    if (parentId !== undefined) params.parentId = parentId
+    if (searchForm.targetType) params.targetType = searchForm.targetType
+    if (searchForm.status !== undefined && searchForm.status !== null) params.status = searchForm.status
+    return params
+  },
+  persistSizeKey: 'comment-page-size',
 })
 
 const detailDialogVisible = ref(false)
@@ -255,47 +270,6 @@ function normalizeNumber(value?: number | null): number | undefined {
   return Number.isNaN(value) ? undefined : value
 }
 
-function buildQueryParams(): CommentQueryRequest {
-  const params: CommentQueryRequest = {
-    current: pagination.current,
-    size: pagination.size,
-  }
-
-  const targetId = normalizeNumber(searchForm.targetId)
-  if (targetId !== undefined) params.targetId = targetId
-
-  const userId = normalizeNumber(searchForm.userId)
-  if (userId !== undefined) params.userId = userId
-
-  const rootId = normalizeNumber(searchForm.rootId)
-  if (rootId !== undefined) params.rootId = rootId
-
-  const parentId = normalizeNumber(searchForm.parentId)
-  if (parentId !== undefined) params.parentId = parentId
-
-  if (searchForm.targetType) params.targetType = searchForm.targetType
-  if (searchForm.status !== undefined && searchForm.status !== null) params.status = searchForm.status
-
-  return params
-}
-
-async function fetchComments(): Promise<void> {
-  try {
-    const params = buildQueryParams()
-    await commentStore.fetchComments(params)
-    pagination.total = commentStore.total
-    pagination.current = commentStore.current
-    pagination.size = commentStore.size
-  } catch {
-    ElMessage.error('获取评论列表失败')
-  }
-}
-
-function handleSearch(): void {
-  pagination.current = 1
-  void fetchComments()
-}
-
 function handleReset(): void {
   searchForm.targetId = undefined
   searchForm.targetType = undefined
@@ -305,18 +279,6 @@ function handleReset(): void {
   searchForm.status = undefined
   pagination.current = 1
   pagination.size = 10
-  void fetchComments()
-}
-
-function handleSizeChange(size: number): void {
-  if (pagination.size === size) return
-  pagination.size = size
-  pagination.current = 1
-  void fetchComments()
-}
-
-function handleCurrentChange(current: number): void {
-  pagination.current = current
   void fetchComments()
 }
 
@@ -373,9 +335,6 @@ watch(detailDialogVisible, visible => {
   }
 })
 
-onMounted(() => {
-  void fetchComments()
-})
 </script>
 
 <style scoped>

@@ -23,12 +23,12 @@
             </div>
             <!-- Image message -->
             <template v-if="msg.messageType === 'image' && msg.file">
-              <el-image
+              <ImagePreview
                 :src="msg.file.fileUrl"
-                :preview-src-list="[msg.file.fileUrl]"
+                :width="240"
+                :height="200"
                 fit="cover"
                 class="msg-image"
-                :style="{ maxWidth: '240px', maxHeight: '200px' }"
               />
               <span v-if="msg.content" class="msg-image-caption">{{ msg.content }}</span>
             </template>

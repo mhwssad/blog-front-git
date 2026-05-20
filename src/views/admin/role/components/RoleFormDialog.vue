@@ -1,11 +1,14 @@
 <template>
-  <el-dialog
+  <FormDialog
     v-model="dialogVisible"
-    :title="isEdit ? '编辑角色' : '新增角色'"
+    add-title="新增角色"
+    edit-title="编辑角色"
+    :is-edit="isEdit"
     width="520px"
-    :close-on-click-modal="false"
-    center
-    @close="handleClose"
+    :loading="submitting"
+    :confirm-permission="submitPermission"
+    :confirm-text="isEdit ? '保存' : '创建'"
+    @submit="handleSubmit"
   >
     <el-form ref="formRef" :model="formData" :rules="formRules" label-width="90px">
       <el-form-item label="角色名称" prop="name">
@@ -36,19 +39,7 @@
         <el-input v-model="formData.remark" type="textarea" :rows="4" placeholder="请输入备注" />
       </el-form-item>
     </el-form>
-
-    <template #footer>
-      <el-button @click="handleClose">取消</el-button>
-      <el-button
-        v-permission="submitPermission"
-        type="primary"
-        :loading="submitting"
-        @click="handleSubmit"
-      >
-        {{ isEdit ? '保存' : '创建' }}
-      </el-button>
-    </template>
-  </el-dialog>
+  </FormDialog>
 </template>
 
 /** * 角色表单对话框 * @description
@@ -149,17 +140,12 @@ async function handleSubmit(): Promise<void> {
     }
 
     emit('success')
-    handleClose()
+    dialogVisible.value = false
   } catch {
     // 验证失败或请求失败
   } finally {
     submitting.value = false
   }
-}
-
-function handleClose(): void {
-  resetForm()
-  emit('update:visible', false)
 }
 
 watch(

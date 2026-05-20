@@ -61,8 +61,8 @@
 
           <div v-if="store.articles.length" class="section-pagination">
             <el-pagination
-              v-model:current-page="currentPage"
-              :page-size="pageSize"
+              v-model:current-page="pagination.current"
+              :page-size="pagination.size"
               :total="store.total"
               background
               layout="prev, pager, next"
@@ -99,10 +99,11 @@
 </template>
 
 <script lang="ts" setup>
-import { onMounted, reactive, ref, watch } from 'vue'
+import { onMounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { Expand, Fold } from '@element-plus/icons-vue'
 import { useFrontContentStore } from '@/stores'
+import { useAdminPagination } from '@/composables/useAdminPagination'
 import { DateUtils } from '@/utils/dateUtils'
 import type { PublicArticleQueryRequest } from '@/types/api-types'
 import HomeSidebar from '../home/components/HomeSidebar.vue'
@@ -114,28 +115,27 @@ const store = useFrontContentStore()
 const sidebarOpen = ref(false)
 
 const currentSort = ref<PublicArticleQueryRequest['sort']>('latest')
-const currentPage = ref(1)
-const pageSize = 12
 const selectedCategoryId = ref<number | undefined>(undefined)
+
+const { pagination, fetch: loadArticles } = useAdminPagination({
+  fetchFn: store.fetchArticles,
+  buildParams: () => ({
+    categoryId: selectedCategoryId.value,
+    sort: currentSort.value,
+  }),
+  defaultSize: 12,
+  immediate: false,
+})
 
 function formatDate(value?: string | null): string {
   return value ? DateUtils.formatRelativeTime(value) : ''
-}
-
-function buildQuery(): PublicArticleQueryRequest {
-  return {
-    current: currentPage.value,
-    size: pageSize,
-    categoryId: selectedCategoryId.value,
-    sort: currentSort.value,
-  }
 }
 
 function syncToUrl(): void {
   const query: Record<string, string> = {}
   if (selectedCategoryId.value != null) query.category = String(selectedCategoryId.value)
   if (currentSort.value && currentSort.value !== 'latest') query.sort = currentSort.value
-  if (currentPage.value > 1) query.page = String(currentPage.value)
+  if (pagination.current > 1) query.page = String(pagination.current)
   router.replace({ query })
 }
 
@@ -147,16 +147,12 @@ function readFromUrl(): void {
   currentSort.value = VALID_SORTS.has(q.sort as string)
     ? (q.sort as PublicArticleQueryRequest['sort'])
     : 'latest'
-  currentPage.value = q.page ? Number(q.page) : 1
-}
-
-async function loadArticles(): Promise<void> {
-  await store.fetchArticles(buildQuery())
+  pagination.current = q.page ? Number(q.page) : 1
 }
 
 function selectCategory(id?: number): void {
   selectedCategoryId.value = id
-  currentPage.value = 1
+  pagination.current = 1
   syncToUrl()
   loadArticles()
 }
@@ -166,7 +162,7 @@ function setTag(): void {
 }
 
 watch(currentSort, () => {
-  currentPage.value = 1
+  pagination.current = 1
   syncToUrl()
   loadArticles()
 })

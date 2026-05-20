@@ -268,10 +268,11 @@
 </template>
 
 <script lang="ts" setup>
-import { onMounted, reactive, ref, nextTick } from 'vue'
+import { reactive, ref, nextTick } from 'vue'
 import { ElMessage, ElMessageBox, type FormInstance, type FormRules } from 'element-plus'
 import { Plus, RefreshRight, Search } from '@element-plus/icons-vue'
 import { useContentAdmin } from '@/composables/useContentAdmin'
+import { useAdminPagination } from '@/composables/useAdminPagination'
 import { useForumAdminStore } from '@/stores'
 import type {
   ForumSectionSaveRequest,
@@ -285,16 +286,19 @@ const forumStore = useForumAdminStore()
 const { isCompactTable, paginationLayout } = useContentAdmin()
 
 const searchForm = reactive<ForumSectionQueryRequest>({
-  current: 1,
-  size: 10,
   keyword: undefined,
   status: undefined,
   visibilityScope: undefined,
 })
 
-const pagination = reactive({
-  current: 1,
-  size: 10,
+const { pagination, fetch: fetchSections, handleSearch, handleSizeChange, handleCurrentChange } = useAdminPagination({
+  fetchFn: forumStore.fetchSections,
+  buildParams: () => ({
+    keyword: searchForm.keyword?.trim() || undefined,
+    status: searchForm.status,
+    visibilityScope: searchForm.visibilityScope,
+  }),
+  persistSizeKey: 'forum-sections-page-size',
 })
 
 const formVisible = ref(false)
@@ -332,16 +336,6 @@ function getSectionStatusTagType(value?: number): 'success' | 'warning' | 'info'
 
 function getVisibilityTagType(value?: number): 'success' | 'info' {
   return value === 1 ? 'success' : 'info'
-}
-
-async function fetchSections(): Promise<void> {
-  await forumStore.fetchSections({
-    current: pagination.current,
-    size: pagination.size,
-    keyword: searchForm.keyword?.trim() || undefined,
-    status: searchForm.status,
-    visibilityScope: searchForm.visibilityScope,
-  })
 }
 
 function resetForm(): void {
@@ -474,38 +468,14 @@ async function handleDelete(row: ForumSectionVO): Promise<void> {
   }
 }
 
-function handleSearch(): void {
-  pagination.current = 1
-  void fetchSections()
-}
-
 function handleReset(): void {
   Object.assign(searchForm, {
-    current: 1,
-    size: 10,
     keyword: undefined,
     status: undefined,
     visibilityScope: undefined,
   })
-  pagination.current = 1
-  pagination.size = 10
   void fetchSections()
 }
-
-function handleSizeChange(size: number): void {
-  pagination.size = size
-  pagination.current = 1
-  void fetchSections()
-}
-
-function handleCurrentChange(current: number): void {
-  pagination.current = current
-  void fetchSections()
-}
-
-onMounted(() => {
-  void fetchSections()
-})
 </script>
 
 <style scoped>

@@ -38,7 +38,7 @@
           <el-button v-permission="'content:migration:query'" type="primary" @click="handleSearch">
             查询
           </el-button>
-          <el-button @click="handleReset">重置</el-button>
+          <el-button @click="handleResetForm">重置</el-button>
           <el-button
             v-permission="'content:migration:create'"
             type="success"
@@ -462,10 +462,11 @@
 </template>
 
 <script lang="ts" setup>
-import { computed, onMounted, reactive, ref } from 'vue'
+import { computed, reactive, ref } from 'vue'
 import { ElMessage, ElMessageBox, type FormInstance, type FormRules, type UploadFile } from 'element-plus'
 import { UploadFilled } from '@element-plus/icons-vue'
 import { useContentAdmin } from '@/composables/useContentAdmin'
+import { useAdminPagination } from '@/composables/useAdminPagination'
 import { useMigrationStore } from '@/stores'
 import type {
   BlogMigrationPrecheckResultVO,
@@ -508,17 +509,38 @@ const RECORD_STATUS_OPTIONS = [
 ]
 
 const searchForm = reactive<MigrationTaskQueryRequest>({
-  current: 1,
-  size: 10,
   sourcePlatform: undefined,
   authorId: undefined,
   status: undefined,
 })
 
-const pagination = reactive({
-  current: 1,
-  size: 10,
+const {
+  pagination,
+  fetch: fetchTasks,
+  handleSearch,
+  handleReset,
+  handleSizeChange,
+  handleCurrentChange,
+} = useAdminPagination({
+  fetchFn: migrationStore.fetchTasks,
+  buildParams: () => ({
+    sourcePlatform: searchForm.sourcePlatform?.trim() || undefined,
+    authorId: searchForm.authorId || undefined,
+    status: searchForm.status,
+  }),
+  persistSizeKey: 'migration-task-page-size',
 })
+
+function resetSearchParams() {
+  searchForm.sourcePlatform = undefined
+  searchForm.authorId = undefined
+  searchForm.status = undefined
+}
+
+/** 模板重置按钮 */
+function handleResetForm(): void {
+  handleReset(resetSearchParams)
+}
 
 const detailVisible = ref(false)
 const createDialogVisible = ref(false)
@@ -592,24 +614,6 @@ const pageSkippedCount = computed(() =>
   migrationStore.tasks.reduce((sum, task) => sum + task.skippedCount, 0)
 )
 
-function buildTaskQuery(): MigrationTaskQueryRequest {
-  return {
-    current: pagination.current,
-    size: pagination.size,
-    sourcePlatform: searchForm.sourcePlatform?.trim() || undefined,
-    authorId: searchForm.authorId || undefined,
-    status: searchForm.status,
-  }
-}
-
-async function fetchTasks(): Promise<void> {
-  try {
-    await migrationStore.fetchTasks(buildTaskQuery())
-  } catch {
-    ElMessage.error('获取迁移任务列表失败')
-  }
-}
-
 async function fetchRecords(): Promise<void> {
   if (!activeTaskId.value) {
     return
@@ -639,31 +643,6 @@ async function openTaskDetail(taskId: number): Promise<void> {
   }
 
   await fetchRecords()
-}
-
-function handleSearch(): void {
-  pagination.current = 1
-  void fetchTasks()
-}
-
-function handleReset(): void {
-  searchForm.sourcePlatform = undefined
-  searchForm.authorId = undefined
-  searchForm.status = undefined
-  pagination.current = 1
-  pagination.size = 10
-  void fetchTasks()
-}
-
-function handleCurrentChange(current: number): void {
-  pagination.current = current
-  void fetchTasks()
-}
-
-function handleSizeChange(size: number): void {
-  pagination.size = size
-  pagination.current = 1
-  void fetchTasks()
 }
 
 function handleRecordCurrentChange(current: number): void {
@@ -920,9 +899,6 @@ function formatRatio(value: number, total: number): string {
   return `${Math.round((value / total) * 100)}%`
 }
 
-onMounted(() => {
-  void fetchTasks()
-})
 </script>
 
 <style scoped>

@@ -144,9 +144,10 @@
 </template>
 
 <script lang="ts" setup>
-import { onMounted, reactive, ref } from 'vue'
+import { reactive, ref } from 'vue'
 import { Refresh, ArrowDown } from '@element-plus/icons-vue'
 import { useContentAdmin } from '@/composables/useContentAdmin'
+import { useAdminPagination } from '@/composables/useAdminPagination'
 import { useFollowStore } from '@/stores'
 import {
   BOOLEAN_TEXT_OPTIONS,
@@ -170,7 +171,18 @@ const searchForm = reactive({
   keyword: '',
 })
 
-const pagination = reactive({ current: 1, size: 10 })
+const { pagination, fetch: fetchRelations, handleSearch, handleSizeChange, handleCurrentChange } = useAdminPagination({
+  fetchFn: followStore.fetchFollows,
+  buildParams: () => ({
+    followerId: searchForm.followerId,
+    followingId: searchForm.followingId,
+    followStatus: searchForm.followStatus,
+    specialFollow: searchForm.specialFollow,
+    source: searchForm.source.trim() || undefined,
+    keyword: searchForm.keyword.trim() || undefined,
+  }),
+  persistSizeKey: 'follow-page-size',
+})
 const { paginationLayout } = useContentAdmin()
 
 const detailVisible = ref(false)
@@ -181,28 +193,6 @@ function getFollowStatusTagType(value: number): 'info' | 'success' | 'danger' {
   if (value === 1) return 'success'
   if (value === 2) return 'danger'
   return 'info'
-}
-
-function buildQueryParams() {
-  return {
-    current: pagination.current,
-    size: pagination.size,
-    followerId: searchForm.followerId,
-    followingId: searchForm.followingId,
-    followStatus: searchForm.followStatus,
-    specialFollow: searchForm.specialFollow,
-    source: searchForm.source.trim() || undefined,
-    keyword: searchForm.keyword.trim() || undefined,
-  }
-}
-
-async function fetchRelations(): Promise<void> {
-  await followStore.fetchFollows(buildQueryParams())
-}
-
-function handleSearch(): void {
-  pagination.current = 1
-  void fetchRelations()
 }
 
 function handleReset(): void {
@@ -216,17 +206,6 @@ function handleReset(): void {
   void fetchRelations()
 }
 
-function handleCurrentChange(current: number): void {
-  pagination.current = current
-  void fetchRelations()
-}
-
-function handleSizeChange(size: number): void {
-  pagination.size = size
-  pagination.current = 1
-  void fetchRelations()
-}
-
 function openDetail(row: FollowAdminRelationVO): void {
   detailRecord.value = row
   detailVisible.value = true
@@ -235,10 +214,6 @@ function openDetail(row: FollowAdminRelationVO): void {
 function onCleanDialogClose(visible: boolean): void {
   if (!visible) void fetchRelations()
 }
-
-onMounted(() => {
-  void fetchRelations()
-})
 </script>
 
 <style scoped>

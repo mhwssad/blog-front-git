@@ -44,9 +44,9 @@
     </el-card>
 
     <DataTable
-      :data="tableData"
-      :loading="loading"
-      :total="pagination.total"
+      :data="reportStore.reports"
+      :loading="reportStore.loading"
+      :total="reportStore.total"
       :current-page="pagination.current"
       :page-size="pagination.size"
       :page-sizes="[10, 20, 50, 100]"
@@ -59,7 +59,7 @@
       @page-change="handleCurrentChange"
     >
       <template #header-extra>
-        <span class="card-header__meta">{{ pagination.total }} 条</span>
+        <span class="card-header__meta">{{ reportStore.total }} 条</span>
       </template>
 
       <el-table-column prop="id" label="ID" min-width="80" align="center" />
@@ -326,9 +326,10 @@
 </template>
 
 <script lang="ts" setup>
-import { onMounted, reactive, ref, computed } from 'vue'
+import { reactive, ref, computed } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { useContentAdmin } from '@/composables/useContentAdmin'
+import { useAdminPagination } from '@/composables/useAdminPagination'
 import { useReportStore } from '@/stores'
 import type { ReportAdminVO, ReportHandleLogVO, ReportHandleRequest } from '@/types/api-types'
 
@@ -355,14 +356,17 @@ const query = reactive({
 
 const dateRange = ref<[string, string] | []>([])
 
-const pagination = reactive({
-  current: 1,
-  size: 10,
-  total: 0,
+const { pagination, fetch, handleSizeChange, handleCurrentChange } = useAdminPagination({
+  fetchFn: reportStore.fetchReports,
+  buildParams: () => ({
+    reportTargetType: query.reportTargetType || undefined,
+    status: query.status,
+    reportedStart: dateRange.value[0] || undefined,
+    reportedEnd: dateRange.value[1] || undefined,
+  }),
+  persistSizeKey: 'report-page-size',
 })
 
-const tableData = ref<ReportAdminVO[]>([])
-const loading = ref(false)
 const submitLoading = ref(false)
 const processDialogVisible = ref(false)
 const isViewMode = ref(false)
@@ -429,29 +433,9 @@ function statusLabel(status: number): string {
   return map[status] ?? String(status)
 }
 
-async function fetchList() {
-  loading.value = true
-  try {
-    await reportStore.fetchReports({
-      current: pagination.current,
-      size: pagination.size,
-      reportTargetType: query.reportTargetType || undefined,
-      status: query.status,
-      reportedStart: dateRange.value[0] || undefined,
-      reportedEnd: dateRange.value[1] || undefined,
-    })
-    tableData.value = reportStore.reports
-    pagination.total = reportStore.total
-  } catch {
-    ElMessage.error('获取举报列表失败')
-  } finally {
-    loading.value = false
-  }
-}
-
 function handleQuery() {
   pagination.current = 1
-  void fetchList()
+  void fetch()
 }
 
 function handleReset() {
@@ -460,23 +444,14 @@ function handleReset() {
   dateRange.value = []
   pagination.current = 1
   pagination.size = 10
-  void fetchList()
-}
-
-function handleSizeChange() {
-  pagination.current = 1
-  void fetchList()
-}
-
-function handleCurrentChange() {
-  void fetchList()
+  void fetch()
 }
 
 async function handleTake(row: ReportAdminVO) {
   const success = await reportStore.takeReport(row.id)
   if (success) {
     ElMessage.success('已接手该举报')
-    void fetchList()
+    void fetch()
   } else {
     ElMessage.error('接手失败')
   }
@@ -553,7 +528,7 @@ async function confirmProcess() {
     if (success) {
       ElMessage.success('处理完成')
       processDialogVisible.value = false
-      void fetchList()
+      void fetch()
     } else {
       ElMessage.error('处理失败')
     }
@@ -574,7 +549,7 @@ async function handleReject(row: ReportAdminVO) {
     })
     if (success) {
       ElMessage.success('已驳回该举报')
-      void fetchList()
+      void fetch()
     } else {
       ElMessage.error('驳回失败')
     }
@@ -593,7 +568,7 @@ async function handleOverride(row: ReportAdminVO) {
     const success = await reportStore.overrideReport(row.id)
     if (success) {
       ElMessage.success('已接管该举报')
-      void fetchList()
+      void fetch()
     } else {
       ElMessage.error('接管操作失败')
     }
@@ -637,7 +612,7 @@ async function confirmRepair() {
     if (success) {
       ElMessage.success('举报状态已修复')
       repairVisible.value = false
-      void fetchList()
+      void fetch()
     } else {
       ElMessage.error('修复操作失败')
     }
@@ -646,9 +621,6 @@ async function confirmRepair() {
   }
 }
 
-onMounted(() => {
-  void fetchList()
-})
 </script>
 
 <style scoped>

@@ -1,11 +1,11 @@
 <template>
-  <el-dialog
+  <FormDialog
     v-model="dialogVisible"
     title="编辑知识源配置"
     width="560px"
-    :close-on-click-modal="false"
-    align-center
-    @closed="handleClosed"
+    :loading="submitting"
+    confirm-permission="ai:knowledge:update"
+    @submit="handleSubmit"
   >
     <el-form ref="formRef" :model="formData" :rules="formRules" label-width="100px">
       <el-form-item label="同步间隔" prop="syncInterval">
@@ -36,19 +36,7 @@
         />
       </el-form-item>
     </el-form>
-
-    <template #footer>
-      <el-button @click="dialogVisible = false">取消</el-button>
-      <el-button
-        v-permission="'ai:knowledge:update'"
-        type="primary"
-        :loading="submitting"
-        @click="handleSubmit"
-      >
-        保存
-      </el-button>
-    </template>
-  </el-dialog>
+  </FormDialog>
 </template>
 
 <script lang="ts" setup>
@@ -132,10 +120,6 @@ async function handleSubmit(): Promise<void> {
   } finally {
     submitting.value = false
   }
-}
-
-function handleClosed(): void {
-  resetForm()
 }
 
 watch(

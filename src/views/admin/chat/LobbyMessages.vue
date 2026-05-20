@@ -9,7 +9,7 @@
       :page-sizes="[10, 20]"
       :pagination-layout="paginationLayout"
       title="大厅消息"
-      @page-change="fetchMessages"
+      @page-change="handleCurrentChange"
       @size-change="handleSizeChange"
     >
       <template #toolbar>
@@ -118,6 +118,7 @@ import { onMounted, reactive } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { useLobbyAdmin } from '@/composables/useLobbyAdmin'
 import { useContentAdmin } from '@/composables/useContentAdmin'
+import { useAdminPagination } from '@/composables/useAdminPagination'
 import { formatCreatedAt } from '@/utils'
 import { CHAT_MESSAGE_TYPE_OPTIONS, formatChatMessageType } from '@/utils/contentAdmin'
 import DataTable from '@/components/common/DataTable.vue'
@@ -130,34 +131,31 @@ const searchForm = reactive({
   senderId: undefined as number | undefined,
   messageType: undefined as string | undefined,
 })
-const pagination = reactive({ current: 1, size: 10 })
 
-async function fetchMessages(): Promise<void> {
-  if (!lobbyConvId.value) return
-  await chatStore.fetchMessages(lobbyConvId.value, {
-    current: pagination.current,
-    size: pagination.size,
+const {
+  pagination,
+  fetch: fetchMessages,
+  handleSearch,
+  handleSizeChange,
+  handleCurrentChange,
+} = useAdminPagination({
+  fetchFn: (params: Record<string, unknown>) => {
+    if (!lobbyConvId.value) return Promise.resolve()
+    return chatStore.fetchMessages(lobbyConvId.value, params)
+  },
+  buildParams: () => ({
     keyword: searchForm.keyword || undefined,
     senderId: searchForm.senderId,
     messageType: searchForm.messageType,
-  })
-}
-
-function handleSearch(): void {
-  pagination.current = 1
-  void fetchMessages()
-}
+  }),
+  immediate: false,
+  persistSizeKey: 'lobby-messages-page-size',
+})
 
 function handleReset(): void {
   searchForm.keyword = ''
   searchForm.senderId = undefined
   searchForm.messageType = undefined
-  pagination.current = 1
-  void fetchMessages()
-}
-
-function handleSizeChange(): void {
-  pagination.current = 1
   void fetchMessages()
 }
 

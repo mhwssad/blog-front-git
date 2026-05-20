@@ -1,13 +1,5 @@
 <template>
-  <el-dialog
-    v-model="dialogVisible"
-    title="用户详情"
-    class="user-detail-dialog"
-    width="620px"
-    destroy-on-close
-    align-center
-    @close="handleClose"
-  >
+  <DetailDialog v-model="dialogVisible" :detail="user" title="用户详情" width="620px">
     <div v-if="loading" class="detail-loading">
       <el-icon class="is-loading" :size="28"><Loading /></el-icon>
       <span>加载中...</span>
@@ -60,11 +52,7 @@
         <el-descriptions-item label="备注">{{ user.remark }}</el-descriptions-item>
       </el-descriptions>
     </template>
-
-    <template #footer>
-      <el-button @click="handleClose">关闭</el-button>
-    </template>
-  </el-dialog>
+  </DetailDialog>
 </template>
 
 <script lang="ts" setup>
@@ -116,10 +104,12 @@ const genderText = computed(() => {
 watch(
   () => props.visible,
   async visible => {
-    if (!visible || !props.user) {
-      console.debug(`${LOG_PREFIX} Dialog closed or no user to display`)
+    if (!visible) {
+      console.debug(`${LOG_PREFIX} Dialog closed, clearing detail data`)
+      detailUser.value = null
       return
     }
+    if (!props.user) return
     console.log(`${LOG_PREFIX} Loading full details for user id: ${props.user.id}`)
     loading.value = true
     try {
@@ -134,12 +124,6 @@ watch(
     }
   }
 )
-
-function handleClose() {
-  console.log(`${LOG_PREFIX} Dialog closing, clearing detail data`)
-  detailUser.value = null
-  emit('update:visible', false)
-}
 </script>
 
 <style scoped>
@@ -190,14 +174,14 @@ function handleClose() {
   margin-bottom: 0;
 }
 
-:deep(.user-detail-dialog .el-dialog__body) {
+:deep(.el-dialog__body) {
   padding-top: 12px;
   max-height: calc(100vh - 220px);
   overflow-y: auto;
 }
 
 @media (max-width: 768px) {
-  :deep(.user-detail-dialog) {
+  :deep(.el-dialog) {
     width: calc(100vw - 24px) !important;
   }
 }

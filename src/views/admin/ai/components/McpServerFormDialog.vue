@@ -1,11 +1,14 @@
 <template>
-  <el-dialog
+  <FormDialog
     v-model="dialogVisible"
-    :title="isEdit ? '编辑 MCP 服务' : '新增 MCP 服务'"
+    add-title="新增 MCP 服务"
+    edit-title="编辑 MCP 服务"
+    :is-edit="isEdit"
     width="680px"
-    :close-on-click-modal="false"
-    align-center
-    @closed="handleClosed"
+    :loading="submitting"
+    :confirm-permission="submitPermission"
+    :confirm-text="isEdit ? '保存' : '创建'"
+    @submit="handleSubmit"
   >
     <el-form
       ref="formRef"
@@ -79,19 +82,7 @@
         </el-col>
       </el-row>
     </el-form>
-
-    <template #footer>
-      <el-button @click="dialogVisible = false">取消</el-button>
-      <el-button
-        v-permission="submitPermission"
-        type="primary"
-        :loading="submitting"
-        @click="handleSubmit"
-      >
-        {{ isEdit ? '保存' : '创建' }}
-      </el-button>
-    </template>
-  </el-dialog>
+  </FormDialog>
 </template>
 
 <script lang="ts" setup>
@@ -215,10 +206,6 @@ async function handleSubmit(): Promise<void> {
   } finally {
     submitting.value = false
   }
-}
-
-function handleClosed(): void {
-  resetForm()
 }
 
 watch(

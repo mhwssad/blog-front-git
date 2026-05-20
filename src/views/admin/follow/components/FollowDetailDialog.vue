@@ -1,57 +1,47 @@
 <template>
-  <el-dialog v-model="visible" title="关注关系详情" width="620px" align-center destroy-on-close>
-    <template v-if="detail">
-      <div class="detail-users">
-        <div class="detail-user-card">
-          <span class="detail-user-card__label">关注者</span>
-          <span class="detail-user-card__name">{{ detail.followerNickname || detail.followerUsername }}</span>
-          <span class="detail-user-card__meta">@{{ detail.followerUsername }} · ID {{ detail.followerId }}</span>
-          <el-tag size="small" :type="getUserStatusTagType(detail.followerStatus, detail.followerDeletedFlag)">
-            {{ formatUserState(detail.followerStatus, detail.followerDeletedFlag) }}
-          </el-tag>
-        </div>
-        <el-icon class="detail-arrow"><ArrowRight /></el-icon>
-        <div class="detail-user-card">
-          <span class="detail-user-card__label">被关注者</span>
-          <span class="detail-user-card__name">{{ detail.followingNickname || detail.followingUsername }}</span>
-          <span class="detail-user-card__meta">@{{ detail.followingUsername }} · ID {{ detail.followingId }}</span>
-          <el-tag size="small" :type="getUserStatusTagType(detail.followingStatus, detail.followingDeletedFlag)">
-            {{ formatUserState(detail.followingStatus, detail.followingDeletedFlag) }}
-          </el-tag>
-        </div>
+  <DetailDialog v-model="visible" title="关注关系详情" :detail="detail" width="620px">
+    <div class="detail-users">
+      <div class="detail-user-card">
+        <span class="detail-user-card__label">关注者</span>
+        <span class="detail-user-card__name">{{ detail!.followerNickname || detail!.followerUsername }}</span>
+        <span class="detail-user-card__meta">@{{ detail!.followerUsername }} · ID {{ detail!.followerId }}</span>
+        <el-tag size="small" :type="getUserStatusTagType(detail!.followerStatus, detail!.followerDeletedFlag)">
+          {{ formatUserState(detail!.followerStatus, detail!.followerDeletedFlag) }}
+        </el-tag>
       </div>
-
-      <el-descriptions :column="2" border size="small">
-        <el-descriptions-item label="关系 ID">{{ detail.relationId }}</el-descriptions-item>
-        <el-descriptions-item label="关系状态">
-          <el-tag size="small" :type="getFollowStatusTagType(detail.followStatus)">
-            {{ formatFollowStatus(detail.followStatus) }}
-          </el-tag>
-        </el-descriptions-item>
-        <el-descriptions-item label="特别关注">
-          <el-tag size="small" :type="detail.isSpecialFollow === 1 ? 'warning' : 'info'">
-            {{ detail.isSpecialFollow === 1 ? '是' : '否' }}
-          </el-tag>
-        </el-descriptions-item>
-        <el-descriptions-item label="来源">{{ detail.source || '—' }}</el-descriptions-item>
-        <el-descriptions-item label="关注时间">{{ formatDate(detail.followTime) }}</el-descriptions-item>
-        <el-descriptions-item label="取关时间">{{ formatDate(detail.unfollowTime) }}</el-descriptions-item>
-        <el-descriptions-item label="创建时间">{{ formatDate(detail.createdAt) }}</el-descriptions-item>
-        <el-descriptions-item label="更新时间">{{ formatDate(detail.updatedAt) }}</el-descriptions-item>
-        <el-descriptions-item v-if="detail.remark" label="备注" :span="2">
-          {{ detail.remark }}
-        </el-descriptions-item>
-      </el-descriptions>
-    </template>
-
-    <div v-else style="text-align: center; padding: 32px; color: var(--el-text-color-secondary)">
-      暂无数据
+      <el-icon class="detail-arrow"><ArrowRight /></el-icon>
+      <div class="detail-user-card">
+        <span class="detail-user-card__label">被关注者</span>
+        <span class="detail-user-card__name">{{ detail!.followingNickname || detail!.followingUsername }}</span>
+        <span class="detail-user-card__meta">@{{ detail!.followingUsername }} · ID {{ detail!.followingId }}</span>
+        <el-tag size="small" :type="getUserStatusTagType(detail!.followingStatus, detail!.followingDeletedFlag)">
+          {{ formatUserState(detail!.followingStatus, detail!.followingDeletedFlag) }}
+        </el-tag>
+      </div>
     </div>
 
-    <template #footer>
-      <el-button @click="visible = false">关闭</el-button>
-    </template>
-  </el-dialog>
+    <el-descriptions :column="2" border size="small">
+      <el-descriptions-item label="关系 ID">{{ detail!.relationId }}</el-descriptions-item>
+      <el-descriptions-item label="关系状态">
+        <el-tag size="small" :type="getFollowStatusTagType(detail!.followStatus)">
+          {{ formatFollowStatus(detail!.followStatus) }}
+        </el-tag>
+      </el-descriptions-item>
+      <el-descriptions-item label="特别关注">
+        <el-tag size="small" :type="detail!.isSpecialFollow === 1 ? 'warning' : 'info'">
+          {{ detail!.isSpecialFollow === 1 ? '是' : '否' }}
+        </el-tag>
+      </el-descriptions-item>
+      <el-descriptions-item label="来源">{{ detail!.source || '—' }}</el-descriptions-item>
+      <el-descriptions-item label="关注时间">{{ formatDate(detail!.followTime) }}</el-descriptions-item>
+      <el-descriptions-item label="取关时间">{{ formatDate(detail!.unfollowTime) }}</el-descriptions-item>
+      <el-descriptions-item label="创建时间">{{ formatDate(detail!.createdAt) }}</el-descriptions-item>
+      <el-descriptions-item label="更新时间">{{ formatDate(detail!.updatedAt) }}</el-descriptions-item>
+      <el-descriptions-item v-if="detail!.remark" label="备注" :span="2">
+        {{ detail!.remark }}
+      </el-descriptions-item>
+    </el-descriptions>
+  </DetailDialog>
 </template>
 
 <script lang="ts" setup>

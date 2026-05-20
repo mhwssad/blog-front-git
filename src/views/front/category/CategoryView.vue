@@ -57,8 +57,8 @@
 
               <div class="section-pagination">
                 <el-pagination
-                  v-model:current-page="currentPage"
-                  :page-size="pageSize"
+                  v-model:current-page="pagination.current"
+                  :page-size="pagination.size"
                   :total="store.total"
                   layout="prev, pager, next"
                   @current-change="loadArticles"
@@ -93,6 +93,7 @@
 import { ref, computed, onMounted, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import { useFrontContentStore } from '@/stores'
+import { useAdminPagination } from '@/composables/useAdminPagination'
 import HomeArticleCard from '../home/components/HomeArticleCard.vue'
 import HomeSidebar from '../home/components/HomeSidebar.vue'
 
@@ -106,10 +107,20 @@ const route = useRoute()
 const store = useFrontContentStore()
 
 const currentSort = ref<'latest' | 'top' | 'hot'>('latest')
-const currentPage = ref(1)
-// 每页显示条数
-const pageSize = 9
 const selectedChildId = ref<number | null>(null)
+
+const { pagination, fetch: loadArticles } = useAdminPagination({
+  fetchFn: store.fetchArticles,
+  buildParams: () => {
+    const filterCategoryId = selectedChildId.value || categoryId.value
+    return {
+      categoryId: filterCategoryId || undefined,
+      sort: currentSort.value,
+    }
+  },
+  defaultSize: 9,
+  immediate: false,
+})
 
 const categoryId = computed(() => Number(route.params.id))
 // 获取分类名称（从分类树中查找）
@@ -147,18 +158,8 @@ function findCategoryChildren(categories: CategoryNode[], id: number): CategoryN
 
 function selectChild(childId: number | null): void {
   selectedChildId.value = childId
-  currentPage.value = 1
+  pagination.current = 1
   loadArticles()
-}
-
-async function loadArticles(): Promise<void> {
-  const filterCategoryId = selectedChildId.value || categoryId.value
-  await store.fetchArticles({
-    current: currentPage.value,
-    size: pageSize,
-    categoryId: filterCategoryId || undefined,
-    sort: currentSort.value,
-  })
 }
 
 function formatDate(value?: string | null): string {
@@ -174,14 +175,14 @@ function formatDate(value?: string | null): string {
 }
 
 watch(currentSort, () => {
-  currentPage.value = 1
+  pagination.current = 1
   loadArticles()
 })
 
 watch(
   () => route.params.id,
   () => {
-    currentPage.value = 1
+    pagination.current = 1
     selectedChildId.value = null
     loadArticles()
   }

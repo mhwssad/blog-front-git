@@ -47,6 +47,7 @@ import { onMounted, reactive, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { Expand, Fold } from '@element-plus/icons-vue'
 import { useFrontContentStore } from '@/stores'
+import { useAdminPagination } from '@/composables/useAdminPagination'
 import { DateUtils } from '@/utils/dateUtils'
 import type { PublicArticleQueryRequest } from '@/types/api-types'
 import HomeArticleSection from './components/HomeArticleSection.vue'
@@ -57,30 +58,24 @@ const frontContentStore = useFrontContentStore()
 const sidebarOpen = ref(false)
 
 const filters = reactive<PublicArticleQueryRequest>({
-  current: 1,
-  size: 9,
   keyword: '',
   tagId: undefined,
   sort: 'latest',
 })
 
-const pagination = reactive({
-  current: 1,
-  size: 9,
+const { pagination, fetch: refreshArticles } = useAdminPagination({
+  fetchFn: frontContentStore.fetchArticles,
+  buildParams: () => ({
+    keyword: filters.keyword || undefined,
+    tagId: filters.tagId,
+    sort: filters.sort,
+  }),
+  defaultSize: 9,
+  immediate: false,
 })
 
 function formatDate(value?: string | null): string {
   return value ? DateUtils.formatRelativeTime(value) : ''
-}
-
-function buildQuery(): PublicArticleQueryRequest {
-  return {
-    current: pagination.current,
-    size: pagination.size,
-    keyword: filters.keyword || undefined,
-    tagId: filters.tagId,
-    sort: filters.sort,
-  }
 }
 
 function syncToUrl(): void {
@@ -111,10 +106,6 @@ function readFromUrl(): boolean {
   return changed
 }
 
-async function refreshArticles(): Promise<void> {
-  await frontContentStore.fetchArticles(buildQuery())
-}
-
 function setTag(tagId: number): void {
   filters.tagId = tagId
   pagination.current = 1
@@ -125,6 +116,7 @@ function setTag(tagId: number): void {
 function handleCurrentChange(current: number): void {
   pagination.current = current
   syncToUrl()
+  refreshArticles()
 }
 
 watch(
@@ -139,7 +131,12 @@ watch(
 
 onMounted(async () => {
   readFromUrl()
-  await frontContentStore.initHome(buildQuery())
+  await frontContentStore.initHome({
+    ...filters,
+    keyword: filters.keyword || undefined,
+    current: pagination.current,
+    size: pagination.size,
+  })
   syncToUrl()
 })
 </script>

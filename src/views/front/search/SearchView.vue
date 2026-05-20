@@ -51,10 +51,10 @@
       </el-tab-pane>
     </el-tabs>
 
-    <div v-if="frontContentStore.total > frontContentStore.size" class="pagination-wrap">
+    <div v-if="frontContentStore.total > pagination.size" class="pagination-wrap">
       <el-pagination
-        v-model:current-page="currentPage"
-        :page-size="frontContentStore.size"
+        v-model:current-page="pagination.current"
+        :page-size="pagination.size"
         :total="frontContentStore.total"
         layout="prev, pager, next"
         @current-change="doSearch"
@@ -74,6 +74,7 @@ import { ref, onMounted, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { Loading } from '@element-plus/icons-vue'
 import { useFrontContentStore } from '@/stores'
+import { useAdminPagination } from '@/composables/useAdminPagination'
 
 const route = useRoute()
 const router = useRouter()
@@ -83,7 +84,15 @@ const frontContentStore = useFrontContentStore()
 const keyword = ref('')
 // 当前激活的标签页（article/tag）
 const activeTab = ref('article')
-const currentPage = ref(1)
+
+const { pagination, fetch: fetchArticles } = useAdminPagination({
+  fetchFn: frontContentStore.fetchArticles,
+  buildParams: () => ({
+    keyword: keyword.value.trim() || undefined,
+  }),
+  defaultSize: frontContentStore.size,
+  immediate: false,
+})
 
 // 高亮搜索关键词（用于在结果中标记匹配文本）
 function highlight(text: string | null | undefined): string {
@@ -95,14 +104,8 @@ function highlight(text: string | null | undefined): string {
 }
 
 async function doSearch(): Promise<void> {
-  const kw = keyword.value.trim()
-
   if (activeTab.value === 'article') {
-    await frontContentStore.fetchArticles({
-      keyword: kw || undefined,
-      current: currentPage.value,
-      size: frontContentStore.size,
-    })
+    await fetchArticles()
   } else if (activeTab.value === 'tag') {
     await frontContentStore.fetchTags()
   }
@@ -117,13 +120,13 @@ watch(
   () => route.query.keyword,
   val => {
     keyword.value = (val as string) || ''
-    currentPage.value = 1
+    pagination.current = 1
     doSearch()
   }
 )
 
 watch(activeTab, () => {
-  currentPage.value = 1
+  pagination.current = 1
   doSearch()
 })
 </script>

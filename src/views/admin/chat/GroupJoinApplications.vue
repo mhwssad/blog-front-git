@@ -30,7 +30,7 @@
     <DataTable
       :data="tableData"
       :loading="loading"
-      :total="pagination.total"
+      :total="total"
       v-model:current-page="pagination.current"
       v-model:page-size="pagination.size"
       :page-sizes="[10, 20, 50]"
@@ -123,10 +123,11 @@
 </template>
 
 <script lang="ts" setup>
-import { onMounted, reactive, ref } from 'vue'
+import { reactive, ref } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { SysChatApi } from '@/api/sys/chat'
 import { useContentAdmin } from '@/composables/useContentAdmin'
+import { useAdminPagination } from '@/composables/useAdminPagination'
 import DataTable from '@/components/common/DataTable.vue'
 import { formatCreatedAt } from '@/utils'
 import type { GroupJoinApplicationVO } from '@/types/api-types'
@@ -137,18 +138,50 @@ const query = reactive({
   keyword: '',
 })
 
-const pagination = reactive({
-  current: 1,
-  size: 10,
-  total: 0,
-})
-
 const tableData = ref<GroupJoinApplicationVO[]>([])
 const loading = ref(false)
+const total = ref(0)
 const detailVisible = ref(false)
 const currentRow = ref<GroupJoinApplicationVO>({} as GroupJoinApplicationVO)
 
 const { paginationLayout, isCompactTable } = useContentAdmin()
+
+async function fetchGroupJoinApplications(
+  params: Record<string, unknown>
+): Promise<void> {
+  loading.value = true
+  try {
+    const res = await SysChatApi.getGroupJoinApplications(
+      params as Parameters<typeof SysChatApi.getGroupJoinApplications>[0]
+    )
+    const page = res.data.data
+    tableData.value = page?.records ?? []
+    total.value = page?.total ?? 0
+  } catch {
+    ElMessage.error('获取入群申请列表失败')
+  } finally {
+    loading.value = false
+  }
+}
+
+const {
+  pagination,
+  fetch: fetchList,
+  handleSearch: handleQuery,
+  handleSizeChange,
+  handleCurrentChange,
+} = useAdminPagination({
+  fetchFn: fetchGroupJoinApplications,
+  buildParams: () => {
+    const params: Record<string, unknown> = {}
+    if (query.conversationId) params.conversationId = query.conversationId
+    if (query.applyStatus !== undefined && query.applyStatus !== null)
+      params.applyStatus = query.applyStatus
+    if (query.keyword) params.keyword = query.keyword
+    return params
+  },
+  persistSizeKey: 'group-join-page-size',
+})
 
 function statusTagType(status: number): 'warning' | 'success' | 'danger' | 'info' {
   const map: Record<number, 'warning' | 'success' | 'danger' | 'info'> = {
@@ -164,51 +197,10 @@ function statusLabel(status: number) {
   return map[status] ?? String(status)
 }
 
-async function fetchList() {
-  loading.value = true
-  try {
-    const params: Record<string, unknown> = {
-      current: pagination.current,
-      size: pagination.size,
-    }
-    if (query.conversationId) params.conversationId = query.conversationId
-    if (query.applyStatus !== undefined && query.applyStatus !== null)
-      params.applyStatus = query.applyStatus
-    if (query.keyword) params.keyword = query.keyword
-
-    const res = await SysChatApi.getGroupJoinApplications(
-      params as Parameters<typeof SysChatApi.getGroupJoinApplications>[0]
-    )
-    const page = res.data.data
-    tableData.value = page?.records ?? []
-    pagination.total = page?.total ?? 0
-  } catch {
-    ElMessage.error('获取入群申请列表失败')
-  } finally {
-    loading.value = false
-  }
-}
-
-function handleQuery() {
-  pagination.current = 1
-  void fetchList()
-}
-
 function handleReset() {
   query.conversationId = undefined
   query.applyStatus = undefined
   query.keyword = ''
-  pagination.current = 1
-  pagination.size = 10
-  void fetchList()
-}
-
-function handleSizeChange() {
-  pagination.current = 1
-  void fetchList()
-}
-
-function handleCurrentChange() {
   void fetchList()
 }
 
@@ -249,10 +241,6 @@ function handleView(row: GroupJoinApplicationVO) {
   currentRow.value = { ...row }
   detailVisible.value = true
 }
-
-onMounted(() => {
-  void fetchList()
-})
 </script>
 
 <style scoped>

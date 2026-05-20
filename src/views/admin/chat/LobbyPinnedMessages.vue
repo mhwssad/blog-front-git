@@ -9,7 +9,7 @@
       :page-sizes="[10, 20]"
       :pagination-layout="paginationLayout"
       title="置顶消息"
-      @page-change="fetchList"
+      @page-change="handleCurrentChange"
       @size-change="handleSizeChange"
     >
       <template #header-extra>
@@ -54,29 +54,26 @@
 </template>
 
 <script lang="ts" setup>
-import { onMounted, reactive } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { useLobbyAdmin } from '@/composables/useLobbyAdmin'
 import { useContentAdmin } from '@/composables/useContentAdmin'
+import { useAdminPagination } from '@/composables/useAdminPagination'
 import { formatCreatedAt } from '@/utils'
 import DataTable from '@/components/common/DataTable.vue'
 
 const { chatStore } = useLobbyAdmin()
 const { paginationLayout } = useContentAdmin()
 
-const pagination = reactive({ current: 1, size: 10 })
-
-async function fetchList(): Promise<void> {
-  await chatStore.fetchPinnedLobbyMessages({
-    current: pagination.current,
-    size: pagination.size,
-  })
-}
-
-function handleSizeChange(): void {
-  pagination.current = 1
-  void fetchList()
-}
+const {
+  pagination,
+  fetch: fetchList,
+  handleSizeChange,
+  handleCurrentChange,
+} = useAdminPagination({
+  fetchFn: chatStore.fetchPinnedLobbyMessages,
+  buildParams: () => ({}),
+  persistSizeKey: 'lobby-pinned-page-size',
+})
 
 async function handleUnpin(messageId: number): Promise<void> {
   try {
@@ -94,10 +91,6 @@ async function handleUnpin(messageId: number): Promise<void> {
     // cancelled
   }
 }
-
-onMounted(() => {
-  void fetchList()
-})
 </script>
 
 <style scoped>

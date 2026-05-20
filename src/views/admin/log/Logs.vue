@@ -205,35 +205,42 @@
 后台系统日志查询与管理，支持按模块、创建人、时间范围筛选，查看详情和清理日志 * @module
 admin/log/Logs * @see api/sys/log.ts */
 <script lang="ts" setup>
-import { onMounted, reactive, ref } from 'vue'
+import { reactive, ref } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { ArrowDown } from '@element-plus/icons-vue'
-import type { LogQueryRequest, SysLogAdminVO } from '@/types/api-types'
+import type { SysLogAdminVO } from '@/types/api-types'
 import { useContentAdmin } from '@/composables/useContentAdmin'
+import { useAdminPagination } from '@/composables/useAdminPagination'
 import { useLogStore } from '@/stores'
 import { formatCreateTime, formatExecuteTime, formatLogStatus } from '@/utils'
 import LogDetailDialog from './components/LogDetailDialog.vue'
 
 const logStore = useLogStore()
 
-const searchForm = reactive<LogQueryRequest>({
-  current: 1,
-  size: 10,
-  module: undefined,
-  createBy: undefined,
-  requestMethod: undefined,
-  requestUri: undefined,
-  ip: undefined,
-  createTimeStart: undefined,
-  createTimeEnd: undefined,
-})
-
-const pagination = reactive({
-  current: 1,
-  size: 10,
+const searchForm = reactive({
+  module: undefined as string | undefined,
+  createBy: undefined as string | undefined,
+  requestMethod: undefined as string | undefined,
+  requestUri: undefined as string | undefined,
+  ip: undefined as string | undefined,
 })
 
 const timeRange = ref<[string, string] | []>([])
+
+const { pagination, fetch, handleSearch, handleSizeChange, handleCurrentChange } = useAdminPagination({
+  fetchFn: logStore.fetchLogs,
+  buildParams: () => ({
+    module: searchForm.module || undefined,
+    createBy: searchForm.createBy || undefined,
+    requestMethod: searchForm.requestMethod || undefined,
+    requestUri: searchForm.requestUri || undefined,
+    ip: searchForm.ip || undefined,
+    createTimeStart: timeRange.value[0] || undefined,
+    createTimeEnd: timeRange.value[1] || undefined,
+  }),
+  persistSizeKey: 'log-page-size',
+})
+
 const searchExpanded = ref(false)
 const detailDialogVisible = ref(false)
 const currentLog = ref<SysLogAdminVO | null>(null)
@@ -250,58 +257,16 @@ function getMethodTagType(method?: string): 'success' | 'primary' | 'warning' | 
   }
 }
 
-async function fetchLogs(): Promise<void> {
-  const [createTimeStart, createTimeEnd] = timeRange.value
-
-  try {
-    await logStore.fetchLogs({
-      current: pagination.current,
-      size: pagination.size,
-      module: searchForm.module || undefined,
-      createBy: searchForm.createBy || undefined,
-      requestMethod: searchForm.requestMethod || undefined,
-      requestUri: searchForm.requestUri || undefined,
-      ip: searchForm.ip || undefined,
-      createTimeStart: createTimeStart || undefined,
-      createTimeEnd: createTimeEnd || undefined,
-    })
-  } catch {
-    ElMessage.error('获取日志列表失败')
-  }
-}
-
-function handleSearch(): void {
-  pagination.current = 1
-  void fetchLogs()
-}
-
 function handleReset(): void {
-  Object.assign(searchForm, {
-    current: 1,
-    size: 10,
-    module: undefined,
-    createBy: undefined,
-    requestMethod: undefined,
-    requestUri: undefined,
-    ip: undefined,
-    createTimeStart: undefined,
-    createTimeEnd: undefined,
-  })
+  searchForm.module = undefined
+  searchForm.createBy = undefined
+  searchForm.requestMethod = undefined
+  searchForm.requestUri = undefined
+  searchForm.ip = undefined
   timeRange.value = []
   pagination.current = 1
   pagination.size = 10
-  void fetchLogs()
-}
-
-function handleSizeChange(size: number): void {
-  pagination.size = size
-  pagination.current = 1
-  void fetchLogs()
-}
-
-function handleCurrentChange(current: number): void {
-  pagination.current = current
-  void fetchLogs()
+  void fetch()
 }
 
 async function handleViewDetail(row: SysLogAdminVO): Promise<void> {
@@ -329,7 +294,7 @@ async function handleDelete(row: SysLogAdminVO): Promise<void> {
     }
 
     ElMessage.success('日志删除成功')
-    void fetchLogs()
+    void fetch()
   } catch {
     // 用户取消或删除失败
   }
@@ -360,15 +325,12 @@ async function handleClean(): Promise<void> {
     }
 
     ElMessage.success(`日志清理成功，共清理 ${cleaned} 条`)
-    void fetchLogs()
+    void fetch()
   } catch {
     // 用户取消或清理失败
   }
 }
 
-onMounted(() => {
-  void fetchLogs()
-})
 </script>
 
 <style scoped>

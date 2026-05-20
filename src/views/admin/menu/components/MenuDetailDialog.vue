@@ -1,13 +1,5 @@
 <template>
-  <el-dialog
-    v-model="dialogVisible"
-    title="菜单详情"
-    class="menu-detail-dialog"
-    width="560px"
-    destroy-on-close
-    align-center
-    @close="handleClose"
-  >
+  <DetailDialog v-model="dialogVisible" :detail="detail" title="菜单详情" width="560px">
     <div v-if="loading" class="detail-loading">
       <el-icon class="is-loading" :size="28"><Loading /></el-icon>
       <span>加载中...</span>
@@ -80,11 +72,7 @@
         <el-descriptions-item label="树路径">{{ treePathNames }}</el-descriptions-item>
       </el-descriptions>
     </template>
-
-    <template #footer>
-      <el-button @click="handleClose">关闭</el-button>
-    </template>
-  </el-dialog>
+  </DetailDialog>
 </template>
 
 <script lang="ts" setup>
@@ -143,7 +131,11 @@ function formatParams(params?: Record<string, string> | null): string {
 watch(
   () => props.visible,
   async visible => {
-    if (!visible || !props.menu) return
+    if (!visible) {
+      detail.value = null
+      return
+    }
+    if (!props.menu) return
     loading.value = true
     try {
       const resp = await MenuApi.getMenuById(props.menu.id)
@@ -155,11 +147,6 @@ watch(
     }
   }
 )
-
-function handleClose() {
-  detail.value = null
-  emit('update:visible', false)
-}
 </script>
 
 <style scoped>
@@ -226,27 +213,27 @@ function handleClose() {
   margin-bottom: 0;
 }
 
-:deep(.menu-detail-dialog) {
+:deep(.el-dialog) {
   max-width: calc(100vw - 24px);
   overflow-x: hidden;
 }
 
-:deep(.menu-detail-dialog .el-dialog__body) {
+:deep(.el-dialog__body) {
   padding-top: 12px;
   overflow-x: hidden;
 }
 
-:deep(.menu-detail-dialog .el-descriptions__body .el-descriptions__table) {
+:deep(.el-descriptions__body .el-descriptions__table) {
   table-layout: fixed;
   width: 100%;
 }
 
-:deep(.menu-detail-dialog .el-descriptions__cell) {
+:deep(.el-descriptions__cell) {
   word-break: break-all;
 }
 
 @media (max-width: 768px) {
-  :deep(.menu-detail-dialog) {
+  :deep(.el-dialog) {
     width: calc(100vw - 24px) !important;
   }
 }

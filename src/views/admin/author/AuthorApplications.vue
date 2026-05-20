@@ -35,7 +35,7 @@
           <el-button v-permission="'sys:author-application:query'" type="primary" @click="handleSearch">
             查询
           </el-button>
-          <el-button @click="handleReset">重置</el-button>
+          <el-button @click="handleResetForm">重置</el-button>
         </el-form-item>
       </el-form>
     </el-card>
@@ -186,9 +186,10 @@
 </template>
 
 <script lang="ts" setup>
-import { computed, onMounted, reactive, ref } from 'vue'
+import { computed, reactive, ref } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { useContentAdmin } from '@/composables/useContentAdmin'
+import { useAdminPagination } from '@/composables/useAdminPagination'
 import { useAuthorApplicationStore } from '@/stores'
 import type { SysAuthorApplicationAdminVO } from '@/types/api-types'
 
@@ -208,7 +209,19 @@ const searchForm = reactive({
   keyword: undefined as string | undefined,
 })
 
-const pagination = reactive({ current: 1, size: 10 })
+const {
+  pagination,
+  fetch: fetchList,
+  handleSearch,
+  handleReset,
+  handleSizeChange,
+  handleCurrentChange: handlePageChange,
+} = useAdminPagination({
+  fetchFn: store.fetchApplications,
+  buildParams: () => ({ ...searchForm }),
+  persistSizeKey: 'author-application-page-size',
+})
+
 const detailVisible = ref(false)
 const currentRow = ref<SysAuthorApplicationAdminVO | null>(null)
 
@@ -239,40 +252,15 @@ function statusTagType(status: number): 'info' | 'warning' | 'success' | 'danger
   return 'info'
 }
 
-async function fetchList(): Promise<void> {
-  try {
-    await store.fetchApplications({
-      ...searchForm,
-      current: pagination.current,
-      size: pagination.size,
-    })
-  } catch {
-    ElMessage.error('获取申请列表失败')
-  }
-}
-
-function handleSearch(): void {
-  pagination.current = 1
-  void fetchList()
-}
-
-function handleReset(): void {
+function resetSearchParams() {
   searchForm.userId = undefined
   searchForm.applyStatus = undefined
   searchForm.keyword = undefined
-  pagination.current = 1
-  void fetchList()
 }
 
-function handleSizeChange(size: number): void {
-  pagination.size = size
-  pagination.current = 1
-  void fetchList()
-}
-
-function handlePageChange(current: number): void {
-  pagination.current = current
-  void fetchList()
+/** 模板重置按钮 */
+function handleResetForm(): void {
+  handleReset(resetSearchParams)
 }
 
 async function handleReview(
@@ -344,9 +332,6 @@ async function confirmRepair(): Promise<void> {
   }
 }
 
-onMounted(() => {
-  void fetchList()
-})
 </script>
 
 <style scoped>

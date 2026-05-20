@@ -46,7 +46,7 @@
         </el-form-item>
         <el-form-item>
           <el-button type="primary" @click="handleQuery">查询</el-button>
-          <el-button @click="handleReset">重置</el-button>
+          <el-button @click="handleResetForm">重置</el-button>
         </el-form-item>
       </el-form>
     </el-card>
@@ -106,6 +106,7 @@
 import { onMounted, reactive, ref } from 'vue'
 import { useAiUsageStore, useAiChannelStore } from '@/stores'
 import { useContentAdmin } from '@/composables/useContentAdmin'
+import { useAdminPagination } from '@/composables/useAdminPagination'
 import DataTable from '@/components/common/DataTable.vue'
 import {
   AI_SESSION_STATUS_OPTIONS,
@@ -125,54 +126,45 @@ const query = reactive({
 
 const dateRange = ref<[string, string] | null>(null)
 
-const pagination = reactive({
-  current: 1,
-  size: 10,
-})
-
 const { paginationLayout, isCompactTable } = useContentAdmin({
   minHeight: 360,
   bottomOffset: 28,
 })
 
-async function fetchList() {
-  const params: Record<string, unknown> = {
-    current: pagination.current,
-    size: pagination.size,
-  }
-  if (query.userId) params.userId = Number(query.userId)
-  if (query.channelConfigId != null) params.channelConfigId = query.channelConfigId
-  if (query.status != null) params.status = query.status
-  if (dateRange.value) {
-    params.startTime = dateRange.value[0]
-    params.endTime = dateRange.value[1]
-  }
+const {
+  pagination,
+  fetch: fetchList,
+  handleSearch: handleQuery,
+  handleReset,
+  handleSizeChange,
+  handleCurrentChange,
+} = useAdminPagination({
+  fetchFn: usageStore.fetchSessions,
+  buildParams: () => {
+    const params: Record<string, unknown> = {}
+    if (query.userId) params.userId = Number(query.userId)
+    if (query.channelConfigId != null) params.channelConfigId = query.channelConfigId
+    if (query.status != null) params.status = query.status
+    if (dateRange.value) {
+      params.startTime = dateRange.value[0]
+      params.endTime = dateRange.value[1]
+    }
+    return params
+  },
+  immediate: false,
+  persistSizeKey: 'ai-session-page-size',
+})
 
-  await usageStore.fetchSessions(params as Parameters<typeof usageStore.fetchSessions>[0])
-}
-
-function handleQuery() {
-  pagination.current = 1
-  void fetchList()
-}
-
-function handleReset() {
+function resetSearchParams() {
   query.userId = ''
   query.channelConfigId = undefined
   query.status = undefined
   dateRange.value = null
-  pagination.current = 1
-  pagination.size = 10
-  void fetchList()
 }
 
-function handleSizeChange() {
-  pagination.current = 1
-  void fetchList()
-}
-
-function handleCurrentChange() {
-  void fetchList()
+/** 模板重置按钮 */
+function handleResetForm(): void {
+  handleReset(resetSearchParams)
 }
 
 onMounted(async () => {
