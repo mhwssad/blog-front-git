@@ -1,81 +1,234 @@
 # 前端 API 联调导航
 
-这份目录不是后端控制器清单，而是给前端同学用来快速定位接口的入口页。建议先看本页，再进入对应模块文档。
-
-如果你需要确认项目阶段、开发规范或数据库修复口径，请回到 [`docs/README.md`](../README.md)。
-
-# 前端 API 联调导航
-
 > 本文档是前端联调入口页，建议先看本页，再进入对应模块文档。
 >
 > 需确认项目阶段、开发规范或数据库修复口径，请回到 [`docs/README.md`](../README.md)。
+
+---
+
+## 目录结构
+
+```
+api文档/
+├── README.md          # 本文件，总导航页
+├── auth/               # 认证与用户
+├── content/             # 内容与文章
+├── chat/               # 聊天与消息
+├── file/               # 文件与上传
+├── follow/             # 关注与粉丝
+├── forum/              # 论坛与社区
+├── report/             # 举报管理
+├── ai/                 # AI 对话
+├── dashboard/          # 后台数据看板
+└── migration/          # 外部博客迁移
+```
+
+---
 
 ## 快速索引
 
 ### 认证与用户
 
-| 场景 | 看这个文档 | 关键章节 |
-|---|---|---|
-| 登录页 / 注册页 | `auth-api.md` | 账号登录、邮箱验证码登录、注册 |
-| 后台框架初始化 | `auth-api.md` | 应用启动初始化、获取当前用户、获取菜单 |
-| 个人资料 / 修改密码 | `auth-api.md` | 个人中心 |
-| 通知中心 | `auth-api.md` | 通知列表、未读数、已读处理 |
-| 后台用户/角色/菜单/配置/日志 | `auth-api.md` | 后台系统管理接口 |
+| 场景 | 文档 |
+|---|---|
+| 登录页 / 注册页 | [auth-login-api.md](auth/auth-login-api.md) |
+| 后台框架初始化 | [auth-login-api.md](auth/auth-login-api.md) |
+| 个人资料 / 修改密码 | [auth-profile-api.md](auth/auth-profile-api.md) |
+| 通知中心 | [auth-notification-api.md](auth/auth-notification-api.md) |
+| 用户经验等级 / 作者申请 | [auth-user-public-api.md](auth/auth-user-public-api.md) |
+| 后台用户/角色/菜单管理 | [auth-admin-api.md](auth/auth-admin-api.md) |
+| 后台用户管理 | [auth-user-admin-api.md](auth/auth-user-admin-api.md) |
+| 后台菜单管理 | [auth-menu-admin-api.md](auth/auth-menu-admin-api.md) |
+| 后台角色管理 | [auth-role-admin-api.md](auth/auth-role-admin-api.md) |
+| 通知/作者申请后台 | [auth-notification-admin-api.md](auth/auth-notification-admin-api.md) |
+| 超级管理员操作 | [auth-superadmin-api.md](auth/auth-superadmin-api.md) |
+| 超管核心操作 | [auth-superadmin-ops-api.md](auth/auth-superadmin-ops-api.md) |
+| 经验体系管理 | [auth-experience-admin-api.md](auth/auth-experience-admin-api.md) |
+| 日志/审计管理 | [auth-audit-admin-api.md](auth/auth-audit-admin-api.md) |
+| 系统配置管理 | [auth-config-admin-api.md](auth/auth-config-admin-api.md) |
 
 ### 内容与文章
 
-| 场景 | 看这个文档 | 关键章节 |
-|---|---|---|
-| 博客首页 / 文章列表 / 详情 | `content-api.md` | 首页文章列表、文章详情页 |
-| 分类 / 标签筛选 | `content-api.md` | 分类树、标签列表 |
-| 评论区 | `content-api.md` | 文章评论 |
-| 点赞 / 收藏 / 足迹 | `content-api.md` | 用户文章行为、收藏夹、足迹 |
-| 后台文章 / 分类 / 标签 / 评论管理 | `content-api.md` | 后台内容管理 |
-| 外部博客迁移 | `migration-api.md` | 任务创建、预检、执行、导出 |
+| 场景 | 文档 |
+|---|---|
+| 博客首页 / 文章列表 / 详情 | [content-public-api.md](content/content-public-api.md) |
+| 评论区 | [content-comment-api.md](content/content-comment-api.md) |
+| 用户文章行为 | [content-article-user-api.md](content/content-article-user-api.md) |
+| 用户收藏 | [content-collection-user-api.md](content/content-collection-user-api.md) |
+| 用户足迹 | [content-footprint-user-api.md](content/content-footprint-user-api.md) |
+| 后台内容管理 | [content-article-admin-api.md](content/content-article-admin-api.md) |
+| 外部博客迁移 | [migration-api.md](migration/migration-api.md) |
 
 ### 社区与社交
 
-| 场景 | 看这个文档 | 关键章节 |
-|---|---|---|
-| 论坛版块 / 帖子 / 回复 | `forum-api.md` | 公开论坛接口、用户论坛接口 |
-| 关注 / 粉丝 / 互关 | `follow-api.md` | 登录后用户接口、公开访客接口 |
-| 举报提交 / 记录 | `report-api.md` | 用户侧接口 |
-| 后台举报处理 | `report-api.md` | 后台管理接口 |
+| 场景 | 文档 |
+|---|---|
+| 论坛帖子/首页/详情 | [forum-post-api.md](forum/forum-post-api.md) |
+| 论坛回复 | [forum-reply-api.md](forum/forum-reply-api.md) |
+| 论坛互动/收藏/分享 | [forum-interaction-api.md](forum/forum-interaction-api.md) |
+| 我的帖子/频道挂接 | [forum-my-posts-api.md](forum/forum-my-posts-api.md) |
+| 后台版块管理 | [forum-board-admin-api.md](forum/forum-board-admin-api.md) |
+| 后台帖子管理 | [forum-post-admin-api.md](forum/forum-post-admin-api.md) |
+| 后台回复管理 | [forum-reply-admin-api.md](forum/forum-reply-admin-api.md) |
+| 关注/粉丝列表 | [follow-relationship-api.md](follow/follow-relationship-api.md) |
+| 互关/特别关注 | [follow-mutual-api.md](follow/follow-mutual-api.md) |
+| 后台关注管理 | [follow-admin-api.md](follow/follow-admin-api.md) |
+| 举报提交 / 记录 | [report-user-api.md](report/report-user-api.md) |
+| 后台举报处理 | [report-admin-api.md](report/report-admin-api.md) |
 
 ### 文件与聊天
 
-| 场景 | 看这个文档 | 关键章节 |
-|---|---|---|
-| 文件上传 / 我的文件 | `file-api.md` | 用户上传接入流程、用户文件接口 |
-| 聊天会话 / 消息发送 | `chat-api.md` | HTTP 接口、WebSocket 协议 |
-| 群聊管理 | `chat-api.md` | 群聊页 |
-| WebSocket 实时通信 | `websocket-api.md` | 连接、心跳、收发消息 |
+| 场景 | 文档 |
+|---|---|
+| 文件上传 / 我的文件 | [file-user-api.md](file/file-user-api.md) |
+| 后台文件管理 | [file-admin-api.md](file/file-admin-api.md) |
+| 会话列表 / 单聊 | [chat-conversation-api.md](chat/chat-conversation-api.md) |
+| 消息发送 / 编辑 / 撤回 | [chat-message-api.md](chat/chat-message-api.md) |
+| 群聊创建 / 成员管理 | [chat-group-api.md](chat/chat-group-api.md) |
+| 频道挂接 / 申请 | [chat-channel-api.md](chat/chat-channel-api.md) |
+| 后台聊天管理 | [chat-admin-api.md](chat/chat-admin-api.md) |
+| 后台会话管理 | [chat-admin-conversation-api.md](chat/chat-admin-conversation-api.md) |
+| 后台频道管理 | [chat-admin-topic-channel-api.md](chat/chat-admin-topic-channel-api.md) |
+| 后台大厅管理 | [chat-admin-lobby-api.md](chat/chat-admin-lobby-api.md) |
+| 后台频道申请 | [chat-admin-channel-application-api.md](chat/chat-admin-channel-application-api.md) |
+| 后台群申请 | [chat-admin-group-application-api.md](chat/chat-admin-group-application-api.md) |
+| 后台禁言管理 | [chat-admin-mute-api.md](chat/chat-admin-mute-api.md) |
+| 大厅频道 | [chat-lobby-api.md](chat/chat-lobby-api.md) |
+| WebSocket 客户端协议 | [websocket-client-api.md](chat/websocket-client-api.md) |
+| WebSocket 服务端事件 | [websocket-server-events-api.md](chat/websocket-server-events-api.md) |
+| WebSocket 前端集成 | [websocket-integration-api.md](chat/websocket-integration-api.md) |
 
 ### AI 与数据
 
-| 场景 | 看这个文档 | 关键章节 |
-|---|---|---|
-| AI 对话 | `ai-api.md` | 用户侧接口 |
-| AI 后台管理 | `ai-api.md` | 后台管理接口 |
-| 后台数据看板 | `dashboard-api.md` | 核心概览、内容/社区/AI/治理统计 |
+| 场景 | 文档 |
+|---|---|
+| AI 对话 | [ai-user-api.md](ai/ai-user-api.md) |
+| AI 渠道配置 | [ai-channel-admin-api.md](ai/ai-channel-admin-api.md) |
+| AI 会话管理 | [ai-session-admin-api.md](ai/ai-session-admin-api.md) |
+| AI 工具管理 | [ai-tool-admin-api.md](ai/ai-tool-admin-api.md) |
+| AI MCP 服务管理 | [ai-mcp-admin-api.md](ai/ai-mcp-admin-api.md) |
+| AI Agent 管理 | [ai-agent-admin-api.md](ai/ai-agent-admin-api.md) |
+| AI 调用统计 | [ai-usage-admin-api.md](ai/ai-usage-admin-api.md) |
+| AI 知识库管理 | [ai-knowledge-admin-api.md](ai/ai-knowledge-admin-api.md) |
+| 后台数据看板 | [dashboard-api.md](dashboard/dashboard-api.md) |
 
 ---
 
 ## 文档速查
 
+### auth - 认证与用户
+
 | 文档 | 面向页面 / 模块 | 主要路由范围 |
 |---|---|---|
-| `auth-api.md` | 登录注册、后台权限框架、系统管理、用户通知中心 | `/api/auth/**`、`/api/sys/**` 认证接口、`/api/user/notices/**` |
-| `content-api.md` | 前台内容页、登录后内容行为、后台内容管理 | `/api/articles/**`、`/api/categories/**`、`/api/tags/**`、`/api/comments/**`、`/api/user/**` 内容行为、`/api/sys/**` 内容管理 |
-| `migration-api.md` | 外部博客迁移任务、预检、导入、失败导出 | `/api/sys/migrations/blog/**` |
-| `forum-api.md` | 论坛公开浏览、用户发帖回帖、互动、帖子频道分享、后台版块管理 | `/api/forum/**`、`/api/user/forum/**`、`/api/user/chat/forum-links/**`、`/api/sys/forum/**` |
-| `file-api.md` | 上传流程、我的文件、后台文件库 | `/api/user/files/**`、`/api/sys/files/**` |
-| `chat-api.md` | 聊天 HTTP 接口、后台管理、大厅/主题频道、WebSocket 实时协议 | `/api/user/chat/**`、`/api/sys/chats/**`、`/api/public/chat/**`、`/ws/chat` |
-| `websocket-api.md` | WebSocket 连接、认证、心跳、收发消息与推送 | `/ws/chat` |
-| `follow-api.md` | 关注、粉丝、互关状态、公开查看、后台治理 | `/api/user/follows/**`、`/api/users/{userId}/**`、`/api/sys/follows/**` |
-| `ai-api.md` | AI 对话、渠道配置、后台 AI 管理、工具/MCP 与统计 | `/api/user/ai/**`、`/api/sys/ai/**` |
-| `report-api.md` | 举报提交、记录查询、后台处理与日志 | `/api/user/reports/**`、`/api/sys/reports/**` |
-| `dashboard-api.md` | 后台数据看板：核心概览、内容/社区/AI/治理统计与导出 | `/api/sys/dashboard/**` |
+| [auth-login-api.md](auth/auth-login-api.md) | 登录注册、Token刷新、退出登录 | `/api/auth/**` |
+| [auth-profile-api.md](auth/auth-profile-api.md) | 个人资料、修改密码 | `/api/user/profile/**` |
+| [auth-notification-api.md](auth/auth-notification-api.md) | 通知中心、用户通知设置 | `/api/user/notices/**`、`/api/user/notification-settings/**` |
+| [auth-user-public-api.md](auth/auth-user-public-api.md) | 用户经验等级、作者申请、公开用户搜索 | `/api/user/experience/**`、`/api/user/author-applications/**`、`/api/users/**` |
+| [auth-admin-api.md](auth/auth-admin-api.md) | 后台管理索引页 | `/api/sys/**` |
+| [auth-user-admin-api.md](auth/auth-user-admin-api.md) | 后台用户管理 | `/api/sys/users/**` |
+| [auth-menu-admin-api.md](auth/auth-menu-admin-api.md) | 后台菜单管理 | `/api/sys/menus/**` |
+| [auth-role-admin-api.md](auth/auth-role-admin-api.md) | 后台角色管理 | `/api/sys/roles/**` |
+| [auth-notification-admin-api.md](auth/auth-notification-admin-api.md) | 通知/作者申请后台 | `/api/sys/notices/**`、`/api/sys/author-applications/**` |
+| [auth-superadmin-api.md](auth/auth-superadmin-api.md) | 超管索引页 | `/api/admin/**` |
+| [auth-superadmin-ops-api.md](auth/auth-superadmin-ops-api.md) | 超管核心操作 | `/api/admin/**` |
+| [auth-experience-admin-api.md](auth/auth-experience-admin-api.md) | 经验体系管理 | `/api/sys/experience/**` |
+| [auth-audit-admin-api.md](auth/auth-audit-admin-api.md) | 日志/审计管理 | `/api/sys/logs/**`、`/api/sys/audit-logs/**` |
+| [auth-config-admin-api.md](auth/auth-config-admin-api.md) | 系统配置管理 | `/api/sys/configs/**` |
+
+### content - 内容与文章
+
+| 文档 | 面向页面 / 模块 | 主要路由范围 |
+|---|---|---|
+| [content-public-api.md](content/content-public-api.md) | 前台内容页 | `/api/articles/**`、`/api/categories/**`、`/api/tags/**` |
+| [content-comment-api.md](content/content-comment-api.md) | 文章评论 | `/api/comments/**`、`/api/user/comments/**` |
+| [content-user-api.md](content/content-user-api.md) | 用户内容行为索引页 | `/api/user/articles/**`、`/api/user/collections/**` |
+| [content-article-user-api.md](content/content-article-user-api.md) | 用户文章行为 | `/api/user/articles/**` |
+| [content-collection-user-api.md](content/content-collection-user-api.md) | 用户收藏 | `/api/user/collections/**` |
+| [content-footprint-user-api.md](content/content-footprint-user-api.md) | 用户足迹 | `/api/user/footprints/**` |
+| [content-article-admin-api.md](content/content-article-admin-api.md) | 后台内容管理 | `/api/sys/articles/**`、`/api/sys/comments/**` |
+
+### chat - 聊天与消息
+
+| 文档 | 面向页面 / 模块 | 主要路由范围 |
+|---|---|---|
+| [chat-conversation-api.md](chat/chat-conversation-api.md) | 会话列表、创建单聊 | `/api/user/chat/conversations/**` |
+| [chat-message-api.md](chat/chat-message-api.md) | 消息发送、编辑、撤回 | `/api/user/chat/messages/**` |
+| [chat-group-api.md](chat/chat-group-api.md) | 群聊管理 | `/api/user/chat/groups/**` |
+| [chat-channel-api.md](chat/chat-channel-api.md) | 频道挂接、申请 | `/api/user/chat/channels/**`、`/api/user/chat/invites/**` |
+| [chat-admin-api.md](chat/chat-admin-api.md) | 后台聊天管理索引页 | `/api/sys/chats/**` |
+| [chat-admin-conversation-api.md](chat/chat-admin-conversation-api.md) | 后台会话管理 | `/api/sys/chats/conversations/**` |
+| [chat-admin-topic-channel-api.md](chat/chat-admin-topic-channel-api.md) | 后台频道管理 | `/api/sys/chats/channels/**` |
+| [chat-admin-lobby-api.md](chat/chat-admin-lobby-api.md) | 后台大厅管理 | `/api/sys/chats/lobby/**` |
+| [chat-admin-channel-application-api.md](chat/chat-admin-channel-application-api.md) | 后台频道申请 | `/api/sys/chats/applications/**` |
+| [chat-admin-group-application-api.md](chat/chat-admin-group-application-api.md) | 后台群申请 | `/api/sys/chats/group-applications/**` |
+| [chat-admin-mute-api.md](chat/chat-admin-mute-api.md) | 后台禁言管理 | `/api/sys/chats/mutes/**` |
+| [chat-lobby-api.md](chat/chat-lobby-api.md) | 大厅频道 | `/api/public/chat/lobby/**`、`/api/sys/chats/lobby/**` |
+| [websocket-protocol-api.md](chat/websocket-protocol-api.md) | WebSocket 协议索引页 | `/ws/chat` |
+| [websocket-client-api.md](chat/websocket-client-api.md) | WebSocket 客户端协议 | `/ws/chat` |
+| [websocket-server-events-api.md](chat/websocket-server-events-api.md) | WebSocket 服务端事件 | `/ws/chat` |
+| [websocket-integration-api.md](chat/websocket-integration-api.md) | WebSocket 前端集成 | - |
+
+### file - 文件与上传
+
+| 文档 | 面向页面 / 模块 | 主要路由范围 |
+|---|---|---|
+| [file-user-api.md](file/file-user-api.md) | 用户上传、我的文件 | `/api/user/files/**`、`/api/public/files/**` |
+| [file-admin-api.md](file/file-admin-api.md) | 后台文件管理 | `/api/sys/files/**` |
+
+### follow - 关注与粉丝
+
+| 文档 | 面向页面 / 模块 | 主要路由范围 |
+|---|---|---|
+| [follow-user-api.md](follow/follow-user-api.md) | 关注/粉丝索引页 | `/api/user/follows/**`、`/api/users/{userId}/**` |
+| [follow-relationship-api.md](follow/follow-relationship-api.md) | 关注/粉丝列表 | `/api/user/follows/**`、`/api/users/{userId}/**` |
+| [follow-mutual-api.md](follow/follow-mutual-api.md) | 互关/特别关注 | `/api/user/follows/mutual/**` |
+| [follow-admin-api.md](follow/follow-admin-api.md) | 后台关注管理 | `/api/sys/follows/**` |
+
+### forum - 论坛与社区
+
+| 文档 | 面向页面 / 模块 | 主要路由范围 |
+|---|---|---|
+| [forum-user-api.md](forum/forum-user-api.md) | 论坛用户侧索引页 | `/api/forum/**`、`/api/user/forum/**` |
+| [forum-post-api.md](forum/forum-post-api.md) | 帖子查询/发帖/编辑/删除 | `/api/forum/**`、`/api/user/forum/posts/**` |
+| [forum-reply-api.md](forum/forum-reply-api.md) | 回复发表/编辑/删除 | `/api/user/forum/replies/**` |
+| [forum-interaction-api.md](forum/forum-interaction-api.md) | 点赞/收藏/频道分享 | `/api/user/forum/posts/*/likes/**` |
+| [forum-my-posts-api.md](forum/forum-my-posts-api.md) | 我的帖子/频道挂接 | `/api/user/forum/**`、`/api/user/chat/forum-links/**` |
+| [forum-admin-api.md](forum/forum-admin-api.md) | 论坛后台管理索引页 | `/api/sys/forum/**` |
+| [forum-board-admin-api.md](forum/forum-board-admin-api.md) | 后台版块管理 | `/api/sys/forum/boards/**` |
+| [forum-post-admin-api.md](forum/forum-post-admin-api.md) | 后台帖子管理 | `/api/sys/forum/posts/**` |
+| [forum-reply-admin-api.md](forum/forum-reply-admin-api.md) | 后台回复管理 | `/api/sys/forum/replies/**` |
+
+### report - 举报管理
+
+| 文档 | 面向页面 / 模块 | 主要路由范围 |
+|---|---|---|
+| [report-user-api.md](report/report-user-api.md) | 举报提交、记录查询 | `/api/user/reports/**` |
+| [report-admin-api.md](report/report-admin-api.md) | 后台举报处理 | `/api/sys/reports/**` |
+
+### ai - AI 对话
+
+| 文档 | 面向页面 / 模块 | 主要路由范围 |
+|---|---|---|
+| [ai-user-api.md](ai/ai-user-api.md) | AI 对话 | `/api/user/ai/**` |
+| [ai-channel-admin-api.md](ai/ai-channel-admin-api.md) | AI 渠道配置管理 | `/api/sys/ai/channels/**` |
+| [ai-session-admin-api.md](ai/ai-session-admin-api.md) | AI 会话管理 | `/api/sys/ai/sessions/**` |
+| [ai-tool-admin-api.md](ai/ai-tool-admin-api.md) | AI 工具管理 | `/api/sys/ai/tools/**` |
+| [ai-mcp-admin-api.md](ai/ai-mcp-admin-api.md) | AI MCP 服务管理 | `/api/sys/ai/mcp-servers/**` |
+| [ai-agent-admin-api.md](ai/ai-agent-admin-api.md) | AI Agent 管理 | `/api/sys/ai/agents/**` |
+| [ai-usage-admin-api.md](ai/ai-usage-admin-api.md) | AI 调用统计 | `/api/sys/ai/usage-logs/**` |
+| [ai-knowledge-admin-api.md](ai/ai-knowledge-admin-api.md) | AI 知识库管理 | `/api/sys/ai/knowledge/**` |
+
+### dashboard - 后台数据看板
+
+| 文档 | 面向页面 / 模块 | 主要路由范围 |
+|---|---|---|
+| [dashboard-api.md](dashboard/dashboard-api.md) | 数据看板 | `/api/sys/dashboard/**` |
+
+### migration - 外部博客迁移
+
+| 文档 | 面向页面 / 模块 | 主要路由范围 |
+|---|---|---|
+| [migration-api.md](migration/migration-api.md) | 博客迁移 | `/api/sys/migrations/blog/**` |
 
 ---
 
@@ -133,16 +286,12 @@ Authorization: Bearer <accessToken>
 
 | 响应头 | 说明 |
 |---|---|
-| `X-Trace-Id` | 服务端请求链路标识；若前端未主动传入，后端会自动生成并回传 |
+| `X-Trace-Id` | 服务端请求链路标识 |
 
-### 前端统一错误处理
+### 错误处理
 
-| 场景 | 建议处理 |
-|---|---|
-| HTTP `401` | 未登录、令牌失效或已过期，尝试刷新或跳转登录 |
-| HTTP `403` | 已登录但无权限，展示无权限页或禁用入口 |
-| `Result.code != 200` | 业务失败，优先展示 `message` |
-| 上传接口返回任务失败状态 | 读取 `errorCode`、`errorMessage` 展示可操作提示 |
+- HTTP `401` 尝试刷新令牌，失败则跳转登录；HTTP `403` 展示无权限页
+- `code != 200` 统一展示 `message`
 
 ### 分页参数约定
 
@@ -151,232 +300,24 @@ Authorization: Bearer <accessToken>
 | `current` | Long | `1` | 页码，从 1 开始 |
 | `size` | Long | `10` | 每页条数 |
 
-- 列表接口若未特别说明，筛选参数都支持"不传即忽略"
-- 个别接口的默认 `size` 不同（如聊天大厅消息默认 20），文档中会特别标注
-
-### 时间字段
-
-- 时间字段按后端序列化结果返回，前端统一自行格式化
-
 ---
 
 ## 常见业务错误码
 
-> `code != 200` 均为业务失败，前端应优先展示 `message`。以下按模块列出前端需要处理的常见错误码：
+> `code != 200` 均为业务失败，前端应优先展示 `message`。
 
-### 参数与权限类
-
-| code | 含义 | 前端处理 |
-|---|---|---|
-| 40001 | 参数校验失败 | 展示 `message` 中的校验详情 |
-| 40011 | 非法参数 | 同上 |
-| 40300 | 没有访问权限 | 提示无权限或跳 403 页 |
-| 40400 | 请求的接口不存在 | 检查路由拼写 |
-| 40401 | 用户不存在 | 提示用户不存在 |
-| 42900 | 请求过于频繁 | 提示稍后重试 |
-
-### 认证类
-
-| code | 含义 | 前端处理 |
-|---|---|---|
-| 40100 | 认证失败 | 跳登录页 |
-| 40101 | 用户名或密码错误 | 表单提示 |
-| 40104 | 账号已锁定 | 提示锁定，引导联系管理员 |
-| 40105 | 账号已禁用 | 同上 |
-| 40108 | 无效的令牌 | 尝试刷新，失败则跳登录 |
-| 40112 | 邮箱验证码错误 | 输入框提示 |
-| 40113 | 邮箱验证码已过期 | 提示重新发送 |
-| 40115 | 验证码发送过于频繁 | 展示倒计时 |
-| 40120 | 需要二次验证 (2FA) | 弹出 2FA 验证框 |
-| 40121 | 操作票据已过期 | 重新发起 2FA |
-| 40304 | 仅超级管理员可执行此操作 | 提示权限不足 |
-
-### AI 模块
-
-| code | 含义 | 前端处理 |
-|---|---|---|
-| 70001 | AI 功能暂未开放 | 隐藏入口或提示即将开放 |
-| 70004 | 会话不存在 | 刷新列表 |
-| 70005 | 会话已关闭 | 提示已关闭，引导新建 |
-| 70007 | 今日 AI 额度已用尽 | 提示额度耗尽 |
-| 70010 | 上下文长度超限 | 提示减少输入 |
-
-### 举报模块
-
-| code | 含义 | 前端处理 |
-|---|---|---|
-| 71001 | 举报记录不存在 | 刷新列表 |
-| 71002 | 举报已处理，不可重复操作 | 提示已处理 |
-| 71003 | 举报过于频繁 | 提示稍后再试 |
-
-### 上传类
-
-| code | 含义 | 前端处理 |
-|---|---|---|
-| 40010 | 上传文件超出大小限制 | 提示文件过大 |
-
-### 数据操作类
-
-| code | 含义 | 前端处理 |
-|---|---|---|
-| 60003 | 乐观锁冲突 | 提示数据已被修改，请刷新重试 |
-| 60006 | 数据已存在 | 提示重复 |
-
-> `50000`~`50020` 为系统内部异常，前端统一提示"系统异常，请稍后重试"即可。
-
----
-
-## 通用枚举值参考
-
-### 文章域
-
-| 枚举 | 值 | 说明 |
-|---|---|---|
-| **status**（文章状态） | `0` 草稿 | |
-| | `1` 已发布 | |
-| **reviewStatus**（审核状态） | `0` 未送审 | |
-| | `1` 审核中 | |
-| | `2` 审核通过 | |
-| | `3` 审核拒绝 | |
-| **visibilityScope**（可见范围） | `0` 公开 | |
-| | `1` 仅自己可见 | |
-| | `2` 白名单可见 | |
-| | `3` 登录可见 | |
-| **accessLevel**（访问级别） | `0` 公开 | |
-| | `1` 登录可见 | |
-| | `2` 白名单 | |
-| | `3` 黑名单 | |
-| | `4` 自定义名单 | |
-| **accessType**（名单类型） | `1` 白名单 | |
-| | `2` 黑名单 | |
-
-### 聊天域
-
-| 枚举 | 值 | 说明 |
-|---|---|---|
-| **sceneType**（会话场景） | `single_chat` 单聊 | |
-| | `user_group` 普通群聊 | |
-| | `hall_channel` 大厅频道 | |
-| | `topic_channel` 主题频道 | |
-| | `global_channel` 全站特殊频道 | |
-| **visibilityScope**（会话可见） | `public` 公开可见 | |
-| | `member` 成员可见 | |
-| | `private` 私密可见 | |
-| **joinRule**（加入规则） | `free` 自由加入 | |
-| | `approval` 审批加入 | |
-| | `invite_only` 仅邀请加入 | |
-| **messageType**（消息类型） | `text` 文本 | |
-| | `file` 文件 | |
-| | `image` 图片 | |
-| | `voice` 语音 | |
-
-### 举报域
-
-| 枚举 | 值 | 说明 |
-|---|---|---|
-| **targetType**（举报对象） | `article` 文章 | |
-| | `comment` 评论 | |
-| | `chat_message` 聊天消息 | |
-| **status**（举报状态） | `0` 待处理 | |
-| | `1` 处理中 | |
-| | `2` 已处理 | |
-| | `3` 已驳回 | |
-
-### AI 域
-
-| 枚举 | 值 | 说明 |
-|---|---|---|
-| **channelStatus**（渠道状态） | `0` 停用 | |
-| | `1` 启用 | |
-| **sessionStatus**（会话状态） | `0` 关闭 | |
-| | `1` 正常 | |
-
-### 文件与上传域
-
-| 枚举 | 值 | 说明 |
-|---|---|---|
-| **category**（文件分类） | `avatar` 头像 | |
-| | `attachment` 附件 | |
-| | `comment` 评论图片 | |
-| | `chat_attachment` 聊天附件 | |
-| | `temp` 临时文件 | |
-| **fileStatus**（文件状态） | `0` 已删除 | |
-| | `1` 正常 | |
-| **uploadMode**（上传模式） | `1` 秒传 | |
-| | `2` 分片上传 | |
-| | `3` 全量上传 | |
-| **taskStatus**（任务状态） | `0` 初始化 | |
-| | `1` 上传中 | |
-| | `2` 合并中 | |
-| | `3` 已完成 | |
-| | `4` 失败 | |
-| | `5` 已取消 | |
-
-### 认证与通知域
-
-| 枚举 | 值 | 说明 |
-|---|---|---|
-| **notificationType**（通知类型） | `comment_me` 评论我 | |
-| | `like_me` 点赞我 | |
-| | `collect_article` 收藏我文章 | |
-| | `follow_me` 有人关注我 | |
-| | `private_message` 收到私聊 | |
-| | `group_mention` 群聊@我 | |
-| | `channel_announcement` 频道公告 | |
-| | `system_announcement` 系统公告 | |
-| | `ai_task_done` AI任务完成 | |
-| **authorApplicationStatus**（作者申请） | `0` 待审核 | |
-| | `1` 已通过 | |
-| | `2` 已拒绝 | |
-| | `3` 待补充 | |
-
-### 经验域
-
-| 枚举 | 值 | 说明 |
-|---|---|---|
-| **experienceSourceType**（经验来源） | `daily_login` 每日登录 | |
-| | `article_publish` 文章发布 | |
-| | `comment_create` 评论发布 | |
-| | `like_given` 主动点赞 | |
-| | `like_received` 被点赞 | |
-| | `chat_message` 聊天消息 | |
-
----
-
-## 推荐阅读顺序
-
-### 前台站点
-
-1. `content-api.md` → 前台页面接口
-2. `content-api.md` → 登录后用户行为接口
-3. `forum-api.md`（涉及论坛）
-4. `follow-api.md`（涉及关注关系）→ 登录后用户接口
-5. `file-api.md`（涉及上传）→ 用户上传接入流程
-
-### 后台管理台
-
-1. `auth-api.md` → 登录态接入流程
-2. `auth-api.md` → 后台应用启动流程
-3. 按业务模块继续：
-   - 用户/角色/菜单/配置/通知/日志/经验体系 → `auth-api.md`
-   - 内容管理 → `content-api.md`
-   - 外部博客迁移 → `migration-api.md`
-   - 论坛管理 → `forum-api.md`
-   - 关注关系管理 → `follow-api.md`
-   - 文件管理 → `file-api.md`
-   - 聊天管理 → `chat-api.md`
-   - AI 对话/工具/MCP → `ai-api.md`
-   - 举报管理 → `report-api.md`
-   - 数据看板 → `dashboard-api.md`
+| code | 含义 |
+|---|---|
+| 40001 | 参数校验失败 |
+| 40300 | 没有访问权限 |
+| 40100 | 认证失败 |
+| 70001 | AI 功能暂未开放 |
+| 70007 | 今日 AI 额度已用尽 |
+| 50000~50020 | 系统内部异常 |
 
 ---
 
 ## 维护规则
 
 - 新增、删除、修改前端可见接口时，必须同步更新对应文档
-- 如果只是补字段、改枚举或改边界行为，也不能只改代码不改文档
-- 当某个接口更适合归入另一个前端场景时，允许调整文档结构，但要保持本页导航可用
-
-- 新增、删除、修改前端可见接口时，必须同步更新对应文档
-- 如果只是补字段、改枚举或改边界行为，也不能只改代码不改文档
-- 当某个接口更适合归入另一个前端场景时，允许调整文档结构，但要保持本页导航可用
+- 改枚举或边界行为时，也不能只改代码不改文档
