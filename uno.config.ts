@@ -2,7 +2,7 @@ import {
   defineConfig,
   presetAttributify,
   presetIcons,
-  presetUno,
+  presetWind3,
   transformerDirectives,
   transformerVariantGroup,
 } from 'unocss'
@@ -11,7 +11,7 @@ export default defineConfig({
   // UnoCSS 预设配置
   presets: [
     // 默认预设，包含 Tailwind CSS 和 Windi CSS 的实用类
-    presetUno(),
+    presetWind3(),
     // 属性化模式预设，如 <div flex="~ items-center">
     presetAttributify(),
     // 图标预设
@@ -46,13 +46,13 @@ export default defineConfig({
     // 过渡动画
     'transition-base': 'transition-all duration-300 ease-in-out',
     // 卡片样式
-    'card-base': 'bg-white rounded-lg shadow-md p-4',
+    'card-base': 'bg-white dark:bg-gray-800 rounded-lg shadow-md p-4',
     // 按钮样式
     'btn-base': 'px-4 py-2 rounded cursor-pointer transition-base',
-    'btn-primary': 'btn-base bg-blue-500 text-white hover:bg-blue-600',
-    'btn-secondary': 'btn-base bg-gray-200 text-gray-700 hover:bg-gray-300',
+    'btn-primary': 'btn-base bg-blue-500 text-white hover:bg-blue-600 dark:bg-blue-600 dark:hover:bg-blue-700',
+    'btn-secondary': 'btn-base bg-gray-200 text-gray-700 hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600',
     // 输入框样式
-    'input-base': 'px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500',
+    'input-base': 'px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 dark:border-gray-600',
   },
   // 自定义主题
   theme: {
