@@ -252,7 +252,7 @@ export function getChatWebSocket(): ChatWebSocket {
     const wsUrl = `${protocol}//${baseUrl}/ws/chat`
 
     instance = new ChatWebSocket(wsUrl, () => {
-      return localStorage.getItem('accessToken')
+      return localStorage.getItem('access_token')
     })
   }
   return instance

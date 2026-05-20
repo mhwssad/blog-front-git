@@ -25,7 +25,7 @@ export class ReportUserApi {
    * GET /api/user/reports
    */
   static getMyReports(params?: { targetType?: string; current?: number; size?: number }) {
-    return http.get<PageResult<ReportVO>>('/user/reports', { params })
+    return http.get<PageResult<ReportVO>>('/user/reports', params)
   }
 
   /**

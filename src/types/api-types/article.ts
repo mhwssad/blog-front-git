@@ -81,6 +81,8 @@ export interface ArticleAdminVO {
   authorName: string
   /** 是否置顶：0-否，1-是 */
   isTop: number
+  /** 是否推荐：0-否，1-是 */
+  isRecommend?: number
   /** 是否原创：0-否，1-是 */
   isOriginal: number
   /** 文章状态：0-草稿，1-已发布，2-待发布，3-已下架 */
@@ -218,8 +220,8 @@ export interface PublicArticleQueryRequest {
   categoryId?: number
   /** 标签ID */
   tagId?: number
-  /** 排序方式：latest/top/hot */
-  sort?: 'latest' | 'top' | 'hot'
+  /** 排序方式：latest/popular/hot */
+  sort?: 'latest' | 'popular' | 'hot'
 }
 
 /**
@@ -243,6 +245,8 @@ export interface PublicArticleCardVO {
   authorName: string
   /** 是否置顶：0-否，1-是 */
   isTop: number
+  /** 是否推荐：0-否，1-是 */
+  isRecommend?: number
   /** 访问级别 */
   accessLevel: number
   /** 浏览数 */
@@ -558,6 +562,8 @@ export interface ArticleSeriesSaveRequest {
 export interface ArticleSeriesArticleRequest {
   /** 文章ID */
   articleId: number
+  /** 排序序号 */
+  sortOrder?: number
 }
 
 /**
@@ -567,8 +573,8 @@ export interface ArticleSeriesArticleRequest {
  * @see PUT /api/user/article-series/{id}/articles/sort - 请求体
  */
 export interface ArticleSeriesSortRequest {
-  /** 文章ID列表，按新顺序排列 */
-  articleIds: number[]
+  /** 文章排序列表 */
+  articleOrders: { articleId: number; sortOrder: number }[]
 }
 
 /**

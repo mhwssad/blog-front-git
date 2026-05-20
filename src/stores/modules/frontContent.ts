@@ -73,7 +73,7 @@ export const useFrontContentStore = defineStore('frontContent', () => {
     const response = await ContentApi.getArticles({
       current: 1,
       size: 3,
-      sort: 'top',
+      sort: 'popular',
     })
 
     featuredArticles.value = response.data.data.records

@@ -1,14 +1,6 @@
 import { defineMock } from 'vite-plugin-mock-dev-server'
 import { db, num, ok, now, page } from './shared'
 
-const LEVEL_TITLES: Record<number, string> = {
-  1: '新手',
-  2: '入门',
-  3: '进阶',
-  4: '资深',
-  5: '大师',
-}
-
 function handle(req: any) {
   const m = String(req.method).toUpperCase()
   const path = new URL(req.url || '/', 'http://mock').pathname
@@ -20,36 +12,26 @@ function handle(req: any) {
     const level = user?.userLevel ?? 1
 
     const userLogs = (db.experienceLogs || []).filter((i: any) => i.userId === userId)
-    const today = now().slice(0, 10)
-    const todayLogs = userLogs.filter((i: any) => String(i.createdAt).startsWith(today))
-    const todayXp = todayLogs.reduce((s: number, i: any) => s + i.experienceChange, 0)
 
-    const sumBy = (type: string) =>
-      userLogs
-        .filter((i: any) => i.sourceType === type)
-        .reduce((s: number, i: any) => s + i.experienceChange, 0)
+    const sourceMap: Record<string, number> = {}
+    for (const log of userLogs) {
+      const src = log.source ?? 'UNKNOWN'
+      sourceMap[src] = (sourceMap[src] ?? 0) + (log.points ?? 0)
+    }
+    const sources = Object.entries(sourceMap).map(([source, total]) => ({ source, total }))
 
     return ok({
       userId,
-      username: user?.username ?? '',
-      nickname: user?.nickname ?? '',
       level,
-      title: LEVEL_TITLES[level] ?? '未知',
       experiencePoints: user?.experiencePoints ?? 0,
-      todayXp,
-      dailyLoginXp: sumBy('LOGIN'),
-      articlePublishXp: sumBy('ARTICLE'),
-      commentCreateXp: sumBy('COMMENT'),
-      likeGivenXp: sumBy('LIKE'),
-      likeReceivedXp: sumBy('LIKE'),
-      chatMessageXp: sumBy('CHAT'),
+      sources,
     })
   }
 
   if (m === 'GET' && path === '/api/sys/experience/logs') {
     let rs = [...(db.experienceLogs || [])]
     if (req.query.userId) rs = rs.filter((i: any) => i.userId === num(req.query.userId))
-    if (req.query.sourceType) rs = rs.filter((i: any) => i.sourceType === req.query.sourceType)
+    if (req.query.source) rs = rs.filter((i: any) => i.source === req.query.source)
     return ok(page(rs, req.query))
   }
 
@@ -62,14 +44,8 @@ function handle(req: any) {
     const log = {
       id: db.experienceLogs.length + 1,
       userId,
-      sourceType: 'ADMIN_ADJUST',
-      sourceTypeLabel: '系统调整',
-      experienceChange: change,
-      experienceBefore: before,
-      experienceAfter: after,
-      levelBefore: user?.userLevel ?? 1,
-      levelAfter: user?.userLevel ?? 1,
-      description: req.body.reason ?? '管理员调整',
+      source: 'ADMIN_ADJUST',
+      points: change,
       createdAt: now(),
     }
     if (!db.experienceLogs) db.experienceLogs = []

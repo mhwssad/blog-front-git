@@ -15,30 +15,16 @@
 export interface PublicAuthorProfileVO {
   /** 用户ID */
   userId: number
-  /** 用户名 */
-  username: string
   /** 昵称 */
   nickname: string
   /** 头像 */
   avatar: string
-  /** 用户等级 */
-  userLevel: number
-  /** 是否具备作者身份 */
-  author: boolean
-  /** 作者标识，当前作者固定返回 author，普通用户返回 null */
-  authorBadge: string | null
-  /** 当前可公开展示的文章数 */
-  publicArticleCount: number
-  /** 当前可公开展示的系列数 */
-  publicSeriesCount: number
-  /** 作品展示位文章ID列表，当前阶段预留为空 */
-  showcaseArticleIds: number[]
-  /** 代表内容文章ID列表，当前阶段预留为空 */
-  representativeArticleIds: number[]
-  /** 系列展示位系列ID列表，当前阶段预留为空 */
-  featuredSeriesIds: number[]
-  /** 专栏展示位ID列表，当前阶段预留为空 */
-  featuredColumnIds: number[]
+  /** 个人简介 */
+  bio?: string
+  /** 文章数量 */
+  articleCount: number
+  /** 获赞总数 */
+  likeCount: number
 }
 
 // ==================== 用户侧作者申请 ====================
@@ -50,14 +36,14 @@ export interface PublicAuthorProfileVO {
  * @see POST /api/user/author-applications - 请求体
  */
 export interface UserAuthorApplicationSubmitRequest {
-  /** 申请说明，最长512字符 */
-  applyReason: string
-  /** 擅长内容方向，最长128字符 */
-  contentDirection: string
-  /** 个人简介，最长1024字符 */
+  /** 真实姓名 */
+  realName?: string
+  /** 笔名 */
+  penName?: string
+  /** 自我介绍 */
   introduction?: string
-  /** 示例链接，最多10条，需为http/https */
-  sampleLinks?: string[]
+  /** 作品集链接 */
+  portfolioUrl?: string
 }
 
 /**
@@ -70,26 +56,10 @@ export interface UserAuthorApplicationSubmitRequest {
 export interface UserAuthorApplicationVO {
   /** 申请ID */
   id: number
-  /** 申请状态：0-待审核，1-已通过，2-已拒绝，3-待补充 */
-  applyStatus: number
-  /** 状态文案 */
-  applyStatusLabel: string
-  /** 申请说明 */
-  applyReason: string
-  /** 擅长内容方向 */
-  contentDirection: string
-  /** 个人简介 */
-  introduction?: string | null
-  /** 示例链接列表 */
-  sampleLinks?: string[]
-  /** 审核人ID */
-  reviewerId?: number
-  /** 审核备注 */
-  reviewComment?: string | null
+  /** 申请状态：pending/approved/rejected */
+  status: string
   /** 提交时间 */
-  submittedAt: string
-  /** 审核时间 */
-  reviewedAt?: string
+  createdAt: string
 }
 
 // ==================== 后台作者申请管理 ====================
@@ -162,10 +132,10 @@ export interface SysAuthorApplicationAdminVO {
  * @see PUT /api/sys/author-applications/{id}/review - 请求体
  */
 export interface SysAuthorApplicationAdminReviewRequest {
-  /** 审核状态：1-通过，2-拒绝，3-待补充 */
-  reviewStatus: 1 | 2 | 3
-  /** 审核备注，最长512字符 */
-  reviewComment?: string
+  /** 是否通过 */
+  approved: boolean
+  /** 审核原因 */
+  reason: string
 }
 
 /**

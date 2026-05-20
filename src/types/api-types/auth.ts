@@ -111,6 +111,14 @@ export interface AuthUserInfo {
   nickname: string
   /** 头像 */
   avatar: string
+  /** 个人简介 */
+  bio?: string
+  /** 个人站点 */
+  website?: string
+  /** 性别：0-未知，1-男，2-女，3-保密 */
+  gender?: number
+  /** 生日 */
+  birthday?: string
   /** 邮箱 */
   email: string
   /** 手机号 */
@@ -270,13 +278,11 @@ export interface PasswordResetSelfRequest {
  */
 export interface UserSearchVO {
   /** 用户ID */
-  id: number
+  userId: number
   /** 用户名 */
   username: string
   /** 昵称 */
   nickname: string
   /** 头像URL */
   avatar: string
-  /** 个人简介 */
-  bio?: string
 }

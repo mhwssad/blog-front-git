@@ -150,19 +150,9 @@ export interface UserLevelInfoVO {
   /** 当前等级 */
   level: number
   /** 当前经验值 */
-  currentExperience: number
+  experiencePoints: number
   /** 下一级所需经验值 */
-  nextLevelExperience: number
-  /** 等级称号 */
-  levelTitle: string
-  /** 升级进度，0.0~1.0 */
-  progress: number
-  /** 今日经验获取上限 */
-  dailyExperienceLimit: number
-  /** 今日已获取经验 */
-  dailyExperienceUsed: number
-  /** 今日剩余可获取经验 */
-  dailyExperienceRemaining: number
+  nextLevelExp: number
 }
 
 /**
@@ -174,30 +164,12 @@ export interface UserLevelInfoVO {
 export interface UserExperienceSummaryVO {
   /** 用户ID */
   userId: number
-  /** 用户名 */
-  username: string
-  /** 昵称 */
-  nickname: string
   /** 当前等级 */
   level: number
-  /** 等级称号 */
-  title?: string
   /** 当前经验值 */
   experiencePoints: number
-  /** 今日已获得经验 */
-  todayXp?: number
-  /** 登录经验总计 */
-  dailyLoginXp?: number
-  /** 发文经验总计 */
-  articlePublishXp?: number
-  /** 评论经验总计 */
-  commentCreateXp?: number
-  /** 点赞经验总计 */
-  likeGivenXp?: number
-  /** 被点赞经验总计 */
-  likeReceivedXp?: number
-  /** 聊天经验总计 */
-  chatMessageXp?: number
+  /** 经验来源汇总列表 */
+  sources: { source: string; total: number }[]
 }
 
 /**
@@ -211,22 +183,10 @@ export interface ExperienceLogVO {
   id: number
   /** 用户ID */
   userId: number
-  /** 来源类型 */
-  sourceType: string
-  /** 来源类型标签 */
-  sourceTypeLabel: string
-  /** 经验变化量 */
-  experienceChange: number
-  /** 变化前经验值 */
-  experienceBefore: number
-  /** 变化后经验值 */
-  experienceAfter: number
-  /** 变化前等级 */
-  levelBefore: number
-  /** 变化后等级 */
-  levelAfter: number
-  /** 描述 */
-  description: string
+  /** 经验来源 */
+  source: string
+  /** 经验值 */
+  points: number
   /** 创建时间 */
   createdAt: string
 }
@@ -238,10 +198,10 @@ export interface ExperienceLogVO {
  * @see POST /api/sys/experience/users/{userId}/adjust - 请求体
  */
 export interface UserLevelAdjustRequest {
-  /** 调整类型：level或experience */
-  adjustType: 'level' | 'experience'
-  /** 新的等级值或经验值 */
-  newValue: number
+  /** 目标等级（与 experience 二选一或同时传） */
+  level?: number
+  /** 增减的经验值 */
+  experience?: number
   /** 调整原因 */
   reason?: string
 }

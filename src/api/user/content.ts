@@ -134,8 +134,8 @@ export class UserContentApi {
    * 获取收藏文件夹列表
    * GET /api/user/collection-folders
    */
-  static getCollectionFolders() {
-    return http.get<CollectionFolderVO[]>('/user/collection-folders')
+  static getCollectionFolders(params?: { current?: number; size?: number }) {
+    return http.get<PageResult<CollectionFolderVO>>('/user/collection-folders', params)
   }
 
   /**

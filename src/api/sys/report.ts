@@ -28,7 +28,7 @@ export class ReportSysApi {
     current?: number
     size?: number
   }) {
-    return http.get<PageResult<ReportAdminVO>>('/sys/reports', { params })
+    return http.get<PageResult<ReportAdminVO>>('/sys/reports', params)
   }
 
   /**

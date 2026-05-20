@@ -10,7 +10,7 @@ function handle(req: any) {
   // ==================== 收藏夹 ====================
 
   if (m === 'GET' && path === '/api/user/collection-folders') {
-    return ok(db.folders.filter((i: any) => i.userId === u.id))
+    return ok(page(db.folders.filter((i: any) => i.userId === u.id), req.query))
   }
 
   if (m === 'POST' && path === '/api/user/collection-folders') {

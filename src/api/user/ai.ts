@@ -48,7 +48,7 @@ export class AiUserApi {
   static sendMessageStream(sessionId: number, data: AiMessageSendRequest) {
     const baseURL = instance.defaults.baseURL || '/api'
     const url = `${baseURL}/user/ai/sessions/${sessionId}/messages/stream`
-    const token = localStorage.getItem('accessToken')
+    const token = localStorage.getItem('access_token')
     const headers: Record<string, string> = {
       'Content-Type': 'application/json',
     }

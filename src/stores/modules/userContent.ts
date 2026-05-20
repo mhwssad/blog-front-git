@@ -122,7 +122,7 @@ export const useUserContentStore = defineStore('userContent', () => {
     collectionFolderLoading.value = true
     try {
       const response = await UserContentApi.getCollectionFolders()
-      collectionFolders.value = response.data.data
+      collectionFolders.value = response.data.data.records
       return collectionFolders.value
     } catch {
       collectionFolders.value = []

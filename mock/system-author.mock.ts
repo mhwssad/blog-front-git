@@ -1,7 +1,7 @@
 import { defineMock } from 'vite-plugin-mock-dev-server'
-import { cp, db, has, now, num, ok, page } from './shared'
+import { cp, db, has, num, ok, page } from './shared'
 
-const STATUS_LABELS: Record<number, string> = { 0: '待审核', 1: '已通过', 2: '已拒绝', 3: '待补充' }
+const STATUS_MAP: Record<number, string> = { 0: 'pending', 1: 'approved', 2: 'rejected', 3: 'pending' }
 
 function handle(req: any) {
   const m = String(req.method).toUpperCase()
@@ -11,7 +11,7 @@ function handle(req: any) {
   if (m === 'GET' && path === '/api/sys/author-applications') {
     let rs = [...db.authorApplications]
     if (req.query.userId) rs = rs.filter((i: any) => i.userId === num(req.query.userId))
-    if (req.query.applyStatus !== undefined && req.query.applyStatus !== '') rs = rs.filter((i: any) => i.applyStatus === num(req.query.applyStatus))
+    if (req.query.status !== undefined && req.query.status !== '') rs = rs.filter((i: any) => i.status === req.query.status)
     if (req.query.keyword) rs = rs.filter((i: any) => has(i.username, req.query.keyword) || has(i.nickname, req.query.keyword))
     return ok(page(rs, req.query))
   }
@@ -24,13 +24,7 @@ function handle(req: any) {
   if (match(/^\/api\/sys\/author-applications\/(\d+)\/review$/) && m === 'PUT') {
     const x = db.authorApplications.find((i: any) => i.id === num(match(/^\/api\/sys\/author-applications\/(\d+)\/review$/)![1]))
     if (x) {
-      x.applyStatus = req.body.reviewStatus ?? x.applyStatus
-      x.applyStatusLabel = STATUS_LABELS[x.applyStatus] ?? '未知'
-      x.reviewerId = 1
-      x.reviewerUsername = 'admin'
-      x.reviewerNickname = '管理员'
-      x.reviewComment = req.body.reviewComment ?? null
-      x.reviewedAt = now()
+      x.status = req.body.approved ? 'approved' : 'rejected'
     }
     return ok(null)
   }
@@ -38,9 +32,7 @@ function handle(req: any) {
   if (match(/^\/api\/sys\/author-applications\/(\d+)\/repair$/) && m === 'PUT') {
     const x = db.authorApplications.find((i: any) => i.id === num(match(/^\/api\/sys\/author-applications\/(\d+)\/repair$/)![1]))
     if (x) {
-      x.applyStatus = req.body.targetStatus ?? x.applyStatus
-      x.applyStatusLabel = STATUS_LABELS[x.applyStatus] ?? '未知'
-      x.reviewComment = req.body.reviewComment ?? null
+      x.status = STATUS_MAP[req.body.targetStatus] ?? x.status
     }
     return ok(null)
   }
