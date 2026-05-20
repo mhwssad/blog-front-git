@@ -132,7 +132,7 @@ function formatCount(n: number): string {
 .forum-post-card {
   display: flex;
   align-items: center;
-  background: var(--el-bg-color, #fff);
+  background: var(--el-bg-color);
   border-radius: 10px;
   padding: 16px 20px;
   border-left: 3px solid transparent;

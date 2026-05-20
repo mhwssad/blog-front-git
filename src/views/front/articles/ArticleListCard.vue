@@ -72,7 +72,7 @@ function formatCount(n: number): string {
   display: flex;
   gap: 20px;
   padding: 20px;
-  background: var(--el-bg-color, #fff);
+  background: var(--el-bg-color);
   border-radius: 12px;
   text-decoration: none;
   transition:
@@ -178,7 +178,7 @@ function formatCount(n: number): string {
   justify-content: space-between;
   margin-top: 12px;
   padding-top: 12px;
-  border-top: 1px solid var(--el-border-color-extra-light, #f2f2f2);
+  border-top: 1px solid var(--el-border-color-extra-light);
 }
 
 .card-meta {

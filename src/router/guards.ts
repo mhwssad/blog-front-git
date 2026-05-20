@@ -8,7 +8,6 @@ import { useAuthStore, useTabsStore } from '@/stores'
 import { isSuperAdmin } from '@/utils/permission'
 import { ensureDynamicAdminRoutes } from './dynamic-routes'
 import { getAdminMenus, getFirstAccessibleMenuPath, hasMenuPath } from './menu'
-import { log } from '@/composables/useLogger'
 
 const APP_TITLE = 'Blog Admin'
 

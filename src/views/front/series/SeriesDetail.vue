@@ -207,7 +207,7 @@ onMounted(() => {
   gap: 20px;
   padding: 20px;
   margin-bottom: 24px;
-  background: #fff;
+  background: var(--color-bg-base);
   border-radius: 8px;
   border: 1px solid var(--el-border-color-lighter);
 }
@@ -251,7 +251,7 @@ onMounted(() => {
 
 .articles-section {
   padding: 20px;
-  background: #fff;
+  background: var(--color-bg-base);
   border-radius: 8px;
   border: 1px solid var(--el-border-color-lighter);
 }

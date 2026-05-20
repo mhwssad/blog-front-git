@@ -130,7 +130,7 @@ onMounted(() => {
   align-items: center;
   justify-content: space-between;
   padding: 16px;
-  background: #fff;
+  background: var(--color-bg-base);
   border-radius: 8px;
   border: 1px solid var(--el-border-color-lighter);
 }

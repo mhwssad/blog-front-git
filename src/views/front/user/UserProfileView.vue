@@ -263,7 +263,7 @@ onMounted(() => {
   align-items: center;
   gap: 16px;
   padding: 24px;
-  background: #fff;
+  background: var(--color-bg-base);
   border-radius: 8px;
 }
 
@@ -292,7 +292,7 @@ onMounted(() => {
 .profile-tabs {
   margin-top: 20px;
   padding: 16px 24px;
-  background: #fff;
+  background: var(--color-bg-base);
   border-radius: 8px;
 }
 

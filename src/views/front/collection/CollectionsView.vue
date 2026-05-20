@@ -160,7 +160,7 @@ onMounted(loadData)
   width: 240px;
   flex-shrink: 0;
   padding: 16px;
-  background: #fff;
+  background: var(--color-bg-base);
   border-radius: 8px;
 }
 
@@ -168,7 +168,7 @@ onMounted(loadData)
   flex: 1;
   min-width: 0;
   padding: 16px;
-  background: #fff;
+  background: var(--color-bg-base);
   border-radius: 8px;
 }
 </style>

@@ -278,7 +278,7 @@ async function handleReview(
         type: 'warning',
       },
     )
-    const success = await store.reviewApplication(row.id, { reviewStatus: status })
+    const success = await store.reviewApplication(row.id, { approved: status === 1, reason: action })
     if (success) {
       ElMessage.success(`已${action}`)
       void fetchList()

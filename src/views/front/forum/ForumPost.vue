@@ -309,7 +309,7 @@ function formatCount(n: number): string {
 }
 
 .post-article {
-  background: var(--el-bg-color, #fff);
+  background: var(--el-bg-color);
   border-radius: 12px;
   padding: 28px;
   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
@@ -437,7 +437,7 @@ function formatCount(n: number): string {
 .post-body :deep(pre) {
   padding: 14px;
   border-radius: 8px;
-  background: var(--el-fill-color-light, #f5f7fa);
+  background: var(--el-fill-color-light);
   overflow-x: auto;
   margin: 0.8em 0;
   font-size: 13px;
@@ -460,7 +460,7 @@ function formatCount(n: number): string {
   margin: 0.8em 0;
   padding: 10px 16px;
   border-left: 4px solid var(--el-color-primary-light-5);
-  background: var(--el-fill-color-lighter, #fafafa);
+  background: var(--el-fill-color-lighter);
   color: var(--el-text-color-secondary);
   border-radius: 0 6px 6px 0;
 }
@@ -504,7 +504,7 @@ function formatCount(n: number): string {
   justify-content: space-between;
   margin-top: 28px;
   padding: 20px 0 0;
-  border-top: 1px solid var(--el-border-color-lighter, #ebeef5);
+  border-top: 1px solid var(--el-border-color-lighter);
   flex-wrap: wrap;
   gap: 16px;
 }
@@ -520,9 +520,9 @@ function formatCount(n: number): string {
   align-items: center;
   gap: 4px;
   padding: 10px 16px;
-  border: 1px solid var(--el-border-color, #dcdfe6);
+  border: 1px solid var(--el-border-color);
   border-radius: 10px;
-  background: var(--el-bg-color, #fff);
+  background: var(--el-bg-color);
   color: var(--el-text-color-regular);
   cursor: pointer;
   transition:
@@ -580,7 +580,7 @@ function formatCount(n: number): string {
 
 .reply-section {
   margin-top: 24px;
-  background: var(--el-bg-color, #fff);
+  background: var(--el-bg-color);
   border-radius: 12px;
   padding: 24px;
   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
@@ -628,13 +628,13 @@ function formatCount(n: number): string {
 }
 
 .reply-sort-tab--active {
-  background: var(--el-bg-color, #fff);
+  background: var(--el-bg-color);
   color: var(--el-color-primary);
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06);
 }
 
 .reply-list {
-  border-top: 1px solid var(--el-border-color-lighter, #ebeef5);
+  border-top: 1px solid var(--el-border-color-lighter);
 }
 
 .reply-pagination {

@@ -55,7 +55,7 @@ onMounted(() => {
 
 <style scoped>
 .article-content-wrapper {
-  background: #fff;
+  background: var(--color-bg-base);
   border-radius: 8px;
   padding: 24px;
   line-height: 1.8;

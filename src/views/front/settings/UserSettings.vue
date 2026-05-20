@@ -68,8 +68,7 @@
         <el-card shadow="never">
           <el-form label-position="top" class="settings-form">
             <el-form-item label="暗色模式">
-              <el-switch v-model="prefForm.darkMode" disabled />
-              <span class="form-hint">即将推出</span>
+              <el-switch :model-value="isDark" @change="toggleDark()" />
             </el-form-item>
           </el-form>
         </el-card>
@@ -89,6 +88,7 @@ import { ref, reactive, onMounted } from 'vue'
 import { ElMessage } from 'element-plus'
 import type { UploadFile } from 'element-plus'
 import { useAuthStore } from '@/stores'
+import { isDark, toggleDark } from '@/composables/useTheme'
 
 const authStore = useAuthStore()
 
@@ -110,11 +110,6 @@ const passwordForm = reactive({
   oldPassword: '',
   newPassword: '',
   confirmPassword: '',
-})
-
-// 偏好设置表单
-const prefForm = reactive({
-  darkMode: false,
 })
 
 // 从全局状态加载用户资料到表单

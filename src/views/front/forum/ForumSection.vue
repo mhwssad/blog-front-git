@@ -189,7 +189,7 @@ onMounted(async () => {
 <style scoped>
 .forum-section {
   min-height: 100vh;
-  background: var(--el-fill-color-lighter, #f5f5f5);
+  background: var(--el-fill-color-lighter);
 }
 
 .forum-container {
@@ -207,7 +207,7 @@ onMounted(async () => {
 }
 
 .forum-header {
-  background: var(--el-bg-color, #fff);
+  background: var(--el-bg-color);
   border-radius: 12px;
   overflow: hidden;
   margin-bottom: 16px;
@@ -292,7 +292,7 @@ onMounted(async () => {
 }
 
 .sidebar-card {
-  background: var(--el-bg-color, #fff);
+  background: var(--el-bg-color);
   border-radius: 12px;
   padding: 20px;
 }
@@ -328,15 +328,15 @@ onMounted(async () => {
 }
 
 .sidebar-section-link:hover {
-  background: var(--el-fill-color-light, #f5f7fa);
+  background: var(--el-fill-color-light);
 }
 
 .sidebar-section-link--active {
-  background: var(--el-color-primary-light-9, #ecf5ff);
+  background: var(--el-color-primary-light-9);
 }
 
 .sidebar-section-link--active:hover {
-  background: var(--el-color-primary-light-9, #ecf5ff);
+  background: var(--el-color-primary-light-9);
 }
 
 .sidebar-section-link--active .sidebar-section-name {
@@ -346,12 +346,12 @@ onMounted(async () => {
 .sidebar-section-name {
   font-size: 14px;
   font-weight: 500;
-  color: var(--el-text-color-primary, #303133);
+  color: var(--el-text-color-primary);
 }
 
 .sidebar-section-desc {
   font-size: 12px;
-  color: var(--el-text-color-secondary, #909399);
+  color: var(--el-text-color-secondary);
   margin-top: 2px;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -369,7 +369,7 @@ onMounted(async () => {
   align-items: center;
   gap: 8px;
   padding: 8px 0;
-  border-bottom: 1px solid var(--el-border-color-extra-light, #f2f6fc);
+  border-bottom: 1px solid var(--el-border-color-extra-light);
 }
 
 .sidebar-hot-item:last-child {
@@ -434,7 +434,7 @@ onMounted(async () => {
     bottom: 0;
     width: 300px;
     z-index: 100;
-    background: var(--el-bg-color, #fff);
+    background: var(--el-bg-color);
     box-shadow: -4px 0 24px rgba(0, 0, 0, 0.12);
     transform: translateX(100%);
     transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);

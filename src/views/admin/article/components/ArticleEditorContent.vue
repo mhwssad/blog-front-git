@@ -222,7 +222,7 @@ watch(mode, m => {
       if (!visualRef.value) return
       const html = normalizeHtml(props.htmlSource)
       syncingVisual = true
-      visualRef.value.innerHTML = html || '<p style="color:#aaa">请输入正文内容…</p>'
+      visualRef.value.innerHTML = html || '<p style="color:var(--color-text-placeholder)">请输入正文内容…</p>'
       syncingVisual = false
     })
   } else {

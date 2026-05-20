@@ -39,7 +39,7 @@ const emit = defineEmits<{
 
 .sidebar-card {
   padding: 20px;
-  background: var(--el-bg-color, #fff);
+  background: var(--el-bg-color);
   border-radius: 12px;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
 }

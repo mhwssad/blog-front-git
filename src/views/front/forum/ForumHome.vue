@@ -208,7 +208,7 @@ onMounted(() => {
 <style scoped>
 .forum-home {
   min-height: 100vh;
-  background: var(--el-fill-color-lighter, #f5f5f5);
+  background: var(--color-bg-page);
 }
 
 .forum-container {
@@ -226,7 +226,7 @@ onMounted(() => {
 }
 
 .forum-header {
-  background: var(--el-bg-color, #fff);
+  background: var(--color-bg-base);
   border-radius: 12px;
   overflow: hidden;
   margin-bottom: 16px;
@@ -318,9 +318,9 @@ onMounted(() => {
   gap: 4px;
   padding: 6px 16px;
   border-radius: 20px;
-  border: 1px solid var(--el-border-color, #dcdfe6);
-  background: var(--el-bg-color, #fff);
-  color: var(--el-text-color-regular, #606266);
+  border: 1px solid var(--el-border-color);
+  background: var(--color-bg-base);
+  color: var(--el-text-color-regular);
   font-size: 14px;
   cursor: pointer;
   transition:
@@ -341,7 +341,7 @@ onMounted(() => {
 }
 
 .section-tab--active:hover {
-  background: var(--el-color-primary-dark-2, #337ecc);
+  background: var(--el-color-primary-dark-2);
   color: #fff;
 }
 
@@ -392,7 +392,7 @@ onMounted(() => {
 }
 
 .sidebar-card {
-  background: var(--el-bg-color, #fff);
+  background: var(--color-bg-base);
   border-radius: 12px;
   padding: 20px;
 }
@@ -428,18 +428,18 @@ onMounted(() => {
 }
 
 .sidebar-section-link:hover {
-  background: var(--el-fill-color-light, #f5f7fa);
+  background: var(--el-fill-color-light);
 }
 
 .sidebar-section-name {
   font-size: 14px;
   font-weight: 500;
-  color: var(--el-text-color-primary, #303133);
+  color: var(--el-text-color-primary);
 }
 
 .sidebar-section-desc {
   font-size: 12px;
-  color: var(--el-text-color-secondary, #909399);
+  color: var(--el-text-color-secondary);
   margin-top: 2px;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -457,7 +457,7 @@ onMounted(() => {
   align-items: center;
   gap: 8px;
   padding: 8px 0;
-  border-bottom: 1px solid var(--el-border-color-extra-light, #f2f6fc);
+  border-bottom: 1px solid var(--el-border-color-extra-light);
 }
 
 .sidebar-hot-item:last-child {
@@ -531,7 +531,7 @@ onMounted(() => {
     bottom: 0;
     width: 300px;
     z-index: 100;
-    background: var(--el-bg-color, #fff);
+    background: var(--color-bg-base);
     box-shadow: -4px 0 24px rgba(0, 0, 0, 0.12);
     transform: translateX(100%);
     transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);

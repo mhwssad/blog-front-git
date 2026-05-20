@@ -71,7 +71,7 @@ function formatCount(n: number): string {
 .article-card {
   display: flex;
   flex-direction: column;
-  background: var(--el-bg-color, #fff);
+  background: var(--el-bg-color);
   border-radius: 12px;
   overflow: hidden;
   text-decoration: none;
@@ -172,7 +172,7 @@ function formatCount(n: number): string {
   justify-content: space-between;
   margin-top: auto;
   padding-top: 10px;
-  border-top: 1px solid var(--el-border-color-extra-light, #f2f2f2);
+  border-top: 1px solid var(--el-border-color-extra-light);
 }
 
 .article-meta {

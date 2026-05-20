@@ -76,7 +76,7 @@ function formatCount(n: number): string {
 <style scoped>
 .reply-item {
   padding: 16px 0;
-  border-bottom: 1px solid var(--el-border-color-lighter, #ebeef5);
+  border-bottom: 1px solid var(--el-border-color-lighter);
 }
 
 .reply-item:last-child {
@@ -160,7 +160,7 @@ function formatCount(n: number): string {
 .reply-children {
   margin-top: 8px;
   padding-left: 28px;
-  border-left: 2px solid var(--el-border-color-lighter, #ebeef5);
+  border-left: 2px solid var(--el-border-color-lighter);
   background: var(--el-fill-color-lighter);
   border-radius: 0 8px 8px 0;
   padding-right: 12px;

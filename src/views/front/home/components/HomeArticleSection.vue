@@ -65,7 +65,7 @@ const emit = defineEmits<{
 
 <style scoped>
 .article-section {
-  background: var(--el-bg-color, #fff);
+  background: var(--el-bg-color);
   border-radius: 12px;
   padding: 28px;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
@@ -110,7 +110,7 @@ const emit = defineEmits<{
 .skeleton-card {
   border-radius: 12px;
   overflow: hidden;
-  background: var(--el-bg-color, #fff);
+  background: var(--el-bg-color);
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
 }
 

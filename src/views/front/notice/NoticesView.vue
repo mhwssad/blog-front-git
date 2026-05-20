@@ -144,7 +144,7 @@ onMounted(() => {
 }
 
 .notice-list {
-  background: #fff;
+  background: var(--color-bg-base);
   border-radius: 8px;
   overflow: hidden;
 }

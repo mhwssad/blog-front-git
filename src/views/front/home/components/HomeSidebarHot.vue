@@ -62,7 +62,7 @@ defineProps<{
 }
 
 .hot-item:not(:last-child) {
-  border-bottom: 1px solid var(--el-border-color-extra-light, #f5f5f5);
+  border-bottom: 1px solid var(--el-border-color-extra-light);
 }
 
 .hot-item:hover {

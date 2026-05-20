@@ -72,6 +72,6 @@ function formatDate(value?: string | null): string {
   border-radius: 4px;
   font-size: 14px;
   line-height: 1.4;
-  background: #fff;
+  background: var(--color-bg-base);
 }
 </style>

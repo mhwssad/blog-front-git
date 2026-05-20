@@ -169,7 +169,7 @@ onMounted(async () => {
 
 .loading-wrapper {
   padding: 24px;
-  background: #fff;
+  background: var(--color-bg-base);
   border-radius: 8px;
   border: 1px solid var(--el-border-color-lighter);
 }
@@ -180,7 +180,7 @@ onMounted(async () => {
   gap: 16px;
   padding: 24px;
   margin-bottom: 24px;
-  background: #fff;
+  background: var(--color-bg-base);
   border-radius: 8px;
   border: 1px solid var(--el-border-color-lighter);
 }
@@ -203,7 +203,7 @@ onMounted(async () => {
 
 .apply-form {
   padding: 24px;
-  background: #fff;
+  background: var(--color-bg-base);
   border-radius: 8px;
   border: 1px solid var(--el-border-color-lighter);
 }

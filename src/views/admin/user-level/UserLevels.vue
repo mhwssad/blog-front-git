@@ -37,11 +37,8 @@
     <el-row v-if="experienceStore.userSummary" :gutter="12" class="summary-row">
       <el-col :lg="4" :md="8" :span="12">
         <el-card shadow="hover" class="summary-card">
-          <div class="summary-label">用户</div>
-          <div class="summary-value">
-            {{ experienceStore.userSummary.nickname || experienceStore.userSummary.username }}
-            <span class="summary-sub">ID: {{ experienceStore.userSummary.userId }}</span>
-          </div>
+          <div class="summary-label">用户ID</div>
+          <div class="summary-value">{{ experienceStore.userSummary.userId }}</div>
         </el-card>
       </el-col>
       <el-col :lg="4" :md="8" :span="12">
@@ -56,22 +53,16 @@
           <div class="summary-value">{{ experienceStore.userSummary.experiencePoints }}</div>
         </el-card>
       </el-col>
-      <el-col :lg="4" :md="8" :span="12">
+      <el-col
+        v-for="(src, idx) in experienceStore.userSummary.sources"
+        :key="idx"
+        :lg="4"
+        :md="8"
+        :span="12"
+      >
         <el-card shadow="hover" class="summary-card">
-          <div class="summary-label">今日经验</div>
-          <div class="summary-value">{{ experienceStore.userSummary.todayXp ?? '-' }}</div>
-        </el-card>
-      </el-col>
-      <el-col :lg="4" :md="8" :span="12">
-        <el-card shadow="hover" class="summary-card">
-          <div class="summary-label">发文经验</div>
-          <div class="summary-value">{{ experienceStore.userSummary.articlePublishXp ?? '-' }}</div>
-        </el-card>
-      </el-col>
-      <el-col :lg="4" :md="8" :span="12">
-        <el-card shadow="hover" class="summary-card">
-          <div class="summary-label">评论经验</div>
-          <div class="summary-value">{{ experienceStore.userSummary.commentCreateXp ?? '-' }}</div>
+          <div class="summary-label">{{ src.source }}</div>
+          <div class="summary-value">{{ src.total }}</div>
         </el-card>
       </el-col>
     </el-row>
@@ -97,41 +88,18 @@
       </template>
 
       <el-table-column prop="userId" label="用户ID" min-width="80" align="center" />
-      <el-table-column label="来源类型" min-width="100" align="center">
+      <el-table-column label="来源" min-width="120" align="center">
         <template #default="{ row }">
-          <el-tag :type="sourceTagType(row.sourceType)" size="small">
-            {{ row.sourceTypeLabel || row.sourceType }}
+          <el-tag :type="sourceTagType(row.source)" size="small">
+            {{ row.source }}
           </el-tag>
         </template>
       </el-table-column>
-      <el-table-column label="经验变化" min-width="100" align="center">
+      <el-table-column label="经验值" min-width="100" align="center">
         <template #default="{ row }">
-          <span :class="row.experienceChange > 0 ? 'exp-positive' : 'exp-negative'">
-            {{ row.experienceChange > 0 ? '+' : '' }}{{ row.experienceChange }}
+          <span :class="row.points > 0 ? 'exp-positive' : 'exp-negative'">
+            {{ row.points > 0 ? '+' : '' }}{{ row.points }}
           </span>
-        </template>
-      </el-table-column>
-      <el-table-column label="等级变化" min-width="120" align="center">
-        <template #default="{ row }">
-          <template v-if="row.levelBefore !== row.levelAfter">
-            <el-tag size="small" type="info">Lv.{{ row.levelBefore }}</el-tag>
-            <span class="level-arrow">-&gt;</span>
-            <el-tag size="small" type="success">Lv.{{ row.levelAfter }}</el-tag>
-          </template>
-          <template v-else>
-            <span class="level-same">Lv.{{ row.levelBefore }}</span>
-          </template>
-        </template>
-      </el-table-column>
-      <el-table-column
-        prop="description"
-        label="描述"
-        min-width="180"
-        align="center"
-        show-overflow-tooltip
-      >
-        <template #default="{ row }">
-          {{ row.description || '-' }}
         </template>
       </el-table-column>
       <el-table-column label="时间" min-width="160" align="center">
@@ -294,7 +262,6 @@ watch(
   margin-left: 6px;
   font-size: 12px;
   font-weight: 400;
-  color: var(--el-text-color-secondary);
 }
 
 .exp-positive {
@@ -305,15 +272,6 @@ watch(
 .exp-negative {
   color: var(--el-color-danger);
   font-weight: 600;
-}
-
-.level-arrow {
-  margin: 0 4px;
-  color: var(--el-text-color-secondary);
-}
-
-.level-same {
-  color: var(--el-text-color-regular);
 }
 
 @media (max-width: 768px) {

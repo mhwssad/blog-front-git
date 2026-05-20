@@ -159,7 +159,7 @@ onMounted(() => {
 
 .series-card {
   margin-bottom: 20px;
-  background: #fff;
+  background: var(--color-bg-base);
   border-radius: 8px;
   border: 1px solid var(--el-border-color-lighter);
   overflow: hidden;

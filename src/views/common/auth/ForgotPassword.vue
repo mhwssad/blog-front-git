@@ -162,7 +162,7 @@ async function handleReset(): Promise<void> {
 .forgot-card {
   width: 420px;
   padding: 40px 36px;
-  background: #fff;
+  background: var(--color-bg-base);
   border-radius: var(--el-border-radius-round, 16px);
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
 }

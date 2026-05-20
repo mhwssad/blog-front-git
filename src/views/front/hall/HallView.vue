@@ -179,7 +179,7 @@ onMounted(() => {
   flex-direction: column;
   height: calc(100vh - 220px);
   min-height: 400px;
-  background: #fff;
+  background: var(--color-bg-base);
   border-radius: 8px;
   border: 1px solid var(--el-border-color-lighter);
   overflow: hidden;

@@ -46,7 +46,7 @@ function scrollTo(id: string): void {
 .sidebar-card {
   padding: 16px;
   border-radius: 8px;
-  background: #fff;
+  background: var(--color-bg-base);
 }
 
 .sidebar-title {

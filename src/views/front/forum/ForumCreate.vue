@@ -162,7 +162,7 @@ onMounted(() => {
 <style scoped>
 .forum-create-page {
   min-height: 100vh;
-  background: var(--el-fill-color-lighter, #f5f5f5);
+  background: var(--el-fill-color-lighter);
 }
 
 .forum-create-container {
@@ -173,7 +173,7 @@ onMounted(() => {
 
 .create-card {
   margin-top: 20px;
-  background: var(--el-bg-color, #fff);
+  background: var(--el-bg-color);
   border-radius: 12px;
   padding: 28px;
   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
@@ -212,7 +212,7 @@ onMounted(() => {
 
 .content-preview {
   min-height: 300px;
-  border: 1px solid var(--el-border-color, #dcdfe6);
+  border: 1px solid var(--el-border-color);
   border-radius: 6px;
   padding: 16px;
   background: var(--el-fill-color-lighter);

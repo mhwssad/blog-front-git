@@ -182,7 +182,7 @@ onMounted(async () => {
 <style scoped>
 .articles-page {
   min-height: 100vh;
-  background: var(--el-fill-color-lighter, #f5f5f5);
+  background: var(--el-fill-color-lighter);
 }
 
 .articles-container {
@@ -283,7 +283,7 @@ onMounted(async () => {
 
 /* Article section */
 .article-section {
-  background: var(--el-bg-color, #fff);
+  background: var(--el-bg-color);
   border-radius: 12px;
   padding: 28px;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
@@ -311,7 +311,7 @@ onMounted(async () => {
   gap: 20px;
   padding: 20px;
   border-radius: 12px;
-  background: var(--el-bg-color, #fff);
+  background: var(--el-bg-color);
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
 }
 
@@ -389,7 +389,7 @@ onMounted(async () => {
     bottom: 0;
     width: 300px;
     z-index: 100;
-    background: var(--el-bg-color, #fff);
+    background: var(--el-bg-color);
     box-shadow: -4px 0 24px rgba(0, 0, 0, 0.12);
     transform: translateX(100%);
     transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);

@@ -24,12 +24,12 @@
       </div>
     </div>
 
-    <template v-if="existingApplication && existingApplication.applyStatus === 1">
+    <template v-if="existingApplication && existingApplication.status === 'pending'">
       <div class="status-card">
         <el-icon :size="48" color="var(--el-color-warning)"><Clock /></el-icon>
         <div class="status-info">
           <div class="status-text">你已提交申请，正在审核中</div>
-          <div class="status-time">提交时间：{{ existingApplication.submittedAt }}</div>
+          <div class="status-time">提交时间：{{ existingApplication.createdAt }}</div>
         </div>
       </div>
     </template>
@@ -39,40 +39,33 @@
         <el-icon
           :size="48"
           :color="
-            existingApplication.applyStatus === 2
+            existingApplication.status === 'approved'
               ? 'var(--el-color-success)'
               : 'var(--el-color-danger)'
           "
         >
-          <component :is="existingApplication.applyStatus === 2 ? 'Select' : 'CloseBold'" />
+          <component :is="existingApplication.status === 'approved' ? 'Select' : 'CloseBold'" />
         </el-icon>
         <div class="status-info">
-          <div class="status-text">{{ existingApplication.applyStatusLabel }}</div>
-          <div v-if="existingApplication.reviewComment" class="status-time">
-            审核意见：{{ existingApplication.reviewComment }}
-          </div>
-          <div class="status-time">提交时间：{{ existingApplication.submittedAt }}</div>
+          <div class="status-text">{{ existingApplication.status === 'approved' ? '已通过' : '已拒绝' }}</div>
+          <div class="status-time">提交时间：{{ existingApplication.createdAt }}</div>
         </div>
       </div>
     </template>
 
     <template v-else>
       <el-form ref="formRef" :model="form" :rules="rules" label-width="100px" class="apply-form">
-        <el-form-item label="申请说明" prop="applyReason">
+        <el-form-item label="真实姓名" prop="realName">
           <el-input
-            v-model="form.applyReason"
-            type="textarea"
-            :rows="4"
-            placeholder="请说明你为什么想成为作者"
+            v-model="form.realName"
+            placeholder="请输入真实姓名"
           />
         </el-form-item>
 
-        <el-form-item label="擅长方向" prop="contentDirection">
+        <el-form-item label="笔名" prop="penName">
           <el-input
-            v-model="form.contentDirection"
-            type="textarea"
-            :rows="3"
-            placeholder="请描述你擅长的技术方向或领域"
+            v-model="form.penName"
+            placeholder="请输入笔名"
           />
         </el-form-item>
 
@@ -85,27 +78,11 @@
           />
         </el-form-item>
 
-        <el-form-item label="代表作品">
-          <div class="works-list">
-            <div v-for="(_, index) in form.sampleLinks" :key="index" class="work-link-row">
-              <el-input
-                v-model="form.sampleLinks[index]"
-                placeholder="请输入作品链接"
-                class="work-input"
-              />
-              <el-button
-                v-if="form.sampleLinks.length > 1"
-                type="danger"
-                link
-                @click="form.sampleLinks.splice(index, 1)"
-              >
-                删除
-              </el-button>
-            </div>
-            <el-button type="primary" link @click="form.sampleLinks.push('')">
-              + 添加更多
-            </el-button>
-          </div>
+        <el-form-item label="作品集链接">
+          <el-input
+            v-model="form.portfolioUrl"
+            placeholder="请输入作品集链接（选填）"
+          />
         </el-form-item>
 
         <el-form-item>
@@ -145,16 +122,13 @@ const submitting = ref(false)
 
 // 表单数据
 const form = reactive({
-  applyReason: '',
-  contentDirection: '',
+  realName: '',
+  penName: '',
   introduction: '',
-  sampleLinks: [''] as string[],
+  portfolioUrl: '',
 })
 
-const rules = reactive<FormRules>({
-  applyReason: [{ required: true, message: '请填写申请说明', trigger: 'blur' }],
-  contentDirection: [{ required: true, message: '请填写擅长方向', trigger: 'blur' }],
-})
+const rules = reactive<FormRules>({})
 
 /** 提交作者申请 */
 async function handleSubmit(): Promise<void> {
@@ -164,10 +138,10 @@ async function handleSubmit(): Promise<void> {
   submitting.value = true
   try {
     const success = await store.submitApplication({
-      applyReason: form.applyReason,
-      contentDirection: form.contentDirection,
+      realName: form.realName || undefined,
+      penName: form.penName || undefined,
       introduction: form.introduction || undefined,
-      sampleLinks: form.sampleLinks.filter(l => l.trim()) || undefined,
+      portfolioUrl: form.portfolioUrl || undefined,
     })
     if (success) {
       ElMessage.success('申请已提交，请等待审核')
@@ -231,7 +205,7 @@ onMounted(async () => {
   gap: 16px;
   padding: 24px;
   margin-bottom: 24px;
-  background: #fff;
+  background: var(--color-bg-base);
   border-radius: 8px;
   border: 1px solid var(--el-border-color-lighter);
 }
@@ -254,7 +228,7 @@ onMounted(async () => {
 
 .apply-form {
   padding: 24px;
-  background: #fff;
+  background: var(--color-bg-base);
   border-radius: 8px;
   border: 1px solid var(--el-border-color-lighter);
 }

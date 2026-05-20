@@ -478,11 +478,11 @@ onMounted(() => {
   display: flex;
   justify-content: space-between;
   font-size: 13px;
-  color: #606266;
+  color: var(--color-text-secondary);
 }
 
 .source-card__label {
-  color: #909399;
+  color: var(--color-text-secondary);
 }
 
 .source-card__actions {

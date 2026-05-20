@@ -97,7 +97,7 @@ export const FRONT_ROUTES: RouteRecordRaw[] = [
         path: 'hall',
         name: 'Hall',
         component: () => import('@/views/front/hall/HallView.vue'),
-        meta: { title: '大厅' },
+        meta: { title: '大厅', hideFooter: true },
       },
       {
         path: 'forum',
@@ -169,7 +169,7 @@ export const FRONT_ROUTES: RouteRecordRaw[] = [
         path: 'ai',
         name: 'AiAssistant',
         component: () => import('@/views/front/ai/AiAssistant.vue'),
-        meta: { title: 'AI 助手', requiresAuth: true },
+        meta: { title: 'AI 助手', requiresAuth: true, hideFooter: true },
       },
       {
         path: 'user/notification-settings',

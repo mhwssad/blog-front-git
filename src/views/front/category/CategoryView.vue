@@ -203,7 +203,7 @@ onMounted(async () => {
 <style scoped>
 .category-page {
   min-height: 100vh;
-  background: #f5f5f5;
+  background: var(--color-bg-page);
 }
 
 .category-container {
@@ -223,7 +223,7 @@ onMounted(async () => {
 }
 
 .article-section {
-  background: #fff;
+  background: var(--color-bg-base);
   border-radius: 8px;
   padding: 20px 24px;
 }
@@ -254,7 +254,7 @@ onMounted(async () => {
   padding: 6px 16px;
   border-radius: 20px;
   border: 1px solid var(--el-border-color);
-  background: #fff;
+  background: var(--color-bg-base);
   font-size: 13px;
   cursor: pointer;
   transition: all 0.2s;

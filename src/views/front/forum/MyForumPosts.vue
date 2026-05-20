@@ -159,7 +159,7 @@ onMounted(() => {
 <style scoped>
 .my-forum-posts-page {
   min-height: 100vh;
-  background: var(--el-fill-color-lighter, #f5f5f5);
+  background: var(--el-fill-color-lighter);
 }
 
 .my-posts-container {
@@ -187,7 +187,7 @@ onMounted(() => {
   gap: 24px;
   margin-bottom: 16px;
   padding: 16px 20px;
-  background: var(--el-bg-color, #fff);
+  background: var(--el-bg-color);
   border-radius: 10px;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
 }
@@ -215,7 +215,7 @@ onMounted(() => {
   gap: 12px;
   margin-bottom: 20px;
   padding: 12px 16px;
-  background: var(--el-bg-color, #fff);
+  background: var(--el-bg-color);
   border-radius: 10px;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
 }
@@ -227,7 +227,7 @@ onMounted(() => {
 }
 
 .posts-loading {
-  background: var(--el-bg-color, #fff);
+  background: var(--el-bg-color);
   border-radius: 12px;
   padding: 28px;
 }

@@ -270,7 +270,7 @@ onMounted(async () => {
 .chat-page {
   height: calc(100vh - 60px);
   display: flex;
-  background: #fff;
+  background: var(--color-bg-base);
 }
 
 .chat-sidebar {

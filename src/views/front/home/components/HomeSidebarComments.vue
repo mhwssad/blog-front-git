@@ -61,7 +61,7 @@ defineProps<{
 
 .comment-item:not(:last-child) {
   padding-bottom: 14px;
-  border-bottom: 1px solid var(--el-border-color-extra-light, #f5f5f5);
+  border-bottom: 1px solid var(--el-border-color-extra-light);
 }
 
 .comment-avatar {

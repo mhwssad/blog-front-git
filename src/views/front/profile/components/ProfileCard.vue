@@ -42,7 +42,7 @@ const store = useUserFollowStore()
   align-items: center;
   gap: 16px;
   padding: 24px;
-  background: #fff;
+  background: var(--color-bg-base);
   border-radius: 8px;
 }
 

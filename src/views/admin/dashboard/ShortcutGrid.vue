@@ -110,7 +110,7 @@ const overflowItems = computed(() => {
   padding: 16px 24px;
   min-width: 110px;
   white-space: nowrap;
-  background: #fff;
+  background: var(--color-bg-base);
   border: 1px solid var(--el-border-color-light);
   border-radius: 12px;
   cursor: pointer;

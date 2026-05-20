@@ -305,7 +305,7 @@ watch(
   padding: 12px;
   border: 1px solid var(--el-border-color-light);
   border-radius: 12px;
-  background-color: #fff;
+  background-color: var(--color-bg-base);
 }
 
 .tree-node {
