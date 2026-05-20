@@ -6,6 +6,7 @@
 import { ref } from 'vue'
 import { defineStore } from 'pinia'
 import { AuditLogApi } from '@/api/sys/auditLog'
+import { usePaginatedState } from '../composables/usePaginatedState'
 import type { AuditLogVO, AuditLogQueryRequest } from '@/types/api-types'
 
 type LegacyAuditLogRecord = AuditLogVO & {
@@ -57,29 +58,39 @@ function normalizeAuditLogRecord(log: LegacyAuditLogRecord | null | undefined): 
 }
 
 export const useAuditLogStore = defineStore('auditLog', () => {
-  const logs = ref<AuditLogVO[]>([])
-  const total = ref(0)
-  const current = ref(1)
-  const size = ref(10)
-  const loading = ref(false)
-  const currentLog = ref<AuditLogVO | null>(null)
-
-  async function fetchLogs(params?: AuditLogQueryRequest): Promise<void> {
-    loading.value = true
-    try {
+  const {
+    items: logs,
+    total,
+    current,
+    size,
+    loading,
+    fetch: fetchLogs,
+    clear: _clearList,
+  } = usePaginatedState<AuditLogVO>({
+    fetchFn: async (params) => {
       const response = await AuditLogApi.getAuditLogs(params)
       const data = response.data.data
       const records = Array.isArray(data.records) ? data.records : []
+      response.data.data = {
+        records: records
+          .map(normalizeAuditLogRecord)
+          .filter((item): item is AuditLogVO => item !== null),
+        total: data.total ?? records.length,
+        current: data.current ?? params?.current ?? 1,
+        size: data.size ?? params?.size ?? 10,
+      }
+      return response
+    },
+  })
 
-      logs.value = records
-        .map(normalizeAuditLogRecord)
-        .filter((item): item is AuditLogVO => item !== null)
-      total.value = data.total ?? records.length
-      current.value = data.current ?? params?.current ?? 1
-      size.value = data.size ?? params?.size ?? 10
-    } finally {
-      loading.value = false
-    }
+  const currentLog = ref<AuditLogVO | null>(null)
+
+  /**
+   * 清空列表及详情
+   */
+  function clearLogs(): void {
+    _clearList()
+    currentLog.value = null
   }
 
   async function fetchLogById(id: number): Promise<AuditLogVO | null> {
@@ -92,12 +103,7 @@ export const useAuditLogStore = defineStore('auditLog', () => {
     }
   }
 
-  function clearLogs(): void {
-    logs.value = []
-    total.value = 0
-    current.value = 1
-    currentLog.value = null
-  }
+  const clearState = clearLogs
 
   return {
     logs,

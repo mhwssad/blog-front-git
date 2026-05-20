@@ -6,6 +6,7 @@
 
 import { ref } from 'vue'
 import { defineStore } from 'pinia'
+import { usePaginatedState } from '@/stores/composables'
 import { ContentApi } from '@/api/content'
 import type {
   PublicArticleCardVO,
@@ -25,118 +26,49 @@ import type {
 } from '@/types/api-types'
 
 export const useFrontContentStore = defineStore('frontContent', () => {
-  // ==================== 状态 ====================
+  const {
+    items: articles, total, current, size, loading,
+    fetch: fetchArticles, clear: clearArticlesRaw,
+  } = usePaginatedState<PublicArticleCardVO>({
+    fetchFn: (params) => ContentApi.getArticles(params),
+    defaultSize: 9,
+  })
 
-  /**
-   * 列表加载状态
-   */
-  const loading = ref(false)
-
-  /**
-   * 文章详情加载状态
-   */
   const articleLoading = ref(false)
-
-  /**
-   * 评论加载状态
-   */
   const commentLoading = ref(false)
-
-  /**
-   * 首页初始化加载状态
-   */
   const initializing = ref(false)
-
-  /**
-   * 文章列表
-   */
-  const articles = ref<PublicArticleCardVO[]>([])
-
-  /**
-   * 置顶文章列表
-   */
   const featuredArticles = ref<PublicArticleCardVO[]>([])
-
-  /**
-   * 热门文章列表
-   */
   const hotArticles = ref<PublicArticleCardVO[]>([])
-
-  /**
-   * 分类树
-   */
   const categories = ref<PublicCategoryTreeVO[]>([])
-
-  /**
-   * 标签列表
-   */
   const tags = ref<PublicTagVO[]>([])
-
-  /**
-   * 评论列表
-   */
   const comments = ref<PublicCommentVO[]>([])
-
-  /**
-   * 当前文章详情
-   */
   const currentArticle = ref<PublicArticleDetailVO | null>(null)
-
-  /**
-   * 当前文章的评论列表
-   */
   const articleComments = ref<PublicCommentVO[]>([])
-
-  /**
-   * 文章总数
-   */
-  const total = ref(0)
-
-  /**
-   * 当前页
-   */
-  const current = ref(1)
-
-  /**
-   * 每页数量
-   */
-  const size = ref(9)
+  const articleError = ref<number | null>(null)
 
   const authorSeries = ref<PublicArticleSeriesVO[]>([])
   const seriesDetail = ref<PublicArticleSeriesDetailVO | null>(null)
-  const lobbyMessages = ref<ChatLobbyMessageVO[]>([])
-  const lobbyMessageTotal = ref(0)
-  const publicChannels = ref<PublicChannelVO[]>([])
-  const publicChannelTotal = ref(0)
-  const publicChannelDetail = ref<PublicChannelDetailVO | null>(null)
   const seriesLoading = ref(false)
-  const lobbyLoading = ref(false)
-  const channelLoading = ref(false)
+
+  const {
+    items: lobbyMessages, total: lobbyMessageTotal, loading: lobbyLoading,
+    fetch: fetchLobbyMessages, clear: clearLobbyRaw,
+  } = usePaginatedState<ChatLobbyMessageVO>({
+    fetchFn: (params) => ContentApi.getLobbyMessages(params),
+  })
+
+  const {
+    items: publicChannels, total: publicChannelTotal, loading: channelLoading,
+    fetch: fetchPublicChannels, clear: clearChannelsRaw,
+  } = usePaginatedState<PublicChannelVO>({
+    fetchFn: (params) => ContentApi.getPublicChannels(params),
+  })
+
+  const publicChannelDetail = ref<PublicChannelDetailVO | null>(null)
   const friendLinks = ref<FriendLinkVO[]>([])
 
   // ==================== 操作 ====================
 
-  /**
-   * 分页查询文章列表
-   */
-  async function fetchArticles(params?: PublicArticleQueryRequest): Promise<void> {
-    loading.value = true
-    try {
-      const response = await ContentApi.getArticles(params)
-      const data = response.data.data
-
-      articles.value = data.records
-      total.value = data.total
-      current.value = data.current
-      size.value = data.size
-    } finally {
-      loading.value = false
-    }
-  }
-
-  /**
-   * 查询置顶文章
-   */
   async function fetchFeaturedArticles(): Promise<void> {
     const response = await ContentApi.getArticles({
       current: 1,
@@ -147,9 +79,6 @@ export const useFrontContentStore = defineStore('frontContent', () => {
     featuredArticles.value = response.data.data.records
   }
 
-  /**
-   * 查询热门文章
-   */
   async function fetchHotArticles(): Promise<void> {
     const response = await ContentApi.getArticles({
       current: 1,
@@ -160,25 +89,16 @@ export const useFrontContentStore = defineStore('frontContent', () => {
     hotArticles.value = response.data.data.records
   }
 
-  /**
-   * 查询分类树
-   */
   async function fetchCategoryTree(): Promise<void> {
     const response = await ContentApi.getCategoryTree()
     categories.value = response.data.data
   }
 
-  /**
-   * 查询标签列表
-   */
   async function fetchTags(params?: PublicTagQueryRequest): Promise<void> {
     const response = await ContentApi.getTags(params)
     tags.value = response.data.data
   }
 
-  /**
-   * 分页查询评论
-   */
   async function fetchComments(params?: PublicCommentQueryRequest): Promise<void> {
     commentLoading.value = true
     try {
@@ -188,11 +108,6 @@ export const useFrontContentStore = defineStore('frontContent', () => {
       commentLoading.value = false
     }
   }
-
-  /**
-   * 查询文章详情
-   */
-  const articleError = ref<number | null>(null)
 
   async function fetchArticleById(id: number): Promise<PublicArticleDetailVO | null> {
     articleLoading.value = true
@@ -211,9 +126,6 @@ export const useFrontContentStore = defineStore('frontContent', () => {
     }
   }
 
-  /**
-   * 分页查询文章的评论
-   */
   async function fetchArticleComments(
     articleId: number,
     params?: Omit<PublicCommentQueryRequest, 'targetType' | 'targetId'>
@@ -231,17 +143,11 @@ export const useFrontContentStore = defineStore('frontContent', () => {
     }
   }
 
-  /**
-   * 清空当前文章
-   */
   function clearCurrentArticle(): void {
     currentArticle.value = null
     articleComments.value = []
   }
 
-  /**
-   * 初始化首页数据（并行请求）
-   */
   async function initHome(params?: PublicArticleQueryRequest): Promise<void> {
     initializing.value = true
     try {
@@ -282,39 +188,7 @@ export const useFrontContentStore = defineStore('frontContent', () => {
     }
   }
 
-  // ==================== 大厅与频道 ====================
-
-  async function fetchLobbyMessages(params?: {
-    current?: number
-    size?: number
-    beforeMessageId?: number
-  }): Promise<void> {
-    lobbyLoading.value = true
-    try {
-      const response = await ContentApi.getLobbyMessages(params)
-      const data = response.data.data
-      lobbyMessages.value = data.records
-      lobbyMessageTotal.value = data.total
-    } finally {
-      lobbyLoading.value = false
-    }
-  }
-
-  async function fetchPublicChannels(params?: {
-    current?: number
-    size?: number
-    categoryCode?: string
-  }): Promise<void> {
-    channelLoading.value = true
-    try {
-      const response = await ContentApi.getPublicChannels(params)
-      const data = response.data.data
-      publicChannels.value = data.records
-      publicChannelTotal.value = data.total
-    } finally {
-      channelLoading.value = false
-    }
-  }
+  // ==================== 频道详情 ====================
 
   async function fetchPublicChannelDetail(
     conversationId: number,

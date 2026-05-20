@@ -5,12 +5,12 @@
 
 import { ref } from 'vue'
 import { defineStore } from 'pinia'
+import { usePaginatedState } from '@/stores/composables'
 import { ArticleApi } from '@/api/sys/article'
 import type {
   ArticleAccessSaveRequest,
   ArticleAdminVO,
   ArticleDetailVO,
-  ArticleQueryRequest,
   ArticleReviewAdminDetailVO,
   ArticleReviewDecisionRequest,
   ArticleReviewRepairRequest,
@@ -19,65 +19,24 @@ import type {
 } from '@/types/api-types'
 
 export const useArticleStore = defineStore('article', () => {
-  // ==================== 状态 ====================
+  const {
+    items: articles, total, current, size, loading,
+    fetch: fetchArticles, clear: clearArticlesRaw,
+  } = usePaginatedState<ArticleAdminVO>({
+    fetchFn: (params) => ArticleApi.getArticles(params),
+  })
 
-  /**
-   * 文章列表
-   */
-  const articles = ref<ArticleAdminVO[]>([])
-
-  /**
-   * 文章总数
-   */
-  const total = ref(0)
-
-  /**
-   * 当前页
-   */
-  const current = ref(1)
-
-  /**
-   * 每页数量
-   */
-  const size = ref(10)
-
-  /**
-   * 是否正在加载
-   */
-  const loading = ref(false)
-
-  /**
-   * 当前查看的文章
-   */
   const currentArticle = ref<ArticleDetailVO | null>(null)
 
-  const reviewArticles = ref<ArticleAdminVO[]>([])
-  const reviewTotal = ref(0)
-  const reviewLoading = ref(false)
+  const {
+    items: reviewArticles, total: reviewTotal, loading: reviewLoading,
+    fetch: fetchArticleReviews, clear: clearReviewsRaw,
+  } = usePaginatedState<ArticleAdminVO>({
+    fetchFn: (params) => ArticleApi.getArticleReviews(params),
+  })
 
   // ==================== 操作 ====================
 
-  /**
-   * 分页查询文章
-   */
-  async function fetchArticles(params?: ArticleQueryRequest): Promise<void> {
-    loading.value = true
-    try {
-      const response = await ArticleApi.getArticles(params)
-      const data = response.data.data
-
-      articles.value = data.records
-      total.value = data.total
-      current.value = data.current
-      size.value = data.size
-    } finally {
-      loading.value = false
-    }
-  }
-
-  /**
-   * 查询文章详情
-   */
   async function fetchArticleById(id: number): Promise<ArticleDetailVO | null> {
     try {
       const response = await ArticleApi.getArticleById(id)
@@ -88,9 +47,6 @@ export const useArticleStore = defineStore('article', () => {
     }
   }
 
-  /**
-   * 新增文章
-   */
   async function createArticle(data: ArticleSaveRequest): Promise<boolean> {
     try {
       await ArticleApi.createArticle(data)
@@ -100,9 +56,6 @@ export const useArticleStore = defineStore('article', () => {
     }
   }
 
-  /**
-   * 修改文章
-   */
   async function updateArticle(id: number, data: ArticleSaveRequest): Promise<boolean> {
     try {
       await ArticleApi.updateArticle(id, data)
@@ -112,9 +65,6 @@ export const useArticleStore = defineStore('article', () => {
     }
   }
 
-  /**
-   * 修改文章状态
-   */
   async function updateArticleStatus(id: number, data: StatusUpdateRequest): Promise<boolean> {
     try {
       await ArticleApi.updateArticleStatus(id, data)
@@ -124,9 +74,6 @@ export const useArticleStore = defineStore('article', () => {
     }
   }
 
-  /**
-   * 修改文章访问权限
-   */
   async function updateArticleAccess(id: number, data: ArticleAccessSaveRequest): Promise<boolean> {
     try {
       await ArticleApi.updateArticleAccess(id, data)
@@ -136,9 +83,6 @@ export const useArticleStore = defineStore('article', () => {
     }
   }
 
-  /**
-   * 删除文章
-   */
   async function deleteArticle(id: number): Promise<boolean> {
     try {
       await ArticleApi.deleteArticle(id)
@@ -163,24 +107,6 @@ export const useArticleStore = defineStore('article', () => {
       return true
     } catch {
       return false
-    }
-  }
-
-  async function fetchArticleReviews(params?: {
-    current?: number
-    size?: number
-    keyword?: string
-    authorId?: number
-    reviewStatus?: number
-  }): Promise<void> {
-    reviewLoading.value = true
-    try {
-      const response = await ArticleApi.getArticleReviews(params)
-      const data = response.data.data
-      reviewArticles.value = data.records
-      reviewTotal.value = data.total
-    } finally {
-      reviewLoading.value = false
     }
   }
 
@@ -232,14 +158,12 @@ export const useArticleStore = defineStore('article', () => {
   }
 
   function clearArticles(): void {
-    articles.value = []
-    total.value = 0
-    current.value = 1
+    clearArticlesRaw()
+    clearReviewsRaw()
     currentArticle.value = null
-    reviewArticles.value = []
-    reviewTotal.value = 0
-    reviewLoading.value = false
   }
+
+  const clearState = clearArticles
 
   return {
     articles,
@@ -267,5 +191,6 @@ export const useArticleStore = defineStore('article', () => {
     rejectArticleReview,
     repairArticleReviewStatus,
     clearArticles,
+    clearState,
   }
 })

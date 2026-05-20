@@ -7,28 +7,29 @@ import { ref } from 'vue'
 import { defineStore } from 'pinia'
 import { FriendLinkSysApi } from '@/api/sys/friendLink'
 import type { FriendLinkVO, FriendLinkSaveRequest, FriendLinkQueryRequest } from '@/types/api-types'
+import { usePaginatedState } from '../composables/usePaginatedState'
 
 export const useFriendLinkStore = defineStore('admin-friend-link', () => {
-  const links = ref<FriendLinkVO[]>([])
-  const total = ref(0)
-  const current = ref(1)
-  const size = ref(10)
-  const loading = ref(false)
+  const {
+    items: links,
+    total,
+    current,
+    size,
+    loading,
+    fetch: fetchLinks,
+    clear: clearLinksBase,
+  } = usePaginatedState<FriendLinkVO>({
+    fetchFn: (params?: FriendLinkQueryRequest) => FriendLinkSysApi.getFriendLinks(params),
+  })
+
   const currentLink = ref<FriendLinkVO | null>(null)
 
-  async function fetchLinks(params?: FriendLinkQueryRequest): Promise<void> {
-    loading.value = true
-    try {
-      const response = await FriendLinkSysApi.getFriendLinks(params)
-      const data = response.data.data
-      links.value = data.records
-      total.value = data.total
-      current.value = data.current
-      size.value = data.size
-    } finally {
-      loading.value = false
-    }
+  function clearLinks(): void {
+    clearLinksBase()
+    currentLink.value = null
   }
+
+  const clearState = clearLinks
 
   async function fetchLinkById(id: number): Promise<FriendLinkVO | null> {
     try {
@@ -76,13 +77,6 @@ export const useFriendLinkStore = defineStore('admin-friend-link', () => {
     }
   }
 
-  function clearLinks(): void {
-    links.value = []
-    total.value = 0
-    current.value = 1
-    currentLink.value = null
-  }
-
   return {
     links,
     total,
@@ -97,5 +91,6 @@ export const useFriendLinkStore = defineStore('admin-friend-link', () => {
     updateLinkStatus,
     deleteLink,
     clearLinks,
+    clearState,
   }
 })

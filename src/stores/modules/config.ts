@@ -11,34 +11,22 @@ import type {
   SysConfigAdminVO,
   SysConfigSaveRequest,
 } from '@/types/api-types'
+import { usePaginatedState } from '../composables/usePaginatedState'
 
 export const useConfigStore = defineStore('config', () => {
   // ==================== 状态 ====================
 
-  /**
-   * 配置列表
-   */
-  const configs = ref<SysConfigAdminVO[]>([])
-
-  /**
-   * 配置总数
-   */
-  const total = ref(0)
-
-  /**
-   * 当前页
-   */
-  const current = ref(1)
-
-  /**
-   * 每页数量
-   */
-  const size = ref(10)
-
-  /**
-   * 是否正在加载
-   */
-  const loading = ref(false)
+  const {
+    items: configs,
+    total,
+    current,
+    size,
+    loading,
+    fetch: fetchConfigs,
+    clear: clearConfigs,
+  } = usePaginatedState<SysConfigAdminVO>({
+    fetchFn: (params) => ConfigApi.getConfigs(params),
+  })
 
   /**
    * 当前编辑的配置
@@ -51,24 +39,6 @@ export const useConfigStore = defineStore('config', () => {
   const configCache = ref<Map<string, string>>(new Map())
 
   // ==================== 操作 ====================
-
-  /**
-   * 分页查询配置
-   */
-  async function fetchConfigs(params?: ConfigQueryRequest): Promise<void> {
-    loading.value = true
-    try {
-      const response = await ConfigApi.getConfigs(params)
-      const data = response.data.data
-
-      configs.value = data.records
-      total.value = data.total
-      current.value = data.current
-      size.value = data.size
-    } finally {
-      loading.value = false
-    }
-  }
 
   /**
    * 查询配置详情
@@ -169,14 +139,7 @@ export const useConfigStore = defineStore('config', () => {
     configCache.value.clear()
   }
 
-  /**
-   * 清空列表
-   */
-  function clearConfigs(): void {
-    configs.value = []
-    total.value = 0
-    current.value = 1
-  }
+  const clearState = clearConfigs
 
   return {
     // 状态
@@ -198,6 +161,7 @@ export const useConfigStore = defineStore('config', () => {
     setConfigValue,
     preloadConfigs,
     clearConfigCache,
-    clearConfigs
+    clearConfigs,
+    clearState,
   }
 })

@@ -12,30 +12,22 @@ import type {
   SysAuthorApplicationAdminReviewRequest,
   SysAuthorApplicationRepairRequest,
 } from '@/types/api-types'
+import { usePaginatedState } from '../composables/usePaginatedState'
 
 export const useAuthorApplicationStore = defineStore('admin-author-application', () => {
-  const applications = ref<SysAuthorApplicationAdminVO[]>([])
-  const total = ref(0)
-  const current = ref(1)
-  const size = ref(10)
-  const loading = ref(false)
-  const currentApplication = ref<SysAuthorApplicationAdminVO | null>(null)
+  const {
+    items: applications,
+    total,
+    current,
+    size,
+    loading,
+    fetch: fetchApplications,
+    clear: clearApplications,
+  } = usePaginatedState<SysAuthorApplicationAdminVO>({
+    fetchFn: (params) => AuthorApplicationSysApi.getApplications(params),
+  })
 
-  async function fetchApplications(
-    params?: SysAuthorApplicationAdminPageQuery,
-  ): Promise<void> {
-    loading.value = true
-    try {
-      const response = await AuthorApplicationSysApi.getApplications(params)
-      const data = response.data.data
-      applications.value = data.records
-      total.value = data.total
-      current.value = data.current
-      size.value = data.size
-    } finally {
-      loading.value = false
-    }
-  }
+  const currentApplication = ref<SysAuthorApplicationAdminVO | null>(null)
 
   async function fetchApplicationById(
     id: number,
@@ -74,10 +66,7 @@ export const useAuthorApplicationStore = defineStore('admin-author-application',
   }
 
   function clearState(): void {
-    applications.value = []
-    total.value = 0
-    current.value = 1
-    loading.value = false
+    clearApplications()
     currentApplication.value = null
   }
 

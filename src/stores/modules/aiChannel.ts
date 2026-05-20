@@ -1,5 +1,5 @@
-import { ref } from 'vue'
 import { defineStore } from 'pinia'
+import { usePaginatedState } from '@/stores/composables'
 import { AiSysApi } from '@/api/sys/ai'
 import type {
   AiChannelConfigVO,
@@ -10,34 +10,24 @@ import type {
 } from '@/types/api-types'
 
 export const useAiChannelStore = defineStore('aiChannel', () => {
-  const channels = ref<AiChannelConfigVO[]>([])
-  const total = ref(0)
-  const current = ref(1)
-  const size = ref(10)
-  const loading = ref(false)
+  const {
+    items: channels, total, current, size, loading,
+    fetch: fetchChannels, clear: clearChannelsRaw,
+  } = usePaginatedState<AiChannelConfigVO>({
+    fetchFn: (params) => AiSysApi.getChannels(params),
+  })
 
-  const accounts = ref<AiChannelAccountVO[]>([])
-  const accountTotal = ref(0)
-  const accountLoading = ref(false)
+  const {
+    items: accounts, total: accountTotal, loading: accountLoading,
+    fetch: fetchAccountsRaw, clear: clearAccountsRaw,
+  } = usePaginatedState<AiChannelAccountVO>({
+    fetchFn: (params) => {
+      const { channelId, ...rest } = params ?? {}
+      return AiSysApi.getChannelAccounts(channelId, rest)
+    },
+  })
 
-  async function fetchChannels(params?: {
-    channelName?: string
-    status?: number
-    current?: number
-    size?: number
-  }): Promise<void> {
-    loading.value = true
-    try {
-      const response = await AiSysApi.getChannels(params)
-      const data = response.data.data
-      channels.value = data.records
-      total.value = data.total
-      current.value = data.current
-      size.value = data.size
-    } finally {
-      loading.value = false
-    }
-  }
+  // ==================== 渠道 CRUD ====================
 
   async function fetchChannelById(id: number): Promise<AiChannelConfigVO | null> {
     try {
@@ -85,25 +75,16 @@ export const useAiChannelStore = defineStore('aiChannel', () => {
   }
 
   function clearChannels(): void {
-    channels.value = []
-    total.value = 0
-    current.value = 1
-    accounts.value = []
-    accountTotal.value = 0
+    clearChannelsRaw()
+    clearAccountsRaw()
   }
+
+  const clearState = clearChannels
 
   // ==================== 渠道账号池 ====================
 
   async function fetchChannelAccounts(channelId: number, params?: { current?: number; size?: number }): Promise<void> {
-    accountLoading.value = true
-    try {
-      const response = await AiSysApi.getChannelAccounts(channelId, params)
-      const data = response.data.data
-      accounts.value = data.records
-      accountTotal.value = data.total
-    } finally {
-      accountLoading.value = false
-    }
+    await fetchAccountsRaw({ channelId, ...params })
   }
 
   async function fetchChannelAccountById(channelId: number, id: number): Promise<AiChannelAccountVO | null> {
@@ -160,6 +141,7 @@ export const useAiChannelStore = defineStore('aiChannel', () => {
     accounts,
     accountTotal,
     accountLoading,
+
     fetchChannels,
     fetchChannelById,
     createChannel,
@@ -167,6 +149,7 @@ export const useAiChannelStore = defineStore('aiChannel', () => {
     updateChannelStatus,
     deleteChannel,
     clearChannels,
+    clearState,
     fetchChannelAccounts,
     fetchChannelAccountById,
     createChannelAccount,

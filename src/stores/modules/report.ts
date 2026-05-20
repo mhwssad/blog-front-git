@@ -3,7 +3,6 @@
  * 基于 report-api.md 文档
  */
 
-import { ref } from 'vue'
 import { defineStore } from 'pinia'
 import { ReportSysApi } from '@/api/sys/report'
 import type {
@@ -13,35 +12,22 @@ import type {
   ReportRejectRequest,
   ReportRepairRequest,
 } from '@/types/api-types'
+import { usePaginatedState } from '../composables/usePaginatedState'
 
 export const useReportStore = defineStore('report', () => {
-  const reports = ref<ReportAdminVO[]>([])
-  const total = ref(0)
-  const current = ref(1)
-  const size = ref(10)
-  const loading = ref(false)
+  const {
+    items: reports,
+    total,
+    current,
+    size,
+    loading,
+    fetch: fetchReports,
+    clear: clearReports,
+  } = usePaginatedState<ReportAdminVO>({
+    fetchFn: (params?: Record<string, unknown>) => ReportSysApi.getReports(params),
+  })
 
-  async function fetchReports(params?: {
-    status?: number
-    reportTargetType?: string
-    reporterUserId?: number
-    reportedStart?: string
-    reportedEnd?: string
-    current?: number
-    size?: number
-  }): Promise<void> {
-    loading.value = true
-    try {
-      const response = await ReportSysApi.getReports(params)
-      const data = response.data.data
-      reports.value = data.records
-      total.value = data.total
-      current.value = data.current
-      size.value = data.size
-    } finally {
-      loading.value = false
-    }
-  }
+  const clearState = clearReports
 
   async function getReportById(id: number): Promise<ReportAdminVO | null> {
     try {
@@ -106,12 +92,6 @@ export const useReportStore = defineStore('report', () => {
     }
   }
 
-  function clearReports(): void {
-    reports.value = []
-    total.value = 0
-    current.value = 1
-  }
-
   return {
     reports,
     total,
@@ -127,5 +107,6 @@ export const useReportStore = defineStore('report', () => {
     overrideReport,
     repairReport,
     clearReports,
+    clearState,
   }
 })

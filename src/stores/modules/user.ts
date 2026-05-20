@@ -19,34 +19,22 @@ import type {
   AdjustExperienceRequest,
   UserRoleAuditAssignRequest,
 } from '@/types/api-types'
+import { usePaginatedState } from '../composables/usePaginatedState'
 
 export const useUserStore = defineStore('user', () => {
   // ==================== 状态 ====================
 
-  /**
-   * 用户列表
-   */
-  const users = ref<SysUserAdminVO[]>([])
-
-  /**
-   * 用户总数
-   */
-  const total = ref(0)
-
-  /**
-   * 当前页
-   */
-  const current = ref(1)
-
-  /**
-   * 每页数量
-   */
-  const size = ref(10)
-
-  /**
-   * 是否正在加载
-   */
-  const loading = ref(false)
+  const {
+    items: users,
+    total,
+    current,
+    size,
+    loading,
+    fetch: fetchUsers,
+    clear: clearUsers,
+  } = usePaginatedState<SysUserAdminVO>({
+    fetchFn: (params) => UserApi.getUsers(params),
+  })
 
   /**
    * 当前编辑的用户
@@ -54,24 +42,6 @@ export const useUserStore = defineStore('user', () => {
   const currentUser = ref<SysUserAdminVO | null>(null)
 
   // ==================== 操作 ====================
-
-  /**
-   * 分页查询用户
-   */
-  async function fetchUsers(params?: UserQueryRequest): Promise<void> {
-    loading.value = true
-    try {
-      const response = await UserApi.getUsers(params)
-      const data = response.data.data
-
-      users.value = data.records
-      total.value = data.total
-      current.value = data.current
-      size.value = data.size
-    } finally {
-      loading.value = false
-    }
-  }
 
   /**
    * 查询用户详情
@@ -220,14 +190,7 @@ export const useUserStore = defineStore('user', () => {
     }
   }
 
-  /**
-   * 清空列表
-   */
-  function clearUsers(): void {
-    users.value = []
-    total.value = 0
-    current.value = 1
-  }
+  const clearState = clearUsers
 
   return {
     // 状态
@@ -253,6 +216,7 @@ export const useUserStore = defineStore('user', () => {
     adjustUserLevel,
     adjustUserExperience,
     assignRolesWithAudit,
-    clearUsers
+    clearUsers,
+    clearState,
   }
 })

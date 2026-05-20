@@ -5,38 +5,30 @@
 
 import { ref } from 'vue'
 import { defineStore } from 'pinia'
+import { usePaginatedState } from '@/stores/composables'
 import { AiSysApi } from '@/api/sys/ai'
 import type {
   AiMcpServerVO,
   AiMcpServerSaveRequest,
-  AiMcpServerQueryRequest,
   AiMcpDiscoverResultVO,
   AiMcpToolSnapshotVO,
   AiMcpHealthVO,
 } from '@/types/api-types'
 
 export const useAiMcpStore = defineStore('admin-ai-mcp', () => {
-  const servers = ref<AiMcpServerVO[]>([])
-  const serverTotal = ref(0)
+  const {
+    items: servers, total: serverTotal, loading,
+    fetch: fetchServers, clear: clearServersRaw,
+  } = usePaginatedState<AiMcpServerVO>({
+    fetchFn: (params) => AiSysApi.getMcpServers(params),
+  })
+
   const currentServer = ref<AiMcpServerVO | null>(null)
-  const loading = ref(false)
 
   const toolSnapshots = ref<AiMcpToolSnapshotVO[]>([])
   const toolLoading = ref(false)
 
   // ==================== 服务管理 ====================
-
-  async function fetchServers(params?: AiMcpServerQueryRequest): Promise<void> {
-    loading.value = true
-    try {
-      const response = await AiSysApi.getMcpServers(params)
-      const data = response.data.data
-      servers.value = data.records
-      serverTotal.value = data.total
-    } finally {
-      loading.value = false
-    }
-  }
 
   async function fetchServerById(id: number): Promise<AiMcpServerVO | null> {
     try {
@@ -117,8 +109,7 @@ export const useAiMcpStore = defineStore('admin-ai-mcp', () => {
   // ==================== 清理 ====================
 
   function clearState(): void {
-    servers.value = []
-    serverTotal.value = 0
+    clearServersRaw()
     currentServer.value = null
     toolSnapshots.value = []
   }
@@ -130,6 +121,7 @@ export const useAiMcpStore = defineStore('admin-ai-mcp', () => {
     loading,
     toolSnapshots,
     toolLoading,
+
     fetchServers,
     fetchServerById,
     createServer,

@@ -6,6 +6,7 @@
 import { ref } from 'vue'
 import { defineStore } from 'pinia'
 import { LogApi } from '@/api/sys/log'
+import { usePaginatedState } from '../composables/usePaginatedState'
 import type {
   LogQueryRequest,
   SysLogAdminVO,
@@ -31,30 +32,28 @@ function normalizeLogRecord(log: SysLogAdminVO | null | undefined): SysLogAdminV
 export const useLogStore = defineStore('log', () => {
   // ==================== 状态 ====================
 
-  /**
-   * 日志列表
-   */
-  const logs = ref<SysLogAdminVO[]>([])
-
-  /**
-   * 日志总数
-   */
-  const total = ref(0)
-
-  /**
-   * 当前页
-   */
-  const current = ref(1)
-
-  /**
-   * 每页数量
-   */
-  const size = ref(10)
-
-  /**
-   * 是否正在加载
-   */
-  const loading = ref(false)
+  const {
+    items: logs,
+    total,
+    current,
+    size,
+    loading,
+    fetch: fetchLogs,
+    clear: clearLogs,
+  } = usePaginatedState<SysLogAdminVO>({
+    fetchFn: async (params) => {
+      const response = await LogApi.getLogs(params)
+      const data = response.data.data
+      const records = Array.isArray(data.records) ? data.records : []
+      response.data.data = {
+        records: records.map(normalizeLogRecord).filter((item): item is SysLogAdminVO => item !== null),
+        total: data.total ?? records.length,
+        current: data.current ?? params?.current ?? 1,
+        size: data.size ?? params?.size ?? 10,
+      }
+      return response
+    },
+  })
 
   /**
    * 当前查看的日志
@@ -62,25 +61,6 @@ export const useLogStore = defineStore('log', () => {
   const currentLog = ref<SysLogAdminVO | null>(null)
 
   // ==================== 操作 ====================
-
-  /**
-   * 分页查询日志
-   */
-  async function fetchLogs(params?: LogQueryRequest): Promise<void> {
-    loading.value = true
-    try {
-      const response = await LogApi.getLogs(params)
-      const data = response.data.data
-      const records = Array.isArray(data.records) ? data.records : []
-
-      logs.value = records.map(normalizeLogRecord).filter((item): item is SysLogAdminVO => item !== null)
-      total.value = data.total ?? records.length
-      current.value = data.current ?? params?.current ?? 1
-      size.value = data.size ?? params?.size ?? 10
-    } finally {
-      loading.value = false
-    }
-  }
 
   /**
    * 查询日志详情
@@ -119,14 +99,7 @@ export const useLogStore = defineStore('log', () => {
     }
   }
 
-  /**
-   * 清空列表
-   */
-  function clearLogs(): void {
-    logs.value = []
-    total.value = 0
-    current.value = 1
-  }
+  const clearState = clearLogs
 
   return {
     // 状态

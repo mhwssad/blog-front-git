@@ -6,6 +6,7 @@
 import { ref } from 'vue'
 import { defineStore } from 'pinia'
 import { RoleApi } from '@/api/sys/role'
+import { usePaginatedState } from '../composables/usePaginatedState'
 import type {
   RoleQueryRequest,
   SysRoleAdminVO,
@@ -17,30 +18,17 @@ import type {
 export const useRoleStore = defineStore('role', () => {
   // ==================== 状态 ====================
 
-  /**
-   * 角色列表
-   */
-  const roles = ref<SysRoleAdminVO[]>([])
-
-  /**
-   * 角色总数
-   */
-  const total = ref(0)
-
-  /**
-   * 当前页
-   */
-  const current = ref(1)
-
-  /**
-   * 每页数量
-   */
-  const size = ref(10)
-
-  /**
-   * 是否正在加载
-   */
-  const loading = ref(false)
+  const {
+    items: roles,
+    total,
+    current,
+    size,
+    loading,
+    fetch: fetchRoles,
+    clear: clearRoles,
+  } = usePaginatedState<SysRoleAdminVO>({
+    fetchFn: (params) => RoleApi.getRoles(params),
+  })
 
   /**
    * 当前编辑的角色
@@ -48,24 +36,6 @@ export const useRoleStore = defineStore('role', () => {
   const currentRole = ref<SysRoleAdminVO | null>(null)
 
   // ==================== 操作 ====================
-
-  /**
-   * 分页查询角色
-   */
-  async function fetchRoles(params?: RoleQueryRequest): Promise<void> {
-    loading.value = true
-    try {
-      const response = await RoleApi.getRoles(params)
-      const data = response.data.data
-
-      roles.value = data.records
-      total.value = data.total
-      current.value = data.current
-      size.value = data.size
-    } finally {
-      loading.value = false
-    }
-  }
 
   /**
    * 查询角色详情
@@ -152,14 +122,7 @@ export const useRoleStore = defineStore('role', () => {
     }
   }
 
-  /**
-   * 清空列表
-   */
-  function clearRoles(): void {
-    roles.value = []
-    total.value = 0
-    current.value = 1
-  }
+  const clearState = clearRoles
 
   return {
     // 状态

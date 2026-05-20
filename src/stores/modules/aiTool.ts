@@ -5,47 +5,43 @@
 
 import { ref } from 'vue'
 import { defineStore } from 'pinia'
+import { usePaginatedState } from '@/stores/composables'
 import { AiSysApi } from '@/api/sys/ai'
 import type {
   AiToolVO,
   AiToolSaveRequest,
-  AiToolQueryRequest,
   AiToolExecuteRequest,
   AiToolExecuteResultVO,
   AiToolCallLogVO,
-  AiToolCallLogQueryRequest,
   AiToolAuthorizationVO,
   AiToolAuthorizationSaveRequest,
-  AiToolAuthorizationQueryRequest,
 } from '@/types/api-types'
 
 export const useAiToolStore = defineStore('admin-ai-tool', () => {
-  const tools = ref<AiToolVO[]>([])
-  const toolTotal = ref(0)
+  const {
+    items: tools, total: toolTotal, loading,
+    fetch: fetchTools, clear: clearToolsRaw,
+  } = usePaginatedState<AiToolVO>({
+    fetchFn: (params) => AiSysApi.getTools(params),
+  })
+
   const currentTool = ref<AiToolVO | null>(null)
-  const loading = ref(false)
 
-  const callLogs = ref<AiToolCallLogVO[]>([])
-  const callLogTotal = ref(0)
-  const callLogLoading = ref(false)
+  const {
+    items: callLogs, total: callLogTotal, loading: callLogLoading,
+    fetch: fetchCallLogs, clear: clearCallLogsRaw,
+  } = usePaginatedState<AiToolCallLogVO>({
+    fetchFn: (params) => AiSysApi.getToolCallLogs(params),
+  })
 
-  const authorizations = ref<AiToolAuthorizationVO[]>([])
-  const authTotal = ref(0)
-  const authLoading = ref(false)
+  const {
+    items: authorizations, total: authTotal, loading: authLoading,
+    fetch: fetchAuthorizations, clear: clearAuthsRaw,
+  } = usePaginatedState<AiToolAuthorizationVO>({
+    fetchFn: (params) => AiSysApi.getToolAuthorizations(params),
+  })
 
   // ==================== 工具管理 ====================
-
-  async function fetchTools(params?: AiToolQueryRequest): Promise<void> {
-    loading.value = true
-    try {
-      const response = await AiSysApi.getTools(params)
-      const data = response.data.data
-      tools.value = data.records
-      toolTotal.value = data.total
-    } finally {
-      loading.value = false
-    }
-  }
 
   async function fetchToolById(id: number): Promise<AiToolVO | null> {
     try {
@@ -102,33 +98,7 @@ export const useAiToolStore = defineStore('admin-ai-tool', () => {
     }
   }
 
-  // ==================== 调用日志 ====================
-
-  async function fetchCallLogs(params?: AiToolCallLogQueryRequest): Promise<void> {
-    callLogLoading.value = true
-    try {
-      const response = await AiSysApi.getToolCallLogs(params)
-      const data = response.data.data
-      callLogs.value = data.records
-      callLogTotal.value = data.total
-    } finally {
-      callLogLoading.value = false
-    }
-  }
-
   // ==================== 工具授权 ====================
-
-  async function fetchAuthorizations(params?: AiToolAuthorizationQueryRequest): Promise<void> {
-    authLoading.value = true
-    try {
-      const response = await AiSysApi.getToolAuthorizations(params)
-      const data = response.data.data
-      authorizations.value = data.records
-      authTotal.value = data.total
-    } finally {
-      authLoading.value = false
-    }
-  }
 
   async function createAuthorization(data: AiToolAuthorizationSaveRequest): Promise<boolean> {
     try {
@@ -160,13 +130,10 @@ export const useAiToolStore = defineStore('admin-ai-tool', () => {
   // ==================== 清理 ====================
 
   function clearState(): void {
-    tools.value = []
-    toolTotal.value = 0
+    clearToolsRaw()
+    clearCallLogsRaw()
+    clearAuthsRaw()
     currentTool.value = null
-    callLogs.value = []
-    callLogTotal.value = 0
-    authorizations.value = []
-    authTotal.value = 0
   }
 
   return {
@@ -180,6 +147,7 @@ export const useAiToolStore = defineStore('admin-ai-tool', () => {
     authorizations,
     authTotal,
     authLoading,
+
     fetchTools,
     fetchToolById,
     createTool,

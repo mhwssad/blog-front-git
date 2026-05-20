@@ -6,6 +6,7 @@
 import { ref } from 'vue'
 import { defineStore } from 'pinia'
 import { NoticeApi } from '@/api/sys/notice'
+import { usePaginatedState } from '../composables/usePaginatedState'
 import type {
   NoticeQueryRequest,
   SysNoticeAdminVO,
@@ -15,30 +16,17 @@ import type {
 export const useNoticeStore = defineStore('notice', () => {
   // ==================== 状态 ====================
 
-  /**
-   * 通知列表
-   */
-  const notices = ref<SysNoticeAdminVO[]>([])
-
-  /**
-   * 通知总数
-   */
-  const total = ref(0)
-
-  /**
-   * 当前页
-   */
-  const current = ref(1)
-
-  /**
-   * 每页数量
-   */
-  const size = ref(10)
-
-  /**
-   * 是否正在加载
-   */
-  const loading = ref(false)
+  const {
+    items: notices,
+    total,
+    current,
+    size,
+    loading,
+    fetch: fetchNotices,
+    clear: clearNotices,
+  } = usePaginatedState<SysNoticeAdminVO>({
+    fetchFn: (params) => NoticeApi.getNotices(params),
+  })
 
   /**
    * 当前编辑的通知
@@ -46,24 +34,6 @@ export const useNoticeStore = defineStore('notice', () => {
   const currentNotice = ref<SysNoticeAdminVO | null>(null)
 
   // ==================== 操作 ====================
-
-  /**
-   * 分页查询通知
-   */
-  async function fetchNotices(params?: NoticeQueryRequest): Promise<void> {
-    loading.value = true
-    try {
-      const response = await NoticeApi.getNotices(params)
-      const data = response.data.data
-
-      notices.value = data.records
-      total.value = data.total
-      current.value = data.current
-      size.value = data.size
-    } finally {
-      loading.value = false
-    }
-  }
 
   /**
    * 查询通知详情
@@ -138,14 +108,7 @@ export const useNoticeStore = defineStore('notice', () => {
     }
   }
 
-  /**
-   * 清空列表
-   */
-  function clearNotices(): void {
-    notices.value = []
-    total.value = 0
-    current.value = 1
-  }
+  const clearState = clearNotices
 
   return {
     // 状态

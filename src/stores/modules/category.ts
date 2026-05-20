@@ -114,6 +114,8 @@ export const useCategoryStore = defineStore('category', () => {
     currentCategory.value = null
   }
 
+  const clearState = clearCategories
+
   return {
     // 状态
     categories,
@@ -128,5 +130,6 @@ export const useCategoryStore = defineStore('category', () => {
     updateCategoryStatus,
     deleteCategory,
     clearCategories,
+    clearState,
   }
 })

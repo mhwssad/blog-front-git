@@ -5,50 +5,44 @@
 
 import { ref } from 'vue'
 import { defineStore } from 'pinia'
+import { usePaginatedState } from '@/stores/composables'
 import { ForumSectionSysApi, ForumPostSysApi, ForumReplySysApi } from '@/api/sys/forum'
 import type {
   ForumSectionVO,
   ForumSectionSaveRequest,
-  ForumSectionQueryRequest,
   ForumPostAdminVO,
   ForumPostAdminDetailVO,
-  ForumPostAdminQueryRequest,
   ForumReplyAdminVO,
-  ForumReplyAdminQueryRequest,
   StatusUpdateRequest,
 } from '@/types/api-types'
 
 export const useForumAdminStore = defineStore('admin-forum', () => {
-  // ==================== 版块状态 ====================
-  const sections = ref<ForumSectionVO[]>([])
-  const sectionTotal = ref(0)
+  const {
+    items: sections, total: sectionTotal, loading: sectionLoading,
+    fetch: fetchSections, clear: clearSectionsRaw,
+  } = usePaginatedState<ForumSectionVO>({
+    fetchFn: (params) => ForumSectionSysApi.getSections(params),
+  })
+
   const currentSection = ref<ForumSectionVO | null>(null)
-  const sectionLoading = ref(false)
 
-  // ==================== 帖子状态 ====================
-  const posts = ref<ForumPostAdminVO[]>([])
-  const postTotal = ref(0)
+  const {
+    items: posts, total: postTotal, loading: postLoading,
+    fetch: fetchPosts, clear: clearPostsRaw,
+  } = usePaginatedState<ForumPostAdminVO>({
+    fetchFn: (params) => ForumPostSysApi.getPosts(params),
+  })
+
   const currentPost = ref<ForumPostAdminDetailVO | null>(null)
-  const postLoading = ref(false)
 
-  // ==================== 回复状态 ====================
-  const replies = ref<ForumReplyAdminVO[]>([])
-  const replyTotal = ref(0)
-  const replyLoading = ref(false)
+  const {
+    items: replies, total: replyTotal, loading: replyLoading,
+    fetch: fetchReplies, clear: clearRepliesRaw,
+  } = usePaginatedState<ForumReplyAdminVO>({
+    fetchFn: (params) => ForumReplySysApi.getReplies(params),
+  })
 
   // ==================== 版块管理 ====================
-
-  async function fetchSections(params?: ForumSectionQueryRequest): Promise<void> {
-    sectionLoading.value = true
-    try {
-      const response = await ForumSectionSysApi.getSections(params)
-      const data = response.data.data
-      sections.value = data.records
-      sectionTotal.value = data.total
-    } finally {
-      sectionLoading.value = false
-    }
-  }
 
   async function fetchSectionById(id: number): Promise<ForumSectionVO | null> {
     try {
@@ -97,18 +91,6 @@ export const useForumAdminStore = defineStore('admin-forum', () => {
   }
 
   // ==================== 帖子管理 ====================
-
-  async function fetchPosts(params?: ForumPostAdminQueryRequest): Promise<void> {
-    postLoading.value = true
-    try {
-      const response = await ForumPostSysApi.getPosts(params)
-      const data = response.data.data
-      posts.value = data.records
-      postTotal.value = data.total
-    } finally {
-      postLoading.value = false
-    }
-  }
 
   async function fetchPostById(id: number): Promise<ForumPostAdminDetailVO | null> {
     try {
@@ -167,18 +149,6 @@ export const useForumAdminStore = defineStore('admin-forum', () => {
 
   // ==================== 回复管理 ====================
 
-  async function fetchReplies(params?: ForumReplyAdminQueryRequest): Promise<void> {
-    replyLoading.value = true
-    try {
-      const response = await ForumReplySysApi.getReplies(params)
-      const data = response.data.data
-      replies.value = data.records
-      replyTotal.value = data.total
-    } finally {
-      replyLoading.value = false
-    }
-  }
-
   async function hideReply(id: number): Promise<boolean> {
     try {
       await ForumReplySysApi.hideReply(id)
@@ -209,14 +179,11 @@ export const useForumAdminStore = defineStore('admin-forum', () => {
   // ==================== 清理 ====================
 
   function clearState(): void {
-    sections.value = []
-    sectionTotal.value = 0
+    clearSectionsRaw()
+    clearPostsRaw()
+    clearRepliesRaw()
     currentSection.value = null
-    posts.value = []
-    postTotal.value = 0
     currentPost.value = null
-    replies.value = []
-    replyTotal.value = 0
   }
 
   return {

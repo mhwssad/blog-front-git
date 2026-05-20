@@ -7,34 +7,24 @@ import { ref } from 'vue'
 import { defineStore } from 'pinia'
 import { FootprintApi } from '@/api/sys/footprint'
 import type { FootprintQueryRequest, FootprintVO } from '@/types/api-types'
+import { usePaginatedState } from '../composables/usePaginatedState'
 
 export const useFootprintStore = defineStore('footprint', () => {
   // ==================== 状态 ====================
 
-  /**
-   * 足迹列表
-   */
-  const footprints = ref<FootprintVO[]>([])
+  const {
+    items: footprints,
+    total,
+    current,
+    size,
+    loading,
+    fetch: fetchFootprints,
+    clear,
+  } = usePaginatedState<FootprintVO>({
+    fetchFn: (params?: FootprintQueryRequest) => FootprintApi.getFootprints(params),
+  })
 
-  /**
-   * 足迹总数
-   */
-  const total = ref(0)
-
-  /**
-   * 当前页
-   */
-  const current = ref(1)
-
-  /**
-   * 每页数量
-   */
-  const size = ref(10)
-
-  /**
-   * 是否正在加载
-   */
-  const loading = ref(false)
+  const clearState = clear
 
   /**
    * 是否正在清理
@@ -42,24 +32,6 @@ export const useFootprintStore = defineStore('footprint', () => {
   const clearing = ref(false)
 
   // ==================== 操作 ====================
-
-  /**
-   * 分页查询足迹
-   */
-  async function fetchFootprints(params?: FootprintQueryRequest): Promise<void> {
-    loading.value = true
-    try {
-      const response = await FootprintApi.getFootprints(params)
-      const data = response.data.data
-
-      footprints.value = data.records
-      total.value = data.total
-      current.value = data.current
-      size.value = data.size
-    } finally {
-      loading.value = false
-    }
-  }
 
   /**
    * 删除单条足迹
@@ -88,16 +60,6 @@ export const useFootprintStore = defineStore('footprint', () => {
     }
   }
 
-  /**
-   * 清空列表
-   */
-  function clear(): void {
-    footprints.value = []
-    total.value = 0
-    current.value = 1
-    size.value = 10
-  }
-
   return {
     // 状态
     footprints,
@@ -112,5 +74,6 @@ export const useFootprintStore = defineStore('footprint', () => {
     deleteFootprint,
     clearFootprints,
     clear,
+    clearState,
   }
 })

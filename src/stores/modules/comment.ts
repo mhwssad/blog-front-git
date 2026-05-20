@@ -6,6 +6,7 @@
 import { ref } from 'vue'
 import { defineStore } from 'pinia'
 import { CommentApi } from '@/api/sys/comment'
+import { usePaginatedState } from '../composables/usePaginatedState'
 import type {
   CommentQueryRequest,
   CommentVO,
@@ -15,30 +16,17 @@ import type {
 export const useCommentStore = defineStore('comment', () => {
   // ==================== 状态 ====================
 
-  /**
-   * 评论列表
-   */
-  const comments = ref<CommentVO[]>([])
-
-  /**
-   * 评论总数
-   */
-  const total = ref(0)
-
-  /**
-   * 当前页
-   */
-  const current = ref(1)
-
-  /**
-   * 每页数量
-   */
-  const size = ref(10)
-
-  /**
-   * 是否正在加载
-   */
-  const loading = ref(false)
+  const {
+    items: comments,
+    total,
+    current,
+    size,
+    loading,
+    fetch: fetchComments,
+    clear: _clearList,
+  } = usePaginatedState<CommentVO>({
+    fetchFn: (params) => CommentApi.getComments(params),
+  })
 
   /**
    * 当前查看的评论
@@ -46,24 +34,6 @@ export const useCommentStore = defineStore('comment', () => {
   const currentComment = ref<CommentVO | null>(null)
 
   // ==================== 操作 ====================
-
-  /**
-   * 分页查询评论
-   */
-  async function fetchComments(params?: CommentQueryRequest): Promise<void> {
-    loading.value = true
-    try {
-      const response = await CommentApi.getComments(params)
-      const data = response.data.data
-
-      comments.value = data.records
-      total.value = data.total
-      current.value = data.current
-      size.value = data.size
-    } finally {
-      loading.value = false
-    }
-  }
 
   /**
    * 查询评论详情
@@ -103,14 +73,14 @@ export const useCommentStore = defineStore('comment', () => {
   }
 
   /**
-   * 清空列表
+   * 清空列表及详情
    */
   function clearComments(): void {
-    comments.value = []
-    total.value = 0
-    current.value = 1
+    _clearList()
     currentComment.value = null
   }
+
+  const clearState = clearComments
 
   return {
     // 状态

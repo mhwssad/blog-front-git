@@ -11,34 +11,24 @@ import type {
   FollowAdminRelationVO,
   FollowRelationCleanRequest,
 } from '@/types/api-types'
+import { usePaginatedState } from '../composables/usePaginatedState'
 
 export const useFollowStore = defineStore('follow', () => {
   // ==================== 状态 ====================
 
-  /**
-   * 关注关系列表
-   */
-  const relations = ref<FollowAdminRelationVO[]>([])
+  const {
+    items: relations,
+    total,
+    current,
+    size,
+    loading,
+    fetch: fetchFollows,
+    clear,
+  } = usePaginatedState<FollowAdminRelationVO>({
+    fetchFn: (params?: FollowAdminQueryRequest) => SysFollowApi.getFollows(params),
+  })
 
-  /**
-   * 关系总数
-   */
-  const total = ref(0)
-
-  /**
-   * 当前页
-   */
-  const current = ref(1)
-
-  /**
-   * 每页数量
-   */
-  const size = ref(10)
-
-  /**
-   * 是否正在加载
-   */
-  const loading = ref(false)
+  const clearState = clear
 
   /**
    * 是否正在清理
@@ -46,24 +36,6 @@ export const useFollowStore = defineStore('follow', () => {
   const cleaning = ref(false)
 
   // ==================== 操作 ====================
-
-  /**
-   * 分页查询关注关系
-   */
-  async function fetchFollows(params?: FollowAdminQueryRequest): Promise<void> {
-    loading.value = true
-    try {
-      const response = await SysFollowApi.getFollows(params)
-      const data = response.data.data
-
-      relations.value = data.records
-      total.value = data.total
-      current.value = data.current
-      size.value = data.size
-    } finally {
-      loading.value = false
-    }
-  }
 
   /**
    * 清理关注关系
@@ -79,16 +51,6 @@ export const useFollowStore = defineStore('follow', () => {
     }
   }
 
-  /**
-   * 清空列表
-   */
-  function clear(): void {
-    relations.value = []
-    total.value = 0
-    current.value = 1
-    size.value = 10
-  }
-
   return {
     // 状态
     relations,
@@ -102,5 +64,6 @@ export const useFollowStore = defineStore('follow', () => {
     fetchFollows,
     cleanFollows,
     clear,
+    clearState,
   }
 })
