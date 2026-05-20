@@ -1,5 +1,5 @@
 <template>
-  <div class="logo">
+  <div class="logo" :class="{ 'logo--front': mode === 'front' }">
     <router-link class="logo-link" to="/">
       <img :src="logoUrl" alt="Logo" class="logo-image" />
       <transition name="logo-text">
@@ -18,10 +18,12 @@ import logoUrl from '@/assets/images/logo.png'
 
 interface Props {
   collapse?: boolean
+  mode?: 'admin' | 'front'
 }
 
 withDefaults(defineProps<Props>(), {
-  collapse: false
+  collapse: false,
+  mode: 'admin',
 })
 
 const configStore = useConfigStore()
@@ -84,5 +86,31 @@ onMounted(async () => {
 .logo-text-leave-to {
   opacity: 0;
   transform: translateX(-10px);
+}
+
+/* 前台模式 */
+.logo--front {
+  background-color: transparent;
+  height: auto;
+  width: auto;
+}
+
+.logo--front .logo-link {
+  padding: 0;
+  color: var(--el-text-color-primary);
+}
+
+.logo--front .logo-link:hover {
+  background-color: transparent;
+}
+
+.logo--front .logo-image {
+  width: 24px;
+  height: 24px;
+}
+
+.logo--front .logo-title {
+  color: var(--el-text-color-primary);
+  font-size: 15px;
 }
 </style>

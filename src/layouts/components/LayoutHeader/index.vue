@@ -27,7 +27,7 @@ import HeaderActions from './HeaderActions.vue'
   justify-content: space-between;
   height: var(--header-height);
   padding: 0 var(--content-padding);
-  background-color: var(--color-white);
+  background-color: var(--color-bg-base);
   border-bottom: 1px solid var(--color-border-base);
   box-shadow: var(--shadow-small);
   flex-shrink: 0;

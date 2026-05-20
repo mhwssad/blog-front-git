@@ -201,7 +201,7 @@ onUnmounted(() => {
   align-items: center;
   height: var(--tags-view-height);
   padding: 0 var(--content-padding);
-  background-color: var(--color-white);
+  background-color: var(--color-bg-base);
   border-bottom: 1px solid var(--color-border-base);
   flex-shrink: 0;
 }
@@ -234,7 +234,7 @@ onUnmounted(() => {
   border: 1px solid var(--color-border-base) !important;
   border-radius: var(--border-radius-base);
   margin-right: var(--spacing-xs);
-  background-color: var(--color-gray-100);
+  background-color: var(--color-bg-page);
   font-size: var(--font-size-xs);
   transition: var(--transition-base);
 }
@@ -266,7 +266,7 @@ onUnmounted(() => {
   margin: 0;
   padding: var(--spacing-xs) 0;
   list-style: none;
-  background-color: var(--color-white);
+  background-color: var(--color-bg-base);
   border: 1px solid var(--color-border-base);
   border-radius: var(--border-radius-base);
   box-shadow: var(--shadow-large);

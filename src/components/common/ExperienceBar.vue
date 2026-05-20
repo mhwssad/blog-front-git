@@ -54,11 +54,11 @@ const percentage = computed(() => {
 
 .experience-bar__progress-text {
   font-size: 12px;
-  color: #909399;
+  color: var(--color-text-secondary);
 }
 
 .experience-bar__next {
   font-size: 12px;
-  color: #909399;
+  color: var(--color-text-secondary);
 }
 </style>

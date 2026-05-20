@@ -241,7 +241,7 @@ function handleRemove(): void {
   align-items: center;
   justify-content: center;
   gap: 8px;
-  background: rgba(255, 255, 255, 0.7);
+  background: var(--color-bg-overlay);
 }
 
 .image-upload__pct {

@@ -1,9 +1,7 @@
 <template>
   <header class="front-header">
     <div class="header-left">
-      <router-link to="/" class="logo-link">
-        <LayoutLogo />
-      </router-link>
+      <LayoutLogo mode="front" />
       <nav class="nav-links">
         <router-link to="/" class="nav-item" exact-active-class="nav-item--active"
           >首页</router-link
@@ -38,14 +36,15 @@
       <template v-if="authStore.isLoggedIn">
         <router-link to="/user/notices" class="header-action" title="通知">
           <el-tooltip>
-            <el-badge
-              class="flex justify-center"
-              :value="unreadCount || undefined"
-              :hidden="!unreadCount"
-            >
-              <el-icon :size="20"><Bell /></el-icon>
-              <div class="text-xs">通知</div>
-            </el-badge>
+            <div class="action-inner">
+              <el-badge
+                :value="unreadCount || undefined"
+                :hidden="!unreadCount"
+              >
+                <el-icon :size="20"><Bell /></el-icon>
+              </el-badge>
+              <span class="action-label">通知</span>
+            </div>
             <template #content>
               <div v-if="unreadCount">您有 {{ unreadCount }} 条未读通知</div>
               <div v-else>没有新通知</div>
@@ -53,10 +52,16 @@
           </el-tooltip>
         </router-link>
         <router-link to="/chat" class="header-action" title="消息">
-          <el-icon :size="20"><ChatDotRound /></el-icon>
+          <div class="action-inner">
+            <el-icon :size="20"><ChatDotRound /></el-icon>
+            <span class="action-label">消息</span>
+          </div>
         </router-link>
-        <router-link to="/user/profile" class="header-action" title="个人中心">
-          <el-icon :size="20"><User /></el-icon>
+        <router-link to="/user/profile" class="header-action" title="我的">
+          <div class="action-inner">
+            <el-icon :size="20"><User /></el-icon>
+            <span class="action-label">我的</span>
+          </div>
         </router-link>
         <el-dropdown trigger="click">
           <div class="user-avatar">
@@ -122,8 +127,8 @@ function handleLogout(): void {
   justify-content: space-between;
   height: 60px;
   padding: 0 24px;
-  background: #fff;
-  border-bottom: 1px solid #e4e7ed;
+  background: var(--color-bg-base);
+  border-bottom: 1px solid var(--color-border-base);
   position: sticky;
   top: 0;
   z-index: 100;
@@ -134,14 +139,6 @@ function handleLogout(): void {
   align-items: center;
   gap: 24px;
   flex-shrink: 0;
-}
-
-.logo-link {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  text-decoration: none;
-  color: var(--el-text-color-primary);
 }
 
 .nav-links {
@@ -186,7 +183,7 @@ function handleLogout(): void {
 .header-right {
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: 8px;
   flex-shrink: 0;
 }
 
@@ -194,9 +191,6 @@ function handleLogout(): void {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 36px;
-  height: 36px;
-  border-radius: 8px;
   color: var(--el-text-color-regular);
   text-decoration: none;
   transition:
@@ -206,7 +200,18 @@ function handleLogout(): void {
 
 .header-action:hover {
   color: var(--el-color-primary);
-  background: var(--el-fill-color-light);
+}
+
+.action-inner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+
+.action-label {
+  font-size: 11px;
+  line-height: 1;
 }
 
 .user-avatar {
@@ -227,6 +232,10 @@ function handleLogout(): void {
   }
 
   .nav-links {
+    display: none;
+  }
+
+  .action-label {
     display: none;
   }
 }

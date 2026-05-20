@@ -6,6 +6,8 @@ import 'uno.css'
 
 // Element Plus 样式
 import 'element-plus/dist/index.css'
+// Element Plus 深色模式 CSS 变量（html.dark 时生效）
+import 'element-plus/theme-chalk/dark/css-vars.css'
 
 // 全局样式（包含 reset.css）
 import '@/styles/index.css'

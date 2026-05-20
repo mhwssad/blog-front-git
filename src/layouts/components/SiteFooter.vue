@@ -76,10 +76,10 @@ const siteConfig: SiteConfig = {
 
 <style scoped>
 .site-footer {
-  background: #1d1e22;
-  color: #a0a0a0;
+  background: var(--color-footer-bg);
+  color: var(--color-footer-text);
   margin-top: 48px;
-  border-top: 1px solid #2c2d32;
+  border-top: 1px solid var(--color-footer-border);
 }
 
 .footer-inner {
@@ -98,7 +98,7 @@ const siteConfig: SiteConfig = {
   margin: 0 0 16px;
   font-size: 15px;
   font-weight: 600;
-  color: #e0e0e0;
+  color: var(--color-footer-title);
 }
 
 .footer-links {
@@ -108,19 +108,19 @@ const siteConfig: SiteConfig = {
 }
 
 .footer-links a {
-  color: #a0a0a0;
+  color: var(--color-footer-text);
   text-decoration: none;
   font-size: 14px;
   transition: color 0.2s;
 }
 
 .footer-links a:hover {
-  color: #fff;
+  color: var(--color-footer-hover);
 }
 
 .footer-empty {
   font-size: 13px;
-  color: #666;
+  color: var(--color-footer-muted);
 }
 
 .footer-info p {
@@ -130,22 +130,22 @@ const siteConfig: SiteConfig = {
 }
 
 .footer-info a {
-  color: #a0a0a0;
+  color: var(--color-footer-text);
   text-decoration: none;
   transition: color 0.2s;
 }
 
 .footer-info a:hover {
-  color: #fff;
+  color: var(--color-footer-hover);
 }
 
 .footer-bottom {
   margin-top: 32px;
   padding-top: 16px;
-  border-top: 1px solid #2c2d32;
+  border-top: 1px solid var(--color-footer-border);
   text-align: center;
   font-size: 13px;
-  color: #666;
+  color: var(--color-footer-muted);
 }
 
 .footer-bottom p {
