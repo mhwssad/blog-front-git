@@ -2,397 +2,434 @@
 
 ## 1. 文档定位
 
-本文档用于统一当前项目的前端**代码编写风格、实现模式和协作约定**。
+本文档用于约束当前项目的前端代码风格、实现方式、依赖使用边界和协作习惯。
 
 适用范围：
 
-- Vue 单文件组件编写方式
-- TypeScript 使用规范
-- API、Store、Router 等模块的代码编写约定
-- 格式化、注释、命名等编码风格
+- Vue 单文件组件
+- TypeScript 与类型组织
+- API、Store、Router、Composable、Utils 编写方式
+- 当前 `package.json` 中依赖的推荐使用方式
+- 本地开发、校验、测试与提交前验证
 
-本文档专注于**代码编写规范**，不包含目录结构、文件放置、模块组织等内容。项目结构规范请参考 `docs/project-structure-convention.md`。
+本文档只约束“怎么写代码”。目录结构、文件放置、模块落点请参考 `docs/project-structure-convention.md`。
 
 优先级说明：
 
-- 代码风格、组件写法、TypeScript 用法以本文档为准
-- 目录结构、文件放置、模块边界以 `docs/project-structure-convention.md` 为准
-- 仓库命令、基础开发流程以 `AGENTS.md` 和 `CLAUDE.md` 为准
+- 仓库真实代码、`package.json`、`vite.config.ts`、`eslint.config.ts`、`tsconfig*.json`、`.prettierrc.json` 高于本文档
+- 本文档高于旧注释、历史写法和临时口头约定
+- 当真实工程配置与本文档冲突时，应优先修正文档，避免“双轨规范”
 
-## 2. 总体原则
+## 2. 当前工程基线
 
-- 优先使用类型约束代替隐式约定
-- 优先保持前后台代码风格一致
-- 优先小步修改，避免一次性大范围重写
-- 优先使用 Element Plus 现成组件，只在无法满足需求时才自定义基础组件，并保持风格一致
-- 优先在 API 层做字段兼容和响应归一化，不在页面散落字段兜底逻辑
-- 优先拆分通用组件和功能专属组件，避免职责混杂
+当前仓库以以下组合为主：
 
-## 3. 技术栈约定
+- 框架：`vue@3.5` + `typescript@6`
+- 构建：`vite@8` + `@vitejs/plugin-vue`
+- UI：`element-plus` + `@element-plus/icons-vue`
+- 状态管理：`pinia`
+- 路由：`vue-router@5`
+- 工具样式：`unocss` + `sass`
+- 请求层：`axios`
+- Mock：`vite-plugin-mock-dev-server`
+- 自动导入：`unplugin-auto-import` + `unplugin-vue-components`
+- 图表与编辑器：`echarts`、`codemirror`
+- 测试：`vitest` + `@vue/test-utils` + `happy-dom`
 
-- 框架：Vue 3 + TypeScript
-- 构建：Vite + UnoCSS
-- UI：Element Plus + @element-plus/icons-vue
-- 状态管理：Pinia
-- 路由：Vue Router
-- 请求层：Axios（三层拦截器）+ WebSocket
-- 校验与格式化：ESLint + Prettier
-- 提交规范：commitlint + commitizen + cz-git
+总体原则：
 
-## 4. 格式化规范
+- 优先沿用现有基础设施，不平地起新规范
+- 优先在 API 层做兼容，不在页面散落兜底逻辑
+- 优先显式类型，不靠字段猜测和隐式约定
+- 优先小步演进，不做与任务无关的大重构
+- 优先复用 Element Plus、Composable、Utils、现有业务组件
 
-当前项目以 Prettier 配置为准：
+## 3. 依赖使用约定
 
+### 3.1 已形成默认约定的依赖
+
+| 依赖 | 当前状态 | 编写约定 |
+| --- | --- | --- |
+| `vue` | 默认框架 | 页面和组件统一使用 `<script lang="ts" setup>` |
+| `typescript` | 默认语言 | 导出函数、Store、API、复杂对象都要有明确类型 |
+| `vite` | 默认构建工具 | 使用 `@` 指向 `src`，不要写长相对路径链 |
+| `element-plus` | 默认 UI 基座 | 表单、表格、弹窗、分页、上传优先复用现成组件 |
+| `@element-plus/icons-vue` | 默认图标来源 | 优先使用 Element Plus 图标，不随意引入其他图标体系 |
+| `pinia` | 默认共享状态方案 | Store 使用 setup 写法：`defineStore('xxx', () => {})` |
+| `vue-router` | 默认路由方案 | 固定路由 + 后端菜单动态路由，路由逻辑只放 `src/router` |
+| `axios` | 默认请求方案 | 所有请求走 `src/api/request` 的 `http` 封装 |
+| `@vueuse/core` | 默认组合式工具库 | 优先复用 VueUse 能力，不重复手写常见监听、状态同步能力 |
+| `date-fns` | 默认时间处理库 | 时间格式化、比较、计算统一走 `src/utils/dateUtils.ts` 或 `date-fns` |
+| `spark-md5` | 默认文件哈希方案 | 文件上传、秒传、分片校验统一使用 MD5 能力 |
+| `codemirror` + `@codemirror/*` | 默认代码编辑器方案 | 编辑器需求优先复用 `src/components/editor` 或既有封装 |
+| `echarts` | 默认图表方案 | 图表能力优先复用 `src/composables/useECharts.ts`，按需注册模块 |
+| `unocss` | 默认原子化样式工具 | 优先使用现有快捷类和原子类，避免重复写简单样式 |
+| `vite-plugin-mock-dev-server` | 默认本地 Mock 能力 | 本地联调优先补 Mock，不要只改页面假数据 |
+| `vitest` + `@vue/test-utils` + `happy-dom` | 默认单测方案 | 新增可复用逻辑时优先补 `src/**/__tests__/**/*.test.ts` |
+
+### 3.2 已安装但应按场景使用的依赖
+
+| 依赖 | 当前状态 | 使用边界 |
+| --- | --- | --- |
+| `vue-i18n` | 已有基础文件，但当前未在 `main.ts` 挂载 | 不要在页面内私自形成双轨文案；若正式启用，先补入口注册和全局约定 |
+| `@stomp/stompjs` | 已安装，当前聊天仍使用原生 `WebSocket` | 新增实时能力优先复用 `src/api/websocket.ts`，不要直接混入 STOMP 协议实现 |
+| `exceljs` | 已安装，当前前端未形成统一导出封装 | 需要前端生成 Excel 时先抽到 `utils`/`composables`，普通导出优先走后端文件流 |
+| `lodash-es` | 已安装，源码当前未形成依赖 | 原生 `Array/Object/Map/Set` 足够时不要引入；确有复杂集合处理再按需引入单函数 |
+| `qs` | 已安装，源码当前未形成依赖 | 仅在后端明确要求复杂 query 序列化时引入，普通请求继续使用 Axios `params` |
+| `path-to-regexp` | 已安装，源码当前未形成依赖 | 仅用于复杂动态路径匹配，不要替代 Vue Router 自带能力 |
+| `path-browserify` | 已安装，源码当前未形成依赖 | 仅限浏览器端路径处理场景，不要把 Node 端路径思维直接搬进页面 |
+| `vue-draggable-plus`、`sortablejs` | 已安装，源码当前未形成依赖 | 拖拽排序、拖拽布局时统一选一种接入并先补封装，不要页面内裸接 |
+| `vxe-table` | 已安装，当前后台列表主流仍是 `el-table` | 普通 CRUD 列表继续优先 `el-table`；只有复杂虚拟滚动、编辑表格才考虑引入 |
+| `nprogress` | 已安装，当前未接入全局路由进度条 | 不要零散接入单页 loading bar；若要启用，先统一到 router/request 基建 |
+| `animate.css` | 已安装，当前未作为默认动画体系 | 动画优先使用 CSS/UnoCSS；若引入 animate.css，必须控制范围，不做全局污染 |
+| `default-passive-events` | 已安装，当前未作为全局入口副作用 | 不要页面内随意引入；若启用需在入口统一评估滚动和触控行为 |
+
+### 3.3 工程与质量相关依赖
+
+| 依赖组 | 当前状态 | 约定 |
+| --- | --- | --- |
+| `eslint`、`@eslint/js`、`eslint-plugin-vue`、`@typescript-eslint/*`、`typescript-eslint`、`vue-eslint-parser`、`globals` | 已接入 | 以 `eslint.config.ts` 为准，代码风格冲突不要靠“经验”处理 |
+| `oxlint`、`eslint-plugin-oxlint` | 已接入 | `pnpm lint` 会一起执行，修代码时要同时满足两套校验 |
+| `prettier`、`eslint-config-prettier`、`eslint-plugin-prettier` | 已接入 | 格式问题交给 Prettier，不手工维持与格式器冲突的排版 |
+| `vue-tsc`、`@vue/tsconfig`、`@tsconfig/node24` | 已接入 | 类型问题以 `pnpm type-check` 为准 |
+| `sass`、`postcss`、`autoprefixer` | 已接入 | 允许写 SCSS，但简单样式优先 `css` + UnoCSS |
+| `stylelint` 相关依赖 | 已安装，当前仓库未见实际配置入口 | 不把 Stylelint 当成当前默认校验链，若启用需先补配置和脚本 |
+| `unplugin-auto-import`、`unplugin-vue-components` | 已接入 | 使用自动导入约定，勿手写重复样板导入 |
+| `vite-plugin-vue-devtools` | 已接入 | 仅开发辅助，不要写依赖其存在的业务代码 |
+| `npm-run-all2` | 已接入 | 构建与校验脚本以 `package.json` 为准，不自行发明新入口 |
+| `terser` | 构建依赖 | 只作为构建优化依赖看待，不在业务代码中感知 |
+| `commitlint`、`commitizen`、`cz-git`、`husky`、`lint-staged` | 已接入 | 提交信息与提交前检查沿用现有流程，不绕过规范提交 |
+| `@types/*` 系列 | 已接入 | 优先使用现成类型声明，不要重复声明第三方库类型 |
+
+## 4. 格式化与静态检查规范
+
+### 4.1 Prettier 基线
+
+当前格式基线来自 `.prettierrc.json` 与 `.editorconfig`：
+
+- 2 空格缩进
+- LF 换行
 - 不使用分号
 - 使用单引号
-- 缩进 2 空格
 - `printWidth = 100`
-- 尾随逗号使用 `es5`
-- Vue 模板单行可多个属性，但应优先保证可读性
+- `trailingComma = es5`
+- `arrowParens = avoid`
+- Vue `script` / `style` 不额外缩进
+- 保留 Markdown 原有换行习惯，不强制硬折行
 
 不要手工维护与 Prettier 冲突的格式。
 
-修改代码后建议至少执行：
+### 4.2 ESLint 基线
 
-```sh
-pnpm type-check
-pnpm lint
-```
+当前 `eslint.config.ts` 已明确约束：
 
-## 5. 文件命名规范
+- Vue 组件与模板标签使用 PascalCase
+- 自定义事件使用 camelCase
+- `defineProps`、`defineEmits`、`defineExpose`、`defineOptions`、`defineSlots` 顺序固定
+- 每行只允许一个模板属性，单行和多行都一样
+- `vue/no-unused-refs`、`vue/prefer-separate-static-class` 等规则必须满足
+- 类型导入统一使用 `import type`
+- `no-explicit-any` 为 `warn`，不是“可随意使用”
+- TypeScript 文件禁止悬空 Promise：`@typescript-eslint/no-floating-promises = error`
 
-### Vue 页面与组件
+文档、示例和代码评审都要以这套规则为准，不要沿用旧文档中“一行多个属性也可以”之类的说法。
 
-- Vue 文件名使用 PascalCase
-- 列表页建议使用复数命名（如 `Users.vue`、`Articles.vue`）
-- 对话框、抽屉、详情卡片等组件按职责命名（如 `UserFormDialog.vue`、`AssignMenusDialog.vue`）
+### 4.3 自动导入约定
 
-### TypeScript 模块
+当前 `vite.config.ts` 已接入自动导入：
 
-- 组合式函数以 `use` 开头（如 `useTableHeight`、`usePermission`、`useContentAdmin`）
-- Store 使用 `useXxxStore` 命名
-- 普通工具模块使用语义化命名（如 `dateUtils.ts`、`storage.ts`）
+- 自动导入来源：`vue`、`vue-router`、`pinia`、`@vueuse/core`
+- 自动解析 Element Plus 组件和部分 API
+- 生成文件：`src/types/auto-imports.d.ts`、`src/components.d.ts`
 
-### 文件放置
+编写约定：
 
-组件和文件的放置规则（全局组件 vs 私有组件、API 分层等）以 `docs/project-structure-convention.md` 为准，本文档不重复约束。
+- 常用 Composition API、Router API、Pinia API、VueUse API 可直接使用
+- 类型仍然显式导入，不依赖自动导入推断
+- 服务类能力如 `ElMessage`、`ElMessageBox`、`ElLoading` 当前项目大量采用显式导入，新增代码继续保持显式
+- 不手动修改自动生成的 `.d.ts` 文件
 
-## 6. Vue 单文件组件规范
+## 5. Vue 单文件组件规范
 
 推荐结构：
 
 ```vue
 <template>
+  <section class="example-page">
+    <el-card>
+      <template #header>
+        <span>标题</span>
+      </template>
+    </el-card>
+  </section>
 </template>
 
 <script lang="ts" setup>
+import type { ExampleItem } from '@/types/api-types'
+
+interface Props {
+  items: ExampleItem[]
+}
+
+const props = defineProps<Props>()
 </script>
 
 <style scoped>
+.example-page {
+  min-height: 100%;
+}
 </style>
 ```
 
-### `script setup` 约定
+编写要求：
 
 - 默认使用 `<script lang="ts" setup>`
-- 类型导入优先使用 `import type`
-- `defineProps`、`defineEmits`、`defineExpose` 顺序遵循 ESLint 规则
-- 复杂页面逻辑优先抽到组合式函数或同目录工具文件
+- 组件文件名统一 PascalCase
+- 复杂页面逻辑优先拆到 `composables/`、同级 `components/` 或 `utils`
+- 模板属性遵守“一行一个属性”
+- `v-if`、`v-for`、`v-model`、`@click`、`v-permission` 等关键指令显式书写
+- 组件对外事件必须通过 `defineEmits` 显式声明
+- 对外暴露的方法通过 `defineExpose` 明确控制
 
-### 组件内部顺序建议
-
-建议按下面顺序组织：
+组件内部顺序建议：
 
 1. `import`
-2. `Props / Emits / 局部类型`
-3. `defineProps / defineEmits`
-4. `ref / reactive / computed`
-5. 工具函数
+2. 类型声明
+3. `defineProps` / `defineEmits`
+4. `ref` / `reactive` / `computed`
+5. 派生状态与常量
 6. 请求函数
 7. 事件函数
-8. `watch / 生命周期`
+8. `watch` / 生命周期
+9. `defineExpose`
 
-### 模板书写约定
+## 6. TypeScript 与类型组织规范
 
-- 一行一个属性，复杂标签保持换行
-- 显式写出关键 `v-model`、`@click`、`v-permission`
-- 列表页表格列优先显式配置 `label`、`prop`、`min-width`
-- 超长文本优先使用 `show-overflow-tooltip`
+### 6.1 基本要求
 
-## 7. TypeScript 规范
-
-- 能写类型时不要退回 `any`
-- 接口请求、页面数据、表单数据都应有明确类型
-- 共用类型统一放在 `src/types/api-types.ts`
-- 局部类型仅在作用域非常明确时定义在当前文件
-- 异步函数优先显式写返回值
+- 能明确类型时不要退回 `any`
+- 公共函数、Store 动作、Composable 返回值、API 参数与响应都应具备明确类型
+- 导出的异步函数在返回语义不明显时应显式声明 `Promise<T>`
+- 类型导入统一使用 `import type`
 
 推荐：
 
 ```ts
-async function fetchRoles(): Promise<void> {}
+import type { UserProfileVO } from '@/types/api-types'
+
+async function fetchProfile(): Promise<UserProfileVO | null> {
+  return null
+}
 ```
 
-不推荐：
+### 6.2 类型文件放置
 
-```ts
-async function fetchRoles() {}
-```
+当前仓库真实结构不是单个 `src/types/api-types.ts`，而是：
 
-## 8. 注释规范
+- `src/types/api-types/`：按业务域拆分 API 类型
+- `src/types/api-types/index.ts`：统一导出入口
+- `src/types/ui.ts`：界面相关类型
+- `src/types/websocket.ts`：WebSocket 协议相关类型
 
-以现有代码风格为准，简洁、聚焦于"为什么"而非"是什么"。
+编写约定：
 
-### 模块级注释
+- API 相关共享类型统一从 `@/types/api-types` 引入
+- 新增业务域类型时，优先落到 `src/types/api-types/<domain>.ts`
+- 只在当前页面或当前组件内部使用的极小类型可以本地声明
+- 不在 `src/api/**` 中新建散落类型文件
 
-模块入口文件使用块注释说明职责：
+### 6.3 TS 配置感知
 
-```ts
-/**
- * 用户管理 API
- */
+当前 `tsconfig.app.json` 已启用：
 
-export const userApi = { ... }
-```
+- `noUncheckedIndexedAccess`
+- `skipLibCheck`
+- `@/* -> src/*`
 
-API 模块每个方法使用块注释，标注接口编号、方法、路径：
+因此：
 
-```ts
-/**
- * 2.1 分页查询用户
- * GET /api/sys/users
- */
-getUsers: (params?: UserQueryRequest) =>
-  http.get<PageResult<SysUserAdminVO>>('/sys/users', params),
-```
+- 对数组、对象、Map 的下标访问要处理 `undefined`
+- 不要依赖“这个字段一定存在”的侥幸推断
 
-### 函数注释
+## 7. 依赖驱动的实现规范
 
-- 工具函数和导出的公共函数使用块注释说明用途
-- 内部函数如逻辑自明可不写注释
-- 不要为每行操作写注释
+### 7.1 Element Plus
 
-### 内联注释
+- 页面 UI 优先使用 `el-card`、`el-form`、`el-table`、`el-dialog`、`el-drawer`、`el-pagination`
+- 普通后台列表页继续以 `el-table` 为默认实现，不默认切到 `vxe-table`
+- 表单校验类型使用 `FormInstance`、`FormRules` 等官方类型
+- 通知、确认框、全屏加载统一使用 `ElMessage`、`ElMessageBox`、`ElLoading`
+- 图标统一优先使用 `@element-plus/icons-vue`
 
-只在以下情况使用：
+### 7.2 UnoCSS 与样式
 
-- 关键业务判断逻辑（如 `// Token 过期，跳转登录`）
-- 非显而易见的处理（如 `// 防止重复刷新`）
-- 临时代码需标注 `// TODO: ...` 或 `// FIXME: ...`
+- 简单布局、间距、对齐、文本截断优先使用 UnoCSS
+- 项目已有快捷类应优先复用，如 `flex-center`、`flex-between`、`text-ellipsis`、`transition-base`
+- 复杂样式、主题变量、组件级覆盖再回到 scoped CSS / SCSS
+- 全局变量、reset、通用样式只放 `src/styles`
+- 不要把大量 UnoCSS 原子类和大量重复 scoped 样式同时堆在一个节点上
 
-不写注释示例：
+### 7.3 VueUse
 
-```ts
-// 设置 loading
-loading.value = true
+- 浏览器能力、状态同步、事件监听、尺寸侦听等优先查 VueUse，再决定是否自写
+- 已有项目示例时优先沿用现成 composable，例如全屏、拖拽、日期格式化等
+- 页面内如果只是一次性逻辑，不要为了“用库而用库”强行抽象
 
-// 调用 API
-const response = await articleApi.getArticles(params)
-```
+### 7.4 Axios 请求层
 
-### Vue 组件
+- 所有请求统一经由 `src/api/request/index.ts` 中的 `http`
+- 使用已有的 `skipAuth`、`skipRefresh`、`retryCount`、`retryDelay` 等控制项
+- API 文件只负责请求发起、类型约束、响应归一化
+- 不在 API 层做路由跳转、DOM 操作、弹窗提示编排
+- 公共请求参数能用 Axios `params` 解决时，不额外引入 `qs`
 
-- 不需要为每个组件写块注释
-- 模板中不写 HTML 注释
-- 复杂交互逻辑在 `<script>` 部分可加内联注释
+### 7.5 Pinia Store
 
-## 9. API 编写规范
+- Store 使用 setup 写法
+- 共享状态、认证上下文、跨页缓存、领域动作进入 Store
+- 只服务单页面的临时开关、弹窗显示、局部表单状态优先留在页面内
+- Store 内不直接操作 DOM，不写页面排版逻辑
 
-### http 封装用法
+### 7.6 Router
 
-所有接口通过 `http.get<T>(url, params, config)` 发起，返回 `Promise<ApiResponse<T>>`。
+- 固定路由、动态路由、菜单过滤、守卫、组件解析统一放 `src/router`
+- 后台动态路由组件解析依赖 `import.meta.glob('../views/**/*.vue')`
+- 后端菜单 `component` 需可映射到 `src/views/**`
+- `type = C` 的目录容器统一走 `layouts/RouteView`
+- 不在页面中写绕过守卫的跳转旁路
 
-常用配置选项：
+### 7.7 WebSocket 与实时能力
 
-- `skipAuth: true` — 跳过令牌注入（如注册接口）
-- `skipRefresh: true` — 跳过 Token 刷新（如刷新接口本身）
+- 当前项目实时通信标准是原生 `WebSocket` 封装：`src/api/websocket.ts`
+- 包含自动重连、心跳、请求匹配、事件分发
+- 新增聊天或实时通知能力优先扩展现有封装
+- 不要在不同页面里分别维护各自的 socket 生命周期
+- `@stomp/stompjs` 当前不是默认实现，除非完成统一升级，否则不要混用
 
-### 编写要求
+### 7.8 编辑器、图表、文件处理
 
-- 每个接口模块只负责本领域请求
-- 请求注释写明接口编号、方法、路径
-- 优先在 API 层做字段兼容和响应归一化
-- 页面统一使用归一化后的字段名（如 `createTime`），不在页面散落字段兜底逻辑
+- 编辑器需求优先复用 `src/components/editor/HtmlCodeEditor.vue` 或既有文章编辑器能力
+- ECharts 统一走 `useECharts`，按需注册图表和组件模块，不直接整库灌入页面
+- 文件上传、秒传、分片上传统一复用 `useFileUpload` 与 `spark-md5`
+- 需要导出 Excel 时，普通后台导出优先走后端文件流；确需前端生成时再引入 `exceljs` 封装
 
-例如：后端返回 `createdAt` 时，API 层 normalize 为 `createTime`，页面直接使用 `createTime`。
+## 8. API、Store、Composable、Utils 编写规范
 
-### 类型使用
+### 8.1 API
 
-- 所有接口类型统一使用 `src/types/api-types.ts` 中的定义
-- API 模块通过 `import type { ... } from '@/types/api-types'` 引入
-- 非常局部、只在单一文件使用的类型才允许定义在当前文件
+- API 模块只负责一个业务域
+- 注释优先标清接口编号、方法、路径和必要的兼容说明
+- 后端字段不稳定时，在 API 层做 normalize
+- 页面统一使用归一化后的字段名，不重复写 `createdAt ?? createTime` 之类兜底
 
-## 10. Store 编写规范
+### 8.2 Composable
 
-### 编写要求
+- 多页面复用或跨组件复用的交互逻辑进入 `src/composables`
+- composable 返回值命名应稳定、语义化，如 `loading`、`list`、`fetchList`
+- 纯页面私有逻辑不要为了“看起来高级”而过度抽离
 
-- 使用 setup 语法：`defineStore('name', () => { ... })`，返回含状态和方法的普通对象
-- store 只暴露领域状态和领域动作
-- 不在 store 内写与视图强耦合的 DOM 逻辑
-- 请求失败返回布尔值或空结构时，要保持语义稳定
-- 登录态相关能力统一收口到 `src/stores/auth.ts`
-- 页面临时状态优先留在页面内部，不要无差别提升到 store
+### 8.3 Utils
 
-## 11. Router 编写规范
+- `src/utils` 只放无状态工具、格式化、基础设施与纯函数
+- 日期处理优先走 `dateUtils.ts`
+- 文件、哈希、权限、日志、存储分别复用现有工具模块
+- 原生能力足够时，不强行为了引入 `lodash-es`、`path-browserify` 等额外包装
 
-### 菜单类型
+## 9. 页面编写规范
 
-- `C`（目录）：菜单分组或路由容器，不直接加载业务页面，推荐 `component`: `layouts/RouteView`
-- `M`（菜单页面）：真实可访问页面，必须提供 `routePath`
-- `B`（按钮权限）：不注册为路由，仅用于按钮级权限控制
+### 9.1 后台列表页
 
-### component 解析规范
-
-组件解析器位于 `src/router/component-resolver.ts`：
-
-```ts
-const viewModules = import.meta.glob('../views/**/*.vue')
-export function resolveMenuComponent(menu): ResolvedMenuComponent
-```
-
-解析规则：
-
-- `type=C` + `component=layouts/routeview` → 返回 `RouterView` 容器
-- `type=M` + 其他 component → 从 `viewModules` 中查找匹配项（大小写不敏感）
-- 查找失败时，打 warning 日志并跳过该菜单（不影响其他路由注册）
-
-常见映射：
-
-| 后端 component | 前端页面文件 |
-| -------------- | ------------ |
-| `admin/user/Users` | `src/views/admin/user/Users.vue` |
-| `admin/article/Articles` | `src/views/admin/article/Articles.vue` |
-| `layouts/RouteView` | `RouterView` 容器 |
-
-### 动态路由注册流程
-
-`src/router/dynamic-routes.ts` 中的 `buildAdminRoutes` 处理动态注册：
-
-- **只处理 `M` 类型菜单**，`C` 和 `B` 类型不注册为路由
-- 所有动态路由作为 `AdminLayout`（`/admin`）的子路由注册
-- `routeName` 缺失时自动生成：从路径提取 PascalCase 名称，前缀 `Admin`
-- 重复 `routeName` 时追加 `_${menuId}` 保证唯一性
-- `keepAlive = 1` 允许页面缓存，`keepAlive = 0` 不缓存
-- `icon` 使用 Element Plus 图标别名（`Home`、`User`、`Document` 等）
-
-### 侧边栏菜单过滤
-
-使用 `src/router/menu.ts` 中的 `filterVisibleMenus` 过滤：
-
-- `visible === 1` 且 `type !== 'B'` 的菜单才显示
-
-### 编写要求
-
-- 固定路由配置集中维护在 `src/router/` 下
-- 后端菜单路径与组件映射遵循上表规范
-- 不要在页面里手写绕过路由守卫的跳转逻辑
-- 新增后台业务页面时，优先检查：
-  - 路由路径是否归一到 `/admin/**`
-  - 页面组件是否在 `src/views/admin/**`
-  - 后端 `component` 是否可被解析
-
-## 12. 页面编写规范
-
-### 列表页
-
-后台管理列表页建议统一包含：
+后台 CRUD 页面默认优先遵循以下组合：
 
 - 搜索区
 - 表格区
 - 分页区
-- 表单弹窗 / 详情弹窗 / 分配弹窗
+- 新增 / 编辑弹窗
+- 必要时补详情弹窗、分配弹窗、审计抽屉
 
-常见结构：
+表格约定：
 
-```vue
-<el-card class="search-card" />
-<el-card class="table-card" />
-<UserFormDialog />
+- 优先 `min-width`，谨慎写死 `width`
+- 长文本优先 `show-overflow-tooltip`
+- 高度管理优先 `useTableHeight`
+- 操作区按钮配合 `v-permission`
+- 普通列表继续优先 `el-table`，不要无故改成 `vxe-table`
+
+### 9.2 表单与弹窗
+
+- 新增、编辑尽量复用同一个表单组件
+- 弹窗关闭时重置表单和局部状态
+- 打开详情或编辑时按需拉取数据，不做无条件预请求
+- 表单规则与类型一起维护，避免规则和模型脱节
+
+### 9.3 前台页面
+
+- 保持展示页、互动页、个人中心页的边界清晰
+- 前台交互优先保证移动端可用
+- 复杂上传、聊天、AI 对话、实时状态等页面优先复用既有 composable 和 store
+
+## 10. 权限、日志与错误处理
+
+### 10.1 权限
+
+- 按钮级权限统一使用 `v-permission`
+- 支持默认隐藏、`.disable`、`.any`、对象写法
+- 不要只隐藏按钮而保留无保护的点击入口
+
+### 10.2 日志
+
+- 日志能力统一复用 `src/utils/logger` 与 `useLogger`
+- 调试输出优先走日志工具，不随意散落 `console.log`
+- 开发期临时日志在提交前应清理或收敛为正式 logger 调用
+
+### 10.3 错误处理
+
+- 页面层负责用户反馈
+- API 层负责协议与数据层错误归一
+- Store / composable 负责稳定返回值和流程兜底
+- 不要让错误处理在 API、Store、页面三层重复弹消息
+
+## 11. 测试与验证规范
+
+当前命令以 `pnpm` 为准：
+
+```sh
+pnpm type-check
+pnpm lint
+pnpm test:run
+pnpm build
 ```
 
-### 表格
+约定如下：
 
-- 优先使用 `min-width` 而不是过多固定 `width`
-- 需要时使用 `table-layout="auto"`
-- 高度优先交给 `useTableHeight`
-- 操作列按钮统一使用按钮组容器控制对齐
+- 提交前至少执行 `pnpm type-check` 和 `pnpm build`
+- 触达共享逻辑、上传、请求、复杂 composable 时，优先补 `vitest`
+- 测试文件放 `src/**/__tests__/`
+- DOM 相关测试以 `happy-dom` 环境为准
+- 新增生成文件、自动导入文件、Mock 文件时，不手改自动生成产物
 
-### 表单弹窗
+## 12. 当前不推荐做法
 
-- 新增和编辑尽量复用同一个弹窗组件
-- 弹窗关闭时要重置表单
-- 弹窗打开时再拉详情，不要默认无条件请求
-- 对话框布局优先保证居中和移动端可用
+- 在页面中重复拼装复杂请求逻辑
+- 在多个页面散落后端字段兼容代码
+- API 层直接写页面消息、页面跳转或 DOM 逻辑
+- Store 中堆叠只服务单页面的展示状态
+- 为了“用上依赖”而把未落地库直接裸接到页面
+- 在普通 CRUD 场景滥用 `vxe-table`
+- 原生能力足够时仍引入 `lodash-es`、`qs`、`path-browserify`
+- 在未统一接入前随意启用 `vue-i18n`、`@stomp/stompjs`、`nprogress`
+- 手改 `src/types/auto-imports.d.ts`、`src/components.d.ts`
+- 用历史文档覆盖真实工程配置
 
-## 13. 权限控制规范
+## 13. 执行原则
 
-### 按钮级权限
+本文档以当前仓库的真实依赖和现有实现为基础，不以“理论上可以怎么做”为准。
 
-使用 `v-permission` 指令（注册在 `src/plugins/permission.ts`）：
+后续如果出现以下变化，应同步更新本文档：
 
-```vue
-<!-- 隐藏无权限按钮 -->
-<el-button v-permission="'sys:user:create'">新增</el-button>
+- 新依赖被正式接入为默认基础设施
+- 现有依赖被移除或替换
+- ESLint、Prettier、TS、Vite 配置发生规则级变化
+- 页面主流实现从 `el-table`、原生 `WebSocket`、当前 API 封装等迁移到新方案
 
-<!-- 禁用无权限按钮（样式变为半透明 + pointer-events:none） -->
-<el-button v-permission.disable="'sys:user:update'">编辑</el-button>
-
-<!-- 权限组：any 模式（满足任一即可） -->
-<el-button v-permission.any="['sys:user:delete', 'sys:user:force-delete']">删除</el-button>
-
-<!-- 对象形式：可指定 mode 和 action -->
-<el-button
-  v-permission="{ permissions: 'sys:user:delete', mode: 'any', action: 'disable' }"
->
-  删除
-</el-button>
-```
-
-指令模式说明：
-
-- `v-permission`（默认）：无权限时 `display: none`
-- `v-permission.disable`：无权限时 `disabled + 0.6透明度 + pointer-events:none`，同时禁用嵌套的 button/input/select/textarea
-- `v-permission.any`：权限校验采用 OR 逻辑（默认 AND）
-
-不要只隐藏按钮却保留无保护的点击逻辑。
-
-## 14. 样式编写规范
-
-### 基本原则
-
-- 页面样式优先使用 `scoped`
-- 全局变量和全局 reset 统一放在 `src/styles`
-- 尽量复用 Element Plus 变量，不硬编码过多魔法值
-
-### 类名建议
-
-- 页面根容器：`xxx-page`
-- 卡片：`search-card`、`table-card`
-- 表格操作区：`table-actions`
-- 页面头部：`card-header`
-
-### 编写要求
-
-- 优先保证桌面端和移动端都可用
-- 对后台列表页，优先保证表格、分页、搜索区对齐统一
-- 对弹窗，优先保证居中显示与合理滚动
-
-## 15. 提交前检查清单
-
-提交代码前至少确认：
-
-1. 类型检查通过（`pnpm type-check`）
-2. Lint 可通过或已知问题未被扩大（`pnpm lint`）
-3. API 字段与页面字段命名一致，必要时已做 normalize
-4. 新增组件命名符合 PascalCase 规范
-5. 相关文档已同步更新
-
-## 16. 不推荐做法
-
-- 在页面里直接拼装与领域无关的大量请求逻辑
-- 同一个功能出现多种写法
-- 为了临时兼容，把字段兜底逻辑散落在多个页面
-- 退回 `any` 类型
-- 在 API 层写视图提示和页面跳转
-- 在 Store 中堆叠只服务单个页面的展示逻辑
-- 在 `utils` 中实现依赖页面上下文的业务流程
+目标不是把每个依赖都强行塞进业务代码，而是让“已安装的依赖有什么地位、什么时候该用、什么时候不要用”保持清晰且一致。

@@ -2,635 +2,533 @@
 
 ## 1. 文档定位
 
-本文档用于约束当前项目前端工程的目录结构、模块边界、文件落点和新增功能的落地方式。
+本文档用于约束当前仓库的目录结构、模块边界、文件落点和结构级协作规则。
 
 适用范围：
 
-- 仓库根目录下的工程组织方式
+- 仓库根目录的工程组织方式
 - `src/` 主源码目录
-- `mock/` 本地联调数据目录
+- `mock/` 本地联调与测试数据目录
 - `docs/` 协作文档目录
-- 环境变量与开发命令相关约定
+- 环境变量、构建配置、测试配置等工程文件
 
-本文档专注于**结构规范**，不包含代码编写风格、Vue/TypeScript 细节等内容。代码编写规范请参考 `docs/code-writing-convention.md`。
+本文档只回答“文件应该放在哪里、各目录负责什么、结构变更时要同步哪些地方”。
+代码风格、Vue/TypeScript 写法、依赖使用约定请参考 `docs/code-writing-convention.md`。
 
-本文档不替代以下文档：
+## 2. 优先级与关联文档
 
-- `AGENTS.md` / `CLAUDE.md`：仓库级开发摘要、命令、基础协作要求
-- `docs/code-writing-convention.md`：约束代码书写风格、组件写法、命名规范等
-- `docs/api文档/*`：约束接口路由、字段和业务行为
+本文档不替代以下文件：
+
+- `AGENTS.md`：仓库级开发摘要、命令、提交流程、文档入口
+- `CLAUDE.md`：仓库技术栈、环境变量、开发命令补充说明
+- `docs/code-writing-convention.md`：代码书写、依赖使用、校验与测试约定
+- `docs/api文档/**`：接口路径、字段、权限与业务行为
 
 优先级说明：
 
-- 目录、文件放置、模块职责、扩展落点以本文档为准
-- 仓库命令、基础开发流程和通用工程说明以 `AGENTS.md` / `CLAUDE.md` 为准
-- 代码风格、Vue/TypeScript 细节、文件命名以 `docs/code-writing-convention.md` 为准
-- 接口字段和请求方式以 API 文档为准
+- 仓库真实结构高于本文档
+- 本文档高于旧说明、历史注释、口头约定
+- 命令与提交流程以 `AGENTS.md` / `CLAUDE.md` 为准
+- 代码写法以 `docs/code-writing-convention.md` 为准
+- 接口定义以 `docs/api文档/**` 为准
 
-## 2. 根目录结构规范
+当实际结构发生变化时，应先同步本文档，再继续扩展或重构。
 
-### 2.1 根目录职责
+## 3. 根目录结构规范
 
-当前项目根目录的主要职责如下：
+### 3.1 根目录职责
 
-- `src/`：前端业务源码，所有正式业务实现必须放在这里
-- `mock/`：本地 Mock 接口和测试数据
-- `docs/`：协作文档、接口文档、结构规范、初始化 SQL 等
-- `public/`：无需经过构建处理的静态资源
-- `.env.development`、`.env.production`、`.env.example`：环境变量配置模板和运行配置
-- `vite.config.ts`、`eslint.config.ts`、`tsconfig*.json`、`uno.config.ts`：构建和工程配置
-- `dist/`：构建产物目录，不允许手工维护
+当前根目录的关键文件和目录职责如下：
 
-### 2.2 根目录约束
+| 路径 | 职责 |
+| --- | --- |
+| `src/` | 正式业务源码，所有前端实现必须落在这里 |
+| `mock/` | Mock 接口、测试数据、分页和通用响应辅助 |
+| `docs/` | 规范、API 文档、需求、计划、SQL 脚本、设计图 |
+| `public/` | 不经过 Vite 构建处理的静态资源 |
+| `AGENTS.md` | 仓库级开发与提交要求 |
+| `CLAUDE.md` | 技术栈、环境和命令摘要 |
+| `README.md` | 项目入口说明 |
+| `package.json` | 脚本、依赖、Node 版本要求 |
+| `pnpm-lock.yaml` | 锁文件，统一使用 `pnpm` |
+| `env.d.ts` | `import.meta.env` 类型声明 |
+| `.env.development` | 本地开发环境，默认启用 Mock |
+| `.env.staging` | 联调环境，关闭 Mock，连接测试后端 |
+| `.env.production` | 生产构建环境 |
+| `.env.example` | 环境变量模板与说明 |
+| `vite.config.ts` | Vite 构建与插件配置 |
+| `vitest.config.ts` | Vitest 测试配置 |
+| `eslint.config.ts` | ESLint Flat Config |
+| `uno.config.ts` | UnoCSS 预设、快捷类、主题配置 |
+| `tsconfig*.json` | TypeScript 工程配置 |
+| `.editorconfig` / `.prettierrc.json` / `.oxlintrc.json` | 格式化和静态检查基础配置 |
+| `dist/` | 构建产物目录，不手工维护 |
 
-- 业务代码必须放在 `src/`，禁止在根目录新增零散业务脚本或临时实现文件
-- 协作文档必须放在 `docs/`，禁止把正式规范写进临时任务目录或聊天记录文件
-- 新增环境变量时必须同步更新 `.env.example`
+### 3.2 根目录约束
+
+- 业务源码只能放在 `src/`
+- Mock 相关代码只能放在 `mock/`
+- 正式协作文档只能放在 `docs/`
+- 新增环境变量时，必须同时更新 `env.d.ts` 和 `.env.example`
 - 构建产物、缓存文件、调试输出不得作为正式源码维护
+- 不在根目录新增零散业务脚本、临时实现文件、一次性测试文件
 
-## 3. `src/` 主源码结构规范
+### 3.3 工具与本地目录
 
-### 3.1 目录职责
+仓库中可能存在 `.codex/`、`.claude/`、`.roo/`、`.vscode/`、`.idea/` 等工具目录。
+
+约束如下：
+
+- 这些目录属于开发工具或代理协作元数据，不是业务源码
+- 不在这些目录中放业务实现
+- 如需新增团队长期使用的正式规则，优先写入 `AGENTS.md`、`CLAUDE.md` 或 `docs/`
+
+## 4. `src/` 主源码结构规范
+
+### 4.1 顶层目录职责
 
 当前 `src/` 下目录职责固定如下：
 
-- `src/views/`：页面级视图，按后台、前台、公共页面分区
-- `src/components/`：全局可复用通用组件
-- `src/layouts/`：布局壳、导航、头部、侧栏等框架层组件
-- `src/api/`：接口请求封装、请求层基础设施
-- `src/types/`：全局类型声明（接口类型定义在 `api-types.ts`）
-- `src/stores/`：Pinia Store
-- `src/router/`：固定路由、动态路由、菜单映射、守卫
-- `src/composables/`：可复用组合式逻辑
-- `src/plugins/`：应用级插件注册（v-permission 指令、Element Plus 图标）
-- `src/config/`：应用配置聚合
-- `src/utils/`：基础工具、格式化、日志、存储等工具能力
-- `src/constants/`：常量定义
-- `src/i18n/`：国际化配置
-- `src/styles/`：全局样式、变量和主题相关样式
-- `src/assets/`：需经过构建处理的静态资源
+| 目录 | 职责 |
+| --- | --- |
+| `src/views/` | 页面级视图，按后台、前台、公共页面分区 |
+| `src/components/` | 全局可复用组件 |
+| `src/layouts/` | 前后台布局壳及布局私有组件 |
+| `src/api/` | API 请求封装、请求基础设施、WebSocket 封装 |
+| `src/types/` | API 类型、UI 类型、WebSocket 类型、自动导入类型 |
+| `src/stores/` | Pinia Store、Store 共享类型、Store 复用辅助 |
+| `src/router/` | 固定路由、动态路由、守卫、菜单映射、组件解析 |
+| `src/composables/` | 组合式逻辑 |
+| `src/plugins/` | 应用级插件注册，如权限指令、图标注册 |
+| `src/config/` | 应用配置聚合 |
+| `src/constants/` | 全局常量与枚举 |
+| `src/i18n/` | 国际化文案与 i18n 入口 |
+| `src/styles/` | 全局样式、变量、reset、对话框样式 |
+| `src/assets/` | 需参与构建的静态资源 |
+| `src/utils/` | 无状态工具、日志、权限、格式化、文件与 DOM 工具 |
 
-### 3.2 `views` 目录约束
+### 4.2 `views/` 页面分区规范
 
-`src/views/` 按场景固定分为：
+`src/views/` 固定分为三类：
 
-- `src/views/admin`：后台管理页面
-- `src/views/front`：前台页面
-- `src/views/common`：登录、注册、错误页等跨场景公共页面
-
-约束如下：
-
-- 后台页面必须放在 `src/views/admin/**`
-- 前台页面必须放在 `src/views/front/**`
-- 公共页面必须放在 `src/views/common/**`
-- 禁止在 `src/views/` 根目录放置任何页面文件
-- 禁止把后台页面、前台页面、公共页面混放
-
-#### 3.2.1 后台模块清单
-
-当前后台已落地模块：
-
-| 目录 | 说明 | 页面文件 |
-| ------ | ------ | --------- |
-| `admin/dashboard/` | 后台首页（固定路由） | Dashboard.vue |
-| `admin/user/` | 用户管理 | Users.vue |
-| `admin/user-level/` | 用户等级管理 | UserLevels.vue |
-| `admin/article/` | 文章管理 | Articles.vue |
-| `admin/category/` | 分类管理 | Categories.vue |
-| `admin/tag/` | 标签管理 | Tags.vue |
-| `admin/comment/` | 评论管理 | Comments.vue |
-| `admin/role/` | 角色管理 | Roles.vue |
-| `admin/menu/` | 菜单管理 | Menus.vue |
-| `admin/config/` | 配置管理 | Configs.vue |
-| `admin/notice/` | 通知管理 | Notices.vue |
-| `admin/log/` | 日志管理 | Logs.vue |
-| `admin/file/` | 文件管理 | Files.vue |
-| `admin/chat/` | 聊天管理 | Chats.vue |
-| `admin/follow/` | 关注关系管理 | Follows.vue |
-| `admin/footprint/` | 足迹管理 | Footprints.vue |
-| `admin/collection/` | 收藏管理 | Collections.vue |
-| `admin/interaction/` | 互动管理 | Interactions.vue |
-| `admin/ai/` | AI 配置与统计 | AiConfigCenter.vue |
-| `admin/audit/` | 审计日志 | AuditLog.vue |
-| `admin/author/` | 作者申请管理 | AuthorApplications.vue |
-| `admin/channel/` | 频道管理 | ChannelManagement.vue |
-| `admin/forum/` | 论坛管理 | ForumSections.vue |
-| `admin/migration/` | 博客迁移管理 | MigrationTasks.vue |
-| `admin/report/` | 举报管理 | ReportList.vue |
-
-#### 3.2.2 前台模块清单
-
-当前前台已落地模块：
-
-| 目录 | 说明 | 页面文件 |
-| ------ | ------ | --------- |
-| `front/home/` | 首页 | HomeView.vue |
-| `front/articles/` | 文章列表 | ArticlesView.vue, ArticleListCard.vue |
-| `front/article/` | 文章详情 | ArticleDetail.vue |
-| `front/category/` | 分类浏览 | CategoryView.vue |
-| `front/tag/` | 标签 | TagDetailView.vue |
-| `front/user/` | 用户资料 | UserProfileView.vue |
-| `front/profile/` | 用户主页 | ProfileView.vue |
-| `front/settings/` | 用户设置 | UserSettings.vue |
-| `front/ai/` | AI 助手 | AiAssistant.vue |
-| `front/author/` | 作者申请 | AuthorApply.vue |
-| `front/chat/` | 聊天 | ChatView.vue |
-| `front/collection/` | 收藏 | CollectionsView.vue |
-| `front/footprint/` | 足迹 | FootprintsView.vue |
-| `front/friends/` | 好友 | FriendsView.vue |
-| `front/file/` | 用户文件 | UserFilesView.vue |
-| `front/notice/` | 通知 | NoticesView.vue |
-| `front/notification/` | 通知设置 | NotificationSettings.vue |
-| `front/series/` | 系列 | SeriesList.vue |
-| `front/channel/` | 频道 | ChannelList.vue |
-| `front/forum/` | 论坛 | ForumHome.vue, ForumSection.vue, ForumPost.vue |
-| `front/hall/` | 大厅 | HallView.vue |
-| `front/search/` | 搜索 | SearchView.vue |
-| `front/about/` | 关于页 | AboutView.vue |
-
-#### 3.2.3 公共页面
-
-| 目录 | 说明 | 页面文件 |
-| ------ | ------ | --------- |
-| `common/auth/` | 认证页面 | Login.vue, Register.vue |
-| `common/err/` | 错误页面 | NotFound.vue, Forbidden.vue, ServerError.vue |
-
-### 3.3 页面目录约束
-
-一个业务模块应使用一个独立目录承载，目录名与业务语义保持一致。
+- `src/views/admin/`：后台管理页面
+- `src/views/front/`：前台业务页面
+- `src/views/common/`：登录、找回密码、错误页等跨场景页面
 
 约束如下：
 
-- 复杂页面必须在同级创建 `components/` 存放私有组件
-- 私有弹窗、抽屉、详情面板、局部卡片必须放在所属页面目录下的 `components/`
-- 页面私有类型定义（如 `types.ts`）可放在同级目录
-- 页面私有工具函数（如 `article-editor.ts`）可放在同级 `components/` 中
-- 禁止把单页面私有组件放进 `src/components/`
-- 禁止把多个无关业务页面塞进同一个目录
+- 禁止在 `src/views/` 根目录直接放页面文件
+- 后台、前台、公共页面不能混放
+- 复杂页面必须在同级创建 `components/` 目录存放私有组件
+- 页面私有 `types.ts`、局部工具文件应就近放置，不上提到全局目录
 
-### 3.4 `components` 与 `layouts` 约束
+#### 4.2.1 后台模块清单
 
-#### 3.4.1 全局组件目录
+当前后台主要模块如下：
 
-`src/components/` 只允许放全局可复用组件，按类型分子目录：
+| 目录 | 说明 | 主页面 |
+| --- | --- | --- |
+| `admin/dashboard/` | 后台首页与统计面板 | `index.vue` |
+| `admin/user/` | 用户管理 | `Users.vue` |
+| `admin/user-level/` | 用户等级与经验规则 | `UserLevels.vue` |
+| `admin/article/` | 文章管理与审核 | `Articles.vue`、`ArticleReview.vue` |
+| `admin/category/` | 分类管理 | `Categories.vue` |
+| `admin/tag/` | 标签管理 | `Tags.vue` |
+| `admin/comment/` | 评论管理 | `Comments.vue` |
+| `admin/role/` | 角色管理 | `Roles.vue` |
+| `admin/menu/` | 菜单管理 | `Menus.vue` |
+| `admin/config/` | 系统配置 | `Configs.vue` |
+| `admin/notice/` | 通知管理 | `Notices.vue` |
+| `admin/log/` | 系统日志 | `Logs.vue` |
+| `admin/file/` | 文件管理 | `Files.vue` |
+| `admin/chat/` | 聊天后台治理 | `Chats.vue`、`Lobby*`、`GroupJoinApplications.vue` |
+| `admin/follow/` | 关注关系管理 | `Follows.vue` |
+| `admin/footprint/` | 足迹管理 | `Footprints.vue` |
+| `admin/collection/` | 收藏管理 | `Collections.vue` |
+| `admin/interaction/` | 互动记录管理 | `Interactions.vue` |
+| `admin/ai/` | AI 管理中心 | `AiConfigCenter.vue`、`AiAgentManage.vue`、`AiToolManage.vue` 等 |
+| `admin/audit/` | 审计日志 | `AuditLog.vue` |
+| `admin/author/` | 作者申请审核 | `AuthorApplications.vue` |
+| `admin/channel/` | 频道管理与审核 | `ChannelManagement.vue`、`ChannelAudit.vue` |
+| `admin/forum/` | 论坛板块、帖子、回复管理 | `ForumSections.vue`、`ForumPosts.vue`、`ForumReplies.vue` |
+| `admin/migration/` | 博客迁移任务 | `MigrationTasks.vue` |
+| `admin/report/` | 举报处理 | `ReportList.vue` |
 
-```text
-src/components/
-├── common/         # 通用业务组件
-│   ├── AuthorBadge.vue         # 作者标识
-│   ├── ExperienceBar.vue        # 经验值进度条
-│   ├── FeaturePlaceholder.vue  # 功能占位组件
-│   ├── IconPicker.vue          # 图标选择器
-│   ├── ImageUpload.vue          # 图片上传组件
-│   ├── LevelRequirementTip.vue  # 等级要求提示
-│   ├── ReportDialog.vue        # 举报弹窗
-│   ├── RiskConfirmDialog.vue   # 危险操作确认弹窗
-│   ├── TwoFactorDialog.vue     # 二次验证弹窗
-│   └── UserLevelBadge.vue      # 用户等级徽章
-└── editor/         # 编辑器组件
-    └── HtmlCodeEditor.vue      # CodeMirror HTML 编辑器
-```
+约束如下：
 
-只有被多个页面或多个业务域复用时，组件才允许进入 `src/components/`。页面私有组件优先就近放置，不上提到全局目录。
+- 后台固定首页文件为 `src/views/admin/dashboard/index.vue`
+- 后台新增业务页优先作为 `/admin` 子路由落地
+- 管理页私有弹窗、抽屉、详情卡片必须放在该模块的 `components/`
 
-#### 3.4.2 布局目录
+#### 4.2.2 前台模块清单
+
+当前前台主要模块如下：
+
+| 目录 | 说明 | 主页面 |
+| --- | --- | --- |
+| `front/home/` | 首页 | `HomeView.vue` |
+| `front/articles/` | 公开文章列表聚合页 | `ArticlesView.vue` |
+| `front/article/` | 文章详情、创作与文章私有组件 | `ArticleDetail.vue`、`ArticleEditor.vue`、`ArticleList.vue` |
+| `front/category/` | 分类浏览 | `CategoryView.vue` |
+| `front/tag/` | 标签详情 | `TagDetailView.vue` |
+| `front/user/` | 其他用户主页 | `UserProfileView.vue` |
+| `front/profile/` | 当前用户个人中心 | `ProfileView.vue` |
+| `front/settings/` | 账号设置 | `UserSettings.vue` |
+| `front/ai/` | AI 助手 | `AiAssistant.vue` |
+| `front/author/` | 作者申请 | `AuthorApply.vue` |
+| `front/chat/` | 用户聊天 | `ChatView.vue`、`GroupSettings.vue`、`JoinRequestsView.vue` |
+| `front/collection/` | 收藏中心 | `CollectionsView.vue` |
+| `front/file/` | 用户文件 | `UserFilesView.vue` |
+| `front/footprint/` | 足迹 | `FootprintsView.vue` |
+| `front/forum/` | 论坛首页、发帖、编辑、我的帖子 | `ForumHome.vue`、`ForumCreate.vue`、`ForumEdit.vue`、`MyForumPosts.vue` |
+| `front/channel/` | 频道列表、详情、申请 | `ChannelList.vue`、`ChannelDetail.vue`、`ChannelApply.vue` |
+| `front/friends/` | 友情链接 | `FriendsView.vue` |
+| `front/hall/` | 大厅 | `HallView.vue` |
+| `front/notice/` | 通知中心 | `NoticesView.vue` |
+| `front/notification/` | 通知设置 | `NotificationSettings.vue` |
+| `front/search/` | 搜索 | `SearchView.vue` |
+| `front/series/` | 系列列表与详情 | `SeriesList.vue`、`SeriesDetail.vue` |
+| `front/about/` | 关于页 | `AboutView.vue` |
+
+约束如下：
+
+- 前台页面应保持展示页、用户页、互动页的模块边界清晰
+- 如果某个前台目录既有真实路由页，也有该领域私有辅页，这是允许的
+- 前台页面私有组件同样就近放在模块 `components/`
+
+#### 4.2.3 公共页面
+
+当前公共页面目录如下：
+
+| 目录 | 说明 | 页面文件 |
+| --- | --- | --- |
+| `common/auth/` | 认证页 | `Login.vue`、`Register.vue`、`ForgotPassword.vue` |
+| `common/err/` | 错误页 | `Forbidden.vue`、`NotFound.vue`、`ServerError.vue` |
+
+### 4.3 `components/` 与 `layouts/` 规范
+
+#### 4.3.1 全局组件目录
+
+当前 `src/components/` 包含：
+
+- `src/components/common/`：跨页面、跨业务域的通用组件
+- `src/components/editor/`：编辑器相关全局组件
+- `src/components/admin/`：预留给“跨多个后台模块复用”的后台公共组件，当前为空
+
+`src/components/common/` 当前主要承载以下类别：
+
+- 表格与列表辅助：`ActionColumn.vue`、`BatchToolbar.vue`、`DataTable.vue`
+- 表单与弹窗基础件：`FormDialog.vue`、`DetailDialog.vue`
+- 媒体与展示：`ImageUpload.vue`、`ImagePreview.vue`、`CodeBlock.vue`
+- 权限与状态展示：`StatusSwitch.vue`、`UserCell.vue`、`UserLevelBadge.vue`
+- 业务通用弹窗：`ReportDialog.vue`、`RiskConfirmDialog.vue`、`TwoFactorDialog.vue`
+
+约束如下：
+
+- 只有跨页面或跨业务域复用的组件才允许进入 `src/components/`
+- 单页面私有组件必须留在所属页面目录
+- 不要把暂时只用一次的后台弹窗提前上提到 `src/components/admin/`
+- 编辑器类公共组件统一放 `src/components/editor/`
+
+#### 4.3.2 布局目录
+
+当前 `src/layouts/` 结构如下：
 
 ```text
 src/layouts/
-├── AdminLayouts.vue         # 后台壳布局
-├── FrontLayout.vue         # 前台壳布局
+├── AdminLayouts.vue
+├── FrontLayout.vue
 └── components/
-    ├── LayoutHeader/       # 后台头部
-    ├── LayoutSidebar/      # 后台侧栏
-    ├── LayoutTabs/         # 后台标签页
-    └── LayoutLogo.vue      # Logo 组件
+    ├── FrontHeader.vue
+    ├── LayoutLogo.vue
+    ├── SiteFooter.vue
+    ├── LayoutHeader/
+    ├── LayoutSidebar/
+    └── LayoutTabs/
 ```
 
-- `src/layouts/` 只允许放应用布局层组件
-- 布局私有组件放在 `src/layouts/components/` 下
+约束如下：
 
-### 3.5 `api` 目录约束
+- 布局壳文件只放在 `src/layouts/` 根目录
+- 布局私有组件只放在 `src/layouts/components/`
+- 业务页面不要直接依赖布局内部实现细节
 
-`src/api/` 的结构和职责固定如下：
+### 4.4 `api/` 目录规范
+
+当前 `src/api/` 结构固定为三层：
 
 ```text
 src/api/
-├── auth.ts               # 认证接口 (登录、注册、Token 刷新、退出)
-├── content.ts            # 公开内容接口 (文章/分类/标签/评论的公开查询)
-├── follow.ts             # 公开关注接口 (关注列表、粉丝列表)
-├── forum.ts              # 公开论坛接口
-├── websocket.ts          # WebSocket 连接
-├── request/              # Axios 实例、请求工具
-│   ├── index.ts          # Axios 实例和请求方法
-│   ├── utils.ts          # 请求工具函数
-│   └── interceptors/    # 三层拦截器
-│       ├── request.ts    # 请求拦截器
-│       ├── response.ts  # 响应拦截器
-│       └── refresh.ts    # Token 刷新拦截器
-├── sys/                  # 后台管理接口
-│   ├── admin.ts          # 管理员接口
-│   ├── article.ts        # 文章管理
-│   ├── category.ts       # 分类管理
-│   ├── tag.ts            # 标签管理
-│   ├── comment.ts        # 评论管理
-│   ├── user.ts           # 用户管理
-│   ├── role.ts           # 角色管理
-│   ├── menu.ts           # 菜单管理
-│   ├── config.ts         # 配置管理
-│   ├── notice.ts         # 通知管理
-│   ├── log.ts            # 日志管理
-│   ├── chat.ts           # 聊天管理
-│   ├── file.ts           # 文件管理
-│   ├── follow.ts         # 关注关系管理
-│   ├── footprint.ts      # 足迹管理
-│   ├── collection.ts     # 收藏管理
-│   ├── interaction.ts    # 互动管理
-│   ├── ai.ts             # AI 配置管理
-│   ├── auditLog.ts       # 审计日志
-│   ├── authorApplication.ts # 作者申请管理
-│   ├── report.ts         # 举报管理
-│   ├── dashboard.ts      # 仪表盘统计
-│   ├── experience.ts    # 经验值管理
-│   ├── friendLink.ts     # 友情链接管理
-│   ├── forum.ts         # 论坛管理
-│   └── migration.ts     # 迁移管理
-└── user/                 # 用户侧接口
-    ├── content.ts        # 用户内容操作
-    ├── chat.ts           # 用户聊天
-    ├── file.ts           # 用户文件
-    ├── follow.ts         # 用户关注
-    ├── notice.ts         # 用户通知
-    ├── ai.ts             # 用户 AI 会话
-    ├── report.ts         # 用户举报
-    ├── profile.ts        # 用户资料
-    ├── authorApplication.ts # 用户作者申请
-    ├── experience.ts     # 用户经验值
-    ├── forum.ts          # 用户论坛
-    ├── notificationSettings.ts # 通知设置
-    └── footprint.ts      # 用户足迹
+├── auth.ts
+├── content.ts
+├── follow.ts
+├── forum.ts
+├── websocket.ts
+├── request/
+│   ├── index.ts
+│   └── interceptors/
+│       ├── request.ts
+│       ├── response.ts
+│       ├── refresh.ts
+│       └── retry.ts
+├── sys/
+└── user/
 ```
 
 约束如下：
 
-- API 模块只负责请求发起、响应类型和必要的兼容归一化
-- 禁止在 API 文件里写页面状态处理
-- 公开接口放顶层（`auth.ts`、`content.ts`、`follow.ts`、`forum.ts`、`websocket.ts`）
-- 用户接口放 `user/`，后台接口放 `sys/`
-- **禁止将用户侧和后台侧 API 混在同一个顶层文件中**（必须拆分到 `user/` 和 `sys/`）
-- 统一复用 `src/types/api-types.ts` 中的公共类型（通过 `@/types/api-types` 引入）
-- 非常局部、只在单一文件使用的类型才允许定义在当前文件
-- 新增接口域时必须同步新增对应 API 模块到正确的子目录，不允许把多个无关领域堆在同一文件
+- 顶层文件只放公开接口与请求基础设施
+- 后台管理接口统一放 `src/api/sys/`
+- 用户侧接口统一放 `src/api/user/`
+- 禁止把用户侧和后台侧 API 混在同一个顶层文件
+- `src/api/request/` 只放 Axios 实例、拦截器和请求封装
+- 实时通信封装统一放 `src/api/websocket.ts`
 
-### 3.6 `types` 目录约束
+### 4.5 `types/` 目录规范
+
+当前 `src/types/` 真实结构如下：
 
 ```text
 src/types/
-├── api-types.ts          # 所有接口类型定义（请求/响应 VO、分页、枚举等）
-├── auto-imports.d.ts     # 自动导入类型（自动生成）
-└── element-plus.d.ts     # Element Plus 类型扩展
+├── api-types/
+│   ├── index.ts
+│   ├── common.ts
+│   ├── auth.ts
+│   ├── user.ts
+│   ├── article.ts
+│   └── ...
+├── auto-imports.d.ts
+├── element-plus.d.ts
+├── ui.ts
+└── websocket.ts
 ```
 
 约束如下：
 
-- 所有接口相关类型统一在 `api-types.ts` 中定义
-- API 模块通过 `import type { ... } from '@/types/api-types'` 引入
-- 禁止在 `src/api/` 目录下创建独立的类型文件
+- API 共享类型按业务域拆分在 `src/types/api-types/`
+- 统一通过 `src/types/api-types/index.ts` 暴露
+- `src/types/ui.ts` 放界面层共享类型
+- `src/types/websocket.ts` 放 WebSocket 协议类型
+- 自动生成文件如 `auto-imports.d.ts` 不手工维护
+- 禁止在 `src/api/` 目录中新增散落类型文件
 
-### 3.7 `stores`、`composables`、`utils` 约束
+### 4.6 `stores/` 目录规范
 
-#### 3.7.1 Store 目录
+当前 `src/stores/` 除了常规 `auth.ts`、`tabs.ts`、`modules/` 外，还包含：
 
-```text
-src/stores/
-├── index.ts              # Store 统一导出
-├── auth.ts               # 认证状态 (登录态、Token、用户信息)
-├── tabs.ts               # 后台标签页管理
-└── modules/              # 业务域 Store
-    ├── admin.ts          # 管理员状态
-    ├── article.ts        # 文章状态
-    ├── category.ts       # 分类状态
-    ├── tag.ts            # 标签状态
-    ├── comment.ts        # 评论状态
-    ├── user.ts           # 用户状态
-    ├── role.ts           # 角色状态
-    ├── menu.ts           # 菜单状态
-    ├── config.ts         # 配置状态
-    ├── notice.ts         # 通知状态
-    ├── log.ts            # 日志状态
-    ├── chat.ts           # 聊天状态
-    ├── file.ts           # 文件状态
-    ├── follow.ts         # 关注状态
-    ├── footprint.ts      # 足迹状态
-    ├── collection.ts     # 收藏状态
-    ├── interaction.ts    # 互动状态
-    ├── aiAgent.ts        # AI 助手状态
-    ├── aiChannel.ts      # AI 渠道状态
-    ├── aiKnowledge.ts    # AI 知识库状态
-    ├── aiMcp.ts          # AI MCP 状态
-    ├── aiTool.ts         # AI 工具状态
-    ├── aiUsage.ts        # AI 使用统计
-    ├── auditLog.ts       # 审计日志状态
-    ├── authorApplication.ts # 作者申请状态
-    ├── dashboard.ts      # 仪表盘状态
-    ├── experience.ts     # 经验值状态
-    ├── friendLink.ts     # 友情链接状态
-    ├── forumAdmin.ts     # 后台论坛状态
-    ├── migration.ts      # 迁移任务状态
-    ├── notificationSettings.ts # 通知设置状态
-    ├── profile.ts        # 用户资料状态
-    ├── report.ts          # 举报状态
-    ├── frontContent.ts   # 前台内容状态
-    ├── userAi.ts         # 用户 AI 状态
-    ├── userAuthorApplication.ts # 用户作者申请状态
-    ├── userChat.ts       # 用户聊天状态
-    ├── userContent.ts    # 用户内容状态
-    ├── userExperience.ts # 用户经验值状态
-    ├── userFile.ts       # 用户文件状态
-    ├── userFollow.ts     # 用户关注状态
-    ├── userForum.ts      # 用户论坛状态
-    └── userNotice.ts     # 用户通知状态
-```
+- `src/stores/index.ts`：统一导出入口
+- `src/stores/types.ts`：Store 共享类型
+- `src/stores/composables/`：Store 级复用辅助
+- `src/stores/modules/chat/`：聊天 Store 按子领域进一步拆分
 
 约束如下：
 
-- `src/stores/` 只放状态管理逻辑
-- `src/stores/modules/` 放业务域 store
-- 页面临时状态优先留在页面内部，不要无差别提升到 store
-- 禁止在 store 中直接操作 DOM
+- 核心认证和标签页 Store 放根目录
+- 业务域 Store 放 `src/stores/modules/`
+- 如果某个大领域内部状态复杂，可以像 `chat/` 一样继续分子目录
+- Store 共享类型优先放 `src/stores/types.ts`
+- 仅服务 Store 体系的复用逻辑可放 `src/stores/composables/`
 
-#### 3.7.2 Composables 目录
+### 4.7 其他核心目录规范
 
-```text
-src/composables/
-├── useTableHeight.ts     # 表格高度自适应
-├── usePermission.ts      # 权限检查
-├── useContentAdmin.ts   # 后台内容管理页统一表格高度和分页布局
-└── useDebounceFn.ts     # 防抖函数
-```
+#### 4.7.1 `router/`
 
-约束如下：
+当前 `src/router/` 包含：
 
-- `src/composables/` 只放可复用的组合式逻辑
-- 只服务单个页面的交互逻辑留在页面内部
-
-#### 3.7.3 Utils 目录
-
-```text
-src/utils/
-├── index.ts              # 工具统一导出
-├── baseUtils.ts          # 基础工具
-├── contentAdmin.ts       # 内容管理常量和格式化（后台内容域选项、状态格式化）
-├── systemAdmin.ts        # 系统管理常量和格式化（菜单/通知/日志域选项、状态格式化）
-├── aiAdmin.ts            # AI 管理常量和格式化
-├── dateUtils.ts          # 日期格式化
-├── formatUtils.ts        # 通用格式化
-├── stringUtils.ts        # 字符串工具
-├── arrayUtils.ts         # 数组工具
-├── objectUtils.ts        # 对象工具
-├── mapUtils.ts           # Map 工具
-├── setUtils.ts           # Set 工具
-├── treeUtils.ts          # 树结构工具
-├── graphUtils.ts         # 图结构工具
-├── mathUtils.ts          # 数学工具
-├── randomUtils.ts        # 随机数工具
-├── stackQueueUtils.ts    # 栈和队列工具
-├── scheduleUtils.ts      # 调度工具
-├── rateLimiterUtils.ts   # 限流工具
-├── fileUtils.ts          # 文件操作工具
-├── fileHashUtils.ts      # 文件哈希工具
-├── domUtils.ts           # DOM 操作工具
-├── vueDomUtils.ts        # Vue DOM 工具
-├── http.ts               # HTTP 请求工具（Token 管理、错误处理）
-├── permission.ts         # 权限匹配逻辑
-├── loading.ts            # 全屏加载动画
-├── logger.ts             # 日志工具
-├── storage.ts            # 本地存储工具
-├── iconUtils.ts          # Element Plus 图标工具
-├── svgUtils.ts           # SVG 图标工具
-└── markdown.ts           # Markdown 与 HTML 互转
-```
+- `index.ts`：创建路由实例
+- `fixed-routes.ts`：前台固定路由、公共路由、后台固定首页
+- `dynamic-routes.ts`：后台动态菜单路由注册与清理
+- `component-resolver.ts`：后端 `component` 到实际视图组件的解析
+- `guards.ts`：路由守卫
+- `menu.ts`：菜单树辅助与规范化
 
 约束如下：
 
-- `src/utils/` 只放无状态工具、格式化、基础设施工具
-- 禁止在 `utils` 中写页面强耦合逻辑
-- `contentAdmin.ts`、`systemAdmin.ts`、`aiAdmin.ts` 分别承载后台内容域、系统域、AI 域的选项常量和格式化函数，按域拆分
+- 路由定义、守卫、动态注册、菜单辅助只能放在 `src/router/`
+- 后台固定首页入口为 `/admin/dashboard`，组件文件为 `src/views/admin/dashboard/index.vue`
+- 动态后台路由统一作为 `AdminLayout` 子路由注册
 
-### 3.8 `router`、`plugins`、`config` 约束
+#### 4.7.2 `plugins/`
 
-#### 3.8.1 路由架构与目录
+当前 `src/plugins/` 只有：
 
-```text
-src/router/
-├── index.ts              # 路由创建和静态路由定义
-├── guards.ts             # 路由守卫 (权限校验、动态路由注入)
-├── fixed-routes.ts       # 固定路由 (前台路由 + 后台首页 Dashboard)
-├── dynamic-routes.ts     # 动态路由解析和注册
-├── component-resolver.ts # 动态路由组件解析
-└── menu.ts               # 菜单工具函数
-```
-
-路由策略采用"固定前后台路由 + 后端菜单动态路由"的组合模式：
-
-| 路由类型 | 来源 | 示例 |
-| -------- | ---- | ---- |
-| 前台固定路由 | 前端代码维护 | `/`、`/login`、`/register` |
-| 后台固定路由 | 前端代码维护 | `/admin/dashboard` |
-| 后台动态业务路由 | 后端菜单授权 | `/admin/users`、`/admin/articles` |
-
-路径规范：
-
-- `/admin/**` 统一视为后台，渲染 `AdminLayouts.vue`
-- 非 `/admin/**` 统一视为前台
-- 后台业务路由由后端 `GET /api/auth/current-user-menus` 动态返回
-- 菜单 `routePath` 必须直接写最终访问路径，不支持旧路径别名（如 `/system/**`、`/content/**`）
-
-常见组件映射：
-
-| 后端 component | 前端页面文件 |
-| -------------- | ------------ |
-| `admin/user/Users` | `src/views/admin/user/Users.vue` |
-| `admin/article/Articles` | `src/views/admin/article/Articles.vue` |
-| `layouts/RouteView` | `RouterView` 容器 |
+- `element-plus.ts`
+- `permission.ts`
 
 约束如下：
 
-- 路由定义、动态菜单映射、路由守卫只能放在 `src/router/`
-- 后台首页 (`/admin/dashboard`) 对应组件为 `src/views/admin/dashboard/Dashboard.vue`
-- 固定路由配置集中维护在 `src/router/` 下，禁止在页面中绕过路由守卫
+- 全局注册能力统一放 `src/plugins/`
+- 不在页面中重复注册全局指令、图标或全局插件
 
-#### 3.8.2 插件目录
+#### 4.7.3 `config/`
 
-```text
-src/plugins/
-├── element-plus.ts       # Element Plus 图标注册
-└── permission.ts        # v-permission 指令注册
-```
+当前 `src/config/` 由 `index.ts` 聚合以下配置：
 
-- 应用级注册能力统一放在 `src/plugins/`
-- 禁止在页面内重复实现菜单解析、权限初始化或全局错误注册
+- API 配置
+- 应用基础配置
+- 日志配置
+- 认证配置
+- 上传配置
+- 分页配置
+- 表格配置
 
-#### 3.8.3 配置目录
+约束如下：
 
-```text
-src/config/
-└── index.ts              # 应用配置聚合
-```
+- 环境无关、业务可复用的应用配置统一收口到 `src/config/`
 
-- 环境无关配置集中放在 `src/config/`
+#### 4.7.4 `constants/`
 
-### 3.9 `styles` 目录
+当前 `src/constants/` 主要用于全局枚举和常量定义，现有文件为 `enums.ts`。
 
-```text
-src/styles/
-├── index.css      # 全局样式引入
-├── reset.css      # CSS 重置
-├── variables.css  # CSS 变量
-└── dialog.css    # 弹窗样式
-```
+约束如下：
 
-## 4. 模块协作与落地规则
+- 可跨模块复用、语义稳定的枚举与常量放这里
+- 某个业务域私有常量优先留在该业务域附近
 
-### 4.1 页面、API、Store、Composable 的职责边界
+#### 4.7.5 `i18n/`
 
-- 页面层负责视图、交互、表单、页面局部状态
-- API 层负责请求方法、参数、返回类型、字段兼容
+当前 `src/i18n/` 包含：
+
+- `index.ts`
+- `zh-CN.ts`
+- `en.ts`
+
+约束如下：
+
+- 国际化文案和 i18n 初始化都只放在 `src/i18n/`
+- 不在页面目录中零散维护全局文案表
+
+#### 4.7.6 `styles/`
+
+当前 `src/styles/` 包含：
+
+- `index.css`
+- `reset.css`
+- `variables.css`
+- `dialog.css`
+
+约束如下：
+
+- 全局样式、全局变量、reset、跨页面对话框样式统一放这里
+- 页面私有样式留在组件自身的 `<style>` 中
+
+## 5. 模块协作与落地规则
+
+### 5.1 职责边界
+
+- 页面层负责视图、交互、页面局部状态
+- API 层负责请求方法、返回类型、字段兼容
 - Store 层负责共享状态、缓存、异步流程编排
-- Composable 层负责多页面可复用的交互逻辑或页面能力抽离
+- Composable 层负责可复用交互逻辑
+- Utils 层负责纯函数、基础设施和无状态工具
 
 禁止行为：
 
 - 在页面里重复拼装复杂请求逻辑
-- 在 API 层里写视图提示和页面跳转
-- 在 Store 中堆叠只服务单个页面的展示逻辑
+- 在 API 层写视图提示和页面跳转
+- 在 Store 中堆叠单页展示逻辑
 - 在 `utils` 中实现依赖页面上下文的业务流程
 
-### 4.2 新增业务模块的落地要求
+### 5.2 新增业务模块的同步清单
 
-新增一个完整业务模块时，至少应检查以下内容：
+新增或重构一个业务域时，至少检查以下目录是否需要同步：
 
-- 页面目录是否落在正确的 `views` 分区（admin/front/common）
-- 私有组件是否拆到同级 `components/`
-- API 模块是否按公开、用户、后台场景正确放置到对应子目录
-- 用户侧和后台侧 API 是否拆分到 `user/` 和 `sys/`，禁止混合放在顶层
-- 是否需要新增或扩展 Store
-- 是否需要抽离 Composable
-- 是否需要补 `utils` 中的格式化或常量
-- 是否需要补 Mock 接口和测试数据
-- 是否需要补 `docs/api文档` 或结构文档
+- `src/views/**`
+- `src/api/**`
+- `src/stores/**`
+- `src/types/api-types/**`
+- `src/composables/**`
+- `src/utils/**`
+- `mock/*.mock.ts`
+- `mock/data/**`
+- `docs/api文档/**`
+- `docs/project-structure-convention.md`
+- `docs/code-writing-convention.md`
+- `env.d.ts`
+- `.env.example`
 
-## 5. Mock 目录规范
+## 6. Mock 目录规范
 
-### 5.1 当前 Mock 结构
+### 6.1 当前 Mock 结构
 
-当前 `mock/` 已采用按领域拆分的方式组织：
+当前 `mock/` 已按公开、用户、后台场景拆分：
 
-- `auth.mock.ts`：认证相关 Mock
-- `public-content.mock.ts`：公开内容 Mock
-- `public-extra.mock.ts`：公开扩展内容 Mock
-- `public-forum.mock.ts`：公开论坛 Mock
-- `user-chat.mock.ts`：用户聊天 Mock
-- `user-content.mock.ts`：用户内容 Mock
-- `user-experience.mock.ts`：用户经验值 Mock
-- `user-file.mock.ts`：用户文件 Mock
-- `user-follow.mock.ts`：用户关注 Mock
-- `user-forum.mock.ts`：用户论坛 Mock
-- `user-notice.mock.ts`：用户通知 Mock
-- `user-notificationSettings.mock.ts`：用户通知设置 Mock
-- `user-profile.mock.ts`：用户资料 Mock
-- `user-report.mock.ts`：用户举报 Mock
-- `system-admin.mock.ts`：系统管理 Mock
-- `system-ai.mock.ts`：AI 模块 Mock
-- `system-auditLog.mock.ts`：审计日志 Mock
-- `system-author.mock.ts`：作者申请 Mock
-- `system-basic.mock.ts`：系统基础模块 Mock
-- `system-chat.mock.ts`：聊天模块 Mock
-- `system-content.mock.ts`：系统内容模块 Mock
-- `system-dashboard.mock.ts`：仪表盘 Mock
-- `system-experience.mock.ts`：经验值 Mock
-- `system-file.mock.ts`：文件模块 Mock
-- `system-follow.mock.ts`：关注关系 Mock
-- `system-forum.mock.ts`：论坛管理 Mock
-- `system-friendLink.mock.ts`：友情链接 Mock
-- `system-migration.mock.ts`：迁移任务 Mock
-- `system-report.mock.ts`：举报管理 Mock
-- `shared.ts`：共用方法、分页工具、通用响应方法
-- `data/`：测试数据目录
+- 公开接口：`auth.mock.ts`、`public-content.mock.ts`、`public-extra.mock.ts`、`public-forum.mock.ts`
+- 用户接口：`user-*.mock.ts`
+- 后台接口：`system-*.mock.ts`
+- 通用能力：`shared.ts`
+- 测试数据：`mock/data/*.json`、`mock/data/index.ts`
 
-### 5.2 Mock 约束
+### 6.2 Mock 约束
 
-- Mock 文件必须按业务域拆分，禁止重新合并成单个超大入口文件
-- 领域共用方法、分页工具、通用响应方法统一放在 `mock/shared.ts`
-- 可复用测试数据统一放在 `mock/data/` 目录
-- 业务域自己的 Mock 逻辑应写在对应的领域文件中
-- 禁止在每个 Mock 文件中重复维护同一份测试数据
+- Mock 文件必须按业务域拆分，不回退到单个超大入口文件
+- 共用分页、响应组装和辅助函数统一放 `mock/shared.ts`
+- 可复用测试数据统一放 `mock/data/`
+- 新增 API 域时，应同步补齐对应 Mock 域
 
-### 5.3 Mock 与源码的对应关系
+### 6.3 环境与 Mock 对应关系
 
-新增 API 域时，应同步补对应的 Mock 域规则：
+结合 `AGENTS.md`、`CLAUDE.md` 与当前环境文件，约定如下：
 
-- 新增公开接口域，应补对应公开 mock 文件
-- 新增用户接口域，应补对应用户 mock 文件
-- 新增后台接口域，应补对应后台 mock 文件
+- `.env.development`：`pnpm dev`，默认 `VITE_ENABLE_MOCK=true`
+- `.env.staging`：`pnpm dev:staging` / `pnpm build:staging`，关闭 Mock，连接测试后端
+- `.env.production`：`pnpm build`，关闭 Mock，用于生产构建
+- `.env.example`：环境变量模板与三套环境说明
 
-当前项目默认全部使用 Mock 数据，环境配置基线如下：
+如果调整 Mock 策略或后端联调方式，必须同步更新环境文件说明和相关文档。
 
-- `.env.development` 默认启用 `VITE_ENABLE_MOCK=true`
-- `.env.production` 当前也保持 `VITE_ENABLE_MOCK=true`
+## 7. `docs/` 文档目录规范
 
-如果后续恢复真实后端联调，必须同步更新环境变量说明和 README，而不是只改本地环境文件。
+### 7.1 当前文档目录
 
-## 6. 文档与配置规范
-
-### 6.1 文档目录规范
-
-`docs/` 下文档职责固定如下：
+当前 `docs/` 顶层包含：
 
 - `docs/api文档/`：接口文档
-- `docs/需求文档/`：产品需求文档
-- `docs/plans/`：开发计划文档
+- `docs/需求文档/`：产品需求、业务草案、设计说明
+- `docs/plans/`：开发计划与实施草案
 - `docs/sql初始化脚本/`：数据库初始化脚本
-- `docs/设计图片/`：设计稿截图
-- `docs/*-convention.md`：规范类文档
+- `docs/设计图片/`：设计稿与参考图
+- `docs/code-writing-convention.md`：代码规范
+- `docs/project-structure-convention.md`：结构规范
+- `docs/需要修改的内容.md`：临时任务清单类文档
 
-约束如下：
+### 7.2 文档约束
 
-- 结构规范、代码规范、路由规范等正式文档必须放在 `docs/`
-- 接口变化优先更新接口文档，不要只在页面代码中隐式体现
-- 新增规范文档时，建议同步补 README 中的文档入口
+- 正式规范文档必须放在 `docs/`
+- 接口变化优先更新 `docs/api文档/**`
+- 结构变化优先更新本文档
+- 代码写法变化优先更新 `docs/code-writing-convention.md`
+- 临时任务清单可以放在 `docs/`，但不能替代正式规范
 
-### 6.2 环境变量规范
+## 8. 命名与结构约束
 
-- 所有环境变量必须在 `env.d.ts` 中声明
-- 所有新增环境变量必须同步写入 `.env.example`
-- 配置项优先收口到 `src/config/`
-- 页面和业务代码不得直接散落读取大量环境变量
+- 目录名应使用稳定、明确的业务语义
+- 页面目录、API 文件、Mock 文件、Store 模块名应尽量保持领域一致
+- 禁止使用 `temp`、`demo`、`new`、`test1` 之类无语义名称
+- 禁止中英文混杂且没有统一规则的目录命名
+- 前后台相同业务域应优先保持名称一致，避免一侧叫 `authorApplication`、另一侧叫 `authorReview` 这类不必要分裂
 
-## 7. 结构命名规范
+## 9. 禁止事项
 
-本文档只约束与结构相关的命名，不重复约束组件书写、函数签名、TypeScript 细节。
-
-- 业务目录使用稳定语义命名
-- 同类目录命名风格保持一致
-- 页面目录、API 目录、Mock 文件目录名应与业务域一致
-- 禁止使用 `temp`、`test1`、`new`、`demo` 这类无语义目录名
-- 组件、Store、Composable、工具模块的具体命名细则以 `docs/code-writing-convention.md` 为准
-- 禁止中英文混杂且无统一规则的目录命名
-
-## 8. 禁止事项
-
-- 禁止在 `src/views/` 根目录放置页面文件（必须按 admin/front/common 分区）
+- 禁止在 `src/views/` 根目录放页面文件
 - 禁止把后台、前台、公共页面混放
-- 禁止把页面私有组件堆进全局 `src/components/`
-- 禁止将用户侧和后台侧 API 混在同一个顶层文件（必须拆分到 `user/` 和 `sys/`）
-- 禁止在 `src/api/` 中定义类型文件（统一用 `src/types/api-types.ts`）
-- 禁止新增业务接口只补请求层、不补 Mock
-- 禁止把临时调试代码、临时测试脚本长期留在主源码目录
-- 禁止绕过现有目录分层随意新增平铺文件
-- 禁止修改环境配置但不更新文档说明
+- 禁止把页面私有组件堆进 `src/components/`
+- 禁止将用户侧和后台侧 API 混在一个顶层文件
+- 禁止继续把类型约定写成不存在的 `src/types/api-types.ts` 单文件模式
+- 禁止新增业务接口只补请求层，不补 Mock 和类型
+- 禁止修改环境文件却不更新 `env.d.ts` / `.env.example` / 文档说明
+- 禁止把临时脚本、调试代码长期留在主源码目录
+- 禁止出现“代码已变、文档未变”的长期双轨状态
 
-## 9. 执行原则
+## 10. 执行原则
 
-本文档以当前仓库真实结构为基准。后续如果项目发生目录级重构，应先更新本文档，再推进大规模结构调整，避免出现"代码已变、规范未变"或"规范已写、仓库未落地"的双轨状态。
+本文档以当前仓库真实结构为准，而不是以历史规划图为准。
 
-命令、提交流程、基础验证要求不在本文档重复展开，统一以 `AGENTS.md` / `CLAUDE.md` 为准；代码书写和组件实现细节统一以 `docs/code-writing-convention.md` 为准。
+后续如果出现以下变化，应同步更新本文档：
+
+- 新目录被正式纳入主工程结构
+- 大模块被重命名、拆分或合并
+- `src/types/`、`src/stores/`、`src/router/` 等基础目录发生结构升级
+- 环境文件、Mock 组织方式、文档目录发生调整
+
+结构规范的目标不是列一个永远不变的树，而是保证新增功能时每个文件都能找到明确、稳定、可维护的落点。

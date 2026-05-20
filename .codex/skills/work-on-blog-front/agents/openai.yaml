@@ -1,4 +1,4 @@
 interface:
   display_name: "Work on Blog Front"
-  short_description: "Repository-specific workflow for blog-front changes"
-  default_prompt: "Use $work-on-blog-front to implement or refactor code in blog-front while following its page, API, store, router, mock, and validation conventions."
+  short_description: "Repository-specific workflow for blog-front code, docs, and skill updates"
+  default_prompt: "Use $work-on-blog-front to implement, refactor, review, or document changes in blog-front while following its page, API, store, router, mock, type, and validation conventions."
